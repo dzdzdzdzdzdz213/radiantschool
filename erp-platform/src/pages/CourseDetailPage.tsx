@@ -1,0 +1,84 @@
+import { useParams, useNavigate } from 'react-router-dom';
+import { useCourse, useCourseEnrollments } from '@/hooks/useQueries';
+import { formatCurrency, formatDate, getStatusColor, getFullName, formatTime, getDayLabel } from '@/lib/utils';
+import { ArrowLeft, BookOpen, Users } from 'lucide-react';
+
+export default function CourseDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const courseId = Number(id);
+  const { data: course, isLoading } = useCourse(courseId);
+  const { data: enrollments } = useCourseEnrollments(courseId);
+
+  if (isLoading) return <div className="p-8 text-center text-muted">Chargement...</div>;
+  if (!course) return <div className="p-8 text-center text-muted">Cours introuvable</div>;
+
+  return (
+    <div className="space-y-6">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted hover:text-muted"><ArrowLeft className="h-4 w-4" /> Retour</button>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{course.name}</h1>
+          <p className="text-muted">{course.subject?.name} · {course.level?.name}{course.level?.stream ? ` - ${course.level.stream}` : ''}</p>
+        </div>
+        <span className={`rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(course.status)}`}>{course.status}</span>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-xl border bg-card p-5 shadow-sm lg:col-span-2">
+          <h2 className="mb-4 font-semibold">Informations</h2>
+          <dl className="grid grid-cols-2 gap-4 text-sm">
+            <div><dt className="text-muted">Type</dt><dd className="font-medium">{course.type}</dd></div>
+            <div><dt className="text-muted">Enseignant</dt><dd className="font-medium">{getFullName(course.teacher.first_name, course.teacher.last_name)}</dd></div>
+            <div><dt className="text-muted">Salle</dt><dd className="font-medium">{course.room?.name || 'Non assignée'}</dd></div>
+            <div><dt className="text-muted">Capacité</dt><dd className="font-medium">{course.current_enrollments}/{course.capacity}</dd></div>
+            <div><dt className="text-muted">Prix</dt><dd className="font-medium">{formatCurrency(course.price)}</dd></div>
+            <div><dt className="text-muted">Période</dt><dd className="font-medium">{formatDate(course.start_date)} - {formatDate(course.end_date)}</dd></div>
+          </dl>
+        </div>
+        <div className="rounded-xl border bg-card p-5 shadow-sm">
+          <h2 className="mb-4 font-semibold">Horaires</h2>
+          {(course.schedules as unknown as any[]).length > 0 ? (
+            <div className="space-y-2">
+              {(course.schedules as unknown as any[]).map((s: any) => (
+                <div key={s.id} className="rounded-lg bg-page p-3 text-sm">
+                  <p className="font-medium">{getDayLabel(s.day_of_week)}</p>
+                  <p className="text-muted">{formatTime(s.start_time)} - {formatTime(s.end_time)}</p>
+                </div>
+              ))}
+            </div>
+          ) : <p className="text-sm text-muted">Aucun horaire défini</p>}
+        </div>
+      </div>
+      <div className="rounded-xl border bg-card shadow-sm">
+        <div className="flex items-center justify-between border-b px-5 py-4">
+          <h2 className="font-semibold">Inscriptions ({enrollments?.length || 0})</h2>
+        </div>
+        {enrollments && enrollments.length > 0 ? (
+          <table className="w-full">
+            <thead>
+              <tr className="border-b text-left text-sm text-muted">
+                <th className="px-5 py-3 font-medium">Élève</th>
+                <th className="px-5 py-3 font-medium">Statut</th>
+                <th className="px-5 py-3 font-medium">Date d'inscription</th>
+              </tr>
+            </thead>
+            <tbody>
+              {enrollments.map((e: any) => (
+                <tr key={e.id} className="border-b text-sm last:border-0">
+                  <td className="px-5 py-3 font-medium">{getFullName(e.student.first_name, e.student.last_name)}</td>
+                  <td className="px-5 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(e.status)}`}>{e.status}</span></td>
+                  <td className="px-5 py-3 text-muted">{formatDate(e.enrollment_date)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="p-8 text-center text-muted">
+            <Users className="mx-auto mb-2 h-8 w-8" />
+            <p>Aucune inscription</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
