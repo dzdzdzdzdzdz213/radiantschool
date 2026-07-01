@@ -44,7 +44,7 @@ import ProfilePage from '@/pages/ProfilePage';
 import TeacherEvaluationsPage from '@/pages/TeacherEvaluationsPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
 import StudentDetailPage from '@/pages/StudentDetailPage';
-import StudentReviewsPage from '@/pages/student/StudentReviewsPage';
+import StudentReviewsPageOld from '@/pages/student/StudentReviewsPage';
 import LeaderboardPage from '@/pages/LeaderboardPage';
 import EnrollPage from '@/pages/EnrollPage';
 import TeacherDashboardPage from '@/features/teacher/dashboard/TeacherDashboardPage';
@@ -65,6 +65,25 @@ import TeacherRevenuePage from '@/features/teacher/revenue/RevenuePage';
 import TeacherReviewsPage from '@/features/teacher/reviews/ReviewsPage';
 import TeacherProfilePage from '@/features/teacher/profile/TeacherProfilePage';
 import TeacherSettingsPage from '@/features/teacher/settings/TeacherSettingsPage';
+import StudentDashboardPage from '@/features/student/dashboard/StudentDashboardPage';
+import StudentCoursesPage from '@/features/student/courses/StudentCoursesPage';
+import StudentSchedulePage from '@/features/student/schedule/StudentSchedulePage';
+import StudentCalendarPage from '@/features/student/calendar/StudentCalendarPage';
+import StudentAttendancePage from '@/features/student/attendance/StudentAttendancePage';
+import StudentHomeworkPage from '@/features/student/homework/StudentHomeworkPage';
+import StudentResourcesPage from '@/features/student/resources/StudentResourcesPage';
+import StudentOnlineClassesPage from '@/features/student/online-classes/StudentOnlineClassesPage';
+import StudentPrivateLessonsPage from '@/features/student/private-lessons/StudentPrivateLessonsPage';
+import StudentVipClassesPage from '@/features/student/vip-classes/StudentVipClassesPage';
+import StudentPaymentsPage from '@/features/student/payments/StudentPaymentsPage';
+import StudentInvoicesPage from '@/features/student/invoices/StudentInvoicesPage';
+import StudentCertificatesPage from '@/features/student/certificates/StudentCertificatesPage';
+import StudentAnnouncementsPage from '@/features/student/announcements/StudentAnnouncementsPage';
+import StudentMessagesPage from '@/features/student/messages/StudentMessagesPage';
+import StudentNotificationsPage from '@/features/student/notifications/StudentNotificationsPage';
+import StudentReviewsPage from '@/features/student/reviews/StudentReviewsPage';
+import StudentProfilePage from '@/features/student/profile/StudentProfilePage';
+import StudentSettingsPage from '@/features/student/settings/StudentSettingsPage';
 
 export const router = createBrowserRouter([
   {
@@ -190,17 +209,28 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'courses', element: <CoursesPage /> },
+      { path: 'dashboard', element: <StudentDashboardPage /> },
+      { path: 'courses', element: <StudentCoursesPage /> },
       { path: 'courses/:id', element: <CourseDetailPage /> },
       { path: 'enroll', element: <EnrollPage /> },
-      { path: 'schedule', element: <SchedulePageOld /> },
-      { path: 'payments', element: <PaymentsPageOld /> },
-      { path: 'invoices', element: <InvoicesPageOld /> },
-      { path: 'messages', element: <MessagesPage /> },
+      { path: 'schedule', element: <StudentSchedulePage /> },
+      { path: 'calendar', element: <StudentCalendarPage /> },
+      { path: 'attendance', element: <StudentAttendancePage /> },
+      { path: 'homework', element: <StudentHomeworkPage /> },
+      { path: 'resources', element: <StudentResourcesPage /> },
+      { path: 'online-classes', element: <StudentOnlineClassesPage /> },
+      { path: 'private-lessons', element: <StudentPrivateLessonsPage /> },
+      { path: 'vip-classes', element: <StudentVipClassesPage /> },
+      { path: 'payments', element: <StudentPaymentsPage /> },
+      { path: 'invoices', element: <StudentInvoicesPage /> },
+      { path: 'certificates', element: <StudentCertificatesPage /> },
+      { path: 'announcements', element: <StudentAnnouncementsPage /> },
+      { path: 'messages', element: <StudentMessagesPage /> },
+      { path: 'notifications', element: <StudentNotificationsPage /> },
       { path: 'reviews', element: <StudentReviewsPage /> },
       { path: 'leaderboard', element: <LeaderboardPage /> },
-      { path: 'profile', element: <ProfilePage /> },
+      { path: 'profile', element: <StudentProfilePage /> },
+      { path: 'settings', element: <StudentSettingsPage /> },
     ],
   },
   {

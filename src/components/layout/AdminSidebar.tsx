@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,
   FileText, Calendar, BarChart3, MessageSquare, UserCircle, Settings,
   Bell, Search, X, MapPin, ChevronLeft, GraduationCap, Star, UserPlus,
+  Award, Megaphone, Video, Clock,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
@@ -16,6 +17,7 @@ const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,
   FileText, Calendar, BarChart3, MessageSquare, UserCircle, Settings,
   Bell, Search, GraduationCap, Star, UserPlus,
+  Award, Megaphone, Video, Clock,
 };
 
 export interface NavItem {
