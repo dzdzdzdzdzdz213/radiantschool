@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, Children } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 interface SelectProps {
@@ -73,7 +73,7 @@ export function Select({ value, onValueChange, placeholder, children, className 
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute top-full mt-1 z-50 w-full min-w-[8rem] rounded-xl border border-border bg-popover p-1 shadow-md">
-            {(items.length > 0 ? items : React.Children.toArray(children)).map((item: any, idx: number) => (
+            {(items.length > 0 ? items : Children.toArray(children)).map((item: any, idx: number) => (
               <button
                 key={item.key ?? idx}
                 className={`relative flex w-full cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none hover:bg-accent ${value === item.props.value ? 'bg-accent font-medium' : ''}`}
