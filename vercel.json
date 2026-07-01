@@ -1,7 +1,11 @@
 {
-  "framework": "vite",
-  "rootDirectory": "erp-platform",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+    "framework":  "vite",
+    "buildCommand":  "npm run build",
+    "outputDirectory":  "dist",
+    "rewrites":  [
+                     {
+                         "source":  "/(.*)",
+                         "destination":  "/index.html"
+                     }
+                 ]
 }
