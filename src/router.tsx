@@ -12,15 +12,34 @@ import StudentLayout from '@/layouts/StudentLayout';
 import ParentLayout from '@/layouts/ParentLayout';
 import DashboardPage from '@/pages/DashboardPage';
 import AdminDashboardPage from '@/features/dashboard/AdminDashboardPage';
+import AssistantDashboardPage from '@/features/assistant/dashboard/AssistantDashboardPage';
+import StudentsPage from '@/features/assistant/students/StudentsPage';
+import ParentsPage from '@/features/assistant/parents/ParentsPage';
+import RegistrationsPage from '@/features/assistant/registrations/RegistrationsPage';
+import AttendancePage from '@/features/assistant/attendance/AttendancePage';
+import RfidPage from '@/features/assistant/rfid/RfidPage';
+import GroupsPage from '@/features/assistant/groups/GroupsPage';
+import SchedulesPage from '@/features/assistant/schedules/SchedulesPage';
+import RoomsPage from '@/features/assistant/rooms/RoomsPage';
+import PaymentsPage from '@/features/assistant/payments/PaymentsPage';
+import InvoicesPage from '@/features/assistant/invoices/InvoicesPage';
+import NotificationsPage from '@/features/assistant/notifications/NotificationsPage';
+import EmailsPage from '@/features/assistant/emails/EmailsPage';
+import ResourcesPage from '@/features/assistant/resources/ResourcesPage';
+import CampaignsPage from '@/features/assistant/campaigns/CampaignsPage';
+import ReportsPage from '@/features/assistant/reports/ReportsPage';
+import CalendarPage from '@/features/assistant/calendar/CalendarPage';
+import SearchPage from '@/features/assistant/search/SearchPage';
+import AssistantSettingsPage from '@/features/assistant/settings/SettingsPage';
 import UsersPage from '@/pages/admin/UsersPage';
 import CoursesPage from '@/pages/CoursesPage';
 import CourseDetailPage from '@/pages/CourseDetailPage';
-import AttendancePage from '@/pages/AttendancePage';
-import PaymentsPage from '@/pages/PaymentsPage';
-import InvoicesPage from '@/pages/InvoicesPage';
-import ReportsPage from '@/pages/ReportsPage';
+import AttendancePageOld from '@/pages/AttendancePage';
+import PaymentsPageOld from '@/pages/PaymentsPage';
+import InvoicesPageOld from '@/pages/InvoicesPage';
+import ReportsPageOld from '@/pages/ReportsPage';
 import MessagesPage from '@/pages/MessagesPage';
-import SchedulePage from '@/pages/SchedulePage';
+import SchedulePageOld from '@/pages/SchedulePage';
 import ProfilePage from '@/pages/ProfilePage';
 import TeacherEvaluationsPage from '@/pages/TeacherEvaluationsPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
@@ -65,7 +84,7 @@ export const router = createBrowserRouter([
       { path: 'invoices', element: <InvoicesPage /> },
       { path: 'reports', element: <ReportsPage /> },
       { path: 'messages', element: <MessagesPage /> },
-      { path: 'schedule', element: <SchedulePage /> },
+      { path: 'schedule', element: <SchedulePageOld /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
@@ -79,16 +98,35 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'users', element: <UsersPage /> },
+      { path: 'dashboard', element: <AssistantDashboardPage /> },
+      { path: 'students', element: <StudentsPage /> },
+      { path: 'students/new', element: <StudentsPage /> },
+      { path: 'students/:id', element: <StudentDetailPage /> },
+      { path: 'parents', element: <ParentsPage /> },
+      { path: 'parents/new', element: <ParentsPage /> },
+      { path: 'parents/:id', element: <StudentDetailPage /> },
+      { path: 'registrations', element: <RegistrationsPage /> },
+      { path: 'attendance', element: <AttendancePage /> },
+      { path: 'rfid', element: <RfidPage /> },
+      { path: 'groups', element: <GroupsPage /> },
+      { path: 'schedules', element: <SchedulesPage /> },
+      { path: 'rooms', element: <RoomsPage /> },
+      { path: 'payments', element: <PaymentsPage /> },
+      { path: 'payments/new', element: <PaymentsPage /> },
+      { path: 'invoices', element: <InvoicesPage /> },
+      { path: 'invoices/new', element: <InvoicesPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
+      { path: 'emails', element: <EmailsPage /> },
+      { path: 'resources', element: <ResourcesPage /> },
+      { path: 'campaigns', element: <CampaignsPage /> },
+      { path: 'reports', element: <ReportsPage /> },
+      { path: 'calendar', element: <CalendarPage /> },
+      { path: 'search', element: <SearchPage /> },
+      { path: 'settings', element: <AssistantSettingsPage /> },
+      { path: 'profile', element: <ProfilePage /> },
       { path: 'courses', element: <CoursesPage /> },
       { path: 'courses/:id', element: <CourseDetailPage /> },
-      { path: 'attendance', element: <AttendancePage /> },
-      { path: 'payments', element: <PaymentsPage /> },
-      { path: 'invoices', element: <InvoicesPage /> },
       { path: 'messages', element: <MessagesPage /> },
-      { path: 'schedule', element: <SchedulePage /> },
-      { path: 'profile', element: <ProfilePage /> },
     ],
   },
   {
@@ -103,8 +141,8 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'courses', element: <CoursesPage /> },
       { path: 'courses/:id', element: <CourseDetailPage /> },
-      { path: 'attendance', element: <AttendancePage /> },
-      { path: 'schedule', element: <SchedulePage /> },
+      { path: 'attendance', element: <AttendancePageOld /> },
+      { path: 'schedule', element: <SchedulePageOld /> },
       { path: 'messages', element: <MessagesPage /> },
       { path: 'evaluations', element: <TeacherEvaluationsPage /> },
       { path: 'leaderboard', element: <LeaderboardPage /> },
@@ -124,9 +162,9 @@ export const router = createBrowserRouter([
       { path: 'courses', element: <CoursesPage /> },
       { path: 'courses/:id', element: <CourseDetailPage /> },
       { path: 'enroll', element: <EnrollPage /> },
-      { path: 'schedule', element: <SchedulePage /> },
-      { path: 'payments', element: <PaymentsPage /> },
-      { path: 'invoices', element: <InvoicesPage /> },
+      { path: 'schedule', element: <SchedulePageOld /> },
+      { path: 'payments', element: <PaymentsPageOld /> },
+      { path: 'invoices', element: <InvoicesPageOld /> },
       { path: 'messages', element: <MessagesPage /> },
       { path: 'reviews', element: <StudentReviewsPage /> },
       { path: 'leaderboard', element: <LeaderboardPage /> },
@@ -146,9 +184,9 @@ export const router = createBrowserRouter([
       { path: 'children', element: <CoursesPage /> },
       { path: 'children/:id', element: <StudentDetailPage /> },
       { path: 'enroll', element: <EnrollPage /> },
-      { path: 'payments', element: <PaymentsPage /> },
-      { path: 'invoices', element: <InvoicesPage /> },
-      { path: 'schedule', element: <SchedulePage /> },
+      { path: 'payments', element: <PaymentsPageOld /> },
+      { path: 'invoices', element: <InvoicesPageOld /> },
+      { path: 'schedule', element: <SchedulePageOld /> },
       { path: 'messages', element: <MessagesPage /> },
       { path: 'profile', element: <ProfilePage /> },
     ],
