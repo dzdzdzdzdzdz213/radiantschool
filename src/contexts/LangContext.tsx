@@ -11,8 +11,10 @@ const Ctx = createContext<LangCtx>({ lang: 'fr', dir: 'ltr', setLang: () => {} }
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>(() => {
-    const s = localStorage.getItem('lang');
-    if (s === 'fr' || s === 'en' || s === 'ar') return s;
+    try {
+      const s = localStorage.getItem('lang');
+      if (s === 'fr' || s === 'en' || s === 'ar') return s;
+    } catch {}
     return 'fr';
   });
 
@@ -21,7 +23,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('dir', dir);
-    localStorage.setItem('lang', lang);
+    try { localStorage.setItem('lang', lang); } catch {}
   }, [lang, dir]);
 
   return (

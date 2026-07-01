@@ -1,56 +1,32 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
 export function useUsers() {
   return useQuery({
     queryKey: ['users'],
-    queryFn: async () => {
-      const { data } = await supabase.from('users').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-      return data ?? [];
-    },
+    queryFn: () => api.list('users', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, students(*)').then(r => r.data),
   });
 }
 
 export function useStudents() {
   return useQuery({
     queryKey: ['students'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('*, students(*)')
-        .eq('role', 'student')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
-      return data ?? [];
-    },
+    queryFn: () => api.list('users', { filters: [{ column: 'role', operator: 'eq', value: 'student' }], sort: [{ column: 'created_at', direction: 'desc' }] }, '*, students(*)').then(r => r.data),
   });
 }
 
 export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('courses')
-        .select('*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream)')
-        .order('created_at', { ascending: false });
-      return data ?? [];
-    },
+    queryFn: () => api.list('courses', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream)').then(r => r.data),
   });
 }
 
 export function useCourse(id: number) {
   return useQuery({
     queryKey: ['course', id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('courses')
-        .select('*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)')
-        .eq('id', id)
-        .single();
-      return data;
-    },
+    queryFn: () => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)'),
     enabled: !!id,
   });
 }
@@ -58,13 +34,7 @@ export function useCourse(id: number) {
 export function useCourseEnrollments(courseId: number) {
   return useQuery({
     queryKey: ['enrollments', courseId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('course_enrollments')
-        .select('*, student:users(first_name, last_name, email, phone)')
-        .eq('course_id', courseId);
-      return data ?? [];
-    },
+    queryFn: () => api.list('course_enrollments', { filters: [{ column: 'course_id', operator: 'eq', value: courseId }] }, '*, student:users(first_name, last_name, email, phone)').then(r => r.data),
     enabled: !!courseId,
   });
 }
@@ -74,14 +44,14 @@ export function useAttendance(date?: string, courseId?: number) {
   return useQuery({
     queryKey: ['attendance', date, courseId],
     queryFn: async () => {
-      let query = supabase.from('attendance').select('*, student:users(first_name, last_name), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time)');
+      const filters: any[] = [];
       if (profile?.role === 'teacher') {
-        query = query.eq('schedule.teacher_id', profile.id);
+        filters.push({ column: 'schedule.teacher_id', operator: 'eq', value: profile.id });
       }
-      if (date) query = query.eq('date', date);
-      if (courseId) query = query.eq('schedule.course_id', courseId);
-      const { data } = await query.order('created_at', { ascending: false }).limit(100);
-      return data ?? [];
+      if (date) filters.push({ column: 'date', operator: 'eq', value: date });
+      if (courseId) filters.push({ column: 'schedule.course_id', operator: 'eq', value: courseId });
+      const r = await api.list('attendance', { filters }, '*, student:users(first_name, last_name), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time)');
+      return r.data;
     },
     enabled: !!profile,
   });
@@ -91,10 +61,10 @@ export function usePayments(studentId?: string) {
   return useQuery({
     queryKey: ['payments', studentId],
     queryFn: async () => {
-      let query = supabase.from('payments').select('*, student:users(first_name, last_name)').order('created_at', { ascending: false });
-      if (studentId) query = query.eq('student_id', studentId);
-      const { data } = await query.limit(100);
-      return data ?? [];
+      const filters: any[] = [];
+      if (studentId) filters.push({ column: 'student_id', operator: 'eq', value: studentId });
+      const r = await api.list('payments', { filters, sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:users(first_name, last_name)');
+      return r.data;
     },
   });
 }
@@ -102,20 +72,14 @@ export function usePayments(studentId?: string) {
 export function useInvoices() {
   return useQuery({
     queryKey: ['invoices'],
-    queryFn: async () => {
-      const { data } = await supabase.from('invoices').select('*, student:users(first_name, last_name)').order('created_at', { ascending: false }).limit(100);
-      return data ?? [];
-    },
+    queryFn: () => api.list('invoices', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:users(first_name, last_name)').then(r => r.data),
   });
 }
 
 export function useDashboardKPI() {
   return useQuery({
     queryKey: ['dashboard_kpi'],
-    queryFn: async () => {
-      const { data } = await supabase.from('dashboard_kpi').select('*').single();
-      return data;
-    },
+    queryFn: () => api.list('dashboard_kpi').then(r => r.data?.[0] ?? null),
   });
 }
 
@@ -125,13 +89,8 @@ export function useNotifications() {
     queryKey: ['notifications', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
-      const { data } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      return data ?? [];
+      const r = await api.list('notifications', { filters: [{ column: 'user_id', operator: 'eq', value: profile.id }], sort: [{ column: 'created_at', direction: 'desc' }] });
+      return r.data;
     },
     enabled: !!profile?.id,
   });
@@ -143,13 +102,8 @@ export function useMessages() {
     queryKey: ['messages', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
-      const { data } = await supabase
-        .from('messages')
-        .select('*, sender:users!sender_id(first_name, last_name), receiver:users!receiver_id(first_name, last_name)')
-        .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      return data ?? [];
+      const r = await api.list('messages', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, sender:users!sender_id(first_name, last_name), receiver:users!receiver_id(first_name, last_name)');
+      return r.data.filter((m: any) => m.sender_id === profile.id || m.receiver_id === profile.id);
     },
     enabled: !!profile?.id,
   });
@@ -158,30 +112,21 @@ export function useMessages() {
 export function useLevels() {
   return useQuery({
     queryKey: ['levels'],
-    queryFn: async () => {
-      const { data } = await supabase.from('levels').select('*').order('sort_order');
-      return data ?? [];
-    },
+    queryFn: () => api.list('levels', { sort: [{ column: 'sort_order', direction: 'asc' }] }).then(r => r.data),
   });
 }
 
 export function useSubjects() {
   return useQuery({
     queryKey: ['subjects'],
-    queryFn: async () => {
-      const { data } = await supabase.from('subjects').select('*').order('name');
-      return data ?? [];
-    },
+    queryFn: () => api.list('subjects', { sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
   });
 }
 
 export function useRooms() {
   return useQuery({
     queryKey: ['rooms'],
-    queryFn: async () => {
-      const { data } = await supabase.from('rooms').select('*').eq('status', 'active').order('name');
-      return data ?? [];
-    },
+    queryFn: () => api.list('rooms', { filters: [{ column: 'status', operator: 'eq', value: 'active' }], sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
   });
 }
 
@@ -191,21 +136,19 @@ export function useRevenueChartData() {
     queryFn: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const { data } = await supabase
-        .from('payments')
-        .select('amount, created_at')
-        .gte('created_at', thirtyDaysAgo.toISOString())
-        .order('created_at');
-      if (!data) return [];
+      const r = await api.list('payments', {
+        filters: [{ column: 'created_at', operator: 'gte', value: thirtyDaysAgo.toISOString() }],
+        sort: [{ column: 'created_at', direction: 'asc' }],
+      });
+      if (!r.data?.length) return [];
       const dailyMap = new Map<string, number>();
-      data.forEach(p => {
+      r.data.forEach((p: any) => {
         const day = p.created_at.split('T')[0];
         dailyMap.set(day, (dailyMap.get(day) || 0) + p.amount);
       });
       const result: { date: string; amount: number }[] = [];
-      const start = new Date(thirtyDaysAgo);
       const end = new Date();
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      for (let d = new Date(thirtyDaysAgo); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = d.toISOString().split('T')[0];
         result.push({ date: dateStr, amount: dailyMap.get(dateStr) || 0 });
       }
@@ -217,14 +160,7 @@ export function useRevenueChartData() {
 export function useOccupancyData() {
   return useQuery({
     queryKey: ['occupancy'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('courses')
-        .select('name, current_enrollments, capacity, room:rooms(name)')
-        .not('room_id', 'is', null)
-        .eq('status', 'active');
-      return data ?? [];
-    },
+    queryFn: () => api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'name, current_enrollments, capacity, room:rooms(name)').then(r => r.data.filter((c: any) => c.room_id != null)),
   });
 }
 
@@ -233,18 +169,7 @@ export function useTodaySchedule() {
   const today = dayNames[new Date().getDay()];
   return useQuery({
     queryKey: ['today_schedule', today],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('course_schedules')
-        .select(`
-          id, start_time, end_time,
-          course:courses(name, room:rooms(name)),
-          teacher:users(first_name, last_name)
-        `)
-        .eq('day_of_week', today)
-        .order('start_time');
-      return data ?? [];
-    },
+    queryFn: () => api.list('course_schedules', { filters: [{ column: 'day_of_week', operator: 'eq', value: today }], sort: [{ column: 'start_time', direction: 'asc' }] }, 'id, start_time, end_time, course:courses(name, room:rooms(name)), teacher:users(first_name, last_name)').then(r => r.data),
   });
 }
 
@@ -253,20 +178,14 @@ export function useRecentActivity() {
     queryKey: ['recent_activity'],
     queryFn: async () => {
       const [enrRes, payRes, attRes] = await Promise.all([
-        supabase.from('course_enrollments')
-          .select('enrollment_date, student:users(first_name,last_name), course:courses(name)')
-          .order('enrollment_date', { ascending: false }).limit(5),
-        supabase.from('payments')
-          .select('amount, created_at, student:users!student_id(first_name,last_name)')
-          .order('created_at', { ascending: false }).limit(5),
-        supabase.from('attendance')
-          .select('date, status, student:users(first_name,last_name), schedule:course_schedules!inner(course:courses(name))')
-          .order('created_at', { ascending: false }).limit(5),
+        api.list('course_enrollments', { sort: [{ column: 'enrollment_date', direction: 'desc' }] }, 'enrollment_date, student:users(first_name,last_name), course:courses(name)'),
+        api.list('payments', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'amount, created_at, student:users!student_id(first_name,last_name)'),
+        api.list('attendance', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'date, status, student:users(first_name,last_name), schedule:course_schedules!inner(course:courses(name))'),
       ]);
       const items: { time: string; icon: string; title: string; description: string }[] = [
-        ...(enrRes.data?.map(e => ({ time: e.enrollment_date, icon: '📝', title: `${e.student?.first_name ?? ''} ${e.student?.last_name ?? ''}`, description: `Inscrit en ${e.course?.name ?? ''}` })) ?? []),
-        ...(payRes.data?.map(p => ({ time: p.created_at, icon: '💰', title: `${p.student?.first_name ?? ''} ${p.student?.last_name ?? ''}`, description: `Paiement ${p.amount.toLocaleString()} DA` })) ?? []),
-        ...(attRes.data?.map(a => ({ time: a.date, icon: a.status === 'present' ? '✅' : a.status === 'late' ? '⏰' : '❌', title: `${a.student?.first_name ?? ''} ${a.student?.last_name ?? ''}`, description: `${a.status === 'present' ? 'Présent' : a.status === 'late' ? 'Retard' : 'Absent'} — ${a.schedule?.course?.name ?? ''}` })) ?? []),
+        ...(enrRes.data?.slice(0, 5).map((e: any) => ({ time: e.enrollment_date, icon: '📝', title: `${e.student?.first_name ?? ''} ${e.student?.last_name ?? ''}`, description: `Inscrit en ${e.course?.name ?? ''}` })) ?? []),
+        ...(payRes.data?.slice(0, 5).map((p: any) => ({ time: p.created_at, icon: '💰', title: `${p.student?.first_name ?? ''} ${p.student?.last_name ?? ''}`, description: `Paiement ${p.amount.toLocaleString()} DA` })) ?? []),
+        ...(attRes.data?.slice(0, 5).map((a: any) => ({ time: a.date, icon: a.status === 'present' ? '✅' : a.status === 'late' ? '⏰' : '❌', title: `${a.student?.first_name ?? ''} ${a.student?.last_name ?? ''}`, description: `${a.status === 'present' ? 'Présent' : a.status === 'late' ? 'Retard' : 'Absent'} — ${a.schedule?.course?.name ?? ''}` })) ?? []),
       ];
       items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
       return items.slice(0, 10);
@@ -278,21 +197,28 @@ export function useAdminAlerts() {
   return useQuery({
     queryKey: ['admin_alerts'],
     queryFn: async () => {
-      const { count: pendingCount } = await supabase
-        .from('users').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-      const { data: overdueInvoices } = await supabase
-        .from('invoices').select('id, total_amount, paid_amount, due_date, student:users(first_name,last_name)')
-        .in('status', ['unpaid', 'partially_paid'])
-        .lt('due_date', new Date().toISOString())
-        .order('due_date').limit(5);
-      const { data: allCourses } = await supabase
-        .from('courses').select('id, name, current_enrollments, capacity').eq('status', 'active');
-      const nearFull = (allCourses ?? []).filter(c => c.capacity > 0 && (c.current_enrollments / c.capacity) >= 0.8);
-      const { data: criticalNotifs } = await supabase
-        .from('notifications').select('*')
-        .in('type', ['warning', 'error'])
-        .order('created_at', { ascending: false }).limit(5);
-      return { pendingApprovals: pendingCount ?? 0, overdueInvoices: overdueInvoices ?? [], nearFullCourses: nearFull, criticalNotifications: criticalNotifs ?? [] };
+      const [pendingRes, overdueRes, coursesRes, notifsRes] = await Promise.all([
+        api.list('users', { filters: [{ column: 'status', operator: 'eq', value: 'pending' }] }),
+        api.list('invoices', {
+          filters: [
+            { column: 'status', operator: 'in', value: ['unpaid', 'partially_paid'] },
+          ],
+          sort: [{ column: 'due_date', direction: 'asc' }],
+        }, 'id, total_amount, paid_amount, due_date, student:users(first_name,last_name)'),
+        api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'id, name, current_enrollments, capacity'),
+        api.list('notifications', {
+          filters: [{ column: 'type', operator: 'in', value: ['warning', 'error'] }],
+          sort: [{ column: 'created_at', direction: 'desc' }],
+        }),
+      ]);
+      const nearFull = (coursesRes.data ?? []).filter((c: any) => c.capacity > 0 && (c.current_enrollments / c.capacity) >= 0.8);
+      const overdueInvoices = overdueRes.data?.filter((i: any) => new Date(i.due_date) < new Date()) ?? [];
+      return {
+        pendingApprovals: pendingRes.meta.total,
+        overdueInvoices,
+        nearFullCourses: nearFull,
+        criticalNotifications: notifsRes.data ?? [],
+      };
     },
   });
 }

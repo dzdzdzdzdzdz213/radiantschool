@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/components/ui/Toast';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 export default function StudentCalendarPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -20,7 +22,7 @@ export default function StudentCalendarPage() {
   const startDay = (firstDay.getDay() + 6) % 7;
   const daysInMonth = lastDay.getDate();
 
-  const { data: events } = useQuery({
+  const { data: events, isLoading, isError } = useQuery({
     queryKey: ['student_calendar', profile?.id, currentMonth, currentYear],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -39,6 +41,8 @@ export default function StudentCalendarPage() {
     },
     enabled: !!profile?.id,
   });
+
+  useEffect(() => { if (isError) toast('Erreur lors du chargement du calendrier', 'error'); }, [isError]);
 
   const prevMonth = () => { if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); } else setCurrentMonth(m => m - 1); };
   const nextMonth = () => { if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); } else setCurrentMonth(m => m + 1); };
@@ -61,6 +65,11 @@ export default function StudentCalendarPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {isLoading ? (
+            <div className="grid grid-cols-7 gap-px bg-accent rounded-xl overflow-hidden">
+              {Array.from({ length: 35 }).map((_, i) => (<div key={i} className="bg-card p-2 min-h-[80px]"><div className="h-4 w-8 rounded bg-accent animate-pulse" /></div>))}
+            </div>
+          ) : (
           <div className="grid grid-cols-7 gap-px bg-accent rounded-xl overflow-hidden">
             {DAYS.map(d => <div key={d} className="bg-card p-2 text-center text-xs font-medium text-muted-foreground">{d}</div>)}
             {Array.from({ length: startDay }).map((_, i) => <div key={`empty-${i}`} className="bg-card p-2 min-h-[80px]" />)}
@@ -79,6 +88,7 @@ export default function StudentCalendarPage() {
               );
             })}
           </div>
+          )}
         </CardContent>
       </Card>
     </div>

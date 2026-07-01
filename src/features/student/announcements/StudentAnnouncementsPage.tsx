@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Megaphone, Pin, Calendar, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,12 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentAnnouncementsPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
 
-  const { data: announcements, isLoading } = useQuery({
+  const { data: announcements, isLoading, isError } = useQuery({
     queryKey: ['student_announcements', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -22,7 +24,7 @@ export default function StudentAnnouncementsPage() {
       let q = (supabase as any)
         .from('announcements')
         .select('id, title, content, is_pinned, created_at, course:courses(name)')
-        .or(courseIds.length > 0 ? `course_id.in.(${courseIds.join(',')}),course_id.is.null` : 'course_id.is.null')
+        .in('course_id', courseIds.length > 0 ? courseIds : [-1])
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
       const { data } = await q;
@@ -32,6 +34,8 @@ export default function StudentAnnouncementsPage() {
     },
     enabled: !!profile?.id,
   });
+
+  useEffect(() => { if (isError) toast('Erreur lors du chargement des annonces', 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">

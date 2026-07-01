@@ -1,8 +1,9 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { NavItem } from '@/components/layout/AdminSidebar';
 
@@ -30,10 +31,6 @@ const teacherNavItems: NavItem[] = [
   { label: 'Paramètres', path: '/teacher/settings', icon: 'Settings' },
 ];
 
-function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="animate-in fade-in duration-500">{children}</div>;
-}
-
 function DashboardFallback() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -44,17 +41,24 @@ function DashboardFallback() {
   );
 }
 
+function PageShell({ children }: { children: React.ReactNode }) {
+  return <div className="animate-in fade-in duration-500">{children}</div>;
+}
+
 export default function TeacherLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const saved = localStorage.getItem('teacher_sidebar_collapsed');
-    return saved === 'true';
+    try {
+      return localStorage.getItem('teacher_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
   });
 
   const handleToggleCollapse = () => {
     setSidebarCollapsed(prev => {
       const next = !prev;
-      localStorage.setItem('teacher_sidebar_collapsed', String(next));
+      try { localStorage.setItem('teacher_sidebar_collapsed', String(next)); } catch {}
       return next;
     });
   };
@@ -73,9 +77,11 @@ export default function TeacherLayout() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">
             <div className="mb-4"><BackButton label="← Retour au site" to="/" /></div>
-            <Suspense fallback={<DashboardFallback />}>
-              <PageShell><Outlet /></PageShell>
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<DashboardFallback />}>
+                <PageShell><Outlet /></PageShell>
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </main>
       </div>

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart3, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 const reportTypes = [
   { id: 'attendance', label: 'Rapport de présence', icon: BarChart3 },
@@ -15,8 +16,9 @@ const reportTypes = [
 ] as const;
 
 export default function ReportsPage() {
+  const { toast } = useToast();
   const [selected, setSelected] = useState('revenue');
-  const { data: revenue } = useQuery({
+  const { data: revenue, isLoading, isError } = useQuery({
     queryKey: ['assistant_report_revenue'],
     queryFn: async () => {
       const { data } = await (supabase as any)
@@ -28,6 +30,28 @@ export default function ReportsPage() {
     },
   });
 
+  useEffect(() => {
+    if (isError) toast('Erreur lors du chargement des données', 'error');
+  }, [isError]);
+
+  const exportCSV = (filename: string) => {
+    if (!revenue || revenue.length === 0) {
+      toast('Aucune donnée à exporter', 'error');
+      return;
+    }
+    const headers = ['Date', 'Revenu'];
+    const rows = revenue.map((r: any) => [r.date ?? '', r.total_revenue ?? 0]);
+    const csv = [headers.join(','), ...rows.map((row: string[]) => row.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast(`Export ${filename} généré`, 'success');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -36,8 +60,8 @@ export default function ReportsPage() {
           <p className="text-sm text-muted-foreground mt-1">Générer et exporter des rapports</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2"><FileSpreadsheet className="h-4 w-4" />Excel</Button>
-          <Button variant="outline" className="gap-2"><FileText className="h-4 w-4" />PDF</Button>
+          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileSpreadsheet className="h-4 w-4" />Excel</Button>
+          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileText className="h-4 w-4" />PDF</Button>
         </div>
       </div>
 
@@ -61,11 +85,13 @@ export default function ReportsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">Aperçu - 30 derniers jours</CardTitle>
-              <Button variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />Exporter</Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportCSV('rapport-financier')}><Download className="h-4 w-4" />Exporter</Button>
             </div>
           </CardHeader>
           <CardContent>
-            {selected === 'revenue' && (
+            {isLoading ? (
+              <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 bg-muted rounded-xl animate-pulse" />)}</div>
+            ) : selected === 'revenue' && (
               <div className="space-y-2">
                 {(revenue ?? []).length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">Aucune donnée disponible</p>

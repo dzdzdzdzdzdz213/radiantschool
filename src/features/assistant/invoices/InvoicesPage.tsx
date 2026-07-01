@@ -1,20 +1,51 @@
-import { useState } from 'react';
-import { Search, Plus, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Plus, FileText, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { useInvoices } from './useInvoices';
+import { useInvoices, useCreateInvoice } from './useInvoices';
+import { useToast } from '@/components/ui/Toast';
 
 export default function InvoicesPage() {
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const debouncedSearch = useDebounce(search, 300);
-  const { data, isLoading } = useInvoices(debouncedSearch, page, statusFilter);
+  const { data, isLoading, isError } = useInvoices(debouncedSearch, page, statusFilter);
+  const createInvoice = useCreateInvoice();
+
+  useEffect(() => {
+    if (isError) toast('Erreur lors du chargement des factures', 'error');
+  }, [isError]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [studentName, setStudentName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [dueDate, setDueDate] = useState('');
+
+  const handleCreateInvoice = () => {
+    if (!studentName || !amount || !dueDate) {
+      toast('Veuillez remplir tous les champs', 'error');
+      return;
+    }
+    createInvoice.mutate(
+      { student_id: studentName, total_amount: parseFloat(amount), due_date: dueDate, status: 'unpaid', paid_amount: 0 },
+      {
+        onSuccess: () => {
+          toast('Facture créée', 'success');
+          setShowModal(false);
+          setStudentName(''); setAmount(''); setDueDate('');
+        },
+        onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+      },
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -23,8 +54,40 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Factures</h1>
           <p className="text-sm text-muted-foreground mt-1">Générer et gérer les factures</p>
         </div>
-        <Button className="gap-2"><Plus className="h-4 w-4" />Nouvelle facture</Button>
+        <Button className="gap-2" onClick={() => setShowModal(true)}><Plus className="h-4 w-4" />Nouvelle facture</Button>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
+          <Card className="relative w-full max-w-lg mx-4">
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle className="text-sm">Nouvelle facture</CardTitle>
+              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Élève</Label>
+                <Input placeholder="ID ou nom de l'élève" value={studentName} onChange={e => setStudentName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Montant</Label>
+                <Input type="number" placeholder="Montant" value={amount} onChange={e => setAmount(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Date d'échéance</Label>
+                <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowModal(false)}>Annuler</Button>
+                <Button onClick={handleCreateInvoice} disabled={createInvoice.isPending}>
+                  {createInvoice.isPending ? 'Création...' : 'Créer la facture'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row gap-3">

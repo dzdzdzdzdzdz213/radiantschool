@@ -1,4 +1,4 @@
-import { Award, Download, Calendar, BookOpen, Trophy } from 'lucide-react';
+import { Award, Download, Calendar, BookOpen, Trophy, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,9 +7,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
+import { useDownloadFile } from '@/hooks/useMutationFeedback';
 
 export default function StudentCertificatesPage() {
   const { profile } = useAuth();
+  const downloadFile = useDownloadFile();
 
   const { data: certificates, isLoading } = useQuery({
     queryKey: ['student_certificates', profile?.id],
@@ -47,8 +49,8 @@ export default function StudentCertificatesPage() {
                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(c.issued_date)}</span>
                 {c.expiry_date && <span className="flex items-center gap-1">Expire {formatDate(c.expiry_date)}</span>}
               </div>
-              <Button variant="outline" size="sm" className="w-full mt-4 h-8 text-xs gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                <Download className="h-3.5 w-3.5" />Télécharger
+              <Button variant="outline" size="sm" className="w-full mt-4 h-8 text-xs gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all" onClick={() => { if (c.certificate_url) downloadFile.mutate({ fileUrl: c.certificate_url, filename: `${c.title}.pdf` }); }} disabled={downloadFile.isPending}>
+                {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}Télécharger
               </Button>
             </CardContent>
           </Card>

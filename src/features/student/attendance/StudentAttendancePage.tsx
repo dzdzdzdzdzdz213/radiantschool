@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Calendar, CheckCircle, XCircle, Clock, CreditCard as RfidIcon, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -9,12 +9,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentAttendancePage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
 
-  const { data: attendanceData, isLoading } = useQuery({
+  const { data: attendanceData, isLoading, isError } = useQuery({
     queryKey: ['student_attendance', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return { records: [], stats: { present: 0, late: 0, absent: 0, total: 0 } };
@@ -41,6 +43,8 @@ export default function StudentAttendancePage() {
     },
     enabled: !!profile?.id,
   });
+
+  useEffect(() => { if (isError) toast('Erreur lors du chargement des présences', 'error'); }, [isError]);
 
   const rate = attendanceData && attendanceData.stats.total > 0
     ? Math.round(((attendanceData.stats.present + attendanceData.stats.late) / attendanceData.stats.total) * 100)

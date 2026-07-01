@@ -69,7 +69,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           )}
         </div>
 
-        <button className="relative rounded-full p-2 hover-bg-page">
+        <button onClick={() => navigate('/notifications')} className="relative rounded-full p-2 hover-bg-page">
           <Bell className="h-5 w-5 text-muted" />
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
         </button>

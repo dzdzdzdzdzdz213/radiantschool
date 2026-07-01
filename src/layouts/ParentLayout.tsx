@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import BackButton from '@/components/ui/BackButton';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { NavItem } from '@/components/layout/Sidebar';
 
 const items: NavItem[] = [
@@ -16,6 +18,22 @@ const items: NavItem[] = [
   { label: 'Profil', path: '/parent/profile', icon: 'UserCircle' },
 ];
 
+function ParentFallback() {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="rounded-2xl border border-border bg-card p-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-14 w-14 rounded-2xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ParentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
@@ -27,7 +45,11 @@ export default function ParentLayout() {
           <div className="mb-4">
             <BackButton label="← Retour au site" to="/" />
           </div>
-          <Outlet />
+          <ErrorBoundary>
+            <Suspense fallback={<ParentFallback />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
     </div>

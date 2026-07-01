@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Camera, Mail, Phone, MapPin, Calendar, BookOpen, Award, Save, User, Shield } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Camera, Mail, Phone, MapPin, Calendar, BookOpen, Award, Save, User, Shield, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,14 +11,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/utils';
+import { uploadAvatar } from '@/lib/storage';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentProfilePage() {
   const { profile } = useAuth();
   const qc = useQueryClient();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ first_name: '', last_name: '', phone: '', address: '', bio: '' });
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const { data: studentProfile, isLoading } = useQuery({
+  const { data: studentProfile, isLoading, isError } = useQuery({
     queryKey: ['student_profile', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return null;
@@ -33,13 +38,32 @@ export default function StudentProfilePage() {
     enabled: !!profile?.id,
   });
 
+  useEffect(() => { if (isError) toast('Erreur lors du chargement du profil', 'error'); }, [isError]);
+
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!profile?.id) return;
-      await (supabase as any).from('users').update({ first_name: form.first_name, last_name: form.last_name, phone: form.phone, address: form.address, bio: form.bio }).eq('id', profile.id);
+      const { error } = await (supabase as any).from('users').update({ first_name: form.first_name, last_name: form.last_name, phone: form.phone, address: form.address, bio: form.bio }).eq('id', profile.id);
+      if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['student_profile'] }); setEditing(false); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['student_profile'] }); setEditing(false); toast('Profil mis à jour', 'success'); },
+    onError: (err: any) => { toast(err?.message ?? 'Erreur lors de la mise à jour', 'error'); },
   });
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile?.id) return;
+    setUploadingAvatar(true);
+    try {
+      await uploadAvatar(profile.id, file);
+      qc.invalidateQueries({ queryKey: ['student_profile'] });
+      toast('Photo mise à jour', 'success');
+    } catch (err: any) {
+      toast(err?.message ?? 'Erreur lors du téléchargement', 'error');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   if (isLoading) return <div className="space-y-6">{Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-48 rounded-2xl" />))}</div>;
 
@@ -54,7 +78,9 @@ export default function StudentProfilePage() {
                 <AvatarImage src={studentProfile?.photo_url ?? ''} />
                 <AvatarFallback className="text-lg bg-primary/10 text-primary">{getInitials(studentProfile?.first_name ?? '', studentProfile?.last_name ?? '')}</AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg"><Camera className="h-3.5 w-3.5" /></button>
+              {uploadingAvatar && <div className="absolute inset-0 flex items-center justify-center"><Loader className="h-6 w-6 animate-spin text-primary" /></div>}
+              <button className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg" onClick={() => fileInputRef.current?.click()}><Camera className="h-3.5 w-3.5" /></button>
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
             <h2 className="text-lg font-semibold mt-4">{studentProfile?.first_name ?? ''} {studentProfile?.last_name ?? ''}</h2>
             <p className="text-sm text-muted-foreground">Élève</p>
@@ -72,7 +98,7 @@ export default function StudentProfilePage() {
         </Card>
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-sm"><User className="h-4 w-4 inline mr-2" />Informations</CardTitle><Button variant={editing ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => { if (editing) updateMutation.mutate(); else setEditing(true); }}>{editing ? <><Save className="h-3.5 w-3.5 mr-1" />Enregistrer</> : 'Modifier'}</Button></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-sm"><User className="h-4 w-4 inline mr-2" />Informations</CardTitle><Button variant={editing ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => { if (editing) { if (!form.first_name.trim() || !form.last_name.trim()) { toast('Le prénom et le nom sont requis', 'error'); return; } updateMutation.mutate(); } else setEditing(true); }} disabled={updateMutation.isPending}>{editing ? <>{updateMutation.isPending ? <Loader className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}Enregistrer</> : 'Modifier'}</Button></CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div><label className="text-xs text-muted-foreground mb-1 block">Prénom</label><Input value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} disabled={!editing} className="h-9" /></div>

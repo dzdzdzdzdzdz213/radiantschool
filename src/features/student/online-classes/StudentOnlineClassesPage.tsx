@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Video, ExternalLink, Calendar, Clock, Monitor, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,11 +8,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentOnlineClassesPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
 
-  const { data: sessions, isLoading } = useQuery({
+  const { data: sessions, isLoading, isError } = useQuery({
     queryKey: ['student_online_classes', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -27,6 +30,8 @@ export default function StudentOnlineClassesPage() {
     },
     enabled: !!profile?.id,
   });
+
+  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours en ligne', 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">

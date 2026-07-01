@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, Globe, Palette, User, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useUpdateUserSettings } from '@/hooks/useMutationFeedback';
+import { useToast } from '@/components/ui/Toast';
 
 const settingsSections = [
   { id: 'profile', label: 'Profil', icon: User },
@@ -17,9 +20,53 @@ const settingsSections = [
 ] as const;
 
 export default function SettingsPage() {
+  const { toast } = useToast();
+  const { profile } = useAuth();
   const [section, setSection] = useState('profile');
   const { theme, toggle: toggleTheme } = useTheme();
   const { lang, setLang } = useLang();
+  const updateSettings = useUpdateUserSettings();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const [notifPrefs, setNotifPrefs] = useState({ inscriptions: true, payments: true, absences: true, rfid: false });
+
+  const notifTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.firstName ?? '');
+      setLastName(profile.lastName ?? '');
+      setEmail(profile.email ?? '');
+      setPhone(profile.phone ?? '');
+    }
+  }, [profile]);
+
+  const handleSave = () => {
+    if (!profile?.id) return;
+    updateSettings.mutate(
+      { userId: profile.id, settings: { first_name: firstName, last_name: lastName, email, phone } },
+      {
+        onError: (err: any) => toast(err?.message ?? 'Erreur lors de la mise à jour', 'error'),
+      },
+    );
+  };
+
+  const handleNotifChange = (key: string, value: boolean) => {
+    setNotifPrefs(s => ({ ...s, [key]: value }));
+    if (notifTimers.current[key]) clearTimeout(notifTimers.current[key]);
+    notifTimers.current[key] = setTimeout(() => {
+      if (profile?.id) {
+        updateSettings.mutate(
+          { userId: profile.id, settings: { [`notif_${key}`]: value } },
+          { onError: (err: any) => toast(err?.message ?? 'Erreur', 'error') },
+        );
+      }
+    }, 500);
+  };
 
   return (
     <div className="space-y-6">
@@ -50,23 +97,23 @@ export default function SettingsPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Prénom</Label>
-                    <Input placeholder="Votre prénom" />
+                    <Input placeholder="Votre prénom" value={firstName} onChange={e => setFirstName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label>Nom</Label>
-                    <Input placeholder="Votre nom" />
+                    <Input placeholder="Votre nom" value={lastName} onChange={e => setLastName(e.target.value)} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input type="email" placeholder="email@exemple.com" />
+                  <Input type="email" placeholder="email@exemple.com" value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Téléphone</Label>
-                  <Input placeholder="+213 5XX XX XX XX" />
+                  <Input placeholder="+213 5XX XX XX XX" value={phone} onChange={e => setPhone(e.target.value)} />
                 </div>
                 <div className="flex justify-end">
-                  <Button>Enregistrer</Button>
+                  <Button onClick={handleSave} disabled={updateSettings.isPending}>{updateSettings.isPending ? 'Enregistrement...' : 'Enregistrer'}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -77,17 +124,17 @@ export default function SettingsPage() {
               <CardHeader><CardTitle className="text-sm">Préférences de notification</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {[
-                  { label: 'Nouvelles inscriptions', desc: 'Notifications pour les inscriptions en attente' },
-                  { label: 'Paiements reçus', desc: 'Alertes lors des nouveaux paiements' },
-                  { label: 'Absences signalées', desc: 'Notifications pour les absences' },
-                  { label: 'Scans RFID', desc: 'Alertes pour les échecs de scan RFID' },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
+                  { key: 'inscriptions', label: 'Nouvelles inscriptions', desc: 'Notifications pour les inscriptions en attente' },
+                  { key: 'payments', label: 'Paiements reçus', desc: 'Alertes lors des nouveaux paiements' },
+                  { key: 'absences', label: 'Absences signalées', desc: 'Notifications pour les absences' },
+                  { key: 'rfid', label: 'Scans RFID', desc: 'Alertes pour les échecs de scan RFID' },
+                ].map((item) => (
+                  <div key={item.key} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
                     <div>
                       <p className="text-sm font-medium">{item.label}</p>
                       <p className="text-xs text-muted-foreground">{item.desc}</p>
                     </div>
-                    <Switch />
+                    <Switch checked={(notifPrefs as any)[item.key]} onCheckedChange={v => handleNotifChange(item.key, v)} />
                   </div>
                 ))}
               </CardContent>

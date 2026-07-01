@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Clock, MapPin, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,16 +7,18 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatTime, getDayLabel } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 export default function StudentSchedulePage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
   const today = new Date();
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
   const [startDate, setStartDate] = useState(weekStart);
 
-  const { data: scheduleData, isLoading } = useQuery({
+  const { data: scheduleData, isLoading, isError } = useQuery({
     queryKey: ['student_schedule', profile?.id, startDate.toISOString()],
     queryFn: async () => {
       if (!profile?.id) return {};
@@ -39,6 +41,8 @@ export default function StudentSchedulePage() {
     },
     enabled: !!profile?.id,
   });
+
+  useEffect(() => { if (isError) toast('Erreur lors du chargement de l\'emploi du temps', 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">

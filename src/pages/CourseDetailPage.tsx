@@ -1,14 +1,21 @@
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourse, useCourseEnrollments } from '@/hooks/useQueries';
 import { formatCurrency, formatDate, getStatusColor, getFullName, formatTime, getDayLabel } from '@/lib/utils';
-import { ArrowLeft, BookOpen, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, Users, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 export default function CourseDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const courseId = Number(id);
-  const { data: course, isLoading } = useCourse(courseId);
-  const { data: enrollments } = useCourseEnrollments(courseId);
+  const { data: course, isLoading, isError: courseError } = useCourse(courseId) as any;
+  const { data: enrollments, isLoading: enrollLoading } = useCourseEnrollments(courseId);
+
+  useEffect(() => {
+    if (courseError) toast('Erreur de chargement du cours', 'error');
+  }, [courseError]);
 
   if (isLoading) return <div className="p-8 text-center text-muted">Chargement...</div>;
   if (!course) return <div className="p-8 text-center text-muted">Cours introuvable</div>;
@@ -28,7 +35,7 @@ export default function CourseDetailPage() {
           <h2 className="mb-4 font-semibold">Informations</h2>
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div><dt className="text-muted">Type</dt><dd className="font-medium">{course.type}</dd></div>
-            <div><dt className="text-muted">Enseignant</dt><dd className="font-medium">{getFullName(course.teacher.first_name, course.teacher.last_name)}</dd></div>
+            <div><dt className="text-muted">Enseignant</dt><dd className="font-medium">{getFullName(course.teacher?.first_name, course.teacher?.last_name)}</dd></div>
             <div><dt className="text-muted">Salle</dt><dd className="font-medium">{course.room?.name || 'Non assignée'}</dd></div>
             <div><dt className="text-muted">Capacité</dt><dd className="font-medium">{course.current_enrollments}/{course.capacity}</dd></div>
             <div><dt className="text-muted">Prix</dt><dd className="font-medium">{formatCurrency(course.price)}</dd></div>
@@ -37,9 +44,9 @@ export default function CourseDetailPage() {
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <h2 className="mb-4 font-semibold">Horaires</h2>
-          {(course.schedules as unknown as any[]).length > 0 ? (
+          {(course.schedules ?? []).length > 0 ? (
             <div className="space-y-2">
-              {(course.schedules as unknown as any[]).map((s: any) => (
+              {(course.schedules ?? []).map((s: any) => (
                 <div key={s.id} className="rounded-lg bg-page p-3 text-sm">
                   <p className="font-medium">{getDayLabel(s.day_of_week)}</p>
                   <p className="text-muted">{formatTime(s.start_time)} - {formatTime(s.end_time)}</p>
@@ -53,7 +60,9 @@ export default function CourseDetailPage() {
         <div className="flex items-center justify-between border-b px-5 py-4">
           <h2 className="font-semibold">Inscriptions ({enrollments?.length || 0})</h2>
         </div>
-        {enrollments && enrollments.length > 0 ? (
+        {enrollLoading ? (
+          <div className="p-8 text-center text-muted">Chargement des inscriptions...</div>
+        ) : enrollments && enrollments.length > 0 ? (
           <table className="w-full">
             <thead>
               <tr className="border-b text-left text-sm text-muted">

@@ -1,48 +1,64 @@
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getFullName, formatDate, formatCurrency, getRoleLabel, getStatusColor } from '@/lib/utils';
 import { ArrowLeft, Mail, Phone, User } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['user', id],
     queryFn: async () => {
-      const { data } = await supabase.from('users').select('*, students(*)').eq('id', id!).single();
+      const { data, error } = await supabase.from('users').select('*, students(*)').eq('id', id!).single();
+      if (error) throw error;
       return data;
     },
     enabled: !!id,
   });
 
-  const { data: enrollments } = useQuery({
+  const { data: enrollments = [], isLoading: enrollmentsLoading, error: enrollError } = useQuery({
     queryKey: ['user_enrollments', id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('course_enrollments')
         .select('*, course:courses(name, type, price, status)')
         .eq('student_id', id!);
+      if (error) throw error;
       return data ?? [];
     },
     enabled: !!id,
   });
 
-  const { data: payments } = useQuery({
+  const { data: payments = [], isLoading: paymentsLoading, error: payError } = useQuery({
     queryKey: ['user_payments', id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('payments')
         .select('*')
         .eq('student_id', id!)
         .order('created_at', { ascending: false });
+      if (error) throw error;
       return data ?? [];
     },
     enabled: !!id,
   });
 
-  if (!user) return <div className="p-8 text-center text-muted">Chargement...</div>;
+  useEffect(() => {
+    if (userError) toast('Erreur de chargement', 'error');
+  }, [userError]);
+  useEffect(() => {
+    if (enrollError) toast('Erreur de chargement des inscriptions', 'error');
+  }, [enrollError]);
+  useEffect(() => {
+    if (payError) toast('Erreur de chargement des paiements', 'error');
+  }, [payError]);
+
+  if (userLoading || !user) return <div className="p-8 text-center text-muted">Chargement...</div>;
 
   return (
     <div className="space-y-6">
@@ -76,25 +92,33 @@ export default function StudentDetailPage() {
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <h2 className="mb-3 font-semibold">Cours ({enrollments?.length || 0})</h2>
-          <div className="space-y-2">
-            {enrollments?.map((e: any) => (
-              <div key={e.id} className="rounded-lg bg-page p-3 text-sm">
-                <p className="font-medium">{e.course?.name}</p>
-                <p className="text-muted">{e.course?.type} · {formatCurrency(e.course?.price)}</p>
-              </div>
-            )) || <p className="text-sm text-muted">Aucun cours</p>}
-          </div>
+          {enrollmentsLoading ? (
+            <div className="text-sm text-muted">Chargement...</div>
+          ) : (
+            <div className="space-y-2">
+              {enrollments?.length > 0 ? enrollments.map((e: any) => (
+                <div key={e.id} className="rounded-lg bg-page p-3 text-sm">
+                  <p className="font-medium">{e.course?.name}</p>
+                  <p className="text-muted">{e.course?.type} · {formatCurrency(e.course?.price)}</p>
+                </div>
+              )) : <p className="text-sm text-muted">Aucun cours</p>}
+            </div>
+          )}
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <h2 className="mb-3 font-semibold">Paiements ({payments?.length || 0})</h2>
-          <div className="space-y-2">
-            {payments?.map((p: any) => (
-              <div key={p.id} className="rounded-lg bg-page p-3 text-sm">
-                <p className="font-medium">{formatCurrency(p.amount)}</p>
-                <p className="text-muted">{p.payment_method} · {formatDate(p.created_at)}</p>
-              </div>
-            )) || <p className="text-sm text-muted">Aucun paiement</p>}
-          </div>
+          {paymentsLoading ? (
+            <div className="text-sm text-muted">Chargement...</div>
+          ) : (
+            <div className="space-y-2">
+              {payments?.length > 0 ? payments.map((p: any) => (
+                <div key={p.id} className="rounded-lg bg-page p-3 text-sm">
+                  <p className="font-medium">{formatCurrency(p.amount)}</p>
+                  <p className="text-muted">{p.payment_method} · {formatDate(p.created_at)}</p>
+                </div>
+              )) : <p className="text-sm text-muted">Aucun paiement</p>}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DollarSign, CreditCard, Calendar, Download, CheckCircle, XCircle, Search, Receipt } from 'lucide-react';
+import { DollarSign, CreditCard, Calendar, Download, CheckCircle, XCircle, Search, Receipt, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,10 +10,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
+import { useDownloadFile } from '@/hooks/useMutationFeedback';
 
 export default function StudentPaymentsPage() {
   const { profile } = useAuth();
   const [search, setSearch] = useState('');
+  const downloadFile = useDownloadFile();
 
   const { data: paymentData, isLoading } = useQuery({
     queryKey: ['student_payments', profile?.id],
@@ -21,7 +23,7 @@ export default function StudentPaymentsPage() {
       if (!profile?.id) return { payments: [], stats: { total: 0, paid: 0, pending: 0 } };
       const { data: payments } = await (supabase as any)
         .from('payments')
-        .select('id, amount, method, status, receipt_number, created_at, invoice:invoices(reference)')
+        .select('id, amount, method, status, receipt_number, created_at, receipt_url, invoice:invoices(reference)')
         .eq('student_id', profile.id)
         .order('created_at', { ascending: false });
       const items = (payments ?? []).map((p: any) => ({ ...p, invoiceRef: p.invoice?.reference ?? '' }));
@@ -58,7 +60,9 @@ export default function StudentPaymentsPage() {
                   <TableCell className="text-sm capitalize">{p.method === 'card' ? 'Carte' : p.method === 'cash' ? 'Espèces' : p.method === 'cheque' ? 'Chèque' : p.method ?? '—'}</TableCell>
                   <TableCell className="text-sm font-medium">{p.amount ?? 0} DA</TableCell>
                   <TableCell><Badge variant={p.status === 'paid' ? 'success' : 'warning'}>{p.status === 'paid' ? 'Payé' : 'En attente'}</Badge></TableCell>
-                  <TableCell className="text-right"><Button variant="ghost" size="sm" className="h-8 w-8"><Download className="h-4 w-4" /></Button></TableCell>
+                  <TableCell className="text-right"><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (p.receipt_url) downloadFile.mutate({ fileUrl: p.receipt_url, filename: `recu_${p.receipt_number ?? p.id}.pdf` }); }} disabled={downloadFile.isPending}>
+                    {downloadFile.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  </Button></TableCell>
                 </TableRow>
               ))}
             </TableBody>

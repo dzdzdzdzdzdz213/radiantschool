@@ -3,12 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useUsers } from '@/hooks/useQueries';
 import { getFullName, getRoleLabel, getStatusColor, formatDate } from '@/lib/utils';
 import { Search, Plus, MoreHorizontal } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 
 export default function UsersPage() {
   const { data: users, isLoading } = useUsers();
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [dropdownId, setDropdownId] = useState<string | null>(null);
 
   const filtered = (users ?? []).filter((u) => {
     const name = getFullName(u.first_name, u.last_name).toLowerCase();
@@ -17,11 +23,20 @@ export default function UsersPage() {
     return matchesSearch && matchesRole;
   });
 
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await (supabase as any).from('users').update({ status: status === 'active' ? 'inactive' : 'active' }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); toast('Statut mis à jour', 'success'); setDropdownId(null); },
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Utilisateurs</h1>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><Plus className="h-4 w-4" /> Ajouter</button>
+        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90" onClick={() => navigate('./new')}><Plus className="h-4 w-4" /> Ajouter</button>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1">
@@ -60,7 +75,22 @@ export default function UsersPage() {
                   <td className="px-4 py-3">{getRoleLabel(u.role)}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(u.status)}`}>{u.status}</span></td>
                   <td className="px-4 py-3 text-muted">{formatDate(u.created_at)}</td>
-                  <td className="px-4 py-3"><button className="rounded p-1 hover-bg-page"><MoreHorizontal className="h-4 w-4" /></button></td>
+                  <td className="px-4 py-3 relative">
+                    <button className="rounded p-1 hover:bg-page" onClick={(e) => { e.stopPropagation(); setDropdownId(dropdownId === u.id ? null : u.id); }}><MoreHorizontal className="h-4 w-4" /></button>
+                    {dropdownId === u.id && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setDropdownId(null)} />
+                        <div className="absolute right-0 top-8 z-20 w-36 rounded-xl border bg-card shadow-lg overflow-hidden">
+                          <button className="w-full text-left px-4 py-2 text-sm hover:bg-accent" onClick={(e) => { e.stopPropagation(); toggleStatusMutation.mutate({ id: u.id, status: u.status }); }}>
+                            {u.status === 'active' ? 'Désactiver' : 'Activer'}
+                          </button>
+                          <button className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-accent" onClick={(e) => { e.stopPropagation(); navigate(`./${u.id}`); }}>
+                            Modifier
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
               {filtered.length === 0 && (

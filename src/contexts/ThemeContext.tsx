@@ -11,14 +11,16 @@ const Ctx = createContext<ThemeCtx>({ theme: 'light', toggle: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const s = localStorage.getItem('theme');
-    if (s === 'dark' || s === 'light') return s;
+    try {
+      const s = localStorage.getItem('theme');
+      if (s === 'dark' || s === 'light') return s;
+    } catch {}
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    try { localStorage.setItem('theme', theme); } catch {}
   }, [theme]);
 
   return (

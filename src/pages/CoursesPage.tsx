@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useCourses } from '@/hooks/useQueries';
 import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
 import { Search, Plus, BookOpen } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 export default function CoursesPage() {
   const { data: courses, isLoading } = useCourses();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -20,7 +22,7 @@ export default function CoursesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Cours</h1>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"><Plus className="h-4 w-4" /> Nouveau cours</button>
+        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90" onClick={() => navigate('/admin/courses/new')}><Plus className="h-4 w-4" /> Nouveau cours</button>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1">

@@ -1,18 +1,24 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Search, Plus, FileText, FolderOpen, Download, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate } from '@/lib/utils';
+import { useDownloadFile } from '@/hooks/useMutationFeedback';
+import { useToast } from '@/components/ui/Toast';
 
 export default function ResourcesPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
+  const downloadFile = useDownloadFile();
 
   const { data: resources, isLoading } = useQuery({
     queryKey: ['teacher_resources', profile?.id, debouncedSearch],
@@ -20,7 +26,7 @@ export default function ResourcesPage() {
       if (!profile?.id) return [];
       let q = (supabase as any)
         .from('resources')
-        .select('id, title, description, type, file_url, created_at, course:courses(name)')
+        .select('id, title, description, type, file_url, created_at')
         .eq('teacher_id', profile.id)
         .order('created_at', { ascending: false });
       const { data } = await q;
@@ -31,11 +37,53 @@ export default function ResourcesPage() {
     enabled: !!profile?.id,
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      if (!profile?.id) return;
+      const filePath = `teacher-resources/${profile.id}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await (supabase as any).storage.from('resources').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      const { data: urlData } = (supabase as any).storage.from('resources').getPublicUrl(filePath);
+      const { error: dbError } = await (supabase as any).from('resources').insert({
+        teacher_id: profile.id,
+        title: file.name,
+        type: file.type,
+        file_url: urlData.publicUrl,
+        created_at: new Date().toISOString(),
+      });
+      if (dbError) throw dbError;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_resources'] });
+      toast('Fichier ajouté', 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('resources').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_resources'] });
+      toast('Ressource supprimée', 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+  });
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Supprimer cette ressource ?')) deleteMutation.mutate(id);
+  };
+
+  const handleAddFile = () => fileInputRef.current?.click();
+
   return (
     <div className="space-y-6">
+      <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadMutation.mutate(e.target.files[0]); }} />
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold tracking-tight">Ressources</h1><p className="text-sm text-muted-foreground mt-1">Documents et supports de cours</p></div>
-        <Button className="h-9 gap-2"><Plus className="h-4 w-4" />Ajouter</Button>
+        <Button className="h-9 gap-2" onClick={handleAddFile} disabled={uploadMutation.isPending}><Plus className="h-4 w-4" />{uploadMutation.isPending ? 'Upload...' : 'Ajouter'}</Button>
       </div>
       <Card>
         <CardHeader className="pb-3">
@@ -58,8 +106,8 @@ export default function ResourcesPage() {
                     <FileText className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="sm" className="h-7 w-7"><Download className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7" onClick={() => downloadFile.mutate({ fileUrl: r.file_url, filename: r.title })} disabled={downloadFile.isPending}><Download className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 text-red-500" onClick={() => handleDelete(r.id)} disabled={deleteMutation.isPending}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
                 <h4 className="text-sm font-medium mt-3 truncate">{r.title}</h4>

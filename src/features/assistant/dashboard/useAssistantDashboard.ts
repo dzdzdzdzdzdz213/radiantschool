@@ -307,8 +307,8 @@ export function useAssistantDashboard() {
   const scheduleLoading = scheduleQuery.isLoading;
   const rfidData = rfidQuery.data ?? [];
 
-  const isLoading = kpiQuery.isLoading || pendingRegistrationsQuery.isLoading;
-  const isError = kpiQuery.isError;
+  const isLoading = kpiQuery.isLoading || pendingRegistrationsQuery.isLoading || overduePaymentsQuery.isLoading || roomStatusQuery.isLoading || activeTeachersQuery.isLoading || scheduleQuery.isLoading || rfidQuery.isLoading || alertsQuery.isLoading;
+  const isError = kpiQuery.isError || pendingRegistrationsQuery.isError || overduePaymentsQuery.isError || roomStatusQuery.isError || activeTeachersQuery.isError || scheduleQuery.isError || rfidQuery.isError || alertsQuery.isError;
 
   return {
     kpi: kpiQuery.data ?? {

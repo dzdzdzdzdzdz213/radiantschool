@@ -1,22 +1,27 @@
-import { useState } from 'react';
-import { Search, Send, Paperclip, Phone, Video, MessageSquare, User } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Search, Send, Paperclip, Phone, Video, MessageSquare, User, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/utils';
+import { useSendMessage } from '@/hooks/useMutationFeedback';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentMessagesPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState('');
 
-  const { data: conversations, isLoading } = useQuery({
+  const { data: conversations, isLoading, isError: conversationsError } = useQuery({
     queryKey: ['student_conversations', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -31,6 +36,49 @@ export default function StudentMessagesPage() {
     },
     enabled: !!profile?.id,
   });
+
+  const { data: messagesData, isLoading: messagesLoading, isError: messagesError } = useQuery({
+    queryKey: ['messages', selectedId],
+    queryFn: async () => {
+      if (!selectedId) return [];
+      const { data } = await (supabase as any)
+        .from('messages')
+        .select('id, content, sender_id, created_at')
+        .eq('conversation_id', selectedId)
+        .order('created_at', { ascending: true });
+      return (data ?? []).map((m: any) => ({ ...m, isMine: m.sender_id === profile?.id }));
+    },
+    enabled: !!selectedId,
+  });
+
+  useEffect(() => {
+    if (conversationsError) toast('Erreur lors du chargement des conversations', 'error');
+  }, [conversationsError]);
+  useEffect(() => {
+    if (messagesError) toast('Erreur lors du chargement des messages', 'error');
+  }, [messagesError]);
+
+  const sendMessage = useSendMessage();
+
+  const handleSend = () => {
+    if (!messageText.trim() || !selectedId || !profile?.id) return;
+    sendMessage.mutate(
+      { conversationId: selectedId, content: messageText, senderId: profile.id },
+      { onSuccess: () => setMessageText('') },
+    );
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedId || !profile?.id) return;
+    const filePath = `chat/${selectedId}/${Date.now()}_${file.name}`;
+    const { error: uploadError } = await supabase.storage.from('uploads').upload(filePath, file);
+    if (uploadError) { toast(uploadError.message, 'error'); return; }
+    const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(filePath);
+    await sendMessage.mutateAsync({ conversationId: selectedId, content: publicUrl ?? '', senderId: profile.id });
+    qc.invalidateQueries({ queryKey: ['messages'] });
+    qc.invalidateQueries({ queryKey: ['conversations'] });
+  };
 
   return (
     <div className="space-y-6">
@@ -58,12 +106,28 @@ export default function StudentMessagesPage() {
           <CardContent className="p-0 flex flex-col h-full">
             {selectedId ? (
               <>
-                <div className="flex items-center justify-between p-4 border-b"><div className="flex items-center gap-3"><Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/10 text-primary">?</AvatarFallback></Avatar><p className="text-sm font-medium">Contact</p></div><div className="flex gap-1"><Button variant="ghost" size="sm" className="h-8 w-8"><Phone className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="h-8 w-8"><Video className="h-4 w-4" /></Button></div></div>
+                <div className="flex items-center justify-between p-4 border-b"><div className="flex items-center gap-3"><Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/10 text-primary">?</AvatarFallback></Avatar><p className="text-sm font-medium">Contact</p></div><div className="flex gap-1"><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => toast('Fonctionnalité à venir', 'info')}><Phone className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => toast('Fonctionnalité à venir', 'info')}><Video className="h-4 w-4" /></Button></div></div>
                 <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                  <div className="flex justify-start"><div className="max-w-[70%] rounded-2xl rounded-bl-sm bg-accent p-3 text-sm">Bonjour! Comment puis-je vous aider?</div></div>
-                  <div className="flex justify-end"><div className="max-w-[70%] rounded-2xl rounded-br-sm bg-primary text-primary-foreground p-3 text-sm">Je voudrais des informations sur mon cours.</div></div>
+                  {messagesLoading ? (
+                    Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className={`h-12 ${i % 2 === 0 ? 'w-2/3' : 'w-1/2 ml-auto'} rounded-2xl`} />)
+                  ) : (messagesData ?? []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-8">Aucun message</p>
+                  ) : (messagesData ?? []).map((m: any) => (
+                    <div key={m.id} className={`flex ${m.isMine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[70%] rounded-2xl ${m.isMine ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-accent'} p-3 text-sm`}>
+                        {m.content}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2 border-t p-3"><Button variant="ghost" size="sm" className="h-9 w-9 shrink-0"><Paperclip className="h-4 w-4" /></Button><Input placeholder="Écrivez votre message..." value={messageText} onChange={e => setMessageText(e.target.value)} className="h-9" onKeyDown={e => { if (e.key === 'Enter') { setMessageText(''); } }} /><Button size="sm" className="h-9 w-9 shrink-0"><Send className="h-4 w-4" /></Button></div>
+                <div className="flex items-center gap-2 border-t p-3">
+                  <Button variant="ghost" size="sm" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()}><Paperclip className="h-4 w-4" /></Button>
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+                  <Input placeholder="Écrivez votre message..." value={messageText} onChange={e => setMessageText(e.target.value)} className="h-9" onKeyDown={e => { if (e.key === 'Enter' && !sendMessage.isPending) handleSend(); }} />
+                  <Button size="sm" className="h-9 w-9 shrink-0" onClick={handleSend} disabled={sendMessage.isPending || !messageText.trim()}>
+                    {sendMessage.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
               </>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground"><div className="text-center"><MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-20" /><p className="text-sm">Sélectionnez une conversation</p></div></div>

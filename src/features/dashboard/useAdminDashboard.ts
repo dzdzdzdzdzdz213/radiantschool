@@ -156,8 +156,8 @@ export function useAdminDashboard() {
   return {
     kpi: kpiData,
     revenueData: revenue.data ?? [],
-    occupancyData: occupancy.data ?? [],
-    scheduleData: schedule.data ?? [],
+    occupancyData: (occupancy.data ?? []) as any,
+    scheduleData: (schedule.data ?? []) as any,
     activityData: activity.data ?? [],
     recentRegistrations: registrations,
     attendanceSummary: attendanceSummaryQuery.data ?? { present: 0, absent: 0, late: 0, total: 0, rate: 0 },

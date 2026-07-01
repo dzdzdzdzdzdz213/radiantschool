@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, FileText, Download, Video, Image, File, FolderOpen } from 'lucide-react';
+import { Search, FileText, Download, Video, Image, File, FolderOpen, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
+import { useDownloadFile } from '@/hooks/useMutationFeedback';
 
 const typeIcons: Record<string, any> = { pdf: FileText, video: Video, image: Image, document: File };
 const typeColors: Record<string, string> = { pdf: 'text-red-500 bg-red-500/10', video: 'text-violet-500 bg-violet-500/10', image: 'text-sky-500 bg-sky-500/10', document: 'text-blue-500 bg-blue-500/10' };
@@ -15,6 +16,7 @@ const typeColors: Record<string, string> = { pdf: 'text-red-500 bg-red-500/10', 
 export default function StudentResourcesPage() {
   const { profile } = useAuth();
   const [search, setSearch] = useState('');
+  const downloadFile = useDownloadFile();
 
   const { data: resources, isLoading } = useQuery({
     queryKey: ['student_resources', profile?.id, search],
@@ -59,8 +61,8 @@ export default function StudentResourcesPage() {
                     <span>{r.courseName}</span>
                     <span>{formatDate(r.created_at)}</span>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5">
-                    <Download className="h-3.5 w-3.5" />Télécharger
+                  <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5" onClick={() => { if (r.file_url) downloadFile.mutate({ fileUrl: r.file_url, filename: r.title }); }} disabled={downloadFile.isPending}>
+                    {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}Télécharger
                   </Button>
                 </div>
               );

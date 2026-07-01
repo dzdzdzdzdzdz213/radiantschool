@@ -1,10 +1,12 @@
+import { useEffect } from 'react';
 import { useDashboardKPI, useNotifications } from '@/hooks/useQueries';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
-import { Users, BookOpen, DollarSign, CalendarCheck, Bell, TrendingUp, TrendingDown, Sparkles, LayoutGrid } from 'lucide-react';
+import { Users, BookOpen, DollarSign, CalendarCheck, Bell, TrendingUp, TrendingDown, Sparkles, LayoutGrid, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/components/ui/Toast';
 
 function StatCard({ title, value, icon: Icon, color, trend }: { title: string; value: string | number; icon: React.ElementType; color: string; trend?: { up: boolean; pct: string } }) {
   return (
@@ -106,12 +108,17 @@ function formatStatValue(key: string, value: number | null | undefined): string 
 export default function DashboardPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
-  const { data: kpi } = useDashboardKPI();
-  const { data: notifications } = useNotifications();
+  const { toast } = useToast();
+  const { data: kpi, isLoading: kpiLoading, isError: kpiError } = useDashboardKPI();
+  const { data: notifications, isLoading: notifLoading } = useNotifications();
 
   const role = profile?.role ?? 'admin';
   const stats = ROLE_STATS[role] ?? ROLE_STATS.admin;
   const actions = QUICK_ACTIONS[role] ?? QUICK_ACTIONS.admin;
+
+  useEffect(() => {
+    if (kpiError) toast('Erreur de chargement des indicateurs', 'error');
+  }, [kpiError]);
 
   return (
     <div className="space-y-8">
@@ -137,15 +144,23 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <StatCard
-            key={s.key}
-            title={t(s.titleKey, lang)}
-            value={formatStatValue(s.key, (kpi as any)?.[s.key] as number | null | undefined)}
-            icon={s.icon}
-            color={s.color}
-          />
-        ))}
+        {kpiLoading ? (
+          <>
+            {stats.map((s) => (
+              <StatCard key={s.key} title={t(s.titleKey, lang)} value="—" icon={s.icon} color={s.color} />
+            ))}
+          </>
+        ) : (
+          stats.map((s) => (
+            <StatCard
+              key={s.key}
+              title={t(s.titleKey, lang)}
+              value={formatStatValue(s.key, (kpi as any)?.[s.key] as number | null | undefined)}
+              icon={s.icon}
+              color={s.color}
+            />
+          ))
+        )}
       </div>
 
         {/* Quick Actions + Notifications */}
@@ -194,7 +209,9 @@ export default function DashboardPage() {
                 </span>
               )}
             </div>
-            {notifications && notifications.length > 0 ? (
+            {notifLoading ? (
+              <div className="text-center py-8 text-sm" style={{ color: 'var(--fg-muted)' }}>Chargement...</div>
+            ) : notifications && notifications.length > 0 ? (
               <div className="space-y-1">
                 {notifications.slice(0, 5).map((n) => (
                   <div

@@ -17,7 +17,7 @@ export default function NotificationsPage() {
   const [message, setMessage] = useState('');
   const qc = useQueryClient();
 
-  const { data: notifications } = useQuery({
+  const { data: notifications, isLoading } = useQuery({
     queryKey: ['assistant_notifications'],
     queryFn: async () => {
       const { data } = await (supabase as any)
@@ -59,8 +59,8 @@ export default function NotificationsPage() {
             <Textarea placeholder="Message..." value={message} onChange={e => setMessage(e.target.value)} rows={4} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
-              <Button onClick={() => sendMutation.mutate()} disabled={!title || !message}>
-                <Send className="h-4 w-4 mr-2" />Envoyer
+              <Button onClick={() => sendMutation.mutate()} disabled={sendMutation.isPending || !title || !message}>
+                <Send className="h-4 w-4 mr-2" />{sendMutation.isPending ? 'Envoi...' : 'Envoyer'}
               </Button>
             </div>
           </CardContent>
@@ -80,7 +80,9 @@ export default function NotificationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(notifications ?? []).length === 0 ? (
+              {isLoading ? Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
+              )) : (notifications ?? []).length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Aucune notification</TableCell></TableRow>
               ) : (
                 (notifications ?? []).map((n: any) => (

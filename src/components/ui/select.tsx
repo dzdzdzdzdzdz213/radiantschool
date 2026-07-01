@@ -27,7 +27,8 @@ const SelectTrigger = forwardRef<HTMLButtonElement, { className?: string; childr
 );
 SelectTrigger.displayName = 'SelectTrigger';
 
-const SelectValue = ({ placeholder }: { placeholder?: string }) => null;
+const SelectValue = ({ placeholder, children }: { placeholder?: string; children?: React.ReactNode }) =>
+  children ? <>{children}</> : <>{placeholder ?? ''}</>;
 
 const SelectContent = forwardRef<HTMLDivElement, { className?: string; children: React.ReactNode }>(
   ({ className, children }, ref) => <div ref={ref} className={cn('relative z-50 min-w-[8rem] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-md', className)}>{children}</div>,
@@ -43,7 +44,6 @@ SelectItem.displayName = 'SelectItem';
 
 export function Select({ value, onValueChange, placeholder, children, className }: SelectProps) {
   const [open, setOpen] = useState(false);
-  const triggerText = value ? children : placeholder;
 
   const items: any[] = [];
   let triggerLabel = placeholder ?? 'Sélectionner...';

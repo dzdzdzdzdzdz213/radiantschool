@@ -1,4 +1,5 @@
-import { Plus, Star, Calendar, Clock, Euro } from 'lucide-react';
+import { useEffect } from 'react';
+import { Plus, Star, Calendar, Clock, Euro, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,11 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
+import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentVipClassesPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
 
-  const { data: lessons, isLoading } = useQuery({
+  const { data: lessons, isLoading, isError } = useQuery({
     queryKey: ['student_vip_classes', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -25,11 +29,26 @@ export default function StudentVipClassesPage() {
     enabled: !!profile?.id,
   });
 
+  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours VIP', 'error'); }, [isError]);
+
+  const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(
+    async () => {
+      if (!profile?.id) return;
+      const { error } = await (supabase as any).from('vip_classes').insert({
+        student_id: profile.id,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    { successMessage: 'Demande de cours VIP envoyée', invalidateQueries: [['student_vip_classes']] },
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2"><h1 className="text-2xl font-bold tracking-tight">Cours VIP</h1><Star className="h-5 w-5 text-amber-500" /></div>
-        <Button className="h-9 gap-2"><Plus className="h-4 w-4" />Réserver</Button>
+        <Button className="h-9 gap-2" onClick={() => bookMutation.mutate()} disabled={bookMutation.isPending}>{bookMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}Réserver</Button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-32 rounded-xl" />))

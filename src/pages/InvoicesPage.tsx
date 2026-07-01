@@ -1,9 +1,16 @@
 import { useInvoices } from '@/hooks/useQueries';
 import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
-import { FileText } from 'lucide-react';
+import { FileText, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
+import { useEffect } from 'react';
 
 export default function InvoicesPage() {
-  const { data: invoices, isLoading } = useInvoices();
+  const { data: invoices, isLoading, isError } = useInvoices();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (isError) toast('Erreur de chargement des factures', 'error');
+  }, [isError]);
 
   return (
     <div className="space-y-4">

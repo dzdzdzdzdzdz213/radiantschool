@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Calendar, CheckCheck, Trash2, AlertCircle, Info, Megaphone, DollarSign, MessageSquare } from 'lucide-react';
+import { Bell, Calendar, CheckCheck, Trash2, AlertCircle, Info, Megaphone, DollarSign, MessageSquare, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
+import { useMarkNotificationsRead, useDeleteNotification } from '@/hooks/useMutationFeedback';
 
 const typeIcons: Record<string, any> = { alert: AlertCircle, info: Info, announcement: Megaphone, payment: DollarSign, message: MessageSquare };
 const typeColors: Record<string, string> = { alert: 'text-red-500 bg-red-500/10', info: 'text-blue-500 bg-blue-500/10', announcement: 'text-violet-500 bg-violet-500/10', payment: 'text-emerald-500 bg-emerald-500/10', message: 'text-sky-500 bg-sky-500/10' };
@@ -31,6 +32,9 @@ export default function StudentNotificationsPage() {
     enabled: !!profile?.id,
   });
 
+  const markRead = useMarkNotificationsRead();
+  const deleteNotif = useDeleteNotification();
+
   const filtered = tab === 'unread' ? (notifications ?? []).filter((n: any) => !n.is_read) : notifications ?? [];
   const unreadCount = (notifications ?? []).filter((n: any) => !n.is_read).length;
 
@@ -38,7 +42,9 @@ export default function StudentNotificationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold tracking-tight">Notifications</h1><p className="text-sm text-muted-foreground mt-1">{unreadCount} non lue(s)</p></div>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5"><CheckCheck className="h-4 w-4" />Tout marquer comme lu</Button>
+        <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={() => { if (profile?.id) markRead.mutate({ userId: profile.id }); }} disabled={markRead.isPending || unreadCount === 0}>
+          {markRead.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}Tout marquer comme lu
+        </Button>
       </div>
       <Card>
         <CardHeader className="pb-0"><Tabs value={tab} onValueChange={setTab}><TabsList><TabsTrigger value="all">Toutes</TabsTrigger><TabsTrigger value="unread">Non lues {unreadCount > 0 && <Badge variant="default" className="ml-1.5 text-[9px] h-4 px-1">{unreadCount}</Badge>}</TabsTrigger></TabsList></Tabs></CardHeader>
@@ -51,7 +57,7 @@ export default function StudentNotificationsPage() {
               const Icon = typeIcons[n.type] ?? Bell;
               const color = typeColors[n.type] ?? 'text-primary bg-primary/10';
               return (
-                <div key={n.id} className={`flex items-start gap-3 rounded-xl border p-4 transition-colors ${!n.is_read ? 'bg-accent/50 border-primary/20' : ''}`}>
+                <div key={n.id} className={`flex items-start gap-3 rounded-xl border p-4 transition-colors group ${!n.is_read ? 'bg-accent/50 border-primary/20' : ''}`}>
                   <div className={`h-9 w-9 rounded-xl ${color.split(' ')[1]} flex items-center justify-center shrink-0`}>
                     <Icon className={`h-4 w-4 ${color.split(' ')[0]}`} />
                   </div>
@@ -60,7 +66,9 @@ export default function StudentNotificationsPage() {
                     <p className="text-sm text-muted-foreground mt-0.5">{n.message}</p>
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(n.created_at)}</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100"><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100" onClick={() => deleteNotif.mutate(n.id)} disabled={deleteNotif.isPending}>
+                    {deleteNotif.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 text-muted-foreground" />}
+                  </Button>
                 </div>
               );
             })}

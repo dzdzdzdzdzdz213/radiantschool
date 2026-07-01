@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Bell, LogOut, Sun, Moon, Globe, Search, User, Settings, HelpCircle } from 'lucide-react';
+import { Menu, Bell, LogOut, Sun, Moon, Globe, Search, User, Settings, HelpCircle, Loader } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
@@ -29,21 +29,45 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/Toast';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 
 interface AdminTopbarProps {
   onMenuClick: () => void;
 }
 
 function NotificationSheet() {
+  const { profile } = useAuth();
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.id,
+  });
+
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
+
   return (
     <Sheet>
       <SheetTrigger asChild>
         <button className="relative rounded-xl p-2 hover:bg-sidebar-accent transition-colors">
           <Bell className="h-5 w-5 text-sidebar-fg/60" />
-          <span className="absolute right-1.5 top-1.5 flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive" />
-          </span>
+          {unreadCount > 0 && (
+            <span className="absolute right-1.5 top-1.5 flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive" />
+            </span>
+          )}
         </button>
       </SheetTrigger>
       <SheetContent>
@@ -52,11 +76,18 @@ function NotificationSheet() {
         </SheetHeader>
         <ScrollArea className="h-full pr-4 mt-4">
           <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="rounded-xl bg-sidebar-accent p-3">
-                <p className="text-sm font-medium">Nouvelle inscription #{i}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Un élève s'est inscrit au cours de maths</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1">Il y a {i * 10}min</p>
+            {notifications.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">Aucune notification</p>
+            )}
+            {notifications.map((n: any) => (
+              <div key={n.id} className="rounded-xl bg-sidebar-accent p-3">
+                <p className="text-sm font-medium">{n.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
+                {n.created_at && (
+                  <p className="text-[10px] text-muted-foreground/60 mt-1">
+                    {new Date(n.created_at).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -69,10 +100,20 @@ function NotificationSheet() {
 function UserMenu() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const role = profile?.role ?? 'admin';
 
   const handleLogout = async () => {
-    await signOut();
-    navigate('/login');
+    setLoggingOut(true);
+    try {
+      await signOut();
+      navigate('/login');
+    } catch {
+      toast('Erreur lors de la déconnexion', 'error');
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -101,21 +142,29 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/admin/profile')}>
+        <DropdownMenuItem onClick={() => navigate(`/${role}/profile`)}>
           <User className="mr-2 h-4 w-4" />
           Profil
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
+        <DropdownMenuItem onClick={() => navigate(`/${role}/settings`)}>
           <Settings className="mr-2 h-4 w-4" />
           Paramètres
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toast('Aide disponible bientôt', 'info')}>
           <HelpCircle className="mr-2 h-4 w-4" />
           Aide
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-          <LogOut className="mr-2 h-4 w-4" />
+        <DropdownMenuItem
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="text-destructive focus:text-destructive"
+        >
+          {loggingOut ? (
+            <Loader className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <LogOut className="mr-2 h-4 w-4" />
+          )}
           Déconnexion
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -126,7 +175,34 @@ function UserMenu() {
 export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   const { theme, toggle: toggleTheme } = useTheme();
   const { lang, setLang } = useLang();
+  const { profile } = useAuth();
+  const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    const role = profile?.role ?? 'admin';
+    navigate(`/${role}/search?q=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
+    }
+  };
+
+  useEffect(() => {
+    const handleKbd = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.querySelector<HTMLInputElement>('[data-search-input]')?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKbd);
+    return () => document.removeEventListener('keydown', handleKbd);
+  }, []);
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
@@ -139,16 +215,20 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         </button>
 
         <div className="hidden md:flex items-center">
-          <div className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              data-search-input
               placeholder="Rechercher..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="h-9 w-64 rounded-xl bg-muted/30 pl-9 text-sm border-0 focus-visible:ring-1"
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 rounded-md border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
               ⌘K
             </kbd>
-          </div>
+          </form>
         </div>
       </div>
 

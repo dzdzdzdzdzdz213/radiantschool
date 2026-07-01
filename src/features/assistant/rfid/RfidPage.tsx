@@ -1,13 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Activity, AlertCircle, CheckCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { formatDateTime } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 export default function RfidPage() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const [scanInput, setScanInput] = useState('');
+
+  const { data: recentScans, isError: recentError } = useQuery({
+    queryKey: ['assistant_rfid_recent'],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from('rfid_scans')
+        .select('id, rfid_code, status, scanned_at, student:users!student_id(first_name, last_name)')
+        .order('scanned_at', { ascending: false })
+        .limit(5);
+      return data ?? [];
+    },
+  });
+
+  const { data: allScans, isLoading: historyLoading, isError: historyError } = useQuery({
+    queryKey: ['assistant_rfid_history'],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from('rfid_scans')
+        .select('id, rfid_code, status, scanned_at, student:users!student_id(first_name, last_name)')
+        .order('scanned_at', { ascending: false })
+        .limit(50);
+      return data ?? [];
+    },
+  });
+
+  useEffect(() => {
+    if (recentError) toast('Erreur lors du chargement des scans récents', 'error');
+  }, [recentError]);
+
+  useEffect(() => {
+    if (historyError) toast('Erreur lors du chargement de l\'historique', 'error');
+  }, [historyError]);
+
+  const scanMutation = useMutation({
+    mutationFn: async (code: string) => {
+      const { data: student } = await (supabase as any)
+        .from('users')
+        .select('id')
+        .eq('rfid_code', code)
+        .single();
+      const { error } = await (supabase as any).from('rfid_scans').insert({
+        rfid_code: code,
+        student_id: student?.id ?? null,
+        status: student?.id ? 'success' : 'unknown',
+        scanned_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_rfid_recent'] });
+      qc.invalidateQueries({ queryKey: ['assistant_rfid_history'] });
+      toast('Scan enregistré', 'success');
+      setScanInput('');
+    },
+    onError: (err: any) => toast(err?.message ?? 'Erreur lors du scan', 'error'),
+  });
+
+  const handleScan = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setScanInput(val);
+    if (val.length >= 6) {
+      scanMutation.mutate(val);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -30,15 +99,21 @@ export default function RfidPage() {
               <Input
                 placeholder="Scanner un badge ou entrer un code RFID..."
                 value={scanInput}
-                onChange={e => setScanInput(e.target.value)}
+                onChange={handleScan}
                 className="h-12 pl-9 text-lg font-mono"
                 autoFocus
               />
             </div>
             <div className="rounded-xl bg-accent/50 p-8 text-center">
-              <Activity className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-              <p className="text-sm text-muted-foreground">En attente de scan...</p>
-              <p className="text-xs text-muted-foreground mt-1">Scannez un badge RFID ou saisissez le code manuellement</p>
+              {scanMutation.isPending ? (
+                <div className="flex items-center justify-center gap-2"><Activity className="h-5 w-5 animate-spin" /><p className="text-sm">Scan en cours...</p></div>
+              ) : (
+                <>
+                  <Activity className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+                  <p className="text-sm text-muted-foreground">En attente de scan...</p>
+                  <p className="text-xs text-muted-foreground mt-1">Scannez un badge RFID ou saisissez le code manuellement</p>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -52,14 +127,16 @@ export default function RfidPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
+              {(recentScans ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Aucun scan récent</p>
+              ) : (recentScans ?? []).map((s: any) => (
+                <div key={s.id} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
                   <div>
-                    <p className="text-sm font-medium">Élève {i + 1}</p>
-                    <p className="text-xs text-muted-foreground">10:{String(30 + i).padStart(2, '0')}</p>
+                    <p className="text-sm font-medium">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_code}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateTime(s.scanned_at)}</p>
                   </div>
-                  <Badge variant={i % 3 === 0 ? 'destructive' : 'success'}>
-                    {i % 3 === 0 ? 'Échec' : 'OK'}
+                  <Badge variant={s.status === 'success' ? 'success' : 'destructive'}>
+                    {s.status === 'success' ? 'OK' : 'Échec'}
                   </Badge>
                 </div>
               ))}
@@ -82,7 +159,21 @@ export default function RfidPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Chargement...</TableCell></TableRow>
+              {historyLoading ? Array.from({ length: 4 }).map((_, i) => (
+                <TableRow key={i}>{[1, 2, 3].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
+              )) : (allScans ?? []).length === 0 ? (
+                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Aucun scan aujourd'hui</TableCell></TableRow>
+              ) : (allScans ?? []).map((s: any) => (
+                <TableRow key={s.id}>
+                  <TableCell className="text-sm">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_code}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{formatDateTime(s.scanned_at)}</TableCell>
+                  <TableCell>
+                    <Badge variant={s.status === 'success' ? 'success' : 'destructive'}>
+                      {s.status === 'success' ? 'Succès' : 'Échec'}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>

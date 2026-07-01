@@ -1,19 +1,23 @@
 import { useState } from 'react';
-import { Search, Plus, Star, Calendar, Clock, Euro } from 'lucide-react';
+import { Search, Plus, Star, Calendar, Clock, Euro, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useQuery } from '@tanstack/react-query';
+import { Label } from '@/components/ui/label';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 export default function VipClassesPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
 
-  const { data: lessons, isLoading } = useQuery({
+  const { data: lessons, isLoading, isError } = useQuery({
     queryKey: ['teacher_vip_classes', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -22,7 +26,8 @@ export default function VipClassesPage() {
         .select('id, date, start_time, end_time, price, status, notes, student:users!student_id(first_name, last_name)')
         .eq('teacher_id', profile.id)
         .order('date', { ascending: false });
-      const { data } = await q;
+      const { data, error } = await q;
+      if (error) throw error;
       let items = (data ?? []).map((l: any) => ({ ...l, studentName: `${l.student?.first_name ?? ''} ${l.student?.last_name ?? ''}` }));
       if (search) items = items.filter((i: any) => i.studentName.toLowerCase().includes(search.toLowerCase()));
       return items;
@@ -30,12 +35,99 @@ export default function VipClassesPage() {
     enabled: !!profile?.id,
   });
 
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ student_id: '', date: '', start_time: '', end_time: '', price: '' });
+
+  const { data: students } = useQuery({
+    queryKey: ['teacher_students_select', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data } = await (supabase as any)
+        .from('course_enrollments')
+        .select('student:users!student_id(id, first_name, last_name)')
+        .eq('course.teacher_id', profile.id);
+      const unique = new Map();
+      for (const e of data ?? []) {
+        if (e.student?.id) unique.set(e.student.id, { id: e.student.id, name: `${e.student.first_name ?? ''} ${e.student.last_name ?? ''}` });
+      }
+      return Array.from(unique.values());
+    },
+    enabled: !!profile?.id,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      if (!profile?.id) return;
+      const { error } = await (supabase as any).from('vip_classes').insert({
+        teacher_id: profile.id,
+        student_id: form.student_id || null,
+        date: form.date || new Date().toISOString().split('T')[0],
+        start_time: form.start_time || '09:00',
+        end_time: form.end_time || '10:00',
+        price: form.price ? parseFloat(form.price) : 0,
+        status: 'scheduled',
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_vip_classes'] });
+      setShowModal(false);
+      setForm({ student_id: '', date: '', start_time: '', end_time: '', price: '' });
+      toast('Cours VIP créé', 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2"><h1 className="text-2xl font-bold tracking-tight">Cours VIP</h1><Star className="h-5 w-5 text-amber-500" /></div>
-        <Button className="h-9 gap-2"><Plus className="h-4 w-4" />Nouveau cours VIP</Button>
+        <Button className="h-9 gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{createMutation.isPending ? 'Création...' : 'Nouveau cours VIP'}</Button>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowModal(false)}>
+          <div className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Nouveau cours VIP</h2>
+              <button onClick={() => setShowModal(false)} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Élève</Label>
+                <select value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
+                  <option value="">Sélectionner un élève</option>
+                  {(students ?? []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Date</Label>
+                <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="h-9" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Début</Label>
+                  <Input type="time" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} className="h-9" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Fin</Label>
+                  <Input type="time" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} className="h-9" />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Prix (€)</Label>
+                <Input type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="0" className="h-9" />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>Annuler</Button>
+              <Button size="sm" className="h-9" disabled={createMutation.isPending} onClick={() => createMutation.mutate()}>
+                {createMutation.isPending ? 'Création...' : 'Créer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <Card>
         <CardHeader className="pb-3">
           <div className="relative max-w-md">
@@ -46,7 +138,11 @@ export default function VipClassesPage() {
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {isLoading ? Array.from({ length: 6 }).map((_, i) => (<div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />))
-            : (lessons ?? []).length === 0 ? (
+            : isError ? (
+              <div className="sm:col-span-2 lg:col-span-3 text-center py-12 text-muted-foreground">
+                <Star className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Erreur de chargement</p>
+              </div>
+            ) : (lessons ?? []).length === 0 ? (
               <div className="sm:col-span-2 lg:col-span-3 text-center py-12 text-muted-foreground">
                 <Star className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucun cours VIP</p>
               </div>

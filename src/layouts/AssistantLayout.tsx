@@ -1,8 +1,9 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { NavItem } from '@/components/layout/AdminSidebar';
 
@@ -27,14 +28,6 @@ const assistantNavItems: NavItem[] = [
   { label: 'Recherche', path: '/assistant/search', icon: 'Search' },
   { label: 'Paramètres', path: '/assistant/settings', icon: 'Settings' },
 ];
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="animate-in fade-in duration-500">
-      {children}
-    </div>
-  );
-}
 
 function DashboardFallback() {
   return (
@@ -65,17 +58,24 @@ function DashboardFallback() {
   );
 }
 
+function PageShell({ children }: { children: React.ReactNode }) {
+  return <div className="animate-in fade-in duration-500">{children}</div>;
+}
+
 export default function AssistantLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const saved = localStorage.getItem('assistant_sidebar_collapsed');
-    return saved === 'true';
+    try {
+      return localStorage.getItem('assistant_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
   });
 
   const handleToggleCollapse = () => {
     setSidebarCollapsed(prev => {
       const next = !prev;
-      localStorage.setItem('assistant_sidebar_collapsed', String(next));
+      try { localStorage.setItem('assistant_sidebar_collapsed', String(next)); } catch {}
       return next;
     });
   };
@@ -96,11 +96,13 @@ export default function AssistantLayout() {
             <div className="mb-4">
               <BackButton label="← Retour au site" to="/" />
             </div>
-            <Suspense fallback={<DashboardFallback />}>
-              <PageShell>
-                <Outlet />
-              </PageShell>
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<DashboardFallback />}>
+                <PageShell>
+                  <Outlet />
+                </PageShell>
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </main>
       </div>

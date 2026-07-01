@@ -10,9 +10,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useToast } from '@/components/ui/Toast';
 
 export default function TeacherAttendancePage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -49,9 +51,11 @@ export default function TeacherAttendancePage() {
 
   const correctMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return (supabase as any).from('attendance').update({ status }).eq('id', id);
+      const { error } = await (supabase as any).from('attendance').update({ status }).eq('id', id);
+      if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['teacher_attendance'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher_attendance'] }); toast('Présence mise à jour', 'success'); },
+    onError: (err: any) => toast(err?.message ?? 'Erreur lors de la correction', 'error'),
   });
 
   return (
@@ -96,9 +100,9 @@ export default function TeacherAttendancePage() {
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{r.method === 'rfid' ? 'RFID' : 'Manuel'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => correctMutation.mutate({ id: r.id, status: 'present' })}><Check className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost" className="text-amber-600" onClick={() => correctMutation.mutate({ id: r.id, status: 'late' })}><Clock className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost" className="text-red-600" onClick={() => correctMutation.mutate({ id: r.id, status: 'absent' })}><X className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => correctMutation.mutate({ id: r.id, status: 'present' })} disabled={correctMutation.isPending}><Check className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" className="text-amber-600" onClick={() => correctMutation.mutate({ id: r.id, status: 'late' })} disabled={correctMutation.isPending}><Clock className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" className="text-red-600" onClick={() => correctMutation.mutate({ id: r.id, status: 'absent' })} disabled={correctMutation.isPending}><X className="h-4 w-4" /></Button>
                     </div>
                   </TableCell>
                 </TableRow>

@@ -20,14 +20,14 @@ export default function TeacherCalendarPage() {
   const startDay = (firstDay.getDay() + 6) % 7;
   const daysInMonth = lastDay.getDate();
 
-  const { data: events } = useQuery({
+  const { data: events, isLoading } = useQuery({
     queryKey: ['teacher_calendar', profile?.id, currentMonth, currentYear],
     queryFn: async () => {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('course_schedules')
         .select('id, start_time, end_time, day_of_week, course:courses(name)')
-        .eq('teacher_id', profile.id);
+        .eq('course.teacher_id', profile.id);
       return data ?? [];
     },
     enabled: !!profile?.id,
@@ -54,26 +54,33 @@ export default function TeacherCalendarPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-px bg-accent rounded-xl overflow-hidden">
-            {DAYS.map(d => <div key={d} className="bg-card p-2 text-center text-xs font-medium text-muted-foreground">{d}</div>)}
-            {Array.from({ length: startDay }).map((_, i) => <div key={`empty-${i}`} className="bg-card p-2 min-h-[80px]" />)}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1;
-              const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
-              const dayEvents = getDayEvents(day);
-              return (
-                <div key={day} className={`bg-card p-1.5 min-h-[80px] border-t border-accent ${isToday ? 'ring-2 ring-primary ring-inset' : ''}`}>
-                  <span className={`text-xs font-medium ${isToday ? 'text-primary' : ''}`}>{day}</span>
-                  {dayEvents.slice(0, 2).map((e: any) => (
-                    <div key={e.id} className="mt-1 rounded bg-primary/10 px-1 py-0.5 text-[9px] leading-tight text-primary truncate">
-                      {e.course?.name ?? ''}
-                    </div>
-                  ))}
-                  {dayEvents.length > 2 && <div className="text-[8px] text-muted-foreground mt-0.5">+{dayEvents.length - 2}</div>}
-                </div>
-              );
-            })}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-7 gap-px bg-accent rounded-xl overflow-hidden">
+              {DAYS.map(d => <div key={d} className="bg-card p-2 text-center text-xs font-medium text-muted-foreground">{d}</div>)}
+              {Array.from({ length: 35 }).map((_, i) => <div key={i} className="bg-card p-2 min-h-[80px] animate-pulse" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-px bg-accent rounded-xl overflow-hidden">
+              {DAYS.map(d => <div key={d} className="bg-card p-2 text-center text-xs font-medium text-muted-foreground">{d}</div>)}
+              {Array.from({ length: startDay }).map((_, i) => <div key={`empty-${i}`} className="bg-card p-2 min-h-[80px]" />)}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1;
+                const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+                const dayEvents = getDayEvents(day);
+                return (
+                  <div key={day} className={`bg-card p-1.5 min-h-[80px] border-t border-accent ${isToday ? 'ring-2 ring-primary ring-inset' : ''}`}>
+                    <span className={`text-xs font-medium ${isToday ? 'text-primary' : ''}`}>{day}</span>
+                    {dayEvents.slice(0, 2).map((e: any) => (
+                      <div key={e.id} className="mt-1 rounded bg-primary/10 px-1 py-0.5 text-[9px] leading-tight text-primary truncate">
+                        {e.course?.name ?? ''}
+                      </div>
+                    ))}
+                    {dayEvents.length > 2 && <div className="text-[8px] text-muted-foreground mt-0.5">+{dayEvents.length - 2}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

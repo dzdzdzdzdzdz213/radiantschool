@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Camera, Loader } from 'lucide-react';
 import { getAvatarUrl, uploadAvatar } from '@/lib/storage';
+import { useToast } from '@/components/ui/Toast';
 
 interface Props {
   userId: string;
@@ -14,6 +15,7 @@ export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }:
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const displayUrl = preview || getAvatarUrl(url);
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -28,8 +30,8 @@ export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }:
     try {
       const path = await uploadAvatar(userId, file);
       onUpdate?.(path);
-    } catch (err: any) {
-      console.error('Upload failed:', err);
+    } catch {
+      toast("Échec du téléchargement de l'avatar", 'error');
       setPreview(null);
     } finally {
       setUploading(false);

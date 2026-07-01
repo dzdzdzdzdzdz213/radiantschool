@@ -1,18 +1,21 @@
 import { useState } from 'react';
-import { Search, FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload } from 'lucide-react';
+import { Search, FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
+import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 
 export default function StudentHomeworkPage() {
   const { profile } = useAuth();
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
 
   const { data: homework, isLoading } = useQuery({
     queryKey: ['student_homework', profile?.id, search],
@@ -32,6 +35,20 @@ export default function StudentHomeworkPage() {
     },
     enabled: !!profile?.id,
   });
+
+  const submitMutation = useMutationWithFeedback(
+    async (assignmentId: string) => {
+      if (!profile?.id) return;
+      const { error } = await (supabase as any).from('assignment_submissions').insert({
+        assignment_id: assignmentId,
+        student_id: profile.id,
+        status: 'submitted',
+        submitted_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    { successMessage: 'Devoir soumis avec succès', invalidateQueries: [['student_homework']] },
+  );
 
   return (
     <div className="space-y-6">
@@ -62,7 +79,9 @@ export default function StudentHomeworkPage() {
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Créé le {formatDate(h.created_at)}</span>
                     </div>
                   </div>
-                  <Button size="sm" className="h-8 shrink-0 gap-1.5"><Upload className="h-3.5 w-3.5" />Soumettre</Button>
+                  <Button size="sm" className="h-8 shrink-0 gap-1.5" onClick={() => submitMutation.mutate(h.id)} disabled={submitMutation.isPending}>
+                    {submitMutation.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}Soumettre
+                  </Button>
                 </div>
               );
             })}

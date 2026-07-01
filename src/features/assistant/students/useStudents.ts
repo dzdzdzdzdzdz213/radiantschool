@@ -81,3 +81,13 @@ export function useUpdateStudent() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_students'] }); },
   });
 }
+
+export function useDeleteStudent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.softDelete('users', id);
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_students'] }); },
+  });
+}

@@ -2,28 +2,32 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getDayLabel, formatTime } from '@/lib/utils';
+import { useToast } from '@/components/ui/Toast';
 
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 export default function TeacherSchedulePage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
   const today = new Date();
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
   const [startDate, setStartDate] = useState(weekStart);
 
-  const { data: schedules } = useQuery({
+  const { data: schedules, isLoading, isError } = useQuery({
     queryKey: ['teacher_schedule', profile?.id, startDate.toISOString()],
     queryFn: async () => {
       if (!profile?.id) return {};
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('course_schedules')
         .select('id, day_of_week, start_time, end_time, course:courses!inner(name), room:rooms(name)')
         .eq('teacher_id', profile.id)
         .order('start_time');
+      if (error) throw error;
       const grouped: Record<string, any[]> = {};
       for (const day of DAYS) grouped[day] = [];
       for (const s of data ?? []) { if (grouped[s.day_of_week]) grouped[s.day_of_week].push(s); }
@@ -46,8 +50,20 @@ export default function TeacherSchedulePage() {
         </div>
       </div>
 
+      {isError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-4 text-center">
+          <p className="text-red-600 font-medium text-sm">Erreur de chargement de l'emploi du temps</p>
+        </div>
+      )}
       <div className="grid gap-4 lg:grid-cols-6">
-        {DAYS.map(day => (
+        {isLoading ? DAYS.map(day => (
+          <Card key={day}>
+            <CardHeader className="pb-2 text-center"><CardTitle className="text-xs font-semibold">{getDayLabel(day)}</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-16 rounded-lg" />))}
+            </CardContent>
+          </Card>
+        )) : DAYS.map(day => (
           <Card key={day} className={new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() === day ? 'ring-2 ring-primary' : ''}>
             <CardHeader className="pb-2 text-center">
               <CardTitle className="text-xs font-semibold">{getDayLabel(day)}</CardTitle>

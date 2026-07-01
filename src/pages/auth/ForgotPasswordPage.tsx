@@ -6,13 +6,17 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    setLoading(true);
     setError('');
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
+    setLoading(false);
     if (err) setError(err.message);
     else setSent(true);
   };
@@ -36,7 +40,7 @@ export default function ForgotPasswordPage() {
               <label className="mb-1 block text-sm font-medium">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border px-3 py-2 text-sm" required />
             </div>
-            <button type="submit" className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-white hover:bg-primary/90">Envoyer</button>
+            <button type="submit" disabled={loading} className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">{loading ? 'Envoi...' : 'Envoyer'}</button>
             <p className="mt-4 text-center text-sm text-muted">
               <Link to="/login" className="text-primary hover:underline">Retour à la connexion</Link>
             </p>

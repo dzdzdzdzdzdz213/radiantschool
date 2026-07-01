@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, ThumbsUp, MessageSquare, Calendar, Send } from 'lucide-react';
+import { Star, ThumbsUp, MessageSquare, Calendar, Send, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, getInitials } from '@/lib/utils';
+import { useSubmitReview } from '@/hooks/useMutationFeedback';
 
 export default function StudentReviewsPage() {
   const { profile } = useAuth();
@@ -16,6 +17,7 @@ export default function StudentReviewsPage() {
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null);
+  const submitReview = useSubmitReview();
 
   const { data: teachers, isLoading: teachersLoading } = useQuery({
     queryKey: ['student_teachers', profile?.id],
@@ -81,7 +83,7 @@ export default function StudentReviewsPage() {
               </div>
             </div>
             <div><label className="text-xs text-muted-foreground mb-2 block">Commentaire</label><Textarea placeholder="Partagez votre expérience..." value={comment} onChange={e => setComment(e.target.value)} className="min-h-[100px]" /></div>
-            <Button className="h-9 gap-2" disabled={!selectedTeacher || rating === 0}><Send className="h-4 w-4" />Envoyer</Button>
+            <Button className="h-9 gap-2" disabled={!selectedTeacher || rating === 0 || submitReview.isPending} onClick={() => { if (profile?.id && selectedTeacher) submitReview.mutate({ studentId: profile.id, teacherId: selectedTeacher, rating, comment }); }}>{submitReview.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Envoyer</Button>
           </CardContent>
         </Card>
         <Card>

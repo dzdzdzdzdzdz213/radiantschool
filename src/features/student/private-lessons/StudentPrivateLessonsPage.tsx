@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Calendar, Clock, Euro, CheckCircle, XCircle, User } from 'lucide-react';
+import { useEffect } from 'react';
+import { Plus, Calendar, Clock, Euro, CheckCircle, XCircle, User, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,11 +9,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
+import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentPrivateLessonsPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
 
-  const { data: lessons, isLoading } = useQuery({
+  const { data: lessons, isLoading, isError } = useQuery({
     queryKey: ['student_private_lessons', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -27,11 +30,26 @@ export default function StudentPrivateLessonsPage() {
     enabled: !!profile?.id,
   });
 
+  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours particuliers', 'error'); }, [isError]);
+
+  const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(
+    async () => {
+      if (!profile?.id) return;
+      const { error } = await (supabase as any).from('private_lessons').insert({
+        student_id: profile.id,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    { successMessage: 'Demande de cours particulier envoyée', invalidateQueries: [['student_private_lessons']] },
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold tracking-tight">Cours particuliers</h1><p className="text-sm text-muted-foreground mt-1">Demandez et suivez vos cours individuels</p></div>
-        <Button className="h-9 gap-2"><Plus className="h-4 w-4" />Réserver</Button>
+        <Button className="h-9 gap-2" onClick={() => bookMutation.mutate()} disabled={bookMutation.isPending}>{bookMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}Réserver</Button>
       </div>
       <Card>
         <CardContent className="p-0">

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Users, Clock, DollarSign, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,12 +8,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentCoursesPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const { data: enrollments, isLoading } = useQuery({
+  const { data: enrollments, isLoading, isError } = useQuery({
     queryKey: ['student_courses', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -41,6 +44,8 @@ export default function StudentCoursesPage() {
     },
     enabled: !!profile?.id,
   });
+
+  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours', 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">

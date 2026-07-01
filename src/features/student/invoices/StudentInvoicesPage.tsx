@@ -1,27 +1,32 @@
-import { useState } from 'react';
-import { Search, FileText, Download, CreditCard, Calendar, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Search, FileText, Download, CreditCard, Calendar, AlertCircle, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
+import { useDownloadFile, useMutationWithFeedback } from '@/hooks/useMutationFeedback';
+import { useToast } from '@/components/ui/Toast';
 
 export default function StudentInvoicesPage() {
   const { profile } = useAuth();
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const downloadFile = useDownloadFile();
+  const { toast } = useToast();
 
-  const { data: invoices, isLoading } = useQuery({
+  const { data: invoices, isLoading, isError } = useQuery({
     queryKey: ['student_invoices', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('invoices')
-        .select('id, reference, description, total_amount, paid_amount, remaining_amount, status, due_date, created_at')
+        .select('id, reference, description, total_amount, paid_amount, remaining_amount, status, due_date, created_at, invoice_url')
         .eq('student_id', profile.id)
         .order('created_at', { ascending: false });
       let items = data ?? [];
@@ -30,6 +35,25 @@ export default function StudentInvoicesPage() {
     },
     enabled: !!profile?.id,
   });
+
+  useEffect(() => { if (isError) toast('Erreur lors du chargement des factures', 'error'); }, [isError]);
+
+  const payMutation = useMutationWithFeedback(
+    async ({ invoiceId }: { invoiceId: string }) => {
+      if (!profile?.id) return;
+      const { data: inv } = await (supabase as any).from('invoices').select('remaining_amount').eq('id', invoiceId).single();
+      const { error } = await (supabase as any).from('payments').insert({
+        student_id: profile.id,
+        invoice_id: invoiceId,
+        amount: inv?.remaining_amount ?? 0,
+        method: 'online',
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    { successMessage: 'Demande de paiement effectuée', invalidateQueries: [['student_invoices'], ['student_payments']] },
+  );
 
   const totalDue = (invoices ?? []).filter((i: any) => i.status === 'sent').reduce((s: number, i: any) => s + (i.remaining_amount ?? 0), 0);
 
@@ -59,8 +83,12 @@ export default function StudentInvoicesPage() {
                   <TableCell><Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'cancelled' ? 'destructive' : inv.status === 'overdue' ? 'destructive' : 'warning'}>{inv.status === 'paid' ? 'Payée' : inv.status === 'sent' ? 'Envoyée' : inv.status === 'overdue' ? 'En retard' : inv.status}</Badge></TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="sm" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
-                      {inv.status !== 'paid' && <Button size="sm" className="h-8 gap-1 text-xs"><CreditCard className="h-3 w-3" />Payer</Button>}
+                      <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (inv.invoice_url) downloadFile.mutate({ fileUrl: inv.invoice_url, filename: `facture_${inv.reference ?? inv.id}.pdf` }); }} disabled={downloadFile.isPending}>
+                        {downloadFile.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                      </Button>
+                      {inv.status !== 'paid' && <Button size="sm" className="h-8 gap-1 text-xs" onClick={() => payMutation.mutate({ invoiceId: inv.id })} disabled={payMutation.isPending}>
+                        {payMutation.isPending ? <Loader className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}Payer
+                      </Button>}
                     </div>
                   </TableCell>
                 </TableRow>

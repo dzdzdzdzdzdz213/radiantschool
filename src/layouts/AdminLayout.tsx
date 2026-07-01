@@ -1,8 +1,9 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { NavItem } from '@/components/layout/AdminSidebar';
 
@@ -19,57 +20,6 @@ const adminNavItems: NavItem[] = [
   { label: 'Profil', path: '/admin/profile', icon: 'UserCircle' },
   { label: 'Paramètres', path: '/admin/settings', icon: 'Settings' },
 ];
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="animate-in fade-in duration-500">
-      {children}
-    </div>
-  );
-}
-
-export default function AdminLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const saved = localStorage.getItem('admin_sidebar_collapsed');
-    return saved === 'true';
-  });
-
-  const handleToggleCollapse = () => {
-    setSidebarCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('admin_sidebar_collapsed', String(next));
-      return next;
-    });
-  };
-
-  return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <AdminSidebar
-        items={adminNavItems}
-        open={sidebarOpen}
-        collapsed={sidebarCollapsed}
-        onClose={() => setSidebarOpen(false)}
-        onToggleCollapse={handleToggleCollapse}
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-4">
-              <BackButton label="← Retour au site" to="/" />
-            </div>
-            <Suspense fallback={<DashboardFallback />}>
-              <PageShell>
-                <Outlet />
-              </PageShell>
-            </Suspense>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
 
 function DashboardFallback() {
   return (
@@ -95,6 +45,58 @@ function DashboardFallback() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Skeleton className="h-[340px] rounded-2xl" />
         <Skeleton className="h-[340px] rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+function PageShell({ children }: { children: React.ReactNode }) {
+  return <div className="animate-in fade-in duration-500">{children}</div>;
+}
+
+export default function AdminLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('admin_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      try { localStorage.setItem('admin_sidebar_collapsed', String(next)); } catch {}
+      return next;
+    });
+  };
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      <AdminSidebar
+        items={adminNavItems}
+        open={sidebarOpen}
+        collapsed={sidebarCollapsed}
+        onClose={() => setSidebarOpen(false)}
+        onToggleCollapse={handleToggleCollapse}
+      />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="mb-4">
+              <BackButton label="← Retour au site" to="/" />
+            </div>
+            <ErrorBoundary>
+              <Suspense fallback={<DashboardFallback />}>
+                <PageShell>
+                  <Outlet />
+                </PageShell>
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        </main>
       </div>
     </div>
   );

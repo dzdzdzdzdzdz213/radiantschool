@@ -3,14 +3,40 @@ import { useMessages } from '@/hooks/useQueries';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDateTime, getFullName } from '@/lib/utils';
 import { MessageSquare, Send } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 
 export default function MessagesPage() {
   const { profile } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const { data: messages, isLoading } = useMessages();
   const [selectedMsg, setSelectedMsg] = useState<any>(null);
   const [reply, setReply] = useState('');
 
   const filtered = (messages ?? []).filter((m: any) => m.sender_id === profile?.id || m.receiver_id === profile?.id);
+
+  const sendMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedMsg || !profile?.id) return;
+      const receiverId = selectedMsg.sender_id === profile?.id ? selectedMsg.receiver_id : selectedMsg.sender_id;
+      const { error } = await (supabase as any).from('messages').insert({
+        sender_id: profile.id,
+        receiver_id: receiverId,
+        subject: selectedMsg.subject,
+        body: reply,
+        created_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['messages'] });
+      toast('Message envoyé', 'success');
+      setReply('');
+    },
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+  });
 
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
@@ -61,7 +87,7 @@ export default function MessagesPage() {
             <div className="border-t p-4">
               <div className="flex gap-2">
                 <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Écrire un message..." className="flex-1 rounded-lg border px-3 py-2 text-sm" />
-                <button className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"><Send className="h-4 w-4" /></button>
+                <button className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90" onClick={() => sendMutation.mutate()} disabled={sendMutation.isPending || !reply.trim()}><Send className="h-4 w-4" /></button>
               </div>
             </div>
           </div>

@@ -65,11 +65,13 @@ export default function EnrollPage() {
   const userId = selectedChild?.id || profile?.id;
 
   useEffect(() => {
-    supabase.from('levels').select('*').order('sort_order').then(({ data }) => setLevels(data || []));
-    supabase.from('subjects').select('*').order('name').then(({ data }) => setSubjects(data || []));
-    if (isParent) {
-      loadChildren();
-    }
+    (async () => {
+      const { data: l } = await supabase.from('levels').select('*').order('sort_order');
+      setLevels(l || []);
+      const { data: s } = await supabase.from('subjects').select('*').order('name');
+      setSubjects(s || []);
+      if (isParent) loadChildren();
+    })().catch(() => setError('Erreur de chargement des données'));
   }, [profile]);
 
   const loadChildren = async () => {

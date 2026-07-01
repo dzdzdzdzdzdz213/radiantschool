@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getFullName } from '@/lib/utils';
-import { Star, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, MessageSquare, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Evaluation {
@@ -19,24 +20,25 @@ interface Evaluation {
 
 export default function TeacherEvaluationsPage() {
   const { profile } = useAuth();
-  const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!profile) return;
-    supabase
-      .from('evaluations')
-      .select('*, student:student_id(first_name, last_name)')
-      .eq('teacher_id', profile.id)
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) setEvaluations(data as unknown as Evaluation[]);
-        setLoading(false);
-      });
-  }, [profile]);
+  const { data: evaluations = [], isLoading, error } = useQuery({
+    queryKey: ['teacher_evaluations', profile?.id],
+    queryFn: async () => {
+      if (!profile) return [];
+      const { data, error } = await supabase
+        .from('evaluations')
+        .select('*, student:student_id(first_name, last_name)')
+        .eq('teacher_id', profile.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as Evaluation[];
+    },
+    enabled: !!profile,
+  });
 
-  if (loading) return <div className="p-8 text-center text-muted">Chargement...</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted">Chargement...</div>;
+  if (error) return <div className="flex items-center justify-center gap-2 p-8 text-center text-red-500"><AlertCircle className="h-5 w-5" />Erreur de chargement</div>;
 
   const stats = {
     total: evaluations.length,

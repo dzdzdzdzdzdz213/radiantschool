@@ -1,17 +1,45 @@
-import { MapPin, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MapPin, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/components/ui/Toast';
 
 export default function RoomsPage() {
-  const { data: rooms } = useQuery({
+  const { toast } = useToast();
+  const qc = useQueryClient();
+
+  const { data: rooms, isLoading, isError } = useQuery({
     queryKey: ['assistant_rooms'],
     queryFn: async () => {
       const { data } = await (supabase as any).from('rooms').select('*').order('name');
       return data ?? [];
     },
+  });
+
+  useEffect(() => {
+    if (isError) toast('Erreur lors du chargement des salles', 'error');
+  }, [isError]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [roomName, setRoomName] = useState('');
+  const [roomCapacity, setRoomCapacity] = useState('');
+  const [roomFloor, setRoomFloor] = useState('');
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      if (!roomName.trim()) throw new Error('Le nom de la salle est requis');
+      const capacity = parseInt(roomCapacity, 10);
+      if (isNaN(capacity) || capacity <= 0) throw new Error('La capacité doit être supérieure à 0');
+      const { error } = await (supabase as any).from('rooms').insert({ name: roomName.trim(), capacity, floor: roomFloor.trim() || null, status: 'available' });
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_rooms'] }); toast('Salle créée', 'success'); setShowModal(false); setRoomName(''); setRoomCapacity(''); setRoomFloor(''); },
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   return (
@@ -21,11 +49,49 @@ export default function RoomsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Salles</h1>
           <p className="text-sm text-muted-foreground mt-1">Gérer les salles et réservations</p>
         </div>
-        <Button className="gap-2"><Plus className="h-4 w-4" />Nouvelle salle</Button>
+        <Button className="gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />Nouvelle salle</Button>
       </div>
 
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
+          <Card className="relative w-full max-w-lg mx-4">
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle className="text-sm">Nouvelle salle</CardTitle>
+              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nom de la salle *</Label>
+                <Input placeholder="Nom" value={roomName} onChange={e => setRoomName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Capacité *</Label>
+                <Input type="number" placeholder="Nombre de places" value={roomCapacity} onChange={e => setRoomCapacity(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Étage</Label>
+                <Input placeholder="Étage (optionnel)" value={roomFloor} onChange={e => setRoomFloor(e.target.value)} />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowModal(false)}>Annuler</Button>
+                <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
+                  {createMutation.isPending ? 'Création...' : 'Créer la salle'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {(rooms ?? []).map((room: any) => (
+        {isLoading ? Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}><CardHeader className="pb-3"><div className="h-24 bg-muted rounded-xl animate-pulse" /></CardHeader></Card>
+        )) : (rooms ?? []).length === 0 ? (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            <MapPin className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucune salle</p>
+          </div>
+        ) : (rooms ?? []).map((room: any) => (
           <Card key={room.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">

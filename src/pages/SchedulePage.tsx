@@ -3,7 +3,7 @@ import { useCourses } from '@/hooks/useQueries';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatTime } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, CalendarDays, MapPin, Clock, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, MapPin, Clock, User, AlertCircle } from 'lucide-react';
 
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'] as const;
 
@@ -73,8 +73,12 @@ function toMinutes(time: string): number {
 
 export default function SchedulePage() {
   const { lang } = useLang();
-  const { data: courses, isLoading } = useCourses();
+  const { data: courses, isLoading, isError } = useCourses();
   const [weekOffset, setWeekOffset] = useState(0);
+
+  if (isError) {
+    return <div className="flex items-center justify-center gap-2 py-20 text-red-500"><AlertCircle className="h-5 w-5" />Erreur de chargement des cours</div>;
+  }
 
   const refDate = new Date();
   refDate.setDate(refDate.getDate() + weekOffset * 7);

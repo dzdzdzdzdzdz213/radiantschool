@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
 export interface ParentListItem {
@@ -34,5 +34,35 @@ export function useParents(search: string = '', page: number = 1, pageSize: numb
       return { data, meta: result.meta };
     },
     staleTime: 10_000,
+  });
+}
+
+export function useCreateParent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: any) => {
+      return api.create('users', data);
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_parents'] }); },
+  });
+}
+
+export function useUpdateParent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return api.update('users', id, data);
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_parents'] }); },
+  });
+}
+
+export function useDeleteParent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.softDelete('users', id);
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_parents'] }); },
   });
 }

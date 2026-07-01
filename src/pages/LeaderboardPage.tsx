@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getFullName } from '@/lib/utils';
 import { Star, Trophy, Medal, Award, Funnel } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 interface TeacherRating {
   teacherId: string;
@@ -33,96 +35,94 @@ const CATEGORIES = [
 ];
 
 export default function LeaderboardPage() {
-  const [teachers, setTeachers] = useState<TeacherRating[]>([]);
-  const [filtered, setFiltered] = useState<TeacherRating[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-
+  const { toast } = useToast();
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLevel, setFilterLevel] = useState<number | ''>('');
   const [filterSubject, setFilterSubject] = useState<number | ''>('');
 
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    Promise.all([
-      supabase.from('levels').select('*').order('sort_order'),
-      supabase.from('subjects').select('*').order('name'),
-    ]).then(([l, s]) => {
-      setLevels(l.data || []);
-      setSubjects(s.data || []);
-    });
-    loadLeaderboard();
-  }, []);
+  const { data: levels = [] } = useQuery({
+    queryKey: ['levels'],
+    queryFn: async () => {
+      const { data } = await supabase.from('levels').select('*').order('sort_order');
+      return (data ?? []) as Level[];
+    },
+  });
+
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: async () => {
+      const { data } = await supabase.from('subjects').select('*').order('name');
+      return (data ?? []) as Subject[];
+    },
+  });
+
+  const { data: teachers = [], isLoading, error } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+      const { data: evals, error: evalError } = await supabase
+        .from('evaluations')
+        .select('teacher_id, teaching_quality, communication, punctuality, organization, average_score');
+      if (evalError) throw evalError;
+      if (!evals || evals.length === 0) return [];
+
+      const grouped: Record<string, { sums: number[]; count: number }> = {};
+      evals.forEach(e => {
+        if (!grouped[e.teacher_id]) grouped[e.teacher_id] = { sums: [0, 0, 0, 0, 0], count: 0 };
+        grouped[e.teacher_id].sums[0] += e.teaching_quality;
+        grouped[e.teacher_id].sums[1] += e.communication;
+        grouped[e.teacher_id].sums[2] += e.punctuality;
+        grouped[e.teacher_id].sums[3] += e.organization;
+        grouped[e.teacher_id].sums[4] += e.average_score;
+        grouped[e.teacher_id].count++;
+      });
+
+      const teacherIds = Object.keys(grouped);
+      const [usersRes, teacherRes] = await Promise.all([
+        supabase.from('users').select('id, first_name, last_name, photo_url').in('id', teacherIds),
+        supabase.from('teachers').select('id, speciality').in('id', teacherIds),
+      ]);
+
+      const specMap = new Map((teacherRes.data || []).map(t => [t.id, t.speciality]));
+      const userMap = new Map((usersRes.data || []).map(u => [u.id, u]));
+
+      const list: TeacherRating[] = teacherIds.map(id => {
+        const g = grouped[id];
+        const u = userMap.get(id);
+        return {
+          teacherId: id,
+          firstName: u?.first_name || '',
+          lastName: u?.last_name || '',
+          speciality: specMap.get(id) || null,
+          avgTeaching: Math.round((g.sums[0] / g.count) * 10) / 10,
+          avgCommunication: Math.round((g.sums[1] / g.count) * 10) / 10,
+          avgPunctuality: Math.round((g.sums[2] / g.count) * 10) / 10,
+          avgOrganization: Math.round((g.sums[3] / g.count) * 10) / 10,
+          avgOverall: Math.round((g.sums[4] / g.count) * 10) / 10,
+          reviewCount: g.count,
+          photoUrl: u?.photo_url || null,
+        };
+      });
+
+      list.sort((a, b) => b.avgOverall - a.avgOverall || b.reviewCount - a.reviewCount);
+      return list;
+    },
+  });
 
   useEffect(() => {
+    if (error) toast('Erreur de chargement', 'error');
+  }, [error]);
+
+  const displayList = (() => {
+    if (!filterCategory && !filterLevel) return teachers;
     let result = [...teachers];
-    if (filterCategory) {
-      const levelIds = levels.filter(l => l.category === filterCategory).map(l => l.id);
-      result = result.filter(t => levelIds.length === 0);
-    }
-    if (filterLevel) {
-      result = result.filter(() => true);
-    }
-    setFiltered(result);
-  }, [teachers, filterCategory, filterLevel, filterSubject, levels]);
-
-  const loadLeaderboard = async () => {
-    const { data: evals } = await supabase
-      .from('evaluations')
-      .select('teacher_id, teaching_quality, communication, punctuality, organization, average_score');
-
-    if (!evals || evals.length === 0) { setLoading(false); return; }
-
-    const grouped: Record<string, { sums: number[]; count: number }> = {};
-    evals.forEach(e => {
-      if (!grouped[e.teacher_id]) grouped[e.teacher_id] = { sums: [0, 0, 0, 0, 0], count: 0 };
-      grouped[e.teacher_id].sums[0] += e.teaching_quality;
-      grouped[e.teacher_id].sums[1] += e.communication;
-      grouped[e.teacher_id].sums[2] += e.punctuality;
-      grouped[e.teacher_id].sums[3] += e.organization;
-      grouped[e.teacher_id].sums[4] += e.average_score;
-      grouped[e.teacher_id].count++;
-    });
-
-    const teacherIds = Object.keys(grouped);
-    const [usersRes, teacherRes] = await Promise.all([
-      supabase.from('users').select('id, first_name, last_name, photo_url').in('id', teacherIds),
-      supabase.from('teachers').select('id, speciality').in('id', teacherIds),
-    ]);
-
-    const specMap = new Map((teacherRes.data || []).map(t => [t.id, t.speciality]));
-    const userMap = new Map((usersRes.data || []).map(u => [u.id, u]));
-
-    const list: TeacherRating[] = teacherIds.map(id => {
-      const g = grouped[id];
-      const u = userMap.get(id);
-      return {
-        teacherId: id,
-        firstName: u?.first_name || '',
-        lastName: u?.last_name || '',
-        speciality: specMap.get(id) || null,
-        avgTeaching: Math.round((g.sums[0] / g.count) * 10) / 10,
-        avgCommunication: Math.round((g.sums[1] / g.count) * 10) / 10,
-        avgPunctuality: Math.round((g.sums[2] / g.count) * 10) / 10,
-        avgOrganization: Math.round((g.sums[3] / g.count) * 10) / 10,
-        avgOverall: Math.round((g.sums[4] / g.count) * 10) / 10,
-        reviewCount: g.count,
-        photoUrl: u?.photo_url || null,
-      };
-    });
-
-    list.sort((a, b) => b.avgOverall - a.avgOverall || b.reviewCount - a.reviewCount);
-    setTeachers(list);
-    setFiltered(list);
-    setLoading(false);
-  };
+    return result;
+  })();
 
   const filteredLevels = filterCategory ? levels.filter(l => l.category === filterCategory) : levels;
 
-  if (loading) {
+  if (isLoading) {
     return <div className="flex items-center justify-center py-20">
       <div className="h-8 w-8 animate-spin rounded-full border-2" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
     </div>;
@@ -201,7 +201,7 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {displayList.length === 0 ? (
         <div className="rounded-2xl border p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <Award className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--fg-muted)', opacity: 0.2 }} />
           <p className="font-medium">Aucun résultat</p>
@@ -209,7 +209,7 @@ export default function LeaderboardPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((t, i) => {
+          {displayList.map((t, i) => {
             const pos = i + 1;
             const showMedal = pos <= 3;
             return (
