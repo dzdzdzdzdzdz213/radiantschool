@@ -11,6 +11,7 @@ import TeacherLayout from '@/layouts/TeacherLayout';
 import StudentLayout from '@/layouts/StudentLayout';
 import ParentLayout from '@/layouts/ParentLayout';
 import DashboardPage from '@/pages/DashboardPage';
+import AdminDashboardPage from '@/features/dashboard/AdminDashboardPage';
 import UsersPage from '@/pages/admin/UsersPage';
 import CoursesPage from '@/pages/CoursesPage';
 import CourseDetailPage from '@/pages/CourseDetailPage';
@@ -54,7 +55,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'dashboard', element: <AdminDashboardPage /> },
       { path: 'users', element: <UsersPage /> },
       { path: 'users/:id', element: <StudentDetailPage /> },
       { path: 'courses', element: <CoursesPage /> },

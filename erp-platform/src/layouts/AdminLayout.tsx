@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header';
+import AdminSidebar from '@/components/layout/AdminSidebar';
+import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
-import type { NavItem } from '@/components/layout/Sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { NavItem } from '@/components/layout/AdminSidebar';
 
 const adminNavItems: NavItem[] = [
   { label: 'Tableau de bord', path: '/admin/dashboard', icon: 'LayoutDashboard' },
@@ -19,20 +20,81 @@ const adminNavItems: NavItem[] = [
   { label: 'Paramètres', path: '/admin/settings', icon: 'Settings' },
 ];
 
+function PageShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="animate-in fade-in duration-500">
+      {children}
+    </div>
+  );
+}
+
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('admin_sidebar_collapsed');
+    return saved === 'true';
+  });
+
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('admin_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-page">
-      <Sidebar items={adminNavItems} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <div className="flex h-screen overflow-hidden bg-background">
+      <AdminSidebar
+        items={adminNavItems}
+        open={sidebarOpen}
+        collapsed={sidebarCollapsed}
+        onClose={() => setSidebarOpen(false)}
+        onToggleCollapse={handleToggleCollapse}
+      />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="mb-4">
-            <BackButton label="← Retour au site" to="/" />
+        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="mb-4">
+              <BackButton label="← Retour au site" to="/" />
+            </div>
+            <Suspense fallback={<DashboardFallback />}>
+              <PageShell>
+                <Outlet />
+              </PageShell>
+            </Suspense>
           </div>
-          <Outlet />
         </main>
+      </div>
+    </div>
+  );
+}
+
+function DashboardFallback() {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="rounded-2xl border border-border bg-card p-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-14 w-14 rounded-2xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="rounded-2xl border border-border bg-card p-6 space-y-3">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Skeleton className="h-[340px] rounded-2xl" />
+        <Skeleton className="h-[340px] rounded-2xl" />
       </div>
     </div>
   );
