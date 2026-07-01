@@ -47,6 +47,24 @@ import StudentDetailPage from '@/pages/StudentDetailPage';
 import StudentReviewsPage from '@/pages/student/StudentReviewsPage';
 import LeaderboardPage from '@/pages/LeaderboardPage';
 import EnrollPage from '@/pages/EnrollPage';
+import TeacherDashboardPage from '@/features/teacher/dashboard/TeacherDashboardPage';
+import TeacherStudentsPage from '@/features/teacher/students/TeacherStudentsPage';
+import TeacherSchedulePage from '@/features/teacher/schedule/SchedulePage';
+import TeacherCalendarPage from '@/features/teacher/calendar/CalendarPage';
+import TeacherAttendancePage from '@/features/teacher/attendance/TeacherAttendancePage';
+import TeacherAssignmentsPage from '@/features/teacher/assignments/AssignmentsPage';
+import TeacherHomeworkPage from '@/features/teacher/homework/HomeworkPage';
+import TeacherResourcesPage from '@/features/teacher/resources/ResourcesPage';
+import TeacherOnlineClassesPage from '@/features/teacher/online-classes/OnlineClassesPage';
+import TeacherPrivateLessonsPage from '@/features/teacher/private-lessons/PrivateLessonsPage';
+import TeacherVipClassesPage from '@/features/teacher/vip-classes/VipClassesPage';
+import TeacherAnnouncementsPage from '@/features/teacher/announcements/AnnouncementsPage';
+import TeacherMessagesPage from '@/features/teacher/messages/MessagesPage';
+import TeacherReportsPage from '@/features/teacher/reports/ReportsPage';
+import TeacherRevenuePage from '@/features/teacher/revenue/RevenuePage';
+import TeacherReviewsPage from '@/features/teacher/reviews/ReviewsPage';
+import TeacherProfilePage from '@/features/teacher/profile/TeacherProfilePage';
+import TeacherSettingsPage from '@/features/teacher/settings/TeacherSettingsPage';
 
 export const router = createBrowserRouter([
   {
@@ -138,15 +156,29 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'dashboard', element: <TeacherDashboardPage /> },
+      { path: 'students', element: <TeacherStudentsPage /> },
+      { path: 'students/:id', element: <StudentDetailPage /> },
       { path: 'courses', element: <CoursesPage /> },
       { path: 'courses/:id', element: <CourseDetailPage /> },
-      { path: 'attendance', element: <AttendancePageOld /> },
-      { path: 'schedule', element: <SchedulePageOld /> },
-      { path: 'messages', element: <MessagesPage /> },
+      { path: 'attendance', element: <TeacherAttendancePage /> },
+      { path: 'schedule', element: <TeacherSchedulePage /> },
+      { path: 'calendar', element: <TeacherCalendarPage /> },
+      { path: 'assignments', element: <TeacherAssignmentsPage /> },
+      { path: 'homework', element: <TeacherHomeworkPage /> },
+      { path: 'resources', element: <TeacherResourcesPage /> },
+      { path: 'online-classes', element: <TeacherOnlineClassesPage /> },
+      { path: 'private-lessons', element: <TeacherPrivateLessonsPage /> },
+      { path: 'vip-classes', element: <TeacherVipClassesPage /> },
+      { path: 'announcements', element: <TeacherAnnouncementsPage /> },
+      { path: 'messages', element: <TeacherMessagesPage /> },
+      { path: 'reports', element: <TeacherReportsPage /> },
+      { path: 'revenue', element: <TeacherRevenuePage /> },
+      { path: 'reviews', element: <TeacherReviewsPage /> },
       { path: 'evaluations', element: <TeacherEvaluationsPage /> },
       { path: 'leaderboard', element: <LeaderboardPage /> },
-      { path: 'profile', element: <ProfilePage /> },
+      { path: 'profile', element: <TeacherProfilePage /> },
+      { path: 'settings', element: <TeacherSettingsPage /> },
     ],
   },
   {

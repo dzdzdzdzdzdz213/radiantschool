@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,
   FileText, Calendar, BarChart3, MessageSquare, UserCircle, Settings,
-  Bell, Search, X, MapPin, ChevronLeft,
+  Bell, Search, X, MapPin, ChevronLeft, GraduationCap, Star, UserPlus,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator';
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,
   FileText, Calendar, BarChart3, MessageSquare, UserCircle, Settings,
-  Bell, Search,
+  Bell, Search, GraduationCap, Star, UserPlus,
 };
 
 export interface NavItem {

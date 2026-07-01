@@ -1,33 +1,82 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '@/components/layout/Sidebar';
-import Header from '@/components/layout/Header';
+import AdminSidebar from '@/components/layout/AdminSidebar';
+import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
-import type { NavItem } from '@/components/layout/Sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { NavItem } from '@/components/layout/AdminSidebar';
 
-const items: NavItem[] = [
+const teacherNavItems: NavItem[] = [
   { label: 'Tableau de bord', path: '/teacher/dashboard', icon: 'LayoutDashboard' },
+  { label: 'Mon emploi du temps', path: '/teacher/schedule', icon: 'Calendar' },
+  { label: 'Calendrier', path: '/teacher/calendar', icon: 'Calendar' },
+  { label: 'Mes matières', path: '/teacher/subjects', icon: 'BookOpen' },
   { label: 'Mes cours', path: '/teacher/courses', icon: 'BookOpen' },
+  { label: 'Mes groupes', path: '/teacher/groups', icon: 'Users' },
   { label: 'Présences', path: '/teacher/attendance', icon: 'ClipboardCheck' },
-  { label: 'Emploi du temps', path: '/teacher/schedule', icon: 'Calendar' },
+  { label: 'Élèves', path: '/teacher/students', icon: 'Users' },
+  { label: 'Devoirs', path: '/teacher/assignments', icon: 'FileText' },
+  { label: 'Soumissions', path: '/teacher/homework', icon: 'FileText' },
+  { label: 'Ressources', path: '/teacher/resources', icon: 'FileText' },
+  { label: 'Cours en ligne', path: '/teacher/online-classes', icon: 'GraduationCap' },
+  { label: 'Cours particuliers', path: '/teacher/private-lessons', icon: 'UserPlus' },
+  { label: 'Cours VIP', path: '/teacher/vip-classes', icon: 'Star' },
+  { label: 'Annonces', path: '/teacher/announcements', icon: 'Bell' },
   { label: 'Messages', path: '/teacher/messages', icon: 'MessageSquare' },
-  { label: 'Mes évaluations', path: '/teacher/evaluations', icon: 'Star' },
-  { label: 'Classement', path: '/teacher/leaderboard', icon: 'BarChart3' },
+  { label: 'Rapports', path: '/teacher/reports', icon: 'BarChart3' },
+  { label: 'Revenus', path: '/teacher/revenue', icon: 'DollarSign' },
+  { label: 'Avis', path: '/teacher/reviews', icon: 'Star' },
   { label: 'Profil', path: '/teacher/profile', icon: 'UserCircle' },
+  { label: 'Paramètres', path: '/teacher/settings', icon: 'Settings' },
 ];
+
+function PageShell({ children }: { children: React.ReactNode }) {
+  return <div className="animate-in fade-in duration-500">{children}</div>;
+}
+
+function DashboardFallback() {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="rounded-2xl border border-border bg-card p-8"><div className="flex items-center gap-4"><Skeleton className="h-14 w-14 rounded-2xl" /><div className="space-y-2"><Skeleton className="h-8 w-64" /><Skeleton className="h-4 w-40" /></div></div></div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="rounded-2xl border border-border bg-card p-6 space-y-3"><Skeleton className="h-3 w-24" /><Skeleton className="h-8 w-20" /><Skeleton className="h-3 w-16" /></div>))}</div>
+      <div className="grid gap-6 lg:grid-cols-2"><Skeleton className="h-[340px] rounded-2xl" /><Skeleton className="h-[340px] rounded-2xl" /></div>
+    </div>
+  );
+}
 
 export default function TeacherLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('teacher_sidebar_collapsed');
+    return saved === 'true';
+  });
+
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('teacher_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden bg-page">
-      <Sidebar items={items} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <div className="flex h-screen overflow-hidden bg-background">
+      <AdminSidebar
+        items={teacherNavItems}
+        open={sidebarOpen}
+        collapsed={sidebarCollapsed}
+        onClose={() => setSidebarOpen(false)}
+        onToggleCollapse={handleToggleCollapse}
+      />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="mb-4">
-            <BackButton label="← Retour au site" to="/" />
+        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="mb-4"><BackButton label="← Retour au site" to="/" /></div>
+            <Suspense fallback={<DashboardFallback />}>
+              <PageShell><Outlet /></PageShell>
+            </Suspense>
           </div>
-          <Outlet />
         </main>
       </div>
     </div>
