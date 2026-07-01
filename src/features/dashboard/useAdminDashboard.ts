@@ -142,7 +142,16 @@ export function useAdminDashboard() {
     unpaidInvoices: kpi.data?.unpaid_invoices ?? 0,
   };
 
-  const registrations = registrationsQuery.data?.data ?? [];
+  const registrations: RecentRegistration[] = (registrationsQuery.data?.data ?? []).map((r: any) => ({
+    id: r.id,
+    firstName: r.first_name ?? '',
+    lastName: r.last_name ?? '',
+    email: r.email ?? '',
+    phone: r.phone ?? null,
+    level: r.level ?? null,
+    createdAt: r.created_at ?? '',
+    status: r.status ?? '',
+  }));
 
   return {
     kpi: kpiData,
