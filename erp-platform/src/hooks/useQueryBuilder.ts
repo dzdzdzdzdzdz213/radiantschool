@@ -98,7 +98,7 @@ export function useOptimisticUpdate<T extends { id: string | number }>({
 }: OptimisticUpdateConfig<T>) {
   const queryClient = useQueryClient();
 
-  return useMutation<T, ApiError, { id: string | number; data: Partial<T> }>({
+  return useMutation<T, ApiError, { id: string | number; data: Partial<T> }, { previousData: unknown }>({
     mutationFn: ({ id, data }) => api.update<T>(table, id, data),
 
     onMutate: async ({ id, data }) => {

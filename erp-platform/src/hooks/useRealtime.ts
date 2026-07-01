@@ -30,7 +30,7 @@ export function useRealtimeSubscription({
   onDelete,
 }: UseRealtimeOptions) {
   const queryClient = useQueryClient();
-  const channelRef = useRef<ReturnType<typeof supabase.channel>>();
+  const channelRef = useRef<any>(null);
 
   const handleChange = useCallback(
     (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
@@ -85,7 +85,7 @@ export function useRealtimeSubscription({
 // Tracks online/offline presence of users
 
 export function useRealtimePresence(room: string = 'online-users') {
-  const channelRef = useRef<ReturnType<typeof supabase.channel>>();
+  const channelRef = useRef<any>(null);
   const presenceRef = useRef<Set<string>>(new Set());
 
   const track = useCallback(async (userData: { user_id: string; name: string }) => {
@@ -133,7 +133,7 @@ interface BroadcastPayload {
 }
 
 export function useRealtimeBroadcast(channelName: string) {
-  const channelRef = useRef<ReturnType<typeof supabase.channel>>();
+  const channelRef = useRef<any>(null);
   const handlersRef = useRef<Map<string, (payload: BroadcastPayload) => void>>(new Map());
 
   useEffect(() => {
@@ -153,8 +153,8 @@ export function useRealtimeBroadcast(channelName: string) {
 
   const on = useCallback((event: string, handler: (payload: BroadcastPayload) => void) => {
     handlersRef.current.set(event, handler);
-    channelRef.current?.on('broadcast', { event }, (payload) => {
-      handler(payload as any);
+    channelRef.current?.on('broadcast', { event }, (payload: any) => {
+      handler(payload);
     });
   }, []);
 

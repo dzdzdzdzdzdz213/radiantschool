@@ -1,9 +1,6 @@
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { ApiError } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
-
-// ─── Optimistic Insert ───────────────────────────────────────
 
 interface UseOptimisticInsertOptions<T> {
   queryKey: QueryKey;
@@ -19,26 +16,26 @@ export function useOptimisticInsert<T extends Record<string, any>>({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  return useMutation<T, ApiError, Partial<T>>({
+  return useMutation<T, Error, Partial<T>, { previousData: unknown; tempId: string }>({
     mutationFn: async (data) => {
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (supabase as any)
         .from(table)
         .insert(data)
         .select()
         .single();
-      if (error) throw ApiError.fromPostgrest(error);
+      if (error) throw new Error(error.message);
       return result as T;
     },
 
     onMutate: async (newData) => {
       await queryClient.cancelQueries({ queryKey });
-      const previousData = queryClient.getQueryData<T[]>(queryKey);
+      const previousData = queryClient.getQueryData(queryKey);
 
       const tempId = `temp-${Date.now()}`;
-      const optimisticItem = { ...newData, id: tempId } as T;
+      const optimisticItem = { ...newData, id: tempId } as unknown as T;
 
-      queryClient.setQueryData<T[]>(queryKey, (old) =>
-        old ? [optimisticItem, ...old] : [optimisticItem],
+      queryClient.setQueryData(queryKey, (old: any) =>
+        Array.isArray(old) ? [optimisticItem, ...old] : old,
       );
 
       return { previousData, tempId };
@@ -53,10 +50,12 @@ export function useOptimisticInsert<T extends Record<string, any>>({
 
     onSuccess: (_data, _vars, context) => {
       if (context?.tempId) {
-        queryClient.setQueryData<T[]>(queryKey, (old) =>
-          old?.map(item =>
-            (item as any).id === context.tempId ? _data : item,
-          ) ?? [],
+        queryClient.setQueryData(queryKey, (old: any) =>
+          Array.isArray(old)
+            ? old.map((item: any) =>
+                item.id === context.tempId ? _data : item,
+              )
+            : old,
         );
       }
       if (successMessage) toast(successMessage, 'success');
@@ -67,8 +66,6 @@ export function useOptimisticInsert<T extends Record<string, any>>({
     },
   });
 }
-
-// ─── Optimistic Update (toggle status, etc.) ─────────────────
 
 interface UseOptimisticToggleOptions<T> {
   queryKey: QueryKey;
@@ -86,14 +83,14 @@ export function useOptimisticToggle<T extends { id: string | number }>({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  return useMutation<void, ApiError, T>({
+  return useMutation<void, Error, T, { previousData: unknown }>({
     mutationFn: async (item) => {
       const { field, newValue } = getToggleField(item);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(table)
-        .update({ [field]: newValue } as any)
+        .update({ [field]: newValue })
         .eq('id', item.id);
-      if (error) throw ApiError.fromPostgrest(error);
+      if (error) throw new Error(error.message);
     },
 
     onMutate: async (item) => {
@@ -101,10 +98,12 @@ export function useOptimisticToggle<T extends { id: string | number }>({
       const previousData = queryClient.getQueryData(queryKey);
 
       const { field, newValue } = getToggleField(item);
-      queryClient.setQueryData<T[]>(queryKey, (old) =>
-        old?.map(i =>
-          i.id === item.id ? { ...i, [field]: newValue } : i,
-        ) ?? [],
+      queryClient.setQueryData(queryKey, (old: any) =>
+        Array.isArray(old)
+          ? old.map((i: any) =>
+              i.id === item.id ? { ...i, [field]: newValue } : i,
+            )
+          : old,
       );
 
       return { previousData };
@@ -127,8 +126,6 @@ export function useOptimisticToggle<T extends { id: string | number }>({
   });
 }
 
-// ─── Optimistic Delete ───────────────────────────────────────
-
 interface UseOptimisticRemoveOptions {
   queryKey: QueryKey;
   table: string;
@@ -143,21 +140,23 @@ export function useOptimisticRemove({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  return useMutation<void, ApiError, string | number>({
+  return useMutation<void, Error, string | number, { previousData: unknown }>({
     mutationFn: async (id) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(table)
-        .update({ deleted_at: new Date().toISOString() } as any)
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
-      if (error) throw ApiError.fromPostgrest(error);
+      if (error) throw new Error(error.message);
     },
 
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData(queryKey);
 
-      queryClient.setQueryData<any[]>(queryKey, (old) =>
-        old?.filter(item => item.id !== id) ?? [],
+      queryClient.setQueryData(queryKey, (old: any) =>
+        Array.isArray(old)
+          ? old.filter((item: any) => item.id !== id)
+          : old,
       );
 
       return { previousData };

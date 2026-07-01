@@ -152,7 +152,7 @@ export const api = {
 
     const totalPages = pagination ? Math.ceil((total ?? 0) / pagination.pageSize) : 1;
     return {
-      data: (data ?? []) as T[],
+      data: (data ?? []) as unknown as T[],
       meta: {
         page: pagination?.page ?? 1,
         pageSize: pagination?.pageSize ?? (data ?? []).length,
@@ -207,13 +207,13 @@ export const api = {
   async createMany<T>(table: string, data: Partial<T>[]): Promise<T[]> {
     const { data: result, error } = await tb(table).insert(data as any[]).select();
     if (error) throw ApiError.fromPostgrest(error);
-    return (result ?? []) as T[];
+    return (result ?? []) as unknown as T[];
   },
 
   async updateMany<T>(table: string, ids: (string | number)[], data: Partial<T>): Promise<T[]> {
     const { data: result, error } = await tb(table).update(data as any).in('id', ids as any[]).select();
     if (error) throw ApiError.fromPostgrest(error);
-    return (result ?? []) as T[];
+    return (result ?? []) as unknown as T[];
   },
 
   // ─── RPC calls ──────────────────────────────────────────
@@ -229,7 +229,7 @@ export const api = {
   async search<T>(table: string, query: string, select: string = '*', limit: number = 20): Promise<T[]> {
     const { data, error } = await tb(table).select(select).textSearch('name', query, { type: 'websearch' }).limit(limit);
     if (error) throw ApiError.fromPostgrest(error);
-    return (data ?? []) as T[];
+    return (data ?? []) as unknown as T[];
   },
 };
 
