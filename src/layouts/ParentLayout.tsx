@@ -1,4 +1,4 @@
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
@@ -25,23 +25,19 @@ function ParentFallback() {
   );
 }
 
+// Preload child route chunks
+import('@/pages/DashboardPage').catch(() => {});
+import('@/pages/CoursesPage').catch(() => {});
+import('@/pages/StudentDetailPage').catch(() => {});
+import('@/pages/EnrollPage').catch(() => {});
+import('@/pages/PaymentsPage').catch(() => {});
+import('@/pages/InvoicesPage').catch(() => {});
+import('@/pages/SchedulePage').catch(() => {});
+import('@/pages/MessagesPage').catch(() => {});
+import('@/pages/ProfilePage').catch(() => {});
+
 export default function ParentLayout() {
   const { lang } = useLang();
-  useEffect(() => {
-    const routes = [
-      import('@/pages/DashboardPage'),
-      import('@/pages/CoursesPage'),
-      import('@/pages/StudentDetailPage'),
-      import('@/pages/EnrollPage'),
-      import('@/pages/PaymentsPage'),
-      import('@/pages/InvoicesPage'),
-      import('@/pages/SchedulePage'),
-      import('@/pages/MessagesPage'),
-      import('@/pages/ProfilePage'),
-    ];
-    routes.forEach(p => p.catch(() => {}));
-  }, []);
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const items: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/parent/dashboard', icon: 'LayoutDashboard' },

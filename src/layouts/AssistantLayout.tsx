@@ -1,4 +1,4 @@
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -42,38 +42,34 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
+// Preload child route chunks
+import('@/features/assistant/dashboard/AssistantDashboardPage').catch(() => {});
+import('@/features/assistant/students/StudentsPage').catch(() => {});
+import('@/features/assistant/parents/ParentsPage').catch(() => {});
+import('@/features/assistant/registrations/RegistrationsPage').catch(() => {});
+import('@/features/assistant/attendance/AttendancePage').catch(() => {});
+import('@/features/assistant/rfid/RfidPage').catch(() => {});
+import('@/features/assistant/groups/GroupsPage').catch(() => {});
+import('@/features/assistant/schedules/SchedulesPage').catch(() => {});
+import('@/features/assistant/rooms/RoomsPage').catch(() => {});
+import('@/features/assistant/payments/PaymentsPage').catch(() => {});
+import('@/features/assistant/invoices/InvoicesPage').catch(() => {});
+import('@/features/assistant/notifications/NotificationsPage').catch(() => {});
+import('@/features/assistant/emails/EmailsPage').catch(() => {});
+import('@/features/assistant/resources/ResourcesPage').catch(() => {});
+import('@/features/assistant/campaigns/CampaignsPage').catch(() => {});
+import('@/features/assistant/reports/ReportsPage').catch(() => {});
+import('@/features/assistant/calendar/CalendarPage').catch(() => {});
+import('@/features/assistant/search/SearchPage').catch(() => {});
+import('@/features/assistant/settings/SettingsPage').catch(() => {});
+import('@/pages/StudentDetailPage').catch(() => {});
+import('@/pages/CoursesPage').catch(() => {});
+import('@/pages/CourseDetailPage').catch(() => {});
+import('@/pages/MessagesPage').catch(() => {});
+import('@/pages/ProfilePage').catch(() => {});
+
 export default function AssistantLayout() {
   const { lang } = useLang();
-  useEffect(() => {
-    const routes = [
-      import('@/features/assistant/dashboard/AssistantDashboardPage'),
-      import('@/features/assistant/students/StudentsPage'),
-      import('@/features/assistant/parents/ParentsPage'),
-      import('@/features/assistant/registrations/RegistrationsPage'),
-      import('@/features/assistant/attendance/AttendancePage'),
-      import('@/features/assistant/rfid/RfidPage'),
-      import('@/features/assistant/groups/GroupsPage'),
-      import('@/features/assistant/schedules/SchedulesPage'),
-      import('@/features/assistant/rooms/RoomsPage'),
-      import('@/features/assistant/payments/PaymentsPage'),
-      import('@/features/assistant/invoices/InvoicesPage'),
-      import('@/features/assistant/notifications/NotificationsPage'),
-      import('@/features/assistant/emails/EmailsPage'),
-      import('@/features/assistant/resources/ResourcesPage'),
-      import('@/features/assistant/campaigns/CampaignsPage'),
-      import('@/features/assistant/reports/ReportsPage'),
-      import('@/features/assistant/calendar/CalendarPage'),
-      import('@/features/assistant/search/SearchPage'),
-      import('@/features/assistant/settings/SettingsPage'),
-      import('@/pages/StudentDetailPage'),
-      import('@/pages/CoursesPage'),
-      import('@/pages/CourseDetailPage'),
-      import('@/pages/MessagesPage'),
-      import('@/pages/ProfilePage'),
-    ];
-    routes.forEach(p => p.catch(() => {}));
-  }, []);
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const assistantNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/assistant/dashboard', icon: 'LayoutDashboard' },

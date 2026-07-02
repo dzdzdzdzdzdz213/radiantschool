@@ -1,4 +1,4 @@
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -23,36 +23,32 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
+// Preload child route chunks
+import('@/features/student/dashboard/StudentDashboardPage').catch(() => {});
+import('@/features/student/courses/StudentCoursesPage').catch(() => {});
+import('@/features/student/schedule/StudentSchedulePage').catch(() => {});
+import('@/features/student/calendar/StudentCalendarPage').catch(() => {});
+import('@/features/student/attendance/StudentAttendancePage').catch(() => {});
+import('@/features/student/homework/StudentHomeworkPage').catch(() => {});
+import('@/features/student/resources/StudentResourcesPage').catch(() => {});
+import('@/features/student/online-classes/StudentOnlineClassesPage').catch(() => {});
+import('@/features/student/private-lessons/StudentPrivateLessonsPage').catch(() => {});
+import('@/features/student/vip-classes/StudentVipClassesPage').catch(() => {});
+import('@/features/student/payments/StudentPaymentsPage').catch(() => {});
+import('@/features/student/invoices/StudentInvoicesPage').catch(() => {});
+import('@/features/student/certificates/StudentCertificatesPage').catch(() => {});
+import('@/features/student/announcements/StudentAnnouncementsPage').catch(() => {});
+import('@/features/student/messages/StudentMessagesPage').catch(() => {});
+import('@/features/student/notifications/StudentNotificationsPage').catch(() => {});
+import('@/features/student/reviews/StudentReviewsPage').catch(() => {});
+import('@/features/student/profile/StudentProfilePage').catch(() => {});
+import('@/features/student/settings/StudentSettingsPage').catch(() => {});
+import('@/pages/EnrollPage').catch(() => {});
+import('@/pages/CourseDetailPage').catch(() => {});
+import('@/pages/LeaderboardPage').catch(() => {});
+
 export default function StudentLayout() {
   const { lang } = useLang();
-  useEffect(() => {
-    const routes = [
-      import('@/features/student/dashboard/StudentDashboardPage'),
-      import('@/features/student/courses/StudentCoursesPage'),
-      import('@/features/student/schedule/StudentSchedulePage'),
-      import('@/features/student/calendar/StudentCalendarPage'),
-      import('@/features/student/attendance/StudentAttendancePage'),
-      import('@/features/student/homework/StudentHomeworkPage'),
-      import('@/features/student/resources/StudentResourcesPage'),
-      import('@/features/student/online-classes/StudentOnlineClassesPage'),
-      import('@/features/student/private-lessons/StudentPrivateLessonsPage'),
-      import('@/features/student/vip-classes/StudentVipClassesPage'),
-      import('@/features/student/payments/StudentPaymentsPage'),
-      import('@/features/student/invoices/StudentInvoicesPage'),
-      import('@/features/student/certificates/StudentCertificatesPage'),
-      import('@/features/student/announcements/StudentAnnouncementsPage'),
-      import('@/features/student/messages/StudentMessagesPage'),
-      import('@/features/student/notifications/StudentNotificationsPage'),
-      import('@/features/student/reviews/StudentReviewsPage'),
-      import('@/features/student/profile/StudentProfilePage'),
-      import('@/features/student/settings/StudentSettingsPage'),
-      import('@/pages/EnrollPage'),
-      import('@/pages/CourseDetailPage'),
-      import('@/pages/LeaderboardPage'),
-    ];
-    routes.forEach(p => p.catch(() => {}));
-  }, []);
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const studentNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/student/dashboard', icon: 'LayoutDashboard' },

@@ -1,4 +1,4 @@
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -23,37 +23,33 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
+// Preload child route chunks
+import('@/features/teacher/dashboard/TeacherDashboardPage').catch(() => {});
+import('@/features/teacher/students/TeacherStudentsPage').catch(() => {});
+import('@/features/teacher/schedule/SchedulePage').catch(() => {});
+import('@/features/teacher/calendar/CalendarPage').catch(() => {});
+import('@/features/teacher/attendance/TeacherAttendancePage').catch(() => {});
+import('@/features/teacher/assignments/AssignmentsPage').catch(() => {});
+import('@/features/teacher/homework/HomeworkPage').catch(() => {});
+import('@/features/teacher/resources/ResourcesPage').catch(() => {});
+import('@/features/teacher/online-classes/OnlineClassesPage').catch(() => {});
+import('@/features/teacher/private-lessons/PrivateLessonsPage').catch(() => {});
+import('@/features/teacher/vip-classes/VipClassesPage').catch(() => {});
+import('@/features/teacher/announcements/AnnouncementsPage').catch(() => {});
+import('@/features/teacher/messages/MessagesPage').catch(() => {});
+import('@/features/teacher/reports/ReportsPage').catch(() => {});
+import('@/features/teacher/revenue/RevenuePage').catch(() => {});
+import('@/features/teacher/reviews/ReviewsPage').catch(() => {});
+import('@/features/teacher/profile/TeacherProfilePage').catch(() => {});
+import('@/features/teacher/settings/TeacherSettingsPage').catch(() => {});
+import('@/pages/StudentDetailPage').catch(() => {});
+import('@/pages/CoursesPage').catch(() => {});
+import('@/pages/CourseDetailPage').catch(() => {});
+import('@/pages/TeacherEvaluationsPage').catch(() => {});
+import('@/pages/LeaderboardPage').catch(() => {});
+
 export default function TeacherLayout() {
   const { lang } = useLang();
-  useEffect(() => {
-    const routes = [
-      import('@/features/teacher/dashboard/TeacherDashboardPage'),
-      import('@/features/teacher/students/TeacherStudentsPage'),
-      import('@/features/teacher/schedule/SchedulePage'),
-      import('@/features/teacher/calendar/CalendarPage'),
-      import('@/features/teacher/attendance/TeacherAttendancePage'),
-      import('@/features/teacher/assignments/AssignmentsPage'),
-      import('@/features/teacher/homework/HomeworkPage'),
-      import('@/features/teacher/resources/ResourcesPage'),
-      import('@/features/teacher/online-classes/OnlineClassesPage'),
-      import('@/features/teacher/private-lessons/PrivateLessonsPage'),
-      import('@/features/teacher/vip-classes/VipClassesPage'),
-      import('@/features/teacher/announcements/AnnouncementsPage'),
-      import('@/features/teacher/messages/MessagesPage'),
-      import('@/features/teacher/reports/ReportsPage'),
-      import('@/features/teacher/revenue/RevenuePage'),
-      import('@/features/teacher/reviews/ReviewsPage'),
-      import('@/features/teacher/profile/TeacherProfilePage'),
-      import('@/features/teacher/settings/TeacherSettingsPage'),
-      import('@/pages/StudentDetailPage'),
-      import('@/pages/CoursesPage'),
-      import('@/pages/CourseDetailPage'),
-      import('@/pages/TeacherEvaluationsPage'),
-      import('@/pages/LeaderboardPage'),
-    ];
-    routes.forEach(p => p.catch(() => {}));
-  }, []);
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const teacherNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/teacher/dashboard', icon: 'LayoutDashboard' },
