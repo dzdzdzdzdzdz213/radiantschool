@@ -26,7 +26,7 @@ export default function App() {
           <AuthProvider>
             <ToastProvider>
               <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
-                <RouterProvider router={router} />
+                <RouterProvider router={router} useTransitions />
               </Suspense>
             </ToastProvider>
           </AuthProvider>
