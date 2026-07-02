@@ -1,266 +1,241 @@
-import { lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
-const LandingPage = lazy(() => import('@/pages/LandingPage'));
-const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
-const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
-const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
+function lazyRoute(importFn: () => Promise<{ default: React.ComponentType<any> }>) {
+  return () => importFn().then(m => ({ Component: m.default }));
+}
 
-const AdminLayout = lazy(() => import('@/layouts/AdminLayout'));
-const AssistantLayout = lazy(() => import('@/layouts/AssistantLayout'));
-const TeacherLayout = lazy(() => import('@/layouts/TeacherLayout'));
-const StudentLayout = lazy(() => import('@/layouts/StudentLayout'));
-const ParentLayout = lazy(() => import('@/layouts/ParentLayout'));
-
-const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
-const AdminDashboardPage = lazy(() => import('@/features/dashboard/AdminDashboardPage'));
-const AssistantDashboardPage = lazy(() => import('@/features/assistant/dashboard/AssistantDashboardPage'));
-const StudentsPage = lazy(() => import('@/features/assistant/students/StudentsPage'));
-const ParentsPage = lazy(() => import('@/features/assistant/parents/ParentsPage'));
-const RegistrationsPage = lazy(() => import('@/features/assistant/registrations/RegistrationsPage'));
-const AttendancePage = lazy(() => import('@/features/assistant/attendance/AttendancePage'));
-const RfidPage = lazy(() => import('@/features/assistant/rfid/RfidPage'));
-const GroupsPage = lazy(() => import('@/features/assistant/groups/GroupsPage'));
-const SchedulesPage = lazy(() => import('@/features/assistant/schedules/SchedulesPage'));
-const RoomsPage = lazy(() => import('@/features/assistant/rooms/RoomsPage'));
-const PaymentsPage = lazy(() => import('@/features/assistant/payments/PaymentsPage'));
-const InvoicesPage = lazy(() => import('@/features/assistant/invoices/InvoicesPage'));
-const NotificationsPage = lazy(() => import('@/features/assistant/notifications/NotificationsPage'));
-const EmailsPage = lazy(() => import('@/features/assistant/emails/EmailsPage'));
-const ResourcesPage = lazy(() => import('@/features/assistant/resources/ResourcesPage'));
-const CampaignsPage = lazy(() => import('@/features/assistant/campaigns/CampaignsPage'));
-const ReportsPage = lazy(() => import('@/features/assistant/reports/ReportsPage'));
-const CalendarPage = lazy(() => import('@/features/assistant/calendar/CalendarPage'));
-const SearchPage = lazy(() => import('@/features/assistant/search/SearchPage'));
-const AssistantSettingsPage = lazy(() => import('@/features/assistant/settings/SettingsPage'));
-const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
-const CoursesPage = lazy(() => import('@/pages/CoursesPage'));
-const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
-const PaymentsPageOld = lazy(() => import('@/pages/PaymentsPage'));
-const InvoicesPageOld = lazy(() => import('@/pages/InvoicesPage'));
-const MessagesPage = lazy(() => import('@/pages/MessagesPage'));
-const SchedulePageOld = lazy(() => import('@/pages/SchedulePage'));
-const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
-const TeacherEvaluationsPage = lazy(() => import('@/pages/TeacherEvaluationsPage'));
-const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
-const StudentDetailPage = lazy(() => import('@/pages/StudentDetailPage'));
-const LeaderboardPage = lazy(() => import('@/pages/LeaderboardPage'));
-const EnrollPage = lazy(() => import('@/pages/EnrollPage'));
-const TeacherDashboardPage = lazy(() => import('@/features/teacher/dashboard/TeacherDashboardPage'));
-const TeacherStudentsPage = lazy(() => import('@/features/teacher/students/TeacherStudentsPage'));
-const TeacherSchedulePage = lazy(() => import('@/features/teacher/schedule/SchedulePage'));
-const TeacherCalendarPage = lazy(() => import('@/features/teacher/calendar/CalendarPage'));
-const TeacherAttendancePage = lazy(() => import('@/features/teacher/attendance/TeacherAttendancePage'));
-const TeacherAssignmentsPage = lazy(() => import('@/features/teacher/assignments/AssignmentsPage'));
-const TeacherHomeworkPage = lazy(() => import('@/features/teacher/homework/HomeworkPage'));
-const TeacherResourcesPage = lazy(() => import('@/features/teacher/resources/ResourcesPage'));
-const TeacherOnlineClassesPage = lazy(() => import('@/features/teacher/online-classes/OnlineClassesPage'));
-const TeacherPrivateLessonsPage = lazy(() => import('@/features/teacher/private-lessons/PrivateLessonsPage'));
-const TeacherVipClassesPage = lazy(() => import('@/features/teacher/vip-classes/VipClassesPage'));
-const TeacherAnnouncementsPage = lazy(() => import('@/features/teacher/announcements/AnnouncementsPage'));
-const TeacherMessagesPage = lazy(() => import('@/features/teacher/messages/MessagesPage'));
-const TeacherReportsPage = lazy(() => import('@/features/teacher/reports/ReportsPage'));
-const TeacherRevenuePage = lazy(() => import('@/features/teacher/revenue/RevenuePage'));
-const TeacherReviewsPage = lazy(() => import('@/features/teacher/reviews/ReviewsPage'));
-const TeacherProfilePage = lazy(() => import('@/features/teacher/profile/TeacherProfilePage'));
-const TeacherSettingsPage = lazy(() => import('@/features/teacher/settings/TeacherSettingsPage'));
-const StudentDashboardPage = lazy(() => import('@/features/student/dashboard/StudentDashboardPage'));
-const StudentCoursesPage = lazy(() => import('@/features/student/courses/StudentCoursesPage'));
-const StudentSchedulePage = lazy(() => import('@/features/student/schedule/StudentSchedulePage'));
-const StudentCalendarPage = lazy(() => import('@/features/student/calendar/StudentCalendarPage'));
-const StudentAttendancePage = lazy(() => import('@/features/student/attendance/StudentAttendancePage'));
-const StudentHomeworkPage = lazy(() => import('@/features/student/homework/StudentHomeworkPage'));
-const StudentResourcesPage = lazy(() => import('@/features/student/resources/StudentResourcesPage'));
-const StudentOnlineClassesPage = lazy(() => import('@/features/student/online-classes/StudentOnlineClassesPage'));
-const StudentPrivateLessonsPage = lazy(() => import('@/features/student/private-lessons/StudentPrivateLessonsPage'));
-const StudentVipClassesPage = lazy(() => import('@/features/student/vip-classes/StudentVipClassesPage'));
-const StudentPaymentsPage = lazy(() => import('@/features/student/payments/StudentPaymentsPage'));
-const StudentInvoicesPage = lazy(() => import('@/features/student/invoices/StudentInvoicesPage'));
-const StudentCertificatesPage = lazy(() => import('@/features/student/certificates/StudentCertificatesPage'));
-const StudentAnnouncementsPage = lazy(() => import('@/features/student/announcements/StudentAnnouncementsPage'));
-const StudentMessagesPage = lazy(() => import('@/features/student/messages/StudentMessagesPage'));
-const StudentNotificationsPage = lazy(() => import('@/features/student/notifications/StudentNotificationsPage'));
-const StudentReviewsPage = lazy(() => import('@/features/student/reviews/StudentReviewsPage'));
-const StudentProfilePage = lazy(() => import('@/features/student/profile/StudentProfilePage'));
-const StudentSettingsPage = lazy(() => import('@/features/student/settings/StudentSettingsPage'));
+const LandingPage = () => import('@/pages/LandingPage');
+const LoginPage = () => import('@/pages/auth/LoginPage');
+const RegisterPage = () => import('@/pages/auth/RegisterPage');
+const ForgotPasswordPage = () => import('@/pages/auth/ForgotPasswordPage');
+const ResetPasswordPage = () => import('@/pages/auth/ResetPasswordPage');
+const DashboardPage = () => import('@/pages/DashboardPage');
+const AdminDashboardPage = () => import('@/features/dashboard/AdminDashboardPage');
+const AssistantDashboardPage = () => import('@/features/assistant/dashboard/AssistantDashboardPage');
+const StudentsPage = () => import('@/features/assistant/students/StudentsPage');
+const ParentsPage = () => import('@/features/assistant/parents/ParentsPage');
+const RegistrationsPage = () => import('@/features/assistant/registrations/RegistrationsPage');
+const AttendancePage = () => import('@/features/assistant/attendance/AttendancePage');
+const RfidPage = () => import('@/features/assistant/rfid/RfidPage');
+const GroupsPage = () => import('@/features/assistant/groups/GroupsPage');
+const SchedulesPage = () => import('@/features/assistant/schedules/SchedulesPage');
+const RoomsPage = () => import('@/features/assistant/rooms/RoomsPage');
+const PaymentsPage = () => import('@/features/assistant/payments/PaymentsPage');
+const InvoicesPage = () => import('@/features/assistant/invoices/InvoicesPage');
+const NotificationsPage = () => import('@/features/assistant/notifications/NotificationsPage');
+const EmailsPage = () => import('@/features/assistant/emails/EmailsPage');
+const ResourcesPage = () => import('@/features/assistant/resources/ResourcesPage');
+const CampaignsPage = () => import('@/features/assistant/campaigns/CampaignsPage');
+const ReportsPage = () => import('@/features/assistant/reports/ReportsPage');
+const CalendarPage = () => import('@/features/assistant/calendar/CalendarPage');
+const SearchPage = () => import('@/features/assistant/search/SearchPage');
+const AssistantSettingsPage = () => import('@/features/assistant/settings/SettingsPage');
+const UsersPage = () => import('@/pages/admin/UsersPage');
+const CoursesPage = () => import('@/pages/CoursesPage');
+const CourseDetailPage = () => import('@/pages/CourseDetailPage');
+const PaymentsPageOld = () => import('@/pages/PaymentsPage');
+const InvoicesPageOld = () => import('@/pages/InvoicesPage');
+const MessagesPage = () => import('@/pages/MessagesPage');
+const SchedulePageOld = () => import('@/pages/SchedulePage');
+const ProfilePage = () => import('@/pages/ProfilePage');
+const TeacherEvaluationsPage = () => import('@/pages/TeacherEvaluationsPage');
+const SettingsPage = () => import('@/pages/admin/SettingsPage');
+const StudentDetailPage = () => import('@/pages/StudentDetailPage');
+const LeaderboardPage = () => import('@/pages/LeaderboardPage');
+const EnrollPage = () => import('@/pages/EnrollPage');
+const TeacherDashboardPage = () => import('@/features/teacher/dashboard/TeacherDashboardPage');
+const TeacherStudentsPage = () => import('@/features/teacher/students/TeacherStudentsPage');
+const TeacherSchedulePage = () => import('@/features/teacher/schedule/SchedulePage');
+const TeacherCalendarPage = () => import('@/features/teacher/calendar/CalendarPage');
+const TeacherAttendancePage = () => import('@/features/teacher/attendance/TeacherAttendancePage');
+const TeacherAssignmentsPage = () => import('@/features/teacher/assignments/AssignmentsPage');
+const TeacherHomeworkPage = () => import('@/features/teacher/homework/HomeworkPage');
+const TeacherResourcesPage = () => import('@/features/teacher/resources/ResourcesPage');
+const TeacherOnlineClassesPage = () => import('@/features/teacher/online-classes/OnlineClassesPage');
+const TeacherPrivateLessonsPage = () => import('@/features/teacher/private-lessons/PrivateLessonsPage');
+const TeacherVipClassesPage = () => import('@/features/teacher/vip-classes/VipClassesPage');
+const TeacherAnnouncementsPage = () => import('@/features/teacher/announcements/AnnouncementsPage');
+const TeacherMessagesPage = () => import('@/features/teacher/messages/MessagesPage');
+const TeacherReportsPage = () => import('@/features/teacher/reports/ReportsPage');
+const TeacherRevenuePage = () => import('@/features/teacher/revenue/RevenuePage');
+const TeacherReviewsPage = () => import('@/features/teacher/reviews/ReviewsPage');
+const TeacherProfilePage = () => import('@/features/teacher/profile/TeacherProfilePage');
+const TeacherSettingsPage = () => import('@/features/teacher/settings/TeacherSettingsPage');
+const StudentDashboardPage = () => import('@/features/student/dashboard/StudentDashboardPage');
+const StudentCoursesPage = () => import('@/features/student/courses/StudentCoursesPage');
+const StudentSchedulePage = () => import('@/features/student/schedule/StudentSchedulePage');
+const StudentCalendarPage = () => import('@/features/student/calendar/StudentCalendarPage');
+const StudentAttendancePage = () => import('@/features/student/attendance/StudentAttendancePage');
+const StudentHomeworkPage = () => import('@/features/student/homework/StudentHomeworkPage');
+const StudentResourcesPage = () => import('@/features/student/resources/StudentResourcesPage');
+const StudentOnlineClassesPage = () => import('@/features/student/online-classes/StudentOnlineClassesPage');
+const StudentPrivateLessonsPage = () => import('@/features/student/private-lessons/StudentPrivateLessonsPage');
+const StudentVipClassesPage = () => import('@/features/student/vip-classes/StudentVipClassesPage');
+const StudentPaymentsPage = () => import('@/features/student/payments/StudentPaymentsPage');
+const StudentInvoicesPage = () => import('@/features/student/invoices/StudentInvoicesPage');
+const StudentCertificatesPage = () => import('@/features/student/certificates/StudentCertificatesPage');
+const StudentAnnouncementsPage = () => import('@/features/student/announcements/StudentAnnouncementsPage');
+const StudentMessagesPage = () => import('@/features/student/messages/StudentMessagesPage');
+const StudentNotificationsPage = () => import('@/features/student/notifications/StudentNotificationsPage');
+const StudentReviewsPage = () => import('@/features/student/reviews/StudentReviewsPage');
+const StudentProfilePage = () => import('@/features/student/profile/StudentProfilePage');
+const StudentSettingsPage = () => import('@/features/student/settings/StudentSettingsPage');
 
 export const router = createBrowserRouter([
   {
     path: '/login/:role?',
-    element: <LoginPage />,
+    lazy: lazyRoute(LoginPage),
   },
   {
     path: '/register',
-    element: <RegisterPage />,
+    lazy: lazyRoute(RegisterPage),
   },
   {
     path: '/forgot-password',
-    element: <ForgotPasswordPage />,
+    lazy: lazyRoute(ForgotPasswordPage),
   },
   {
     path: '/reset-password',
-    element: <ResetPasswordPage />,
+    lazy: lazyRoute(ResetPasswordPage),
   },
   {
     path: '/admin',
-    element: (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <AdminLayout />
-      </ProtectedRoute>
-    ),
+    lazy: lazyRoute(() => import('@/routes/AdminRoute')),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <AdminDashboardPage /> },
-      { path: 'users', element: <UsersPage /> },
-      { path: 'users/:id', element: <StudentDetailPage /> },
-      { path: 'courses', element: <CoursesPage /> },
-      { path: 'courses/:id', element: <CourseDetailPage /> },
-      { path: 'attendance', element: <AttendancePage /> },
-      { path: 'payments', element: <PaymentsPage /> },
-      { path: 'invoices', element: <InvoicesPage /> },
-      { path: 'reports', element: <ReportsPage /> },
-      { path: 'messages', element: <MessagesPage /> },
-      { path: 'schedule', element: <SchedulePageOld /> },
-      { path: 'profile', element: <ProfilePage /> },
-      { path: 'settings', element: <SettingsPage /> },
+      { path: 'dashboard', lazy: lazyRoute(AdminDashboardPage) },
+      { path: 'users', lazy: lazyRoute(UsersPage) },
+      { path: 'users/:id', lazy: lazyRoute(StudentDetailPage) },
+      { path: 'courses', lazy: lazyRoute(CoursesPage) },
+      { path: 'courses/:id', lazy: lazyRoute(CourseDetailPage) },
+      { path: 'attendance', lazy: lazyRoute(AttendancePage) },
+      { path: 'payments', lazy: lazyRoute(PaymentsPage) },
+      { path: 'invoices', lazy: lazyRoute(InvoicesPage) },
+      { path: 'reports', lazy: lazyRoute(ReportsPage) },
+      { path: 'messages', lazy: lazyRoute(MessagesPage) },
+      { path: 'schedule', lazy: lazyRoute(SchedulePageOld) },
+      { path: 'profile', lazy: lazyRoute(ProfilePage) },
+      { path: 'settings', lazy: lazyRoute(SettingsPage) },
     ],
   },
   {
     path: '/assistant',
-    element: (
-      <ProtectedRoute allowedRoles={['assistant']}>
-        <AssistantLayout />
-      </ProtectedRoute>
-    ),
+    lazy: lazyRoute(() => import('@/routes/AssistantRoute')),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <AssistantDashboardPage /> },
-      { path: 'students', element: <StudentsPage /> },
-      { path: 'students/new', element: <StudentsPage /> },
-      { path: 'students/:id', element: <StudentDetailPage /> },
-      { path: 'parents', element: <ParentsPage /> },
-      { path: 'parents/new', element: <ParentsPage /> },
-      { path: 'parents/:id', element: <StudentDetailPage /> },
-      { path: 'registrations', element: <RegistrationsPage /> },
-      { path: 'attendance', element: <AttendancePage /> },
-      { path: 'rfid', element: <RfidPage /> },
-      { path: 'groups', element: <GroupsPage /> },
-      { path: 'schedules', element: <SchedulesPage /> },
-      { path: 'rooms', element: <RoomsPage /> },
-      { path: 'payments', element: <PaymentsPage /> },
-      { path: 'payments/new', element: <PaymentsPage /> },
-      { path: 'invoices', element: <InvoicesPage /> },
-      { path: 'invoices/new', element: <InvoicesPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-      { path: 'emails', element: <EmailsPage /> },
-      { path: 'resources', element: <ResourcesPage /> },
-      { path: 'campaigns', element: <CampaignsPage /> },
-      { path: 'reports', element: <ReportsPage /> },
-      { path: 'calendar', element: <CalendarPage /> },
-      { path: 'search', element: <SearchPage /> },
-      { path: 'settings', element: <AssistantSettingsPage /> },
-      { path: 'profile', element: <ProfilePage /> },
-      { path: 'courses', element: <CoursesPage /> },
-      { path: 'courses/:id', element: <CourseDetailPage /> },
-      { path: 'messages', element: <MessagesPage /> },
+      { path: 'dashboard', lazy: lazyRoute(AssistantDashboardPage) },
+      { path: 'students', lazy: lazyRoute(StudentsPage) },
+      { path: 'students/new', lazy: lazyRoute(StudentsPage) },
+      { path: 'students/:id', lazy: lazyRoute(StudentDetailPage) },
+      { path: 'parents', lazy: lazyRoute(ParentsPage) },
+      { path: 'parents/new', lazy: lazyRoute(ParentsPage) },
+      { path: 'parents/:id', lazy: lazyRoute(StudentDetailPage) },
+      { path: 'registrations', lazy: lazyRoute(RegistrationsPage) },
+      { path: 'attendance', lazy: lazyRoute(AttendancePage) },
+      { path: 'rfid', lazy: lazyRoute(RfidPage) },
+      { path: 'groups', lazy: lazyRoute(GroupsPage) },
+      { path: 'schedules', lazy: lazyRoute(SchedulesPage) },
+      { path: 'rooms', lazy: lazyRoute(RoomsPage) },
+      { path: 'payments', lazy: lazyRoute(PaymentsPage) },
+      { path: 'payments/new', lazy: lazyRoute(PaymentsPage) },
+      { path: 'invoices', lazy: lazyRoute(InvoicesPage) },
+      { path: 'invoices/new', lazy: lazyRoute(InvoicesPage) },
+      { path: 'notifications', lazy: lazyRoute(NotificationsPage) },
+      { path: 'emails', lazy: lazyRoute(EmailsPage) },
+      { path: 'resources', lazy: lazyRoute(ResourcesPage) },
+      { path: 'campaigns', lazy: lazyRoute(CampaignsPage) },
+      { path: 'reports', lazy: lazyRoute(ReportsPage) },
+      { path: 'calendar', lazy: lazyRoute(CalendarPage) },
+      { path: 'search', lazy: lazyRoute(SearchPage) },
+      { path: 'settings', lazy: lazyRoute(AssistantSettingsPage) },
+      { path: 'profile', lazy: lazyRoute(ProfilePage) },
+      { path: 'courses', lazy: lazyRoute(CoursesPage) },
+      { path: 'courses/:id', lazy: lazyRoute(CourseDetailPage) },
+      { path: 'messages', lazy: lazyRoute(MessagesPage) },
     ],
   },
   {
     path: '/teacher',
-    element: (
-      <ProtectedRoute allowedRoles={['teacher']}>
-        <TeacherLayout />
-      </ProtectedRoute>
-    ),
+    lazy: lazyRoute(() => import('@/routes/TeacherRoute')),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <TeacherDashboardPage /> },
-      { path: 'students', element: <TeacherStudentsPage /> },
-      { path: 'students/:id', element: <StudentDetailPage /> },
-      { path: 'courses', element: <CoursesPage /> },
-      { path: 'courses/:id', element: <CourseDetailPage /> },
-      { path: 'attendance', element: <TeacherAttendancePage /> },
-      { path: 'schedule', element: <TeacherSchedulePage /> },
-      { path: 'calendar', element: <TeacherCalendarPage /> },
-      { path: 'assignments', element: <TeacherAssignmentsPage /> },
-      { path: 'homework', element: <TeacherHomeworkPage /> },
-      { path: 'resources', element: <TeacherResourcesPage /> },
-      { path: 'online-classes', element: <TeacherOnlineClassesPage /> },
-      { path: 'private-lessons', element: <TeacherPrivateLessonsPage /> },
-      { path: 'vip-classes', element: <TeacherVipClassesPage /> },
-      { path: 'announcements', element: <TeacherAnnouncementsPage /> },
-      { path: 'messages', element: <TeacherMessagesPage /> },
-      { path: 'reports', element: <TeacherReportsPage /> },
-      { path: 'revenue', element: <TeacherRevenuePage /> },
-      { path: 'reviews', element: <TeacherReviewsPage /> },
-      { path: 'evaluations', element: <TeacherEvaluationsPage /> },
-      { path: 'leaderboard', element: <LeaderboardPage /> },
-      { path: 'profile', element: <TeacherProfilePage /> },
-      { path: 'settings', element: <TeacherSettingsPage /> },
+      { path: 'dashboard', lazy: lazyRoute(TeacherDashboardPage) },
+      { path: 'students', lazy: lazyRoute(TeacherStudentsPage) },
+      { path: 'students/:id', lazy: lazyRoute(StudentDetailPage) },
+      { path: 'courses', lazy: lazyRoute(CoursesPage) },
+      { path: 'courses/:id', lazy: lazyRoute(CourseDetailPage) },
+      { path: 'attendance', lazy: lazyRoute(TeacherAttendancePage) },
+      { path: 'schedule', lazy: lazyRoute(TeacherSchedulePage) },
+      { path: 'calendar', lazy: lazyRoute(TeacherCalendarPage) },
+      { path: 'assignments', lazy: lazyRoute(TeacherAssignmentsPage) },
+      { path: 'homework', lazy: lazyRoute(TeacherHomeworkPage) },
+      { path: 'resources', lazy: lazyRoute(TeacherResourcesPage) },
+      { path: 'online-classes', lazy: lazyRoute(TeacherOnlineClassesPage) },
+      { path: 'private-lessons', lazy: lazyRoute(TeacherPrivateLessonsPage) },
+      { path: 'vip-classes', lazy: lazyRoute(TeacherVipClassesPage) },
+      { path: 'announcements', lazy: lazyRoute(TeacherAnnouncementsPage) },
+      { path: 'messages', lazy: lazyRoute(TeacherMessagesPage) },
+      { path: 'reports', lazy: lazyRoute(TeacherReportsPage) },
+      { path: 'revenue', lazy: lazyRoute(TeacherRevenuePage) },
+      { path: 'reviews', lazy: lazyRoute(TeacherReviewsPage) },
+      { path: 'evaluations', lazy: lazyRoute(TeacherEvaluationsPage) },
+      { path: 'leaderboard', lazy: lazyRoute(LeaderboardPage) },
+      { path: 'profile', lazy: lazyRoute(TeacherProfilePage) },
+      { path: 'settings', lazy: lazyRoute(TeacherSettingsPage) },
     ],
   },
   {
     path: '/student',
-    element: (
-      <ProtectedRoute allowedRoles={['student']}>
-        <StudentLayout />
-      </ProtectedRoute>
-    ),
+    lazy: lazyRoute(() => import('@/routes/StudentRoute')),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <StudentDashboardPage /> },
-      { path: 'courses', element: <StudentCoursesPage /> },
-      { path: 'courses/:id', element: <CourseDetailPage /> },
-      { path: 'enroll', element: <EnrollPage /> },
-      { path: 'schedule', element: <StudentSchedulePage /> },
-      { path: 'calendar', element: <StudentCalendarPage /> },
-      { path: 'attendance', element: <StudentAttendancePage /> },
-      { path: 'homework', element: <StudentHomeworkPage /> },
-      { path: 'resources', element: <StudentResourcesPage /> },
-      { path: 'online-classes', element: <StudentOnlineClassesPage /> },
-      { path: 'private-lessons', element: <StudentPrivateLessonsPage /> },
-      { path: 'vip-classes', element: <StudentVipClassesPage /> },
-      { path: 'payments', element: <StudentPaymentsPage /> },
-      { path: 'invoices', element: <StudentInvoicesPage /> },
-      { path: 'certificates', element: <StudentCertificatesPage /> },
-      { path: 'announcements', element: <StudentAnnouncementsPage /> },
-      { path: 'messages', element: <StudentMessagesPage /> },
-      { path: 'notifications', element: <StudentNotificationsPage /> },
-      { path: 'reviews', element: <StudentReviewsPage /> },
-      { path: 'leaderboard', element: <LeaderboardPage /> },
-      { path: 'profile', element: <StudentProfilePage /> },
-      { path: 'settings', element: <StudentSettingsPage /> },
+      { path: 'dashboard', lazy: lazyRoute(StudentDashboardPage) },
+      { path: 'courses', lazy: lazyRoute(StudentCoursesPage) },
+      { path: 'courses/:id', lazy: lazyRoute(CourseDetailPage) },
+      { path: 'enroll', lazy: lazyRoute(EnrollPage) },
+      { path: 'schedule', lazy: lazyRoute(StudentSchedulePage) },
+      { path: 'calendar', lazy: lazyRoute(StudentCalendarPage) },
+      { path: 'attendance', lazy: lazyRoute(StudentAttendancePage) },
+      { path: 'homework', lazy: lazyRoute(StudentHomeworkPage) },
+      { path: 'resources', lazy: lazyRoute(StudentResourcesPage) },
+      { path: 'online-classes', lazy: lazyRoute(StudentOnlineClassesPage) },
+      { path: 'private-lessons', lazy: lazyRoute(StudentPrivateLessonsPage) },
+      { path: 'vip-classes', lazy: lazyRoute(StudentVipClassesPage) },
+      { path: 'payments', lazy: lazyRoute(StudentPaymentsPage) },
+      { path: 'invoices', lazy: lazyRoute(StudentInvoicesPage) },
+      { path: 'certificates', lazy: lazyRoute(StudentCertificatesPage) },
+      { path: 'announcements', lazy: lazyRoute(StudentAnnouncementsPage) },
+      { path: 'messages', lazy: lazyRoute(StudentMessagesPage) },
+      { path: 'notifications', lazy: lazyRoute(StudentNotificationsPage) },
+      { path: 'reviews', lazy: lazyRoute(StudentReviewsPage) },
+      { path: 'leaderboard', lazy: lazyRoute(LeaderboardPage) },
+      { path: 'profile', lazy: lazyRoute(StudentProfilePage) },
+      { path: 'settings', lazy: lazyRoute(StudentSettingsPage) },
     ],
   },
   {
     path: '/parent',
-    element: (
-      <ProtectedRoute allowedRoles={['parent']}>
-        <ParentLayout />
-      </ProtectedRoute>
-    ),
+    lazy: lazyRoute(() => import('@/routes/ParentRoute')),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'children', element: <CoursesPage /> },
-      { path: 'children/:id', element: <StudentDetailPage /> },
-      { path: 'enroll', element: <EnrollPage /> },
-      { path: 'payments', element: <PaymentsPageOld /> },
-      { path: 'invoices', element: <InvoicesPageOld /> },
-      { path: 'schedule', element: <SchedulePageOld /> },
-      { path: 'messages', element: <MessagesPage /> },
-      { path: 'profile', element: <ProfilePage /> },
+      { path: 'dashboard', lazy: lazyRoute(DashboardPage) },
+      { path: 'children', lazy: lazyRoute(CoursesPage) },
+      { path: 'children/:id', lazy: lazyRoute(StudentDetailPage) },
+      { path: 'enroll', lazy: lazyRoute(EnrollPage) },
+      { path: 'payments', lazy: lazyRoute(PaymentsPageOld) },
+      { path: 'invoices', lazy: lazyRoute(InvoicesPageOld) },
+      { path: 'schedule', lazy: lazyRoute(SchedulePageOld) },
+      { path: 'messages', lazy: lazyRoute(MessagesPage) },
+      { path: 'profile', lazy: lazyRoute(ProfilePage) },
     ],
   },
   {
     path: '/leaderboard',
-    element: <LeaderboardPage />,
+    lazy: lazyRoute(LeaderboardPage),
   },
   {
     path: '/',
-    element: <LandingPage />,
+    lazy: lazyRoute(LandingPage),
   },
   {
     path: '*',
