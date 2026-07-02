@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
@@ -30,28 +30,11 @@ export function useRealtimeSubscription({
   onDelete,
 }: UseRealtimeOptions) {
   const queryClient = useQueryClient();
-  const channelRef = useRef<any>(null);
+  const optionsRef = useRef({ queryKey, onInsert, onUpdate, onDelete });
+  optionsRef.current = { queryKey, onInsert, onUpdate, onDelete };
 
-  const handleChange = useCallback(
-    (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-      switch (payload.eventType) {
-        case 'INSERT':
-          onInsert?.(payload);
-          break;
-        case 'UPDATE':
-          onUpdate?.(payload);
-          break;
-        case 'DELETE':
-          onDelete?.(payload);
-          break;
-      }
-      queryClient.invalidateQueries({ queryKey: queryKey });
-    },
-    [queryClient, queryKey, onInsert, onUpdate, onDelete],
-  );
-
-  const subscribe = useCallback(() => {
-    const channelName = `${table}-changes-${Date.now()}`;
+  useEffect(() => {
+    const channelName = `${table}-changes`;
     const channel = supabase.channel(channelName);
 
     const changesConfig: any = {
@@ -61,24 +44,29 @@ export function useRealtimeSubscription({
     };
     if (filter) changesConfig.filter = filter;
 
-    channel.on(
-      'postgres_changes',
-      changesConfig,
-      handleChange,
-    );
+    const handleChange = (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+      const opts = optionsRef.current;
+      switch (payload.eventType) {
+        case 'INSERT':
+          opts.onInsert?.(payload);
+          break;
+        case 'UPDATE':
+          opts.onUpdate?.(payload);
+          break;
+        case 'DELETE':
+          opts.onDelete?.(payload);
+          break;
+      }
+      queryClient.invalidateQueries({ queryKey: opts.queryKey });
+    };
 
+    channel.on('postgres_changes', changesConfig, handleChange);
     channel.subscribe();
-    channelRef.current = channel;
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [table, event, filter, handleChange]);
-
-  useEffect(() => {
-    const unsubscribe = subscribe();
-    return () => unsubscribe();
-  }, [subscribe]);
+  }, [table, event, filter]);
 }
 
 // ─── useRealtimeDashboard ────────────────────────────────────
