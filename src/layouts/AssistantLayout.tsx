@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -44,6 +44,36 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 export default function AssistantLayout() {
   const { lang } = useLang();
+  useEffect(() => {
+    const routes = [
+      import('@/features/assistant/dashboard/AssistantDashboardPage'),
+      import('@/features/assistant/students/StudentsPage'),
+      import('@/features/assistant/parents/ParentsPage'),
+      import('@/features/assistant/registrations/RegistrationsPage'),
+      import('@/features/assistant/attendance/AttendancePage'),
+      import('@/features/assistant/rfid/RfidPage'),
+      import('@/features/assistant/groups/GroupsPage'),
+      import('@/features/assistant/schedules/SchedulesPage'),
+      import('@/features/assistant/rooms/RoomsPage'),
+      import('@/features/assistant/payments/PaymentsPage'),
+      import('@/features/assistant/invoices/InvoicesPage'),
+      import('@/features/assistant/notifications/NotificationsPage'),
+      import('@/features/assistant/emails/EmailsPage'),
+      import('@/features/assistant/resources/ResourcesPage'),
+      import('@/features/assistant/campaigns/CampaignsPage'),
+      import('@/features/assistant/reports/ReportsPage'),
+      import('@/features/assistant/calendar/CalendarPage'),
+      import('@/features/assistant/search/SearchPage'),
+      import('@/features/assistant/settings/SettingsPage'),
+      import('@/pages/StudentDetailPage'),
+      import('@/pages/CoursesPage'),
+      import('@/pages/CourseDetailPage'),
+      import('@/pages/MessagesPage'),
+      import('@/pages/ProfilePage'),
+    ];
+    routes.forEach(p => p.catch(() => {}));
+  }, []);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const assistantNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/assistant/dashboard', icon: 'LayoutDashboard' },

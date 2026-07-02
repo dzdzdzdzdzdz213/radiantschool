@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -65,6 +65,25 @@ export default function AdminLayout() {
       return false;
     }
   });
+
+  useEffect(() => {
+    const routes = [
+      import('@/features/dashboard/AdminDashboardPage'),
+      import('@/pages/admin/UsersPage'),
+      import('@/pages/CoursesPage'),
+      import('@/pages/CourseDetailPage'),
+      import('@/features/assistant/attendance/AttendancePage'),
+      import('@/pages/PaymentsPage'),
+      import('@/pages/InvoicesPage'),
+      import('@/features/assistant/reports/ReportsPage'),
+      import('@/pages/MessagesPage'),
+      import('@/pages/SchedulePage'),
+      import('@/pages/ProfilePage'),
+      import('@/pages/admin/SettingsPage'),
+      import('@/pages/StudentDetailPage'),
+    ];
+    routes.forEach(p => p.catch(() => {}));
+  }, []);
 
   const handleToggleCollapse = () => {
     setSidebarCollapsed(prev => {

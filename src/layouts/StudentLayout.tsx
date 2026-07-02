@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -25,6 +25,34 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 export default function StudentLayout() {
   const { lang } = useLang();
+  useEffect(() => {
+    const routes = [
+      import('@/features/student/dashboard/StudentDashboardPage'),
+      import('@/features/student/courses/StudentCoursesPage'),
+      import('@/features/student/schedule/StudentSchedulePage'),
+      import('@/features/student/calendar/StudentCalendarPage'),
+      import('@/features/student/attendance/StudentAttendancePage'),
+      import('@/features/student/homework/StudentHomeworkPage'),
+      import('@/features/student/resources/StudentResourcesPage'),
+      import('@/features/student/online-classes/StudentOnlineClassesPage'),
+      import('@/features/student/private-lessons/StudentPrivateLessonsPage'),
+      import('@/features/student/vip-classes/StudentVipClassesPage'),
+      import('@/features/student/payments/StudentPaymentsPage'),
+      import('@/features/student/invoices/StudentInvoicesPage'),
+      import('@/features/student/certificates/StudentCertificatesPage'),
+      import('@/features/student/announcements/StudentAnnouncementsPage'),
+      import('@/features/student/messages/StudentMessagesPage'),
+      import('@/features/student/notifications/StudentNotificationsPage'),
+      import('@/features/student/reviews/StudentReviewsPage'),
+      import('@/features/student/profile/StudentProfilePage'),
+      import('@/features/student/settings/StudentSettingsPage'),
+      import('@/pages/EnrollPage'),
+      import('@/pages/CourseDetailPage'),
+      import('@/pages/LeaderboardPage'),
+    ];
+    routes.forEach(p => p.catch(() => {}));
+  }, []);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const studentNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/student/dashboard', icon: 'LayoutDashboard' },

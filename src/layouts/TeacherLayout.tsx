@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -25,6 +25,35 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 export default function TeacherLayout() {
   const { lang } = useLang();
+  useEffect(() => {
+    const routes = [
+      import('@/features/teacher/dashboard/TeacherDashboardPage'),
+      import('@/features/teacher/students/TeacherStudentsPage'),
+      import('@/features/teacher/schedule/SchedulePage'),
+      import('@/features/teacher/calendar/CalendarPage'),
+      import('@/features/teacher/attendance/TeacherAttendancePage'),
+      import('@/features/teacher/assignments/AssignmentsPage'),
+      import('@/features/teacher/homework/HomeworkPage'),
+      import('@/features/teacher/resources/ResourcesPage'),
+      import('@/features/teacher/online-classes/OnlineClassesPage'),
+      import('@/features/teacher/private-lessons/PrivateLessonsPage'),
+      import('@/features/teacher/vip-classes/VipClassesPage'),
+      import('@/features/teacher/announcements/AnnouncementsPage'),
+      import('@/features/teacher/messages/MessagesPage'),
+      import('@/features/teacher/reports/ReportsPage'),
+      import('@/features/teacher/revenue/RevenuePage'),
+      import('@/features/teacher/reviews/ReviewsPage'),
+      import('@/features/teacher/profile/TeacherProfilePage'),
+      import('@/features/teacher/settings/TeacherSettingsPage'),
+      import('@/pages/StudentDetailPage'),
+      import('@/pages/CoursesPage'),
+      import('@/pages/CourseDetailPage'),
+      import('@/pages/TeacherEvaluationsPage'),
+      import('@/pages/LeaderboardPage'),
+    ];
+    routes.forEach(p => p.catch(() => {}));
+  }, []);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const teacherNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/teacher/dashboard', icon: 'LayoutDashboard' },
