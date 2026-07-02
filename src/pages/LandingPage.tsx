@@ -67,22 +67,24 @@ export default function LandingPage() {
     ],
     2: [
       { value: 'Mathématiques', label: 'Mathématiques' },
-      { value: '', label: 'Maths Techniques', subs: [
+      { value: 'Maths Techniques', label: 'Maths Techniques', subs: [
         { value: 'Génie Mécanique', label: 'Génie Mécanique' },
         { value: 'Génie des Procédés', label: 'Génie des Procédés' },
         { value: 'Génie Électrique', label: 'Génie Électrique' },
       ]},
-      { value: '', label: 'Lettres', subs: [
+      { value: 'Lettres', label: 'Lettres', subs: [
         { value: 'Langues', label: 'Langues' },
         { value: 'Lettres', label: 'Lettres' },
       ]},
     ],
     3: [
-      { value: '', label: 'Scientifique', subs: [
-        { value: 'Mathématiques', label: 'Mathématiques' },
-        { value: 'Maths Techniques', label: 'Maths Techniques' },
+      { value: 'Mathématiques', label: 'Mathématiques' },
+      { value: 'Maths Techniques', label: 'Maths Techniques', subs: [
+        { value: 'Génie Mécanique', label: 'Génie Mécanique' },
+        { value: 'Génie des Procédés', label: 'Génie des Procédés' },
+        { value: 'Génie Électrique', label: 'Génie Électrique' },
       ]},
-      { value: '', label: 'Lettres', subs: [
+      { value: 'Lettres', label: 'Lettres', subs: [
         { value: 'Langues', label: 'Langues' },
         { value: 'Lettres', label: 'Lettres' },
       ]},
@@ -115,9 +117,8 @@ export default function LandingPage() {
   };
 
   const activeStreams = catFilter === 'high_school' && yearFilter > 0 ? STREAMS_BY_YEAR[yearFilter] ?? [] : [];
-  const activeSubs = activeStreams.find(s => s.value === streamFilter)?.subs
-    ?? activeStreams.find(s => s.value === '' && s.subs && s.subs.some(x => x.value === subFilter))?.subs
-    ?? [];
+  const selectedStream = activeStreams.find(s => s.value === streamFilter);
+  const activeSubs = selectedStream?.subs ?? [];
 
   function resetSubFilters() {
     setYearFilter(0);
@@ -415,10 +416,10 @@ export default function LandingPage() {
               <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
                 <ChevronDown className="h-3 w-3 inline mr-1" />Filière
               </span>
-              {activeStreams.filter(s => s.value).map((s) => (
+              {activeStreams.map((s) => (
                 <button
-                  key={s.value}
-                  onClick={() => { setStreamFilter(s.value); setSubFilter(''); }}
+                  key={s.label}
+                  onClick={() => { setStreamFilter(streamFilter === s.value ? '' : s.value); setSubFilter(''); }}
                   className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
                   style={{
                     backgroundColor: streamFilter === s.value ? 'var(--primary)' : 'var(--bg)',
@@ -426,13 +427,8 @@ export default function LandingPage() {
                     border: streamFilter === s.value ? 'none' : '1px solid var(--border)',
                   }}
                 >
-                  {s.label}
+                  {s.label}{s.subs ? ' ▸' : ''}
                 </button>
-              ))}
-              {activeStreams.filter(s => !s.value).map((s) => (
-                <span key={s.label} className="text-xs font-semibold px-2" style={{ color: 'var(--fg-muted)' }}>
-                  {s.label}
-                </span>
               ))}
             </div>
           )}
