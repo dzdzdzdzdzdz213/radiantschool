@@ -34,7 +34,7 @@ export function useRealtimeSubscription({
   optionsRef.current = { queryKey, onInsert, onUpdate, onDelete };
 
   useEffect(() => {
-    const channelName = `${table}-changes`;
+    const channelName = `${table}-changes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase.channel(channelName);
 
     const changesConfig: any = {

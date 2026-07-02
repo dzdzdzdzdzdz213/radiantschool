@@ -1,5 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowLeft, Home } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -40,16 +40,40 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-sm text-muted-foreground">
               {this.state.error?.message || 'Une erreur inattendue s\'est produite. Veuillez réessayer.'}
             </p>
-            <button
-              onClick={() => {
-                this.setState({ hasError: false, error: null });
-                window.location.reload();
-              }}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Réessayer
-            </button>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Réessayer
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    this.setState({ hasError: false, error: null });
+                    window.history.back();
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors flex-1"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Retour
+                </button>
+                <button
+                  onClick={() => {
+                    this.setState({ hasError: false, error: null });
+                    window.location.href = '/';
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors flex-1"
+                >
+                  <Home className="h-4 w-4" />
+                  Accueil
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       );
