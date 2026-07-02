@@ -171,36 +171,79 @@ export function useRealtimeBroadcast(channelName: string) {
 export function useRealtimeDashboard() {
   useRealtimeSubscription({
     table: 'payments',
+    event: '*',
     queryKey: ['revenue_chart'],
   });
 
   useRealtimeSubscription({
+    table: 'payments',
+    event: '*',
+    queryKey: ['payments'],
+  });
+
+  useRealtimeSubscription({
     table: 'attendance',
-    event: 'INSERT',
+    event: '*',
     queryKey: ['attendance_summary_today'],
   });
 
   useRealtimeSubscription({
+    table: 'attendance',
+    event: '*',
+    queryKey: ['attendance'],
+  });
+
+  useRealtimeSubscription({
     table: 'course_enrollments',
-    event: 'INSERT',
+    event: '*',
     queryKey: ['recent_registrations'],
   });
 
   useRealtimeSubscription({
+    table: 'course_enrollments',
+    event: '*',
+    queryKey: ['enrollments'],
+  });
+
+  useRealtimeSubscription({
     table: 'users',
-    event: 'UPDATE',
-    filter: 'status=eq.pending',
+    event: '*',
     queryKey: ['admin_alerts'],
   });
 
   useRealtimeSubscription({
+    table: 'users',
+    event: '*',
+    queryKey: ['users'],
+  });
+
+  useRealtimeSubscription({
     table: 'notifications',
-    event: 'INSERT',
+    event: '*',
     queryKey: ['notifications'],
   });
 
   useRealtimeSubscription({
-    table: 'dashboard_kpi',
-    queryKey: ['dashboard_kpi'],
+    table: 'invoices',
+    event: '*',
+    queryKey: ['invoices'],
+  });
+
+  useRealtimeSubscription({
+    table: 'courses',
+    event: '*',
+    queryKey: ['courses'],
+  });
+
+  useRealtimeSubscription({
+    table: 'courses',
+    event: '*',
+    queryKey: ['occupancy'],
+  });
+
+  useRealtimeSubscription({
+    table: 'messages',
+    event: '*',
+    queryKey: ['messages'],
   });
 }

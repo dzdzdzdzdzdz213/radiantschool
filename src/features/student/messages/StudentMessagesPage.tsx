@@ -40,11 +40,13 @@ export default function StudentMessagesPage() {
   const { data: messagesData, isLoading: messagesLoading, isError: messagesError } = useQuery({
     queryKey: ['messages', selectedId],
     queryFn: async () => {
-      if (!selectedId) return [];
+      if (!selectedId || !profile?.id) return [];
+      const participantId = (conversations ?? []).find((c: any) => c.id === selectedId)?.participant?.id;
+      if (!participantId) return [];
       const { data } = await (supabase as any)
         .from('messages')
-        .select('id, content, sender_id, created_at')
-        .eq('conversation_id', selectedId)
+        .select('id, body, sender_id, created_at')
+        .or(`and(sender_id.eq.${profile.id},receiver_id.eq.${participantId}),and(sender_id.eq.${participantId},receiver_id.eq.${profile.id})`)
         .order('created_at', { ascending: true });
       return (data ?? []).map((m: any) => ({ ...m, isMine: m.sender_id === profile?.id }));
     },
@@ -62,8 +64,10 @@ export default function StudentMessagesPage() {
 
   const handleSend = () => {
     if (!messageText.trim() || !selectedId || !profile?.id) return;
+    const participantId = (conversations ?? []).find((c: any) => c.id === selectedId)?.participant?.id;
+    if (!participantId) return;
     sendMessage.mutate(
-      { conversationId: selectedId, content: messageText, senderId: profile.id },
+      { receiverId: participantId, subject: '', body: messageText, senderId: profile.id },
       { onSuccess: () => setMessageText('') },
     );
   };
@@ -75,7 +79,9 @@ export default function StudentMessagesPage() {
     const { error: uploadError } = await supabase.storage.from('uploads').upload(filePath, file);
     if (uploadError) { toast(uploadError.message, 'error'); return; }
     const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(filePath);
-    await sendMessage.mutateAsync({ conversationId: selectedId, content: publicUrl ?? '', senderId: profile.id });
+    const participantId = (conversations ?? []).find((c: any) => c.id === selectedId)?.participant?.id;
+    if (!participantId) return;
+    await sendMessage.mutateAsync({ receiverId: participantId, subject: '', body: publicUrl ?? '', senderId: profile.id });
     qc.invalidateQueries({ queryKey: ['messages'] });
     qc.invalidateQueries({ queryKey: ['conversations'] });
   };
@@ -115,7 +121,7 @@ export default function StudentMessagesPage() {
                   ) : (messagesData ?? []).map((m: any) => (
                     <div key={m.id} className={`flex ${m.isMine ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[70%] rounded-2xl ${m.isMine ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-accent'} p-3 text-sm`}>
-                        {m.content}
+                        {m.body}
                       </div>
                     </div>
                   ))}

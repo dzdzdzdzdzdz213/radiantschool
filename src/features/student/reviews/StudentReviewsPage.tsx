@@ -44,7 +44,7 @@ export default function StudentReviewsPage() {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('evaluations')
-        .select('id, teaching_quality, communication, engagement, overall_rating, comment, created_at, teacher:users!teacher_id(first_name, last_name)')
+        .select('id, teaching_quality, communication, punctuality, organization, average_score, comment, created_at, teacher:users!teacher_id(first_name, last_name)')
         .eq('student_id', profile.id)
         .order('created_at', { ascending: false });
       return (data ?? []).map((r: any) => ({ ...r, teacherName: `${r.teacher?.first_name ?? ''} ${r.teacher?.last_name ?? ''}` }));
@@ -96,7 +96,7 @@ export default function StudentReviewsPage() {
                 <div key={r.id} className="rounded-xl border p-4">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium">{r.teacherName}</p>
-                    <div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, i) => (<Star key={i} className={`h-3.5 w-3.5 ${i < (r.overall_rating ?? 0) ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground/30'}`} />))}</div>
+                    <div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, i) => (<Star key={i} className={`h-3.5 w-3.5 ${i < Math.round(r.average_score ?? 0) ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground/30'}`} />))}</div>
                   </div>
                   {r.comment && <p className="text-sm text-muted-foreground">{r.comment}</p>}
                   <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(r.created_at)}</p>

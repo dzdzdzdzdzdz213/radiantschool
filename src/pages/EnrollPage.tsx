@@ -12,7 +12,7 @@ interface Subject {
   id: number; name: string;
 }
 interface TeacherInfo {
-  id: string; first_name: string; last_name: string; photo_url: string | null; speciality: string | null;
+  id: string; first_name: string; last_name: string; photo_url: string | null; specialties: string[];
 }
 interface ScheduleInfo {
   id: number; day_of_week: string; start_time: string; end_time: string; room: { name: string } | null;
@@ -407,8 +407,8 @@ export default function EnrollPage() {
                         <div className="min-w-0">
                           <p className="font-semibold text-lg">{c.name}</p>
                           <p className="text-sm text-muted">{c.teacher.first_name} {c.teacher.last_name}</p>
-                          {c.teacher.speciality && (
-                            <p className="text-xs mt-0.5" style={{ color: 'var(--fg-muted)' }}>{c.teacher.speciality}</p>
+                          {c.teacher.specialties.length > 0 && (
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--fg-muted)' }}>{c.teacher.specialties.join(', ')}</p>
                           )}
                         </div>
                       </div>

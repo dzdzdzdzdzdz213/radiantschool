@@ -9,7 +9,7 @@ interface TeacherRating {
   teacherId: string;
   firstName: string;
   lastName: string;
-  speciality: string | null;
+  specialties: string[];
   avgTeaching: number;
   avgCommunication: number;
   avgPunctuality: number;
@@ -81,10 +81,10 @@ export default function LeaderboardPage() {
       const teacherIds = Object.keys(grouped);
       const [usersRes, teacherRes] = await Promise.all([
         supabase.from('users').select('id, first_name, last_name, photo_url').in('id', teacherIds),
-        supabase.from('teachers').select('id, speciality').in('id', teacherIds),
+        supabase.from('teachers').select('id, specialties').in('id', teacherIds),
       ]);
 
-      const specMap = new Map((teacherRes.data || []).map(t => [t.id, t.speciality]));
+      const specMap = new Map((teacherRes.data || []).map(t => [t.id, t.specialties]));
       const userMap = new Map((usersRes.data || []).map(u => [u.id, u]));
 
       const list: TeacherRating[] = teacherIds.map(id => {
@@ -94,7 +94,7 @@ export default function LeaderboardPage() {
           teacherId: id,
           firstName: u?.first_name || '',
           lastName: u?.last_name || '',
-          speciality: specMap.get(id) || null,
+          specialties: (specMap.get(id) ?? []) as string[],
           avgTeaching: Math.round((g.sums[0] / g.count) * 10) / 10,
           avgCommunication: Math.round((g.sums[1] / g.count) * 10) / 10,
           avgPunctuality: Math.round((g.sums[2] / g.count) * 10) / 10,
@@ -244,7 +244,7 @@ export default function LeaderboardPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      {t.speciality && <span className="text-xs text-muted">{t.speciality}</span>}
+                      {t.specialties.length > 0 && <span className="text-xs text-muted">{t.specialties.join(', ')}</span>}
                       <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>
                         {t.reviewCount} avis
                       </span>

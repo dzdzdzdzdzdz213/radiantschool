@@ -58,12 +58,9 @@ export function useStudentDashboard() {
           (supabase as any).from('assignment_submissions').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r: any) => r.count ?? 0),
           (supabase as any).from('course_enrollments').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'active').then((r: any) => r.count ?? 0),
           (supabase as any).from('course_schedules').select('*').eq('day_of_week', dayName).gte('start_time', new Date().toTimeString().slice(0, 5)).order('start_time').limit(1).then((r: any) => r.data?.[0] ?? null),
-          (supabase as any).from('payments').select('id, amount', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'pending').then((r: any) => ({ count: r.count ?? 0 })),
-          (supabase as any).from('invoices').select('remaining_amount').eq('student_id', studentId).eq('status', 'sent').then((r: any) => (r.data ?? []).reduce((s: number, inv: any) => s + (inv.remaining_amount ?? 0), 0)),
-          (supabase as any).from('course_enrollments').select('progress').eq('student_id', studentId).then((r: any) => {
-            const vals = (r.data ?? []).map((e: any) => e.progress ?? 0);
-            return vals.length > 0 ? Math.round(vals.reduce((a: number, b: number) => a + b, 0) / vals.length) : 0;
-          }),
+          (supabase as any).from('payments').select('id, amount', { count: 'exact', head: true }).eq('student_id', studentId).then((r: any) => ({ count: r.count ?? 0 })),
+          (supabase as any).from('invoices').select('total_amount, paid_amount').eq('student_id', studentId).neq('status', 'paid').neq('status', 'cancelled').then((r: any) => (r.data ?? []).reduce((s: number, inv: any) => s + ((inv.total_amount ?? 0) - (inv.paid_amount ?? 0)), 0)),
+          Promise.resolve(0),
           (supabase as any).from('private_lessons').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r: any) => r.count ?? 0),
           (supabase as any).from('vip_classes').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r: any) => r.count ?? 0),
           (supabase as any).from('certificates').select('id', { count: 'exact', head: true }).eq('student_id', studentId).then((r: any) => r.count ?? 0),

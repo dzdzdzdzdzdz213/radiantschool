@@ -45,12 +45,12 @@ export function useAttendance(date?: string, courseId?: number) {
     queryKey: ['attendance', date, courseId],
     queryFn: async () => {
       const filters: any[] = [];
-      if (profile?.role === 'teacher') {
-        filters.push({ column: 'schedule.teacher_id', operator: 'eq', value: profile.id });
-      }
       if (date) filters.push({ column: 'date', operator: 'eq', value: date });
-      if (courseId) filters.push({ column: 'schedule.course_id', operator: 'eq', value: courseId });
-      const r = await api.list('attendance', { filters }, '*, student:users(first_name, last_name), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time)');
+      if (courseId) filters.push({ column: 'course_schedule_id', operator: 'eq', value: courseId });
+      const r = await api.list('attendance', { filters, sort: [{ column: 'date', direction: 'desc' }] }, '*, student:users(first_name, last_name), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time, teacher_id)');
+      if (profile?.role === 'teacher') {
+        return (r.data ?? []).filter((a: any) => a.schedule?.teacher_id === profile.id);
+      }
       return r.data;
     },
     enabled: !!profile,

@@ -26,7 +26,7 @@ export default function StudentInvoicesPage() {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('invoices')
-        .select('id, reference, description, total_amount, paid_amount, remaining_amount, status, due_date, created_at, invoice_url')
+        .select('id, reference, description, total_amount, paid_amount, status, due_date, created_at, invoice_url')
         .eq('student_id', profile.id)
         .order('created_at', { ascending: false });
       let items = data ?? [];
@@ -41,13 +41,14 @@ export default function StudentInvoicesPage() {
   const payMutation = useMutationWithFeedback(
     async ({ invoiceId }: { invoiceId: string }) => {
       if (!profile?.id) return;
-      const { data: inv } = await (supabase as any).from('invoices').select('remaining_amount').eq('id', invoiceId).single();
+      const { data: inv } = await (supabase as any).from('invoices').select('total_amount, paid_amount').eq('id', invoiceId).single();
+      const remaining = (inv?.total_amount ?? 0) - (inv?.paid_amount ?? 0);
       const { error } = await (supabase as any).from('payments').insert({
         student_id: profile.id,
-        invoice_id: invoiceId,
-        amount: inv?.remaining_amount ?? 0,
-        method: 'online',
-        status: 'pending',
+        amount: remaining,
+        payment_method: 'online',
+        payment_type: 'invoice',
+        recorded_by: profile.id,
         created_at: new Date().toISOString(),
       });
       if (error) throw error;
@@ -55,7 +56,7 @@ export default function StudentInvoicesPage() {
     { successMessage: 'Demande de paiement effectuée', invalidateQueries: [['student_invoices'], ['student_payments']] },
   );
 
-  const totalDue = (invoices ?? []).filter((i: any) => i.status === 'sent').reduce((s: number, i: any) => s + (i.remaining_amount ?? 0), 0);
+  const totalDue = (invoices ?? []).filter((i: any) => i.status !== 'paid' && i.status !== 'cancelled').reduce((s: number, i: any) => s + ((i.total_amount ?? 0) - (i.paid_amount ?? 0)), 0);
 
   return (
     <div className="space-y-6">
@@ -79,8 +80,8 @@ export default function StudentInvoicesPage() {
                   <TableCell className="text-sm max-w-[200px] truncate">{inv.description ?? ''}</TableCell>
                   <TableCell className="text-sm">{inv.due_date ? formatDate(inv.due_date) : '—'}{inv.due_date && new Date(inv.due_date) < new Date() && inv.status !== 'paid' ? <AlertCircle className="h-3 w-3 text-red-500 inline ml-1" /> : null}</TableCell>
                   <TableCell className="text-sm">{inv.total_amount ?? 0} DA</TableCell>
-                  <TableCell className="text-sm">{inv.remaining_amount ?? 0} DA</TableCell>
-                  <TableCell><Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'cancelled' ? 'destructive' : inv.status === 'overdue' ? 'destructive' : 'warning'}>{inv.status === 'paid' ? 'Payée' : inv.status === 'sent' ? 'Envoyée' : inv.status === 'overdue' ? 'En retard' : inv.status}</Badge></TableCell>
+                  <TableCell className="text-sm">{((inv.total_amount ?? 0) - (inv.paid_amount ?? 0))} DA</TableCell>
+                  <TableCell><Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'cancelled' ? 'destructive' : 'warning'}>{inv.status === 'paid' ? 'Payée' : inv.status === 'unpaid' ? 'Impayée' : inv.status === 'partially_paid' ? 'Partielle' : inv.status}</Badge></TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (inv.invoice_url) downloadFile.mutate({ fileUrl: inv.invoice_url, filename: `facture_${inv.reference ?? inv.id}.pdf` }); }} disabled={downloadFile.isPending}>

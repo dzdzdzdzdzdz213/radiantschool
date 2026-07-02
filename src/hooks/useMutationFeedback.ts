@@ -76,20 +76,18 @@ export function useSendMessage() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ conversationId, content, senderId }: { conversationId: string; content: string; senderId: string }) => {
+    mutationFn: async ({ receiverId, subject, body, senderId }: { receiverId: string; subject: string; body: string; senderId: string }) => {
       const { error } = await (supabase as any).from('messages').insert({
-        conversation_id: conversationId,
         sender_id: senderId,
-        content,
+        receiver_id: receiverId,
+        subject,
+        body,
         created_at: new Date().toISOString(),
       });
       if (error) throw error;
-
-      await (supabase as any).from('conversations').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conversationId);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['messages'] });
-      qc.invalidateQueries({ queryKey: ['conversations'] });
     },
     onError: (err: any) => {
       toast(err?.message ?? 'Erreur lors de l\'envoi du message', 'error');
@@ -168,7 +166,10 @@ export function useSubmitReview() {
       const { error } = await (supabase as any).from('evaluations').upsert({
         student_id: studentId,
         teacher_id: teacherId,
-        overall_rating: rating,
+        teaching_quality: rating,
+        communication: rating,
+        punctuality: rating,
+        organization: rating,
         comment,
         created_at: new Date().toISOString(),
       }, { onConflict: 'student_id,teacher_id' });

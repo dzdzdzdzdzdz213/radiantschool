@@ -9,7 +9,7 @@ interface TeacherEval {
   teacherId: string;
   firstName: string;
   lastName: string;
-  speciality: string | null;
+  specialties: string[];
   existing: {
     teaching_quality: number;
     communication: number;
@@ -70,7 +70,7 @@ export default function StudentReviewsPage() {
 
     const { data: teacherProfiles } = await supabase
       .from('teachers')
-      .select('id, speciality')
+      .select('id, specialties')
       .in('id', teacherIds);
 
     const { data: existingEvals } = await supabase
@@ -79,7 +79,7 @@ export default function StudentReviewsPage() {
       .eq('student_id', profile!.id)
       .in('teacher_id', teacherIds);
 
-    const specMap = new Map((teacherProfiles || []).map(t => [t.id, t.speciality]));
+    const specMap = new Map((teacherProfiles || []).map(t => [t.id, t.specialties]));
     const evalMap = new Map((existingEvals || []).map(e => [e.teacher_id, e]));
 
     const list: TeacherEval[] = (users || [])
@@ -88,7 +88,7 @@ export default function StudentReviewsPage() {
         teacherId: u.id,
         firstName: u.first_name,
         lastName: u.last_name,
-        speciality: specMap.get(u.id) || null,
+        specialties: (specMap.get(u.id) ?? []) as string[],
         existing: evalMap.get(u.id) ? {
           teaching_quality: evalMap.get(u.id)!.teaching_quality,
           communication: evalMap.get(u.id)!.communication,
@@ -188,7 +188,7 @@ export default function StudentReviewsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-lg">{getFullName(t.firstName, t.lastName)}</p>
-                    {t.speciality && <p className="text-sm text-muted">{t.speciality}</p>}
+                    {t.specialties.length > 0 && <p className="text-sm text-muted">{t.specialties.join(', ')}</p>}
                   </div>
                   {done && (
                     <span className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(34,197,94,0.1)', color: '#16a34a' }}>

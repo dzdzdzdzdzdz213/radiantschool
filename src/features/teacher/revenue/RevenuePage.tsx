@@ -23,7 +23,7 @@ export default function RevenuePage() {
       if (e1) throw e1;
       const { data: vipL, error: e2 } = await (supabase as any).from('vip_classes').select('price, date, status').eq('teacher_id', profile.id);
       if (e2) throw e2;
-      const { data: sessions, error: e3 } = await (supabase as any).from('course_schedules').select('price_per_session, course_id').eq('teacher_id', profile.id);
+      const { data: sessions, error: e3 } = await (supabase as any).from('course_schedules').select('course_id').eq('teacher_id', profile.id);
       if (e3) throw e3;
       const { data: payouts, error: e4 } = await (supabase as any).from('teacher_payroll').select('amount, status, paid_at').eq('teacher_id', profile.id);
       if (e4) throw e4;

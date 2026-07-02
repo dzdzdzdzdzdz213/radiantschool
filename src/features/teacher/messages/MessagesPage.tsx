@@ -42,11 +42,13 @@ export default function MessagesPage() {
   const { data: messages, isLoading: msgLoading } = useQuery({
     queryKey: ['teacher_messages', selectedId],
     queryFn: async () => {
-      if (!selectedId) return [];
+      if (!selectedId || !profile?.id) return [];
+      const participantId = selectedConv?.participant?.id;
+      if (!participantId) return [];
       const { data, error } = await (supabase as any)
         .from('messages')
-        .select('id, content, sender_id, created_at')
-        .eq('conversation_id', selectedId)
+        .select('id, body, sender_id, created_at')
+        .or(`and(sender_id.eq.${profile.id},receiver_id.eq.${participantId}),and(sender_id.eq.${participantId},receiver_id.eq.${profile.id})`)
         .order('created_at', { ascending: true });
       if (error) throw error;
       return data ?? [];
@@ -58,7 +60,9 @@ export default function MessagesPage() {
 
   const handleSend = () => {
     if (!message.trim() || !selectedId || !profile?.id) return;
-    sendMessage.mutate({ conversationId: selectedId, content: message.trim(), senderId: profile.id });
+    const participantId = selectedConv?.participant?.id;
+    if (!participantId) return;
+    sendMessage.mutate({ receiverId: participantId, subject: '', body: message.trim(), senderId: profile.id });
     setMessage('');
   };
 
@@ -80,7 +84,9 @@ export default function MessagesPage() {
       const { error: uploadError } = await supabase.storage.from('uploads').upload(filePath, file);
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(filePath);
-      await sendMessage.mutateAsync({ conversationId: selectedId, content: publicUrl ?? '', senderId: profile.id });
+      const participantId = selectedConv?.participant?.id;
+      if (!participantId) return;
+      await sendMessage.mutateAsync({ receiverId: participantId, subject: '', body: publicUrl ?? '', senderId: profile.id });
       toast('Fichier envoyé', 'success');
     } catch (err: any) {
       toast(err?.message ?? 'Erreur lors de l\'envoi du fichier', 'error');
@@ -137,7 +143,7 @@ export default function MessagesPage() {
                   ) : (messages ?? []).map((m: any) => (
                     <div key={m.id} className={`flex ${m.sender_id === profile?.id ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[70%] rounded-2xl p-3 text-sm ${m.sender_id === profile?.id ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-accent'}`}>
-                        {m.content}
+                        {m.body}
                       </div>
                     </div>
                   ))}
