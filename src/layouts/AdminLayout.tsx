@@ -52,7 +52,6 @@ import('@/pages/PaymentsPage').catch(() => {});
 import('@/pages/InvoicesPage').catch(() => {});
 import('@/features/assistant/reports/ReportsPage').catch(() => {});
 import('@/pages/MessagesPage').catch(() => {});
-import('@/pages/SchedulePage').catch(() => {});
 import('@/pages/ProfilePage').catch(() => {});
 import('@/pages/admin/SettingsPage').catch(() => {});
 import('@/pages/StudentDetailPage').catch(() => {});

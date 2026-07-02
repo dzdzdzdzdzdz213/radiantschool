@@ -32,7 +32,7 @@ import('@/pages/StudentDetailPage').catch(() => {});
 import('@/pages/EnrollPage').catch(() => {});
 import('@/pages/PaymentsPage').catch(() => {});
 import('@/pages/InvoicesPage').catch(() => {});
-import('@/pages/SchedulePage').catch(() => {});
+
 import('@/pages/MessagesPage').catch(() => {});
 import('@/pages/ProfilePage').catch(() => {});
 

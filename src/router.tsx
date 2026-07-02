@@ -6,6 +6,9 @@ import TeacherRoute from '@/routes/TeacherRoute';
 import StudentRoute from '@/routes/StudentRoute';
 import ParentRoute from '@/routes/ParentRoute';
 
+// Eagerly imported pages (small enough to not justify lazy loading overhead)
+import SchedulePage from '@/pages/SchedulePage';
+
 function lazyRoute(importFn: () => Promise<{ default: React.ComponentType<any> }>) {
   return () => importFn().then(m => ({ Component: m.default }));
 }
@@ -42,7 +45,6 @@ const CourseDetailPage = () => import('@/pages/CourseDetailPage');
 const PaymentsPageOld = () => import('@/pages/PaymentsPage');
 const InvoicesPageOld = () => import('@/pages/InvoicesPage');
 const MessagesPage = () => import('@/pages/MessagesPage');
-const SchedulePageOld = () => import('@/pages/SchedulePage');
 const ProfilePage = () => import('@/pages/ProfilePage');
 const TeacherEvaluationsPage = () => import('@/pages/TeacherEvaluationsPage');
 const SettingsPage = () => import('@/pages/admin/SettingsPage');
@@ -119,7 +121,7 @@ export const router = createBrowserRouter([
       { path: 'invoices', lazy: lazyRoute(InvoicesPage) },
       { path: 'reports', lazy: lazyRoute(ReportsPage) },
       { path: 'messages', lazy: lazyRoute(MessagesPage) },
-      { path: 'schedule', lazy: lazyRoute(SchedulePageOld) },
+      { path: 'schedule', Component: SchedulePage },
       { path: 'profile', lazy: lazyRoute(ProfilePage) },
       { path: 'settings', lazy: lazyRoute(SettingsPage) },
     ],
@@ -230,7 +232,7 @@ export const router = createBrowserRouter([
       { path: 'enroll', lazy: lazyRoute(EnrollPage) },
       { path: 'payments', lazy: lazyRoute(PaymentsPageOld) },
       { path: 'invoices', lazy: lazyRoute(InvoicesPageOld) },
-      { path: 'schedule', lazy: lazyRoute(SchedulePageOld) },
+      { path: 'schedule', Component: SchedulePage },
       { path: 'messages', lazy: lazyRoute(MessagesPage) },
       { path: 'profile', lazy: lazyRoute(ProfilePage) },
     ],
