@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { t, LANGUAGES } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
-import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search, ChevronDown } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
 function CountUp({ end = 0 }: { end?: number }) {
@@ -51,23 +51,92 @@ export default function LandingPage() {
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [levelFilter, setLevelFilter] = useState('');
 
-  const LEVELS = [
+  // Hierarchical filter state
+  const [catFilter, setCatFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState(0);
+  const [streamFilter, setStreamFilter] = useState('');
+  const [subFilter, setSubFilter] = useState('');
+
+  type StreamOpt = { value: string; label: string; subs?: { value: string; label: string }[] };
+
+  const STREAMS_BY_YEAR: Record<number, StreamOpt[]> = {
+    1: [
+      { value: 'Scientifique', label: 'Scientifique' },
+      { value: 'Lettres', label: 'Lettres' },
+    ],
+    2: [
+      { value: 'Mathématiques', label: 'Mathématiques' },
+      { value: '', label: 'Maths Techniques', subs: [
+        { value: 'Génie Mécanique', label: 'Génie Mécanique' },
+        { value: 'Génie des Procédés', label: 'Génie des Procédés' },
+        { value: 'Génie Électrique', label: 'Génie Électrique' },
+      ]},
+      { value: '', label: 'Lettres', subs: [
+        { value: 'Langues', label: 'Langues' },
+        { value: 'Lettres', label: 'Lettres' },
+      ]},
+    ],
+    3: [
+      { value: '', label: 'Scientifique', subs: [
+        { value: 'Mathématiques', label: 'Mathématiques' },
+        { value: 'Maths Techniques', label: 'Maths Techniques' },
+      ]},
+      { value: '', label: 'Lettres', subs: [
+        { value: 'Langues', label: 'Langues' },
+        { value: 'Lettres', label: 'Lettres' },
+      ]},
+      { value: 'Baccalauréat', label: 'BAC Toutes Sections' },
+    ],
+  };
+
+  const CATEGORIES = [
     { value: '', label: 'Tous' },
-    { value: 'primaire', label: 'Primaire' },
-    { value: 'college', label: 'CEM' },
-    { value: 'lycee', label: 'Lycée' },
+    { value: 'primary', label: 'Primaire' },
+    { value: 'middle', label: 'CEM' },
+    { value: 'high_school', label: 'Lycée' },
   ];
+
+  const YEAR_OPTIONS: Record<string, { value: number; label: string }[]> = {
+    middle: [
+      { value: 0, label: 'Tous' },
+      { value: 1, label: '1ère AM' },
+      { value: 2, label: '2ème AM' },
+      { value: 3, label: '3ème AM' },
+      { value: 4, label: '4ème AM' },
+      { value: -1, label: 'BEM' },
+    ],
+    high_school: [
+      { value: 0, label: 'Tous' },
+      { value: 1, label: '1ère AS' },
+      { value: 2, label: '2ème AS' },
+      { value: 3, label: '3ème AS' },
+    ],
+  };
+
+  const activeStreams = catFilter === 'high_school' && yearFilter > 0 ? STREAMS_BY_YEAR[yearFilter] ?? [] : [];
+  const activeSubs = activeStreams.find(s => s.value === streamFilter)?.subs
+    ?? activeStreams.find(s => s.value === '' && s.subs && s.subs.some(x => x.value === subFilter))?.subs
+    ?? [];
+
+  function resetSubFilters() {
+    setYearFilter(0);
+    setStreamFilter('');
+    setSubFilter('');
+  }
 
   const filtered = (courses ?? []).filter((c: any) => {
     const q = search.toLowerCase();
     const matchSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q);
-    const matchLevel = !levelFilter || c.level?.category === levelFilter;
-    return matchSearch && matchLevel;
+    const matchCat = !catFilter || c.level?.category === catFilter;
+    const matchYear = !yearFilter
+      || (yearFilter === -1 ? c.level?.name?.includes('4AM') || c.level?.name?.includes('BEM') : c.level?.year === yearFilter);
+    const matchStream = !streamFilter || c.level?.stream === streamFilter;
+    const matchSub = !subFilter || c.level?.stream === subFilter;
+    return matchSearch && matchCat && matchYear && matchStream && matchSub;
   });
 
-  const grouped = levelFilter ? null : (() => {
+  const grouped = catFilter ? null : (() => {
     const groups: Record<string, any[]> = {};
     for (const c of filtered) {
       const cat = c.level?.category || 'autres';
@@ -299,23 +368,123 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Level filter chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
-            {LEVELS.map((l) => (
+          {/* Category filter chips */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+            {CATEGORIES.map((c) => (
               <button
-                key={l.value}
-                onClick={() => setLevelFilter(l.value)}
+                key={c.value}
+                onClick={() => { setCatFilter(c.value); resetSubFilters(); }}
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
                 style={{
-                  backgroundColor: levelFilter === l.value ? 'var(--primary)' : 'var(--bg)',
-                  color: levelFilter === l.value ? '#fff' : 'var(--fg-muted)',
-                  border: levelFilter === l.value ? 'none' : '1px solid var(--border)',
+                  backgroundColor: catFilter === c.value ? 'var(--primary)' : 'var(--bg)',
+                  color: catFilter === c.value ? '#fff' : 'var(--fg-muted)',
+                  border: catFilter === c.value ? 'none' : '1px solid var(--border)',
                 }}
               >
-                {l.label}
+                {c.label}
               </button>
             ))}
           </div>
+
+          {/* Year filter chips (CEM / Lycée) */}
+          {catFilter && YEAR_OPTIONS[catFilter] && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
+                <ChevronDown className="h-3 w-3 inline mr-1" />Année
+              </span>
+              {YEAR_OPTIONS[catFilter].map((y) => (
+                <button
+                  key={y.value}
+                  onClick={() => { setYearFilter(y.value); setStreamFilter(''); setSubFilter(''); }}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
+                  style={{
+                    backgroundColor: yearFilter === y.value ? 'var(--primary)' : 'var(--bg)',
+                    color: yearFilter === y.value ? '#fff' : 'var(--fg-muted)',
+                    border: yearFilter === y.value ? 'none' : '1px solid var(--border)',
+                  }}
+                >
+                  {y.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Stream filter chips (Lycée only) */}
+          {activeStreams.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+              <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
+                <ChevronDown className="h-3 w-3 inline mr-1" />Filière
+              </span>
+              {activeStreams.filter(s => s.value).map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => { setStreamFilter(s.value); setSubFilter(''); }}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
+                  style={{
+                    backgroundColor: streamFilter === s.value ? 'var(--primary)' : 'var(--bg)',
+                    color: streamFilter === s.value ? '#fff' : 'var(--fg-muted)',
+                    border: streamFilter === s.value ? 'none' : '1px solid var(--border)',
+                  }}
+                >
+                  {s.label}
+                </button>
+              ))}
+              {activeStreams.filter(s => !s.value).map((s) => (
+                <span key={s.label} className="text-xs font-semibold px-2" style={{ color: 'var(--fg-muted)' }}>
+                  {s.label}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Sub-stream chips (Génie Mécanique, etc.) */}
+          {activeSubs.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+              <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
+                <ChevronDown className="h-3 w-3 inline mr-1" />Spécialité
+              </span>
+              {activeSubs.map((sub) => (
+                <button
+                  key={sub.value}
+                  onClick={() => setSubFilter(sub.value)}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
+                  style={{
+                    backgroundColor: subFilter === sub.value ? 'var(--primary)' : 'var(--bg)',
+                    color: subFilter === sub.value ? '#fff' : 'var(--fg-muted)',
+                    border: subFilter === sub.value ? 'none' : '1px solid var(--border)',
+                  }}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Active filter summary + reset */}
+          {catFilter && (
+            <div className="flex items-center justify-center gap-3 mb-10">
+              {[catFilter && CATEGORIES.find(c => c.value === catFilter)?.label,
+                yearFilter > 0 && YEAR_OPTIONS[catFilter]?.find(y => y.value === yearFilter)?.label,
+                streamFilter,
+                subFilter,
+              ].filter(Boolean).join(' › ') && (
+                <span className="text-xs font-medium" style={{ color: 'var(--fg-muted)' }}>
+                  {[catFilter && CATEGORIES.find(c => c.value === catFilter)?.label,
+                    yearFilter > 0 && YEAR_OPTIONS[catFilter]?.find(y => y.value === yearFilter)?.label,
+                    streamFilter,
+                    subFilter,
+                  ].filter(Boolean).join(' › ')}
+                </span>
+              )}
+              <button
+                onClick={() => { setCatFilter(''); resetSubFilters(); }}
+                className="text-xs font-semibold underline underline-offset-4 transition-colors"
+                style={{ color: 'var(--fg-muted)' }}
+              >
+                Réinitialiser
+              </button>
+            </div>
+          )}
 
           {isLoading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -330,7 +499,7 @@ export default function LandingPage() {
               </div>
               <p className="text-lg font-semibold mb-1">{t('section.formations.empty', lang)}</p>
               <p className="text-sm" style={{ color: 'var(--fg-muted)' }}>Essaie un autre mot-clé</p>
-              <button onClick={() => setSearch('')} className="btn-ghost mt-6 px-5 py-2.5 text-sm">
+              <button onClick={() => { setSearch(''); setCatFilter(''); resetSubFilters(); }} className="btn-ghost mt-6 px-5 py-2.5 text-sm">
                 Réinitialiser la recherche
               </button>
             </div>
