@@ -1,5 +1,10 @@
 import { createBrowserRouter } from 'react-router-dom';
 import SafeRedirect from '@/components/SafeRedirect';
+import AdminRoute from '@/routes/AdminRoute';
+import AssistantRoute from '@/routes/AssistantRoute';
+import TeacherRoute from '@/routes/TeacherRoute';
+import StudentRoute from '@/routes/StudentRoute';
+import ParentRoute from '@/routes/ParentRoute';
 
 function lazyRoute(importFn: () => Promise<{ default: React.ComponentType<any> }>) {
   return () => importFn().then(m => ({ Component: m.default }));
@@ -101,7 +106,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    lazy: lazyRoute(() => import('@/routes/AdminRoute')),
+    Component: AdminRoute,
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(AdminDashboardPage) },
@@ -121,7 +126,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/assistant',
-    lazy: lazyRoute(() => import('@/routes/AssistantRoute')),
+    Component: AssistantRoute,
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(AssistantDashboardPage) },
@@ -157,7 +162,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/teacher',
-    lazy: lazyRoute(() => import('@/routes/TeacherRoute')),
+    Component: TeacherRoute,
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(TeacherDashboardPage) },
@@ -187,7 +192,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/student',
-    lazy: lazyRoute(() => import('@/routes/StudentRoute')),
+    Component: StudentRoute,
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(StudentDashboardPage) },
@@ -216,7 +221,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/parent',
-    lazy: lazyRoute(() => import('@/routes/ParentRoute')),
+    Component: ParentRoute,
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(DashboardPage) },

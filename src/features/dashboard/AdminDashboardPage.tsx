@@ -1,4 +1,3 @@
-import { lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, DollarSign, Users, CalendarCheck, Building2, TrendingUp, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
