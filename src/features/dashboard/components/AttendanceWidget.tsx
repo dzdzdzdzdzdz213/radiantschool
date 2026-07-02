@@ -3,6 +3,8 @@ import { ClipboardCheck, UserCheck, UserX, Clock } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface AttendanceSummary {
   present: number;
@@ -34,6 +36,7 @@ function WidgetSkeleton() {
 }
 
 export default function AttendanceWidget({ data, loading }: AttendanceWidgetProps) {
+  const { lang } = useLang();
   if (loading) return <WidgetSkeleton />;
 
   const pct = data.total > 0 ? Math.round((data.present / data.total) * 100) : 0;
@@ -46,7 +49,7 @@ export default function AttendanceWidget({ data, loading }: AttendanceWidgetProp
           <ClipboardCheck className="h-4 w-4 text-primary" />
         </div>
         <div className="flex-1">
-          <CardTitle className="text-sm font-semibold">Présences du jour</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('nav.attendance', lang)}</CardTitle>
         </div>
         {data.total > 0 && (
           <Badge variant={pct >= 90 ? 'success' : pct >= 75 ? 'warning' : 'destructive'}>
@@ -68,23 +71,23 @@ export default function AttendanceWidget({ data, loading }: AttendanceWidgetProp
           <div className="flex flex-col items-center gap-1 rounded-xl bg-emerald-500/5 p-3">
             <UserCheck className="h-5 w-5 text-emerald-500" />
             <span className="text-lg font-bold">{data.present}</span>
-            <span className="text-[10px] text-muted-foreground">Présents</span>
+            <span className="text-[10px] text-muted-foreground">{t('status.present', lang)}</span>
           </div>
           <div className="flex flex-col items-center gap-1 rounded-xl bg-red-500/5 p-3">
             <UserX className="h-5 w-5 text-red-500" />
             <span className="text-lg font-bold">{data.absent}</span>
-            <span className="text-[10px] text-muted-foreground">Absents</span>
+            <span className="text-[10px] text-muted-foreground">{t('status.absent', lang)}</span>
           </div>
           <div className="flex flex-col items-center gap-1 rounded-xl bg-amber-500/5 p-3">
             <Clock className="h-5 w-5 text-amber-500" />
             <span className="text-lg font-bold">{data.late}</span>
-            <span className="text-[10px] text-muted-foreground">Retards</span>
+            <span className="text-[10px] text-muted-foreground">{t('status.late', lang)}</span>
           </div>
         </div>
 
         {data.total === 0 && (
           <p className="text-xs text-center text-muted-foreground pt-2">
-            Aucune présence enregistrée aujourd'hui
+            {t('common.no_data', lang)}
           </p>
         )}
       </CardContent>

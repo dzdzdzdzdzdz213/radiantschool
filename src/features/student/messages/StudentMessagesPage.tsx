@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/utils';
@@ -13,6 +15,7 @@ import { useSendMessage } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentMessagesPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -54,10 +57,10 @@ export default function StudentMessagesPage() {
   });
 
   useEffect(() => {
-    if (conversationsError) toast('Erreur lors du chargement des conversations', 'error');
+    if (conversationsError) toast(t('errors.load_error', lang, t('nav.messages', lang)), 'error');
   }, [conversationsError]);
   useEffect(() => {
-    if (messagesError) toast('Erreur lors du chargement des messages', 'error');
+    if (messagesError) toast(t('errors.load_error', lang, t('nav.messages', lang)), 'error');
   }, [messagesError]);
 
   const sendMessage = useSendMessage();
@@ -88,19 +91,19 @@ export default function StudentMessagesPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Messages</h1><p className="text-sm text-muted-foreground mt-1">Échangez avec vos professeurs et le centre</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.messages', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.messages', lang)}</p></div>
       <div className="grid lg:grid-cols-3 gap-6 h-[600px]">
         <Card className="lg:col-span-1">
           <CardContent className="p-3 flex flex-col h-full">
-            <div className="relative mb-3"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div>
+            <div className="relative mb-3"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder={t('common.search', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div>
             <div className="flex-1 space-y-1 overflow-y-auto">
               {isLoading ? Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-16 rounded-xl" />))
-              : (conversations ?? []).length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">Aucune conversation</p>
+              : (conversations ?? []).length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>
               : (conversations ?? []).map((c: any) => (
                 <button key={c.id} onClick={() => setSelectedId(c.id)} className={`w-full text-left rounded-xl p-3 transition-colors ${selectedId === c.id ? 'bg-accent' : 'hover:bg-accent/50'}`}>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9"><AvatarFallback className="text-xs bg-primary/10 text-primary">{getInitials(c.participant?.first_name ?? '', c.participant?.last_name ?? '')}</AvatarFallback></Avatar>
-                    <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{c.name}</p><p className="text-xs text-muted-foreground truncate">{c.last_message ?? 'Cliquez pour discuter'}</p></div>
+                    <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{c.name}</p><p className="text-xs text-muted-foreground truncate">{c.last_message ?? t('common.select', lang)}</p></div>
                     {c.unread > 0 && <span className="h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-medium flex items-center justify-center px-1">{c.unread}</span>}
                   </div>
                 </button>
@@ -112,12 +115,12 @@ export default function StudentMessagesPage() {
           <CardContent className="p-0 flex flex-col h-full">
             {selectedId ? (
               <>
-                <div className="flex items-center justify-between p-4 border-b"><div className="flex items-center gap-3"><Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/10 text-primary">?</AvatarFallback></Avatar><p className="text-sm font-medium">Contact</p></div><div className="flex gap-1"><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => toast('Fonctionnalité à venir', 'info')}><Phone className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => toast('Fonctionnalité à venir', 'info')}><Video className="h-4 w-4" /></Button></div></div>
+                <div className="flex items-center justify-between p-4 border-b"><div className="flex items-center gap-3"><Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/10 text-primary">?</AvatarFallback></Avatar><p className="text-sm font-medium">{t('nav.messages', lang)}</p></div><div className="flex gap-1"><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => toast(t('common.info', lang), 'info')}><Phone className="h-4 w-4" /></Button><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => toast(t('common.info', lang), 'info')}><Video className="h-4 w-4" /></Button></div></div>
                 <div className="flex-1 p-4 overflow-y-auto space-y-3">
                   {messagesLoading ? (
                     Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className={`h-12 ${i % 2 === 0 ? 'w-2/3' : 'w-1/2 ml-auto'} rounded-2xl`} />)
                   ) : (messagesData ?? []).length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-8">Aucun message</p>
+                    <p className="text-xs text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>
                   ) : (messagesData ?? []).map((m: any) => (
                     <div key={m.id} className={`flex ${m.isMine ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[70%] rounded-2xl ${m.isMine ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-accent'} p-3 text-sm`}>
@@ -129,14 +132,14 @@ export default function StudentMessagesPage() {
                 <div className="flex items-center gap-2 border-t p-3">
                   <Button variant="ghost" size="sm" className="h-9 w-9 shrink-0" onClick={() => fileInputRef.current?.click()}><Paperclip className="h-4 w-4" /></Button>
                   <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
-                  <Input placeholder="Écrivez votre message..." value={messageText} onChange={e => setMessageText(e.target.value)} className="h-9" onKeyDown={e => { if (e.key === 'Enter' && !sendMessage.isPending) handleSend(); }} />
+                  <Input placeholder={t('common.send', lang)} value={messageText} onChange={e => setMessageText(e.target.value)} className="h-9" onKeyDown={e => { if (e.key === 'Enter' && !sendMessage.isPending) handleSend(); }} />
                   <Button size="sm" className="h-9 w-9 shrink-0" onClick={handleSend} disabled={sendMessage.isPending || !messageText.trim()}>
                     {sendMessage.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
               </>
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground"><div className="text-center"><MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-20" /><p className="text-sm">Sélectionnez une conversation</p></div></div>
+              <div className="flex items-center justify-center h-full text-muted-foreground"><div className="text-center"><MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-20" /><p className="text-sm">{t('common.select', lang)}</p></div></div>
             )}
           </CardContent>
         </Card>

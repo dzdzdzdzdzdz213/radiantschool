@@ -6,10 +6,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getDayLabel, formatTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 export default function SchedulesPage() {
+  const { lang } = useLang();
   const { toast } = useToast();
   const today = new Date();
   const weekStart = new Date(today);
@@ -34,7 +37,7 @@ export default function SchedulesPage() {
   });
 
   useEffect(() => {
-    if (isError) toast('Erreur lors du chargement de l\'emploi du temps', 'error');
+    if (isError) toast(t('errors.load_error', lang, t('nav.schedule', lang)), 'error');
   }, [isError]);
 
   const changeWeek = (direction: number) => {
@@ -49,8 +52,8 @@ export default function SchedulesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Emploi du temps</h1>
-          <p className="text-sm text-muted-foreground mt-1">Planning des cours, enseignants et salles</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.schedule', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('schedule.subtitle', lang)}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => changeWeek(-7)} disabled={changingWeek}>
@@ -96,7 +99,7 @@ export default function SchedulesPage() {
                   ))
                 )}
                 {(schedules?.[day]?.length ?? 0) > 4 && (
-                  <p className="text-[10px] text-muted-foreground text-center">+{schedules![day].length - 4} autres</p>
+                  <p className="text-[10px] text-muted-foreground text-center">+{schedules![day].length - 4} {t('schedule.others', lang)}</p>
                 )}
               </CardContent>
             </Card>

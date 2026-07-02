@@ -1,34 +1,37 @@
 import { useInvoices } from '@/hooks/useQueries';
 import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { FileText, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useEffect } from 'react';
 
 export default function InvoicesPage() {
+  const { lang } = useLang();
   const { data: invoices, isLoading, isError } = useInvoices();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isError) toast('Erreur de chargement des factures', 'error');
+    if (isError) toast(t('errors.load_error', lang, 'des factures'), 'error');
   }, [isError]);
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Factures</h1>
+      <h1 className="text-2xl font-bold">{t('nav.invoices', lang)}</h1>
       <div className="rounded-xl border bg-card shadow-sm">
         {isLoading ? (
-          <div className="p-8 text-center text-muted">Chargement...</div>
+          <div className="p-8 text-center text-muted">{t('common.loading', lang)}</div>
         ) : invoices && invoices.length > 0 ? (
           <table className="w-full">
             <thead>
               <tr className="border-b text-left text-sm text-muted">
                 <th className="px-4 py-3 font-medium">N° Facture</th>
                 <th className="px-4 py-3 font-medium">Élève</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Payé</th>
+                <th className="px-4 py-3 font-medium">{t('common.total', lang)}</th>
+                <th className="px-4 py-3 font-medium">{t('status.paid', lang)}</th>
                 <th className="px-4 py-3 font-medium">Solde</th>
-                <th className="px-4 py-3 font-medium">Statut</th>
-                <th className="px-4 py-3 font-medium">Échéance</th>
+                <th className="px-4 py-3 font-medium">{t('common.status', lang)}</th>
+                <th className="px-4 py-3 font-medium">{t('common.date', lang)}</th>
               </tr>
             </thead>
             <tbody>
@@ -48,7 +51,7 @@ export default function InvoicesPage() {
         ) : (
           <div className="p-8 text-center text-muted">
             <FileText className="mx-auto mb-2 h-8 w-8" />
-            <p>Aucune facture</p>
+            <p>{t('common.no_data', lang)}</p>
           </div>
         )}
       </div>

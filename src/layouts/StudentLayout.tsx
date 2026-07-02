@@ -5,29 +5,9 @@ import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { NavItem } from '@/components/layout/AdminSidebar';
-
-const studentNavItems: NavItem[] = [
-  { label: 'Tableau de bord', path: '/student/dashboard', icon: 'LayoutDashboard' },
-  { label: 'Mes cours', path: '/student/courses', icon: 'BookOpen' },
-  { label: 'Emploi du temps', path: '/student/schedule', icon: 'Calendar' },
-  { label: 'Calendrier', path: '/student/calendar', icon: 'Calendar' },
-  { label: 'Présences', path: '/student/attendance', icon: 'ClipboardCheck' },
-  { label: 'Devoirs', path: '/student/homework', icon: 'FileText' },
-  { label: 'Ressources', path: '/student/resources', icon: 'GraduationCap' },
-  { label: 'Cours en ligne', path: '/student/online-classes', icon: 'Video' },
-  { label: 'Cours particuliers', path: '/student/private-lessons', icon: 'UserPlus' },
-  { label: 'Cours VIP', path: '/student/vip-classes', icon: 'Star' },
-  { label: 'Paiements', path: '/student/payments', icon: 'DollarSign' },
-  { label: 'Factures', path: '/student/invoices', icon: 'FileText' },
-  { label: 'Certificats', path: '/student/certificates', icon: 'Award' },
-  { label: 'Annonces', path: '/student/announcements', icon: 'Megaphone' },
-  { label: 'Messages', path: '/student/messages', icon: 'MessageSquare' },
-  { label: 'Avis', path: '/student/reviews', icon: 'Star' },
-  { label: 'Notifications', path: '/student/notifications', icon: 'Bell' },
-  { label: 'Profil', path: '/student/profile', icon: 'UserCircle' },
-  { label: 'Paramètres', path: '/student/settings', icon: 'Settings' },
-];
 
 function DashboardFallback() {
   return (
@@ -44,7 +24,29 @@ function PageShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function StudentLayout() {
+  const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const studentNavItems: NavItem[] = [
+    { label: t('nav.dashboard', lang), path: '/student/dashboard', icon: 'LayoutDashboard' },
+    { label: t('nav.my_courses', lang), path: '/student/courses', icon: 'BookOpen' },
+    { label: t('nav.schedule', lang), path: '/student/schedule', icon: 'Calendar' },
+    { label: t('nav.calendar', lang), path: '/student/calendar', icon: 'Calendar' },
+    { label: t('nav.attendance', lang), path: '/student/attendance', icon: 'ClipboardCheck' },
+    { label: t('nav.homework', lang), path: '/student/homework', icon: 'FileText' },
+    { label: t('nav.resources', lang), path: '/student/resources', icon: 'GraduationCap' },
+    { label: t('nav.online_classes', lang), path: '/student/online-classes', icon: 'Video' },
+    { label: t('nav.private_lessons', lang), path: '/student/private-lessons', icon: 'UserPlus' },
+    { label: t('nav.vip_classes', lang), path: '/student/vip-classes', icon: 'Star' },
+    { label: t('nav.payments', lang), path: '/student/payments', icon: 'DollarSign' },
+    { label: t('nav.invoices', lang), path: '/student/invoices', icon: 'FileText' },
+    { label: t('nav.certificates', lang), path: '/student/certificates', icon: 'Award' },
+    { label: t('nav.announcements', lang), path: '/student/announcements', icon: 'Megaphone' },
+    { label: t('nav.messages', lang), path: '/student/messages', icon: 'MessageSquare' },
+    { label: t('nav.reviews', lang), path: '/student/reviews', icon: 'Star' },
+    { label: t('nav.notifications', lang), path: '/student/notifications', icon: 'Bell' },
+    { label: t('nav.profile', lang), path: '/student/profile', icon: 'UserCircle' },
+    { label: t('nav.settings', lang), path: '/student/settings', icon: 'Settings' },
+  ];
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem('student_sidebar_collapsed') === 'true';
@@ -74,7 +76,7 @@ export default function StudentLayout() {
         <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-4"><BackButton label="← Retour au site" to="/" /></div>
+            <div className="mb-4"><BackButton label={t('common.back_to_site', lang)} to="/" /></div>
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
                 <PageShell><Outlet /></PageShell>

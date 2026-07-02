@@ -11,10 +11,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function TeacherAttendancePage() {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { lang } = useLang();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -54,25 +57,25 @@ export default function TeacherAttendancePage() {
       const { error } = await (supabase as any).from('attendance').update({ status }).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher_attendance'] }); toast('Présence mise à jour', 'success'); },
-    onError: (err: any) => toast(err?.message ?? 'Erreur lors de la correction', 'error'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher_attendance'] }); toast(t('success.updated', lang, 'Présence'), 'success'); },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Présences</h1><p className="text-sm text-muted-foreground mt-1">Gérer les présences de vos cours</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.attendance', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Rechercher un élève..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
+              <Input placeholder={t('common.search_student', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
             </div>
             <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="h-9 w-40" />
             <Select value={courseFilter} onValueChange={setCourseFilter}>
-              <SelectTrigger className="h-9 w-48"><SelectValue placeholder="Tous les cours" /></SelectTrigger>
+              <SelectTrigger className="h-9 w-48"><SelectValue placeholder={t('common.all', lang)} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les cours</SelectItem>
+                <SelectItem value="">{t('common.all', lang)}</SelectItem>
                 {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -82,21 +85,21 @@ export default function TeacherAttendancePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Élève</TableHead>
-                <TableHead className="hidden sm:table-cell">Cours</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="hidden md:table-cell">Méthode</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('nav.students', lang)}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('nav.courses', lang)}</TableHead>
+                <TableHead>{t('common.status', lang)}</TableHead>
+                <TableHead className="hidden md:table-cell">{'Méthode'}</TableHead>
+                <TableHead className="text-right">{t('common.actions', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? Array.from({ length: 5 }).map((_, i) => (<TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>))
-              : (records ?? []).length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Aucune présence trouvée</TableCell></TableRow>
+              : (records ?? []).length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
               : (records ?? []).map((r: any) => (
                 <TableRow key={r.id}>
                   <TableCell><span className="text-sm font-medium">{r.studentName}</span></TableCell>
                   <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{r.courseName}</TableCell>
-                  <TableCell><Badge variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'destructive'}>{r.status === 'present' ? 'Présent' : r.status === 'late' ? 'En retard' : 'Absent'}</Badge></TableCell>
+                  <TableCell><Badge variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'destructive'}>{r.status === 'present' ? t('status.present', lang) : r.status === 'late' ? t('status.late', lang) : t('status.absent', lang)}</Badge></TableCell>
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{r.method === 'rfid' ? 'RFID' : 'Manuel'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">

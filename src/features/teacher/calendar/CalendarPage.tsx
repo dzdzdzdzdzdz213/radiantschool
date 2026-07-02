@@ -5,12 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 export default function TeacherCalendarPage() {
   const { profile } = useAuth();
+  const { lang } = useLang();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -44,7 +47,7 @@ export default function TeacherCalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Calendrier</h1><p className="text-sm text-muted-foreground mt-1">Vue mensuelle de vos cours</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.calendar', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.schedule', lang)}</p></div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

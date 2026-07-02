@@ -10,8 +10,11 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useInvoices, useCreateInvoice } from './useInvoices';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function InvoicesPage() {
+  const { lang } = useLang();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -21,7 +24,7 @@ export default function InvoicesPage() {
   const createInvoice = useCreateInvoice();
 
   useEffect(() => {
-    if (isError) toast('Erreur lors du chargement des factures', 'error');
+    if (isError) toast(t('errors.load_error', lang, t('nav.invoices', lang)), 'error');
   }, [isError]);
 
   const [showModal, setShowModal] = useState(false);
@@ -31,18 +34,18 @@ export default function InvoicesPage() {
 
   const handleCreateInvoice = () => {
     if (!studentName || !amount || !dueDate) {
-      toast('Veuillez remplir tous les champs', 'error');
+      toast(t('invoices.fill_fields', lang), 'error');
       return;
     }
     createInvoice.mutate(
       { student_id: studentName, total_amount: parseFloat(amount), due_date: dueDate, status: 'unpaid', paid_amount: 0 },
       {
         onSuccess: () => {
-          toast('Facture créée', 'success');
+          toast(t('success.created', lang, t('nav.invoices', lang)), 'success');
           setShowModal(false);
           setStudentName(''); setAmount(''); setDueDate('');
         },
-        onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+        onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
       },
     );
   };
@@ -51,10 +54,10 @@ export default function InvoicesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Factures</h1>
-          <p className="text-sm text-muted-foreground mt-1">Générer et gérer les factures</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.invoices', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('invoices.subtitle', lang)}</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowModal(true)}><Plus className="h-4 w-4" />Nouvelle facture</Button>
+        <Button className="gap-2" onClick={() => setShowModal(true)}><Plus className="h-4 w-4" />{t('invoices.new', lang)}</Button>
       </div>
 
       {showModal && (
@@ -62,26 +65,26 @@ export default function InvoicesPage() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
-              <CardTitle className="text-sm">Nouvelle facture</CardTitle>
+              <CardTitle className="text-sm">{t('invoices.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Élève</Label>
-                <Input placeholder="ID ou nom de l'élève" value={studentName} onChange={e => setStudentName(e.target.value)} />
+                <Label>{t('nav.students', lang)}</Label>
+                <Input placeholder={t('invoices.student_placeholder', lang)} value={studentName} onChange={e => setStudentName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Montant</Label>
-                <Input type="number" placeholder="Montant" value={amount} onChange={e => setAmount(e.target.value)} />
+                <Label>{t('common.amount', lang)}</Label>
+                <Input type="number" placeholder={t('common.amount', lang)} value={amount} onChange={e => setAmount(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Date d'échéance</Label>
+                <Label>{t('invoices.due_date', lang)}</Label>
                 <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setShowModal(false)}>Annuler</Button>
+                <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
                 <Button onClick={handleCreateInvoice} disabled={createInvoice.isPending}>
-                  {createInvoice.isPending ? 'Création...' : 'Créer la facture'}
+                  {createInvoice.isPending ? t('common.loading', lang) : t('invoices.create', lang)}
                 </Button>
               </div>
             </CardContent>
@@ -93,12 +96,12 @@ export default function InvoicesPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} className="h-9 pl-9" />
+              <Input placeholder={t('common.search', lang)} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} className="h-9 pl-9" />
             </div>
             <div className="flex gap-2">
               {['', 'unpaid', 'paid', 'partially_paid', 'overdue'].map(s => (
                 <Button key={s} variant={statusFilter === s ? 'default' : 'outline'} size="sm" onClick={() => { setStatusFilter(s); setPage(1); }} className="h-8">
-                  {s ? (s === 'unpaid' ? 'Impayé' : s === 'paid' ? 'Payé' : s === 'partially_paid' ? 'Partiel' : s === 'overdue' ? 'En retard' : '') : 'Toutes'}
+                  {s ? (s === 'unpaid' ? t('status.unpaid', lang) : s === 'paid' ? t('status.paid', lang) : s === 'partially_paid' ? t('status.partial', lang) : s === 'overdue' ? t('status.late', lang) : '') : t('common.all', lang)}
                 </Button>
               ))}
             </div>
@@ -108,12 +111,12 @@ export default function InvoicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>N° Facture</TableHead>
-                <TableHead>Élève</TableHead>
-                <TableHead>Montant</TableHead>
-                <TableHead className="hidden sm:table-cell">Payé</TableHead>
-                <TableHead className="hidden md:table-cell">Échéance</TableHead>
-                <TableHead className="text-right">Statut</TableHead>
+                <TableHead>{t('invoices.number', lang)}</TableHead>
+                <TableHead>{t('nav.students', lang)}</TableHead>
+                <TableHead>{t('common.amount', lang)}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('status.paid', lang)}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('invoices.due_date', lang)}</TableHead>
+                <TableHead className="text-right">{t('common.status', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -122,7 +125,7 @@ export default function InvoicesPage() {
                   <TableRow key={i}>{[1, 2, 3, 4, 5, 6].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
                 ))
               ) : data?.data.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Aucune facture trouvée</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
               ) : (
                 data?.data.map((inv) => {
                   const remaining = inv.totalAmount - inv.paidAmount;
@@ -135,7 +138,7 @@ export default function InvoicesPage() {
                       <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{formatDate(inv.dueDate)}</TableCell>
                       <TableCell className="text-right">
                         <Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'partially_paid' ? 'warning' : inv.status === 'overdue' ? 'destructive' : 'outline'}>
-                          {remaining <= 0 ? 'Payée' : inv.status === 'overdue' ? 'En retard' : `${formatCurrency(remaining)}`}
+                          {remaining <= 0 ? t('status.paid', lang) : inv.status === 'overdue' ? t('status.late', lang) : `${formatCurrency(remaining)}`}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -146,10 +149,10 @@ export default function InvoicesPage() {
           </Table>
           {data && data.meta.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground">{data.meta.total} factures</p>
+              <p className="text-sm text-muted-foreground">{t('common.total', lang)} : {data.meta.total}</p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Précédent</Button>
-                <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage(p => p + 1)}>Suivant</Button>
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{t('common.previous', lang)}</Button>
+                <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage(p => p + 1)}>{t('common.next', lang)}</Button>
               </div>
             </div>
           )}

@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { ChevronRight, ChevronLeft, Check, Loader, GraduationCap, BookOpen, Users, Clock, MapPin, DollarSign, Star } from 'lucide-react';
 
 interface Level {
@@ -37,6 +39,7 @@ const MAX_COURSES_PER_STUDENT = 5;
 
 export default function EnrollPage() {
   const { profile } = useAuth();
+  const { lang } = useLang();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
@@ -71,7 +74,7 @@ export default function EnrollPage() {
       const { data: s } = await supabase.from('subjects').select('*').order('name');
       setSubjects(s || []);
       if (isParent) loadChildren();
-    })().catch(() => setError('Erreur de chargement des données'));
+    })().catch(() => setError(t('errors.load_error', lang, 'des données')));
   }, [profile]);
 
   const loadChildren = async () => {
@@ -178,7 +181,7 @@ export default function EnrollPage() {
         setError(err.message);
       }
     } else {
-      toast('Inscription réussie !', 'success');
+      toast(t('success.created', lang, 'Inscription'), 'success');
       setResults(prev => prev.map(c => c.id === courseId ? { ...c, current_enrollments: c.current_enrollments + 1 } : c));
     }
     setEnrolling(null);
@@ -200,7 +203,7 @@ export default function EnrollPage() {
       <div className="flex items-center gap-3">
         <GraduationCap className="h-6 w-6" style={{ color: 'var(--primary)' }} />
         <div>
-          <h1 className="text-2xl font-bold">{isParent ? 'Inscrire mon enfant' : 'S\'inscrire à un cours'}</h1>
+          <h1 className="text-2xl font-bold">{isParent ? "Inscrire mon enfant" : "S'inscrire à un cours"}</h1>
           <p className="text-muted text-sm">Suis les étapes pour trouver le cours parfait</p>
         </div>
       </div>

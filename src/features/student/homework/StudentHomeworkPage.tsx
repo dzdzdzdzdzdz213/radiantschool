@@ -6,12 +6,15 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 
 export default function StudentHomeworkPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
@@ -47,19 +50,19 @@ export default function StudentHomeworkPage() {
       });
       if (error) throw error;
     },
-    { successMessage: 'Devoir soumis avec succès', invalidateQueries: [['student_homework']] },
+    { successMessage: t('success.saved', lang, t('nav.homework', lang)), invalidateQueries: [['student_homework']] },
   );
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Devoirs à rendre</h1><p className="text-sm text-muted-foreground mt-1">Consultez et soumettez vos devoirs</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.homework', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.assignments', lang)}</p></div>
       <Card>
-        <CardHeader className="pb-3"><div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div></CardHeader>
+        <CardHeader className="pb-3"><div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder={t('common.search', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div></CardHeader>
         <CardContent>
           <div className="space-y-3">
             {isLoading ? Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-24 rounded-xl" />))
             : (homework ?? []).length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground"><FileText className="h-12 w-12 mx-auto mb-3 opacity-20" /><p className="text-sm">Aucun devoir pour le moment</p></div>
+              <div className="text-center py-12 text-muted-foreground"><FileText className="h-12 w-12 mx-auto mb-3 opacity-20" /><p className="text-sm">{t('common.no_data', lang)}</p></div>
             ) : (homework ?? []).map((h: any) => {
               const isOverdue = h.due_date && new Date(h.due_date) < new Date();
               return (
@@ -71,16 +74,16 @@ export default function StudentHomeworkPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-medium">{h.title}</h4>
                       <Badge variant="outline" className="text-[10px]">{h.courseName}</Badge>
-                      {isOverdue && <Badge variant="destructive" className="text-[10px]">En retard</Badge>}
+                      {isOverdue && <Badge variant="destructive" className="text-[10px]">{t('status.late', lang)}</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{h.description ?? ''}</p>
                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      {h.due_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />À rendre le {formatDate(h.due_date)}</span>}
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Créé le {formatDate(h.created_at)}</span>
+                      {h.due_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{t('common.date', lang)}: {formatDate(h.due_date)}</span>}
+                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{t('common.date', lang)}: {formatDate(h.created_at)}</span>
                     </div>
                   </div>
                   <Button size="sm" className="h-8 shrink-0 gap-1.5" onClick={() => submitMutation.mutate(h.id)} disabled={submitMutation.isPending}>
-                    {submitMutation.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}Soumettre
+                    {submitMutation.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}{t('common.submit', lang)}
                   </Button>
                 </div>
               );

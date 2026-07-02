@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRoute } from '@/lib/permissions';
 import { Eye, EyeOff, Loader, Key, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 const ROLE_META: Record<string, { title: string; badge: string; icon: string }> = {
   student: { title: 'Connexion Étudiant', badge: "Espace Élève", icon: '🎓' },
@@ -34,6 +36,7 @@ export default function LoginPage() {
   const [setupLoading, setSetupLoading] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
   const { signIn, signUp, profile } = useAuth();
+  const { lang } = useLang();
   const navigate = useNavigate();
 
   const meta = ROLE_META[role] ?? ROLE_META.student;
@@ -157,12 +160,12 @@ export default function LoginPage() {
           )}
 
           <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium" style={{ color: 'var(--fg)' }}>Email</label>
+            <label className="mb-1.5 block text-sm font-medium" style={{ color: 'var(--fg)' }}>{t('auth.email', lang)}</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none" placeholder="exemple@email.com" required style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--fg)' }} />
           </div>
 
           <div className="mb-5">
-            <label className="mb-1.5 block text-sm font-medium" style={{ color: 'var(--fg)' }}>Mot de passe</label>
+            <label className="mb-1.5 block text-sm font-medium" style={{ color: 'var(--fg)' }}>{t('auth.password', lang)}</label>
             <div className="relative">
               <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border px-4 py-2.5 pr-11 text-sm outline-none" placeholder="••••••••" required style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--fg)' }} />
               <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--fg-muted)' }}>
@@ -172,12 +175,12 @@ export default function LoginPage() {
           </div>
 
           <button type="submit" disabled={isLoading} className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: 'var(--primary)' }}>
-            {isLoading ? '...' : 'Se connecter'}
+            {isLoading ? '...' : t('auth.sign_in', lang)}
           </button>
 
           {role === 'student' && (
             <p className="mt-4 text-center text-sm" style={{ color: 'var(--fg-muted)' }}>
-              Pas encore de compte? <Link to="/register" className="font-medium" style={{ color: 'var(--primary)' }}>S'inscrire</Link>
+              {t('auth.dont_have_account', lang)} <Link to="/register" className="font-medium" style={{ color: 'var(--primary)' }}>{t('auth.register', lang)}</Link>
             </p>
           )}
         </form>

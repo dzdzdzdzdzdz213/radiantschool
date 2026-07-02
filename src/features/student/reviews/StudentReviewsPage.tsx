@@ -6,12 +6,15 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, getInitials } from '@/lib/utils';
 import { useSubmitReview } from '@/hooks/useMutationFeedback';
 
 export default function StudentReviewsPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -54,16 +57,16 @@ export default function StudentReviewsPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Mes avis</h1><p className="text-sm text-muted-foreground mt-1">Notez vos professeurs et partagez votre expérience</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.reviews', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.reviews', lang)}</p></div>
       <div className="grid lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader><CardTitle className="text-sm">Écrire un avis</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t('common.add', lang)}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs text-muted-foreground mb-2 block">Professeur</label>
+              <label className="text-xs text-muted-foreground mb-2 block">{t('role.teacher', lang)}</label>
               <div className="grid grid-cols-2 gap-2">
                 {teachersLoading ? Array.from({ length: 2 }).map((_, i) => (<Skeleton key={i} className="h-12 rounded-xl" />))
-                : (teachers ?? []).length === 0 ? <p className="text-xs text-muted-foreground col-span-2">Aucun professeur disponible</p>
+                : (teachers ?? []).length === 0 ? <p className="text-xs text-muted-foreground col-span-2">{t('common.no_data', lang)}</p>
                 : (teachers ?? []).map((t: any) => (
                   <button key={t.id} onClick={() => setSelectedTeacher(t.id)} className={`flex items-center gap-2 rounded-xl border p-2.5 text-left transition-colors ${selectedTeacher === t.id ? 'border-primary bg-primary/5' : 'hover:bg-accent'}`}>
                     <Avatar className="h-7 w-7"><AvatarFallback className="text-[10px] bg-primary/10 text-primary">{getInitials(t.first_name ?? '', t.last_name ?? '')}</AvatarFallback></Avatar>
@@ -73,7 +76,7 @@ export default function StudentReviewsPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-2 block">Note</label>
+              <label className="text-xs text-muted-foreground mb-2 block">{t('common.notes', lang)}</label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(star => (
                   <button key={star} onClick={() => setRating(star)} onMouseEnter={() => setHoverRating(star)} onMouseLeave={() => setHoverRating(0)} className="p-1 transition-transform hover:scale-110">
@@ -82,16 +85,16 @@ export default function StudentReviewsPage() {
                 ))}
               </div>
             </div>
-            <div><label className="text-xs text-muted-foreground mb-2 block">Commentaire</label><Textarea placeholder="Partagez votre expérience..." value={comment} onChange={e => setComment(e.target.value)} className="min-h-[100px]" /></div>
-            <Button className="h-9 gap-2" disabled={!selectedTeacher || rating === 0 || submitReview.isPending} onClick={() => { if (profile?.id && selectedTeacher) submitReview.mutate({ studentId: profile.id, teacherId: selectedTeacher, rating, comment }); }}>{submitReview.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Envoyer</Button>
+            <div><label className="text-xs text-muted-foreground mb-2 block">{t('common.description', lang)}</label><Textarea placeholder={t('common.notes', lang)} value={comment} onChange={e => setComment(e.target.value)} className="min-h-[100px]" /></div>
+            <Button className="h-9 gap-2" disabled={!selectedTeacher || rating === 0 || submitReview.isPending} onClick={() => { if (profile?.id && selectedTeacher) submitReview.mutate({ studentId: profile.id, teacherId: selectedTeacher, rating, comment }); }}>{submitReview.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}{t('common.send', lang)}</Button>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-sm">Mes avis précédents</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t('nav.reviews', lang)}</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {(reviews ?? []).length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground"><MessageSquare className="h-10 w-10 mx-auto mb-2 opacity-20" /><p className="text-sm">Aucun avis pour le moment</p></div>
+                <div className="text-center py-8 text-muted-foreground"><MessageSquare className="h-10 w-10 mx-auto mb-2 opacity-20" /><p className="text-sm">{t('common.no_data', lang)}</p></div>
               ) : (reviews ?? []).map((r: any) => (
                 <div key={r.id} className="rounded-xl border p-4">
                   <div className="flex items-center justify-between mb-2">

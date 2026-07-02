@@ -7,6 +7,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { getInitials, formatDateTime } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { RecentRegistration } from '@/features/dashboard/useAdminDashboard';
 
 interface RecentRegistrationsTableProps {
@@ -19,13 +21,6 @@ const statusVariant: Record<string, 'success' | 'warning' | 'destructive' | 'out
   pending: 'warning',
   suspended: 'destructive',
   inactive: 'outline',
-};
-
-const statusLabel: Record<string, string> = {
-  active: 'Actif',
-  pending: 'En attente',
-  suspended: 'Suspendu',
-  inactive: 'Inactif',
 };
 
 function TableSkeleton() {
@@ -53,6 +48,7 @@ function TableSkeleton() {
 }
 
 export default function RecentRegistrationsTable({ data, loading }: RecentRegistrationsTableProps) {
+  const { lang } = useLang();
   if (loading) return <TableSkeleton />;
 
   return (
@@ -62,11 +58,11 @@ export default function RecentRegistrationsTable({ data, loading }: RecentRegist
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
             <Users className="h-4 w-4 text-primary" />
           </div>
-          <CardTitle className="text-sm font-semibold">Inscriptions récentes</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('nav.registrations', lang)}</CardTitle>
         </div>
         <Button variant="ghost" size="sm" asChild>
           <Link to="/admin/users" className="gap-1">
-            Tout voir <ArrowRight className="h-3.5 w-3.5" />
+            {t('common.view_all', lang)} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
       </CardHeader>
@@ -74,16 +70,16 @@ export default function RecentRegistrationsTable({ data, loading }: RecentRegist
         {data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10">
             <Users className="mb-2 h-6 w-6 text-muted-foreground/20" />
-            <p className="text-sm text-muted-foreground">Aucune inscription récente</p>
+            <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Élève</TableHead>
-                <TableHead className="hidden sm:table-cell">Email</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
-                <TableHead className="text-right">Statut</TableHead>
+                <TableHead>{t('role.student', lang)}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('common.email', lang)}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('common.date', lang)}</TableHead>
+                <TableHead className="text-right">{t('common.status', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -110,7 +106,7 @@ export default function RecentRegistrationsTable({ data, loading }: RecentRegist
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge variant={statusVariant[user.status] ?? 'outline'}>
-                      {statusLabel[user.status] ?? user.status}
+                      {user.status === 'active' ? t('status.active', lang) : user.status === 'pending' ? t('status.pending', lang) : user.status === 'suspended' ? t('status.suspended', lang) : user.status === 'inactive' ? t('status.inactive', lang) : user.status}
                     </Badge>
                   </TableCell>
                 </TableRow>

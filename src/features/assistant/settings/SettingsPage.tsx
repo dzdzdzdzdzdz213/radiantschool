@@ -8,15 +8,16 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateUserSettings } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 
 const settingsSections = [
-  { id: 'profile', label: 'Profil', icon: User },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'appearance', label: 'Apparence', icon: Palette },
-  { id: 'language', label: 'Langue', icon: Globe },
+  { id: 'profile', labelKey: 'nav.profile', icon: User },
+  { id: 'notifications', labelKey: 'nav.notifications', icon: Bell },
+  { id: 'appearance', labelKey: 'settings.appearance', icon: Palette },
+  { id: 'language', labelKey: 'settings.language', icon: Globe },
 ] as const;
 
 export default function SettingsPage() {
@@ -50,7 +51,7 @@ export default function SettingsPage() {
     updateSettings.mutate(
       { userId: profile.id, settings: { first_name: firstName, last_name: lastName, email, phone } },
       {
-        onError: (err: any) => toast(err?.message ?? 'Erreur lors de la mise à jour', 'error'),
+        onError: (err: any) => toast(err?.message ?? t('errors.update_error', lang, t('settings.profile', lang)), 'error'),
       },
     );
   };
@@ -62,7 +63,7 @@ export default function SettingsPage() {
       if (profile?.id) {
         updateSettings.mutate(
           { userId: profile.id, settings: { [`notif_${key}`]: value } },
-          { onError: (err: any) => toast(err?.message ?? 'Erreur', 'error') },
+          { onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error') },
         );
       }
     }, 500);
@@ -71,8 +72,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Paramètres</h1>
-        <p className="text-sm text-muted-foreground mt-1">Préférences de l'assistant</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('nav.settings', lang)}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('settings.subtitle', lang)}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-4">
@@ -84,7 +85,7 @@ export default function SettingsPage() {
               onClick={() => setSection(s.id)}
             >
               <s.icon className="h-4 w-4" />
-              <span className="text-sm">{s.label}</span>
+              <span className="text-sm">{t(s.labelKey, lang)}</span>
             </button>
           ))}
         </div>
@@ -92,28 +93,28 @@ export default function SettingsPage() {
         <div className="lg:col-span-3">
           {section === 'profile' && (
             <Card>
-              <CardHeader><CardTitle className="text-sm">Informations du profil</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm">{t('settings.profile_info', lang)}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Prénom</Label>
-                    <Input placeholder="Votre prénom" value={firstName} onChange={e => setFirstName(e.target.value)} />
+                    <Label>{t('common.first_name', lang)}</Label>
+                    <Input placeholder={t('common.first_name', lang)} value={firstName} onChange={e => setFirstName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Nom</Label>
-                    <Input placeholder="Votre nom" value={lastName} onChange={e => setLastName(e.target.value)} />
+                    <Label>{t('common.last_name', lang)}</Label>
+                    <Input placeholder={t('common.last_name', lang)} value={lastName} onChange={e => setLastName(e.target.value)} />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label>{t('common.email', lang)}</Label>
                   <Input type="email" placeholder="email@exemple.com" value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Téléphone</Label>
+                  <Label>{t('common.phone', lang)}</Label>
                   <Input placeholder="+213 5XX XX XX XX" value={phone} onChange={e => setPhone(e.target.value)} />
                 </div>
                 <div className="flex justify-end">
-                  <Button onClick={handleSave} disabled={updateSettings.isPending}>{updateSettings.isPending ? 'Enregistrement...' : 'Enregistrer'}</Button>
+                  <Button onClick={handleSave} disabled={updateSettings.isPending}>{updateSettings.isPending ? t('common.loading', lang) : t('common.save', lang)}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -121,13 +122,13 @@ export default function SettingsPage() {
 
           {section === 'notifications' && (
             <Card>
-              <CardHeader><CardTitle className="text-sm">Préférences de notification</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm">{t('settings.notif_prefs', lang)}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {[
-                  { key: 'inscriptions', label: 'Nouvelles inscriptions', desc: 'Notifications pour les inscriptions en attente' },
-                  { key: 'payments', label: 'Paiements reçus', desc: 'Alertes lors des nouveaux paiements' },
-                  { key: 'absences', label: 'Absences signalées', desc: 'Notifications pour les absences' },
-                  { key: 'rfid', label: 'Scans RFID', desc: 'Alertes pour les échecs de scan RFID' },
+                  { key: 'inscriptions', label: t('settings.notif_inscriptions', lang), desc: t('settings.notif_inscriptions_desc', lang) },
+                  { key: 'payments', label: t('settings.notif_payments', lang), desc: t('settings.notif_payments_desc', lang) },
+                  { key: 'absences', label: t('settings.notif_absences', lang), desc: t('settings.notif_absences_desc', lang) },
+                  { key: 'rfid', label: t('settings.notif_rfid', lang), desc: t('settings.notif_rfid_desc', lang) },
                 ].map((item) => (
                   <div key={item.key} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
                     <div>
@@ -143,12 +144,12 @@ export default function SettingsPage() {
 
           {section === 'appearance' && (
             <Card>
-              <CardHeader><CardTitle className="text-sm">Apparence</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm">{t('settings.appearance', lang)}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between rounded-xl bg-accent/50 p-4">
                   <div>
-                    <p className="text-sm font-medium">Thème sombre</p>
-                    <p className="text-xs text-muted-foreground">Basculer entre le mode clair et sombre</p>
+                    <p className="text-sm font-medium">{t('common.dark_mode', lang)}</p>
+                    <p className="text-xs text-muted-foreground">{t('settings.theme_desc', lang)}</p>
                   </div>
                   <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
                 </div>
@@ -158,7 +159,7 @@ export default function SettingsPage() {
 
           {section === 'language' && (
             <Card>
-              <CardHeader><CardTitle className="text-sm">Langue</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm">{t('settings.language', lang)}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {[
                   { code: 'fr', label: 'Français', flag: '🇫🇷' },

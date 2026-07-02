@@ -7,8 +7,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAttendance, useCorrectAttendance } from './useAttendance';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function AttendancePage() {
+  const { lang } = useLang();
   const [search, setSearch] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const debouncedSearch = useDebounce(search, 300);
@@ -19,8 +22,8 @@ export default function AttendancePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Présences</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gérer les présences, corrections manuelles et historique</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.attendance', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('attendance.subtitle', lang)}</p>
         </div>
         <div className="flex items-center gap-3">
           <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="h-9 w-40" />
@@ -31,18 +34,18 @@ export default function AttendancePage() {
         <CardHeader className="pb-3">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Rechercher un élève..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
+            <Input placeholder={t('common.search_student', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
           </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Élève</TableHead>
-                <TableHead className="hidden sm:table-cell">Cours</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="hidden md:table-cell">Méthode</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('nav.students', lang)}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('nav.courses', lang)}</TableHead>
+                <TableHead>{t('common.status', lang)}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('attendance.method', lang)}</TableHead>
+                <TableHead className="text-right">{t('common.actions', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -51,7 +54,7 @@ export default function AttendancePage() {
                   <TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
                 ))
               ) : data?.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Aucune présence pour cette date</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
               ) : (
                 data?.map((rec) => (
                   <TableRow key={rec.id}>
@@ -59,11 +62,11 @@ export default function AttendancePage() {
                     <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{rec.courseName}</TableCell>
                     <TableCell>
                       <Badge variant={rec.status === 'present' ? 'success' : rec.status === 'late' ? 'warning' : 'destructive'}>
-                        {rec.status === 'present' ? 'Présent' : rec.status === 'late' ? 'En retard' : 'Absent'}
+                        {rec.status === 'present' ? t('status.present', lang) : rec.status === 'late' ? t('status.late', lang) : t('status.absent', lang)}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                      {rec.method === 'rfid' ? 'RFID' : 'Manuel'}
+                      {rec.method === 'rfid' ? 'RFID' : t('attendance.manual', lang)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">

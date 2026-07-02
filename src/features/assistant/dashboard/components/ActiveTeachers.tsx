@@ -1,4 +1,6 @@
 import { Users } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { ActiveTeacher } from '../useAssistantDashboard';
 
 interface ActiveTeachersProps {
@@ -7,6 +9,7 @@ interface ActiveTeachersProps {
 }
 
 export default function ActiveTeachers({ data, loading }: ActiveTeachersProps) {
+  const { lang } = useLang();
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
@@ -20,10 +23,10 @@ export default function ActiveTeachers({ data, loading }: ActiveTeachersProps) {
     <div className="rounded-2xl border border-border bg-card p-5">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <Users className="h-4 w-4 text-primary" />
-        Enseignants en cours
+        {t('nav.teachers', lang)}
       </h3>
       {data.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">Aucun cours en ce moment</p>
+        <p className="text-sm text-muted-foreground py-6 text-center">{t('common.no_data', lang)}</p>
       ) : (
         <div className="space-y-2">
           {data.slice(0, 5).map((t) => (

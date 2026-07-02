@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
@@ -13,6 +15,7 @@ import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentPrivateLessonsPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -30,7 +33,7 @@ export default function StudentPrivateLessonsPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours particuliers', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.private_lessons', lang)), 'error'); }, [isError]);
 
   const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(
     async () => {
@@ -42,29 +45,29 @@ export default function StudentPrivateLessonsPage() {
       });
       if (error) throw error;
     },
-    { successMessage: 'Demande de cours particulier envoyée', invalidateQueries: [['student_private_lessons']] },
+    { successMessage: t('success.sent', lang, t('nav.private_lessons', lang)), invalidateQueries: [['student_private_lessons']] },
   );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Cours particuliers</h1><p className="text-sm text-muted-foreground mt-1">Demandez et suivez vos cours individuels</p></div>
-        <Button className="h-9 gap-2" onClick={() => bookMutation.mutate()} disabled={bookMutation.isPending}>{bookMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}Réserver</Button>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.private_lessons', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.private_lessons', lang)}</p></div>
+        <Button className="h-9 gap-2" onClick={() => bookMutation.mutate()} disabled={bookMutation.isPending}>{bookMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}{t('common.add', lang)}</Button>
       </div>
       <Card>
         <CardContent className="p-0">
           <Table>
-            <TableHeader><TableRow><TableHead>Professeur</TableHead><TableHead>Date</TableHead><TableHead>Horaire</TableHead><TableHead>Prix</TableHead><TableHead className="text-right">Statut</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>{t('role.teacher', lang)}</TableHead><TableHead>{t('common.date', lang)}</TableHead><TableHead>{t('common.time', lang)}</TableHead><TableHead>{t('common.price', lang)}</TableHead><TableHead className="text-right">{t('common.status', lang)}</TableHead></TableRow></TableHeader>
             <TableBody>
               {isLoading ? Array.from({ length: 4 }).map((_, i) => (<TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><Skeleton className="h-5 w-full" /></TableCell>)}</TableRow>))
-              : (lessons ?? []).length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground">Aucun cours particulier</TableCell></TableRow>
+              : (lessons ?? []).length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               : (lessons ?? []).map((l: any) => (
                 <TableRow key={l.id}>
                   <TableCell className="text-sm font-medium">{l.teacherName}</TableCell>
                   <TableCell className="text-sm">{formatDate(l.date)}</TableCell>
                   <TableCell className="text-sm">{formatTime(l.start_time)} - {formatTime(l.end_time)}</TableCell>
                   <TableCell className="text-sm">{l.price ?? 0} €</TableCell>
-                  <TableCell className="text-right"><Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'}>{l.status === 'completed' ? 'Effectué' : l.status === 'cancelled' ? 'Annulé' : 'Planifié'}</Badge></TableCell>
+                  <TableCell className="text-right"><Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'}>{l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}</Badge></TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -5,21 +5,9 @@ import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { NavItem } from '@/components/layout/AdminSidebar';
-
-const adminNavItems: NavItem[] = [
-  { label: 'Tableau de bord', path: '/admin/dashboard', icon: 'LayoutDashboard' },
-  { label: 'Utilisateurs', path: '/admin/users', icon: 'Users' },
-  { label: 'Cours', path: '/admin/courses', icon: 'BookOpen' },
-  { label: 'Présences', path: '/admin/attendance', icon: 'ClipboardCheck' },
-  { label: 'Paiements', path: '/admin/payments', icon: 'DollarSign' },
-  { label: 'Factures', path: '/admin/invoices', icon: 'FileText' },
-  { label: 'Emploi du temps', path: '/admin/schedule', icon: 'Calendar' },
-  { label: 'Rapports', path: '/admin/reports', icon: 'BarChart3' },
-  { label: 'Messages', path: '/admin/messages', icon: 'MessageSquare' },
-  { label: 'Profil', path: '/admin/profile', icon: 'UserCircle' },
-  { label: 'Paramètres', path: '/admin/settings', icon: 'Settings' },
-];
 
 function DashboardFallback() {
   return (
@@ -55,7 +43,21 @@ function PageShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function AdminLayout() {
+  const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const adminNavItems: NavItem[] = [
+    { label: t('nav.dashboard', lang), path: '/admin/dashboard', icon: 'LayoutDashboard' },
+    { label: t('nav.users', lang), path: '/admin/users', icon: 'Users' },
+    { label: t('nav.courses', lang), path: '/admin/courses', icon: 'BookOpen' },
+    { label: t('nav.attendance', lang), path: '/admin/attendance', icon: 'ClipboardCheck' },
+    { label: t('nav.payments', lang), path: '/admin/payments', icon: 'DollarSign' },
+    { label: t('nav.invoices', lang), path: '/admin/invoices', icon: 'FileText' },
+    { label: t('nav.schedule', lang), path: '/admin/schedule', icon: 'Calendar' },
+    { label: t('nav.reports', lang), path: '/admin/reports', icon: 'BarChart3' },
+    { label: t('nav.messages', lang), path: '/admin/messages', icon: 'MessageSquare' },
+    { label: t('nav.profile', lang), path: '/admin/profile', icon: 'UserCircle' },
+    { label: t('nav.settings', lang), path: '/admin/settings', icon: 'Settings' },
+  ];
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem('admin_sidebar_collapsed') === 'true';
@@ -86,7 +88,7 @@ export default function AdminLayout() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">
             <div className="mb-4">
-              <BackButton label="← Retour au site" to="/" />
+              <BackButton label={t('common.back_to_site', lang)} to="/" />
             </div>
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>

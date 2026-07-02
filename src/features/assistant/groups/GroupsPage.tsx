@@ -10,8 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function GroupsPage() {
+  const { lang } = useLang();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -27,7 +30,7 @@ export default function GroupsPage() {
   });
 
   useEffect(() => {
-    if (isError) toast('Erreur lors du chargement des groupes', 'error');
+    if (isError) toast(t('errors.load_error', lang, t('nav.groups', lang)), 'error');
   }, [isError]);
 
   const [showModal, setShowModal] = useState(false);
@@ -37,24 +40,24 @@ export default function GroupsPage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!groupName.trim()) throw new Error('Le nom du groupe est requis');
+      if (!groupName.trim()) throw new Error(t('groups.name_required', lang));
       const capacity = parseInt(groupCapacity, 10);
-      if (isNaN(capacity) || capacity <= 0) throw new Error('La capacité doit être supérieure à 0');
+      if (isNaN(capacity) || capacity <= 0) throw new Error(t('groups.capacity_invalid', lang));
       const { error } = await (supabase as any).from('courses').insert({ name: groupName.trim(), description: groupDesc.trim(), capacity, type: 'normal', status: 'active' });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_groups'] }); toast('Groupe créé', 'success'); setShowModal(false); setGroupName(''); setGroupDesc(''); setGroupCapacity(''); },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_groups'] }); toast(t('success.created', lang, t('nav.groups', lang)), 'success'); setShowModal(false); setGroupName(''); setGroupDesc(''); setGroupCapacity(''); },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Groupes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gérer les groupes et assigner les élèves</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.groups', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('groups.subtitle', lang)}</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />Nouveau groupe</Button>
+        <Button className="gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{t('groups.new', lang)}</Button>
       </div>
 
       {showModal && (
@@ -62,26 +65,26 @@ export default function GroupsPage() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
-              <CardTitle className="text-sm">Nouveau groupe</CardTitle>
+              <CardTitle className="text-sm">{t('groups.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Nom du groupe *</Label>
-                <Input placeholder="Nom" value={groupName} onChange={e => setGroupName(e.target.value)} />
+                <Label>{t('common.name', lang)} *</Label>
+                <Input placeholder={t('common.name', lang)} value={groupName} onChange={e => setGroupName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea placeholder="Description (optionnelle)" value={groupDesc} onChange={e => setGroupDesc(e.target.value)} rows={3} />
+                <Label>{t('common.description', lang)}</Label>
+                <Textarea placeholder={t('groups.desc_placeholder', lang)} value={groupDesc} onChange={e => setGroupDesc(e.target.value)} rows={3} />
               </div>
               <div className="space-y-2">
-                <Label>Capacité *</Label>
-                <Input type="number" placeholder="Nombre de places" value={groupCapacity} onChange={e => setGroupCapacity(e.target.value)} />
+                <Label>{t('groups.capacity', lang)} *</Label>
+                <Input type="number" placeholder={t('groups.capacity_placeholder', lang)} value={groupCapacity} onChange={e => setGroupCapacity(e.target.value)} />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setShowModal(false)}>Annuler</Button>
+                <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
                 <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-                  {createMutation.isPending ? 'Création...' : 'Créer le groupe'}
+                  {createMutation.isPending ? t('common.loading', lang) : t('groups.create', lang)}
                 </Button>
               </div>
             </CardContent>
@@ -94,7 +97,7 @@ export default function GroupsPage() {
           <Card key={i}><CardHeader className="pb-3"><div className="h-24 bg-muted rounded-xl animate-pulse" /></CardHeader></Card>
         )) : (groups ?? []).length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
-            <Users className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucun groupe</p>
+            <Users className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
           </div>
         ) : (groups ?? []).map((g: any) => (
           <Card key={g.id} className="hover:shadow-md transition-shadow">
@@ -105,7 +108,7 @@ export default function GroupsPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">{g.level?.name ?? '—'}</p>
                 </div>
                 <Badge variant={g.status === 'active' ? 'success' : 'outline'}>
-                  {g.status === 'active' ? 'Actif' : 'Inactif'}
+                  {g.status === 'active' ? t('status.active', lang) : t('status.inactive', lang)}
                 </Badge>
               </div>
             </CardHeader>

@@ -6,10 +6,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function ReportsPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { lang } = useLang();
   const [period, setPeriod] = useState<'month' | 'trimester' | 'year'>('month');
 
   const { data: stats, isLoading, isError } = useQuery({
@@ -36,50 +39,50 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Rapports</h1><p className="text-sm text-muted-foreground mt-1">Statistiques et analyses de performance</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.reports', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
         <Button variant="outline" className="h-9 gap-2" onClick={() => {
           try {
-            if (!stats) { toast('Aucune donnée à exporter', 'error'); return; }
+            if (!stats) { toast(t('common.error', lang), 'error'); return; }
             const csv = [
               'Statistique,Valeur',
-              `Total élèves,${stats.totalStudents}`,
-              `Taux de présence,${stats.attendanceRate}%`,
-              `Moyenne générale,${stats.avgGrade}/20`,
-              `Devoirs,${stats.assignmentsCount}`,
-              `Présents,${stats.present}`,
-              `Absents,${stats.totalAttendance - stats.present}`,
+              `${t('dashboard.stat.active_students', lang)},${stats.totalStudents}`,
+              `${t('dashboard.stat.attendance_rate', lang)},${stats.attendanceRate}%`,
+              `${t('dashboard.stat.avg_grade', lang)},${stats.avgGrade}/20`,
+              `${t('nav.assignments', lang)},${stats.assignmentsCount}`,
+              `${t('status.present', lang)},${stats.present}`,
+              `${t('status.absent', lang)},${stats.totalAttendance - stats.present}`,
             ].join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `rapport-${period}.csv`; a.click();
             URL.revokeObjectURL(url);
-            toast('Export CSV généré', 'success');
+            toast(t('success.created', lang, 'Export CSV'), 'success');
           } catch (err: any) {
-            toast(err?.message ?? 'Erreur lors de l\'export', 'error');
+            toast(err?.message ?? t('common.error', lang), 'error');
           }
-        }}><Download className="h-4 w-4" />Exporter</Button>
+        }}><Download className="h-4 w-4" />{t('common.export', lang)}</Button>
       </div>
       <div className="flex gap-2">
         {(['month', 'trimester', 'year'] as const).map(p => (
           <Button key={p} variant={period === p ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => setPeriod(p)}>
-            {p === 'month' ? 'Mois' : p === 'trimester' ? 'Trimestre' : 'Année'}
+            {p === 'month' ? t('common.this_month', lang) : p === 'trimester' ? 'Trimestre' : t('common.date', lang)}
           </Button>
         ))}
       </div>
       {isError && (
         <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-4 text-center">
-          <p className="text-red-600 font-medium text-sm">Erreur de chargement des rapports</p>
+          <p className="text-red-600 font-medium text-sm">{t('errors.load_error', lang, '')}</p>
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Users className="h-3.5 w-3.5" />Total élèves</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.totalStudents ?? 0}</p>}</CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><TrendingUp className="h-3.5 w-3.5" />Présence</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.attendanceRate ?? 0}%</p>}</CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Award className="h-3.5 w-3.5" />Moyenne</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.avgGrade ?? 0}/20</p>}</CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><FileText className="h-3.5 w-3.5" />Devoirs</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.assignmentsCount ?? 0}</p>}</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Users className="h-3.5 w-3.5" />{t('dashboard.stat.active_students', lang)}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.totalStudents ?? 0}</p>}</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><TrendingUp className="h-3.5 w-3.5" />{t('dashboard.stat.attendance', lang)}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.attendanceRate ?? 0}%</p>}</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Award className="h-3.5 w-3.5" />{t('dashboard.stat.avg_grade', lang)}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.avgGrade ?? 0}/20</p>}</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><FileText className="h-3.5 w-3.5" />{t('nav.assignments', lang)}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-16 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{stats?.assignmentsCount ?? 0}</p>}</CardContent></Card>
       </div>
       <div className="grid lg:grid-cols-2 gap-6">
-        <Card><CardHeader><CardTitle className="text-sm">Présences</CardTitle></CardHeader><CardContent><div className="space-y-3">{stats ? (<div className="space-y-2"><div className="flex justify-between text-sm"><span>Présents</span><span className="font-medium">{stats.present}</span></div><div className="h-2 bg-accent rounded-full overflow-hidden"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stats.attendanceRate}%` }} /></div><div className="flex justify-between text-sm text-muted-foreground"><span>Absents</span><span>{stats.totalAttendance - stats.present}</span></div></div>) : <div className="h-20 bg-muted rounded animate-pulse" />}</div></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm">Performance académique</CardTitle></CardHeader><CardContent><div className="space-y-3">{stats ? (<div className="space-y-2"><div className="flex justify-between text-sm"><span>Moyenne générale</span><span className="font-medium">{stats.avgGrade}/20</span></div><div className="h-2 bg-accent rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: `${(stats.avgGrade / 20) * 100}%` }} /></div><div className="flex justify-between text-sm text-muted-foreground"><span>Devoirs rendus</span><span>{stats.assignmentsCount}</span></div></div>) : <div className="h-20 bg-muted rounded animate-pulse" />}</div></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm">{t('dashboard.stat.attendance', lang)}</CardTitle></CardHeader><CardContent><div className="space-y-3">{stats ? (<div className="space-y-2"><div className="flex justify-between text-sm"><span>{t('status.present', lang)}</span><span className="font-medium">{stats.present}</span></div><div className="h-2 bg-accent rounded-full overflow-hidden"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stats.attendanceRate}%` }} /></div><div className="flex justify-between text-sm text-muted-foreground"><span>{t('status.absent', lang)}</span><span>{stats.totalAttendance - stats.present}</span></div></div>) : <div className="h-20 bg-muted rounded animate-pulse" />}</div></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm">{t('dashboard.stat.avg_grade', lang)}</CardTitle></CardHeader><CardContent><div className="space-y-3">{stats ? (<div className="space-y-2"><div className="flex justify-between text-sm"><span>{t('dashboard.stat.avg_grade', lang)}</span><span className="font-medium">{stats.avgGrade}/20</span></div><div className="h-2 bg-accent rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: `${(stats.avgGrade / 20) * 100}%` }} /></div><div className="flex justify-between text-sm text-muted-foreground"><span>{t('nav.assignments', lang)}</span><span>{stats.assignmentsCount}</span></div></div>) : <div className="h-20 bg-muted rounded animate-pulse" />}</div></CardContent></Card>
       </div>
     </div>
   );

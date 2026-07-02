@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/Toast';
 
 function StatCard({ title, value, icon: Icon, color, trend }: { title: string; value: string | number; icon: React.ElementType; color: string; trend?: { up: boolean; pct: string } }) {
+  const { lang } = useLang();
   return (
     <div className="stat-card-new">
       <div className="flex items-start justify-between">
@@ -19,7 +20,7 @@ function StatCard({ title, value, icon: Icon, color, trend }: { title: string; v
             <div className="flex items-center gap-1 text-xs font-medium">
               {trend.up ? <TrendingUp className="h-3 w-3 text-emerald-500" /> : <TrendingDown className="h-3 w-3 text-red-400" />}
               <span style={{ color: trend.up ? '#10b981' : '#f87171' }}>{trend.pct}</span>
-              <span style={{ color: 'var(--fg-muted)' }}>vs mois dernier</span>
+              <span style={{ color: 'var(--fg-muted)' }}>{t('common.this_month', lang)}</span>
             </div>
           )}
         </div>
@@ -117,7 +118,7 @@ export default function DashboardPage() {
   const actions = QUICK_ACTIONS[role] ?? QUICK_ACTIONS.admin;
 
   useEffect(() => {
-    if (kpiError) toast('Erreur de chargement des indicateurs', 'error');
+    if (kpiError) toast(t('errors.load_error', lang, 'des indicateurs'), 'error');
   }, [kpiError]);
 
   return (
@@ -210,7 +211,7 @@ export default function DashboardPage() {
               )}
             </div>
             {notifLoading ? (
-              <div className="text-center py-8 text-sm" style={{ color: 'var(--fg-muted)' }}>Chargement...</div>
+              <div className="text-center py-8 text-sm" style={{ color: 'var(--fg-muted)' }}>{t('common.loading', lang)}</div>
             ) : notifications && notifications.length > 0 ? (
               <div className="space-y-1">
                 {notifications.slice(0, 5).map((n) => (

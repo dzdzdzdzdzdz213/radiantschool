@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { UserPlus, FileText, DollarSign, ClipboardCheck, Bell, Calendar, Users, BarChart3, GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { QuickAction } from '../useAssistantDashboard';
 
 interface QuickActionsProps {
@@ -26,10 +28,11 @@ const colorMap: Record<string, string> = {
 
 export default function QuickActions({ actions }: QuickActionsProps) {
   const navigate = useNavigate();
+  const { lang } = useLang();
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <h3 className="text-sm font-semibold mb-4">Actions rapides</h3>
+      <h3 className="text-sm font-semibold mb-4">{t('dashboard.quick_actions', lang)}</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {actions.map((action, idx) => {
           const Icon = iconMap[action.icon];

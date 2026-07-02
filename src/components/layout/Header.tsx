@@ -5,7 +5,7 @@ import { useLang } from '@/contexts/LangContext';
 import { useNavigate } from 'react-router-dom';
 import { getFullName, getRoleLabel } from '@/lib/utils';
 import { getAvatarUrl } from '@/lib/storage';
-import { LANGUAGES } from '@/i18n';
+import { LANGUAGES, t } from '@/i18n';
 import { useState } from 'react';
 
 interface HeaderProps {
@@ -36,7 +36,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <button
           onClick={toggleTheme}
           className="rounded-lg p-2 transition-colors hover-bg-page"
-          title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+          title={theme === 'dark' ? t('common.light_mode', lang) : t('common.dark_mode', lang)}
         >
           {theme === 'dark' ? <Sun className="h-5 w-5 text-muted" /> : <Moon className="h-5 w-5 text-muted" />}
         </button>
@@ -76,7 +76,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center gap-3">
           <div className="hidden sm:block text-right">
             <p className="text-sm font-medium">{profile?.firstName} {profile?.lastName}</p>
-            <p className="text-xs text-muted">{profile ? getRoleLabel(profile.role) : ''}</p>
+            <p className="text-xs text-muted">{profile ? t('role.' + profile.role, lang) : ''}</p>
           </div>
           {avatarUrl ? (
             <img src={avatarUrl} alt={getFullName(profile?.firstName || '', profile?.lastName || '')} className="h-9 w-9 rounded-full object-cover" />

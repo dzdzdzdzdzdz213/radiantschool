@@ -3,12 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getFullName, formatDate, formatCurrency, getRoleLabel, getStatusColor } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { ArrowLeft, Mail, Phone, User } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { lang } = useLang();
   const { toast } = useToast();
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
@@ -49,20 +52,20 @@ export default function StudentDetailPage() {
   });
 
   useEffect(() => {
-    if (userError) toast('Erreur de chargement', 'error');
+    if (userError) toast(t('errors.load_error', lang, "de l'élève"), 'error');
   }, [userError]);
   useEffect(() => {
-    if (enrollError) toast('Erreur de chargement des inscriptions', 'error');
+    if (enrollError) toast(t('errors.load_error', lang, 'des inscriptions'), 'error');
   }, [enrollError]);
   useEffect(() => {
-    if (payError) toast('Erreur de chargement des paiements', 'error');
+    if (payError) toast(t('errors.load_error', lang, 'des paiements'), 'error');
   }, [payError]);
 
-  if (userLoading || !user) return <div className="p-8 text-center text-muted">Chargement...</div>;
+  if (userLoading || !user) return <div className="p-8 text-center text-muted">{t('common.loading', lang)}</div>;
 
   return (
     <div className="space-y-6">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted hover:text-muted"><ArrowLeft className="h-4 w-4" /> Retour</button>
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted hover:text-muted"><ArrowLeft className="h-4 w-4" /> {t('common.back', lang)}</button>
       <div className="rounded-xl border bg-card p-6 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white">
@@ -76,7 +79,7 @@ export default function StudentDetailPage() {
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <h2 className="mb-3 font-semibold">Informations</h2>
+          <h2 className="mb-3 font-semibold">{t('common.info', lang)}</h2>
           <div className="space-y-3 text-sm">
             <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted" /><span>{user.email}</span></div>
             <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted" /><span>{user.phone || 'Non renseigné'}</span></div>
@@ -91,9 +94,9 @@ export default function StudentDetailPage() {
           </div>
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <h2 className="mb-3 font-semibold">Cours ({enrollments?.length || 0})</h2>
+          <h2 className="mb-3 font-semibold">{t('nav.courses', lang)} ({enrollments?.length || 0})</h2>
           {enrollmentsLoading ? (
-            <div className="text-sm text-muted">Chargement...</div>
+            <div className="text-sm text-muted">{t('common.loading', lang)}</div>
           ) : (
             <div className="space-y-2">
               {enrollments?.length > 0 ? enrollments.map((e: any) => (
@@ -101,14 +104,14 @@ export default function StudentDetailPage() {
                   <p className="font-medium">{e.course?.name}</p>
                   <p className="text-muted">{e.course?.type} · {formatCurrency(e.course?.price)}</p>
                 </div>
-              )) : <p className="text-sm text-muted">Aucun cours</p>}
+              )) : <p className="text-sm text-muted">{t('common.no_data', lang)}</p>}
             </div>
           )}
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <h2 className="mb-3 font-semibold">Paiements ({payments?.length || 0})</h2>
+          <h2 className="mb-3 font-semibold">{t('nav.payments', lang)} ({payments?.length || 0})</h2>
           {paymentsLoading ? (
-            <div className="text-sm text-muted">Chargement...</div>
+            <div className="text-sm text-muted">{t('common.loading', lang)}</div>
           ) : (
             <div className="space-y-2">
               {payments?.length > 0 ? payments.map((p: any) => (
@@ -116,7 +119,7 @@ export default function StudentDetailPage() {
                   <p className="font-medium">{formatCurrency(p.amount)}</p>
                   <p className="text-muted">{p.payment_method} · {formatDate(p.created_at)}</p>
                 </div>
-              )) : <p className="text-sm text-muted">Aucun paiement</p>}
+              )) : <p className="text-sm text-muted">{t('common.no_data', lang)}</p>}
             </div>
           )}
         </div>

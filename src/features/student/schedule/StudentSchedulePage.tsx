@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatTime, getDayLabel } from '@/lib/utils';
@@ -12,6 +14,7 @@ import { useToast } from '@/components/ui/Toast';
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 export default function StudentSchedulePage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
   const today = new Date();
@@ -42,12 +45,12 @@ export default function StudentSchedulePage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement de l\'emploi du temps', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.schedule', lang)), 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Emploi du temps</h1><p className="text-sm text-muted-foreground mt-1">Planning hebdomadaire de vos cours</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.schedule', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.my_schedule', lang)}</p></div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => { const d = new Date(startDate); d.setDate(d.getDate() - 7); setStartDate(d); }}><ChevronLeft className="h-4 w-4" /></Button>
           <span className="text-sm font-medium">{startDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
@@ -73,7 +76,7 @@ export default function StudentSchedulePage() {
                 </div>
               ))}
               {(scheduleData?.[day]?.length ?? 0) > 4 && (
-                <p className="text-[10px] text-muted-foreground text-center">+{scheduleData![day].length - 4} autres</p>
+                <p className="text-[10px] text-muted-foreground text-center">+{scheduleData![day].length - 4} {t('common.and', lang)}</p>
               )}
             </CardContent>
           </Card>

@@ -5,31 +5,9 @@ import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { NavItem } from '@/components/layout/AdminSidebar';
-
-const teacherNavItems: NavItem[] = [
-  { label: 'Tableau de bord', path: '/teacher/dashboard', icon: 'LayoutDashboard' },
-  { label: 'Mon emploi du temps', path: '/teacher/schedule', icon: 'Calendar' },
-  { label: 'Calendrier', path: '/teacher/calendar', icon: 'Calendar' },
-  { label: 'Mes matières', path: '/teacher/subjects', icon: 'BookOpen' },
-  { label: 'Mes cours', path: '/teacher/courses', icon: 'BookOpen' },
-  { label: 'Mes groupes', path: '/teacher/groups', icon: 'Users' },
-  { label: 'Présences', path: '/teacher/attendance', icon: 'ClipboardCheck' },
-  { label: 'Élèves', path: '/teacher/students', icon: 'Users' },
-  { label: 'Devoirs', path: '/teacher/assignments', icon: 'FileText' },
-  { label: 'Soumissions', path: '/teacher/homework', icon: 'FileText' },
-  { label: 'Ressources', path: '/teacher/resources', icon: 'FileText' },
-  { label: 'Cours en ligne', path: '/teacher/online-classes', icon: 'GraduationCap' },
-  { label: 'Cours particuliers', path: '/teacher/private-lessons', icon: 'UserPlus' },
-  { label: 'Cours VIP', path: '/teacher/vip-classes', icon: 'Star' },
-  { label: 'Annonces', path: '/teacher/announcements', icon: 'Bell' },
-  { label: 'Messages', path: '/teacher/messages', icon: 'MessageSquare' },
-  { label: 'Rapports', path: '/teacher/reports', icon: 'BarChart3' },
-  { label: 'Revenus', path: '/teacher/revenue', icon: 'DollarSign' },
-  { label: 'Avis', path: '/teacher/reviews', icon: 'Star' },
-  { label: 'Profil', path: '/teacher/profile', icon: 'UserCircle' },
-  { label: 'Paramètres', path: '/teacher/settings', icon: 'Settings' },
-];
 
 function DashboardFallback() {
   return (
@@ -46,7 +24,31 @@ function PageShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function TeacherLayout() {
+  const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const teacherNavItems: NavItem[] = [
+    { label: t('nav.dashboard', lang), path: '/teacher/dashboard', icon: 'LayoutDashboard' },
+    { label: t('nav.my_schedule', lang), path: '/teacher/schedule', icon: 'Calendar' },
+    { label: t('nav.calendar', lang), path: '/teacher/calendar', icon: 'Calendar' },
+    { label: t('nav.courses', lang), path: '/teacher/subjects', icon: 'BookOpen' },
+    { label: t('nav.my_courses', lang), path: '/teacher/courses', icon: 'BookOpen' },
+    { label: t('nav.groups', lang), path: '/teacher/groups', icon: 'Users' },
+    { label: t('nav.attendance', lang), path: '/teacher/attendance', icon: 'ClipboardCheck' },
+    { label: t('nav.students', lang), path: '/teacher/students', icon: 'Users' },
+    { label: t('nav.assignments', lang), path: '/teacher/assignments', icon: 'FileText' },
+    { label: t('nav.homework', lang), path: '/teacher/homework', icon: 'FileText' },
+    { label: t('nav.resources', lang), path: '/teacher/resources', icon: 'FileText' },
+    { label: t('nav.online_classes', lang), path: '/teacher/online-classes', icon: 'GraduationCap' },
+    { label: t('nav.private_lessons', lang), path: '/teacher/private-lessons', icon: 'UserPlus' },
+    { label: t('nav.vip_classes', lang), path: '/teacher/vip-classes', icon: 'Star' },
+    { label: t('nav.announcements', lang), path: '/teacher/announcements', icon: 'Bell' },
+    { label: t('nav.messages', lang), path: '/teacher/messages', icon: 'MessageSquare' },
+    { label: t('nav.reports', lang), path: '/teacher/reports', icon: 'BarChart3' },
+    { label: t('nav.payments', lang), path: '/teacher/revenue', icon: 'DollarSign' },
+    { label: t('nav.reviews', lang), path: '/teacher/reviews', icon: 'Star' },
+    { label: t('nav.profile', lang), path: '/teacher/profile', icon: 'UserCircle' },
+    { label: t('nav.settings', lang), path: '/teacher/settings', icon: 'Settings' },
+  ];
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem('teacher_sidebar_collapsed') === 'true';
@@ -76,7 +78,7 @@ export default function TeacherLayout() {
         <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-4"><BackButton label="← Retour au site" to="/" /></div>
+            <div className="mb-4"><BackButton label={t('common.back_to_site', lang)} to="/" /></div>
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
                 <PageShell><Outlet /></PageShell>

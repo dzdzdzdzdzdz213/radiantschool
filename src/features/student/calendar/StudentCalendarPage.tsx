@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
@@ -11,6 +13,7 @@ const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 export default function StudentCalendarPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
   const today = new Date();
@@ -42,7 +45,7 @@ export default function StudentCalendarPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement du calendrier', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.calendar', lang)), 'error'); }, [isError]);
 
   const prevMonth = () => { if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); } else setCurrentMonth(m => m - 1); };
   const nextMonth = () => { if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); } else setCurrentMonth(m => m + 1); };
@@ -55,7 +58,7 @@ export default function StudentCalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Calendrier</h1><p className="text-sm text-muted-foreground mt-1">Vue mensuelle de vos cours</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.calendar', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.schedule', lang)}</p></div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

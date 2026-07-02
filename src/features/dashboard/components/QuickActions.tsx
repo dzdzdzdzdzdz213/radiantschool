@@ -1,19 +1,22 @@
 import { UserPlus, BookOpen, FileText, BarChart3, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-
-const actions: { icon: LucideIcon; label: string; path: string; desc: string }[] = [
-  { icon: UserPlus, label: 'Nouvel élève', path: '/admin/users', desc: 'Ajouter un étudiant' },
-  { icon: BookOpen, label: 'Nouveau cours', path: '/admin/courses', desc: 'Créer une session' },
-  { icon: FileText, label: 'Facture', path: '/admin/invoices', desc: 'Générer une facture' },
-  { icon: BarChart3, label: 'Rapport', path: '/admin/reports', desc: 'Analyses du centre' },
-];
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function QuickActions() {
+  const { lang } = useLang();
+  const actions: { icon: LucideIcon; label: string; path: string; desc: string }[] = [
+    { icon: UserPlus, label: t('common.new', lang) + ' ' + t('role.student', lang), path: '/admin/users', desc: t('common.add', lang) + ' ' + t('role.student', lang) },
+    { icon: BookOpen, label: t('common.new', lang) + ' ' + t('nav.courses', lang), path: '/admin/courses', desc: t('common.create', lang) + ' session' },
+    { icon: FileText, label: t('nav.invoices', lang), path: '/admin/invoices', desc: t('common.create', lang) + ' ' + t('nav.invoices', lang) },
+    { icon: BarChart3, label: t('nav.reports', lang), path: '/admin/reports', desc: t('common.details', lang) + ' ' + t('nav.dashboard', lang) },
+  ];
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-sm font-semibold">Actions rapides</CardTitle>
+        <CardTitle className="text-sm font-semibold">{t('dashboard.quick_actions', lang)}</CardTitle>
         <div className="flex gap-1">
           <div className="h-2 w-2 rounded-full bg-primary" />
           <div className="h-2 w-2 rounded-full bg-accent/40" />

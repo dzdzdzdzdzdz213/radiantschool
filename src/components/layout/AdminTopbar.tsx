@@ -7,7 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { getRoleLabel, getInitials } from '@/lib/utils';
 import { getAvatarUrl } from '@/lib/storage';
-import { LANGUAGES } from '@/i18n';
+import { t, LANGUAGES } from '@/i18n';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -39,6 +39,7 @@ interface AdminTopbarProps {
 
 function NotificationSheet() {
   const { profile } = useAuth();
+  const { lang } = useLang();
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', profile?.id],
     queryFn: async () => {
@@ -72,12 +73,12 @@ function NotificationSheet() {
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Notifications</SheetTitle>
+          <SheetTitle>{t('nav.notifications', lang)}</SheetTitle>
         </SheetHeader>
         <ScrollArea className="h-full pr-4 mt-4">
           <div className="space-y-3">
             {notifications.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">Aucune notification</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t('dashboard.no_notifications', lang)}</p>
             )}
             {notifications.map((n: any) => (
               <div key={n.id} className="rounded-xl bg-sidebar-accent p-3">
@@ -99,6 +100,7 @@ function NotificationSheet() {
 
 function UserMenu() {
   const { profile, signOut } = useAuth();
+  const { lang } = useLang();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -110,7 +112,7 @@ function UserMenu() {
       await signOut();
       navigate('/login');
     } catch {
-      toast('Erreur lors de la déconnexion', 'error');
+      toast(t('errors.unknown', lang), 'error');
     } finally {
       setLoggingOut(false);
     }
@@ -144,15 +146,15 @@ function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate(`/${role}/profile`)}>
           <User className="mr-2 h-4 w-4" />
-          Profil
+          {t('nav.profile', lang)}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate(`/${role}/settings`)}>
           <Settings className="mr-2 h-4 w-4" />
-          Paramètres
+          {t('nav.settings', lang)}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => toast('Aide disponible bientôt', 'info')}>
+        <DropdownMenuItem onClick={() => toast(t('common.info', lang), 'info')}>
           <HelpCircle className="mr-2 h-4 w-4" />
-          Aide
+          {t('nav.help', lang)}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -165,7 +167,7 @@ function UserMenu() {
           ) : (
             <LogOut className="mr-2 h-4 w-4" />
           )}
-          Déconnexion
+          {t('nav.logout', lang)}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -219,7 +221,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               data-search-input
-              placeholder="Rechercher..."
+              placeholder={t('common.search', lang)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}

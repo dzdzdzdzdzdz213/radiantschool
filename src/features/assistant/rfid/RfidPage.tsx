@@ -8,8 +8,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { formatDateTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function RfidPage() {
+  const { lang } = useLang();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [scanInput, setScanInput] = useState('');
@@ -39,11 +42,11 @@ export default function RfidPage() {
   });
 
   useEffect(() => {
-    if (recentError) toast('Erreur lors du chargement des scans récents', 'error');
+    if (recentError) toast(t('errors.load_error', lang, t('rfid.recent_scans', lang)), 'error');
   }, [recentError]);
 
   useEffect(() => {
-    if (historyError) toast('Erreur lors du chargement de l\'historique', 'error');
+    if (historyError) toast(t('errors.load_error', lang, t('rfid.history', lang)), 'error');
   }, [historyError]);
 
   const scanMutation = useMutation({
@@ -64,10 +67,10 @@ export default function RfidPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_rfid_recent'] });
       qc.invalidateQueries({ queryKey: ['assistant_rfid_history'] });
-      toast('Scan enregistré', 'success');
+      toast(t('success.scanned', lang), 'success');
       setScanInput('');
     },
-    onError: (err: any) => toast(err?.message ?? 'Erreur lors du scan', 'error'),
+    onError: (err: any) => toast(err?.message ?? t('rfid.scan_error', lang), 'error'),
   });
 
   const handleScan = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,8 +84,8 @@ export default function RfidPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Scanner RFID</h1>
-        <p className="text-sm text-muted-foreground mt-1">Scanner les badges RFID et suivre les entrées/sorties</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('nav.rfid', lang)}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('rfid.subtitle', lang)}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -90,14 +93,14 @@ export default function RfidPage() {
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Activity className="h-4 w-4 text-emerald-500" />
-              Scan en direct
+              {t('rfid.live_scan', lang)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Scanner un badge ou entrer un code RFID..."
+                placeholder={t('rfid.scan_placeholder', lang)}
                 value={scanInput}
                 onChange={handleScan}
                 className="h-12 pl-9 text-lg font-mono"
@@ -106,12 +109,12 @@ export default function RfidPage() {
             </div>
             <div className="rounded-xl bg-accent/50 p-8 text-center">
               {scanMutation.isPending ? (
-                <div className="flex items-center justify-center gap-2"><Activity className="h-5 w-5 animate-spin" /><p className="text-sm">Scan en cours...</p></div>
+                <div className="flex items-center justify-center gap-2"><Activity className="h-5 w-5 animate-spin" /><p className="text-sm">{t('rfid.scanning', lang)}</p></div>
               ) : (
                 <>
                   <Activity className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-                  <p className="text-sm text-muted-foreground">En attente de scan...</p>
-                  <p className="text-xs text-muted-foreground mt-1">Scannez un badge RFID ou saisissez le code manuellement</p>
+                  <p className="text-sm text-muted-foreground">{t('rfid.waiting', lang)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('rfid.waiting_hint', lang)}</p>
                 </>
               )}
             </div>
@@ -122,13 +125,13 @@ export default function RfidPage() {
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-amber-500" />
-              Derniers scans
+              {t('rfid.recent_scans', lang)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {(recentScans ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Aucun scan récent</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('common.no_data', lang)}</p>
               ) : (recentScans ?? []).map((s: any) => (
                 <div key={s.id} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
                   <div>
@@ -136,7 +139,7 @@ export default function RfidPage() {
                     <p className="text-xs text-muted-foreground">{formatDateTime(s.scanned_at)}</p>
                   </div>
                   <Badge variant={s.status === 'success' ? 'success' : 'destructive'}>
-                    {s.status === 'success' ? 'OK' : 'Échec'}
+                    {s.status === 'success' ? t('common.success', lang) : t('common.error', lang)}
                   </Badge>
                 </div>
               ))}
@@ -147,29 +150,29 @@ export default function RfidPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-semibold">Historique des scans aujourd'hui</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('rfid.history', lang)}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Élève</TableHead>
-                <TableHead>Heure</TableHead>
-                <TableHead>Statut</TableHead>
+                <TableHead>{t('nav.students', lang)}</TableHead>
+                <TableHead>{t('common.time', lang)}</TableHead>
+                <TableHead>{t('common.status', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {historyLoading ? Array.from({ length: 4 }).map((_, i) => (
                 <TableRow key={i}>{[1, 2, 3].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
               )) : (allScans ?? []).length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Aucun scan aujourd'hui</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               ) : (allScans ?? []).map((s: any) => (
                 <TableRow key={s.id}>
                   <TableCell className="text-sm">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_code}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{formatDateTime(s.scanned_at)}</TableCell>
                   <TableCell>
                     <Badge variant={s.status === 'success' ? 'success' : 'destructive'}>
-                      {s.status === 'success' ? 'Succès' : 'Échec'}
+                      {s.status === 'success' ? t('common.success', lang) : t('common.error', lang)}
                     </Badge>
                   </TableCell>
                 </TableRow>

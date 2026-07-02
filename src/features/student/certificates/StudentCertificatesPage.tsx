@@ -4,12 +4,15 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useDownloadFile } from '@/hooks/useMutationFeedback';
 
 export default function StudentCertificatesPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const downloadFile = useDownloadFile();
 
@@ -29,12 +32,12 @@ export default function StudentCertificatesPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Mes certificats</h1><p className="text-sm text-muted-foreground mt-1">{certificates?.length ?? 0} certificat(s) obtenu(s)</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.certificates', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{certificates?.length ?? 0} {t('nav.certificates', lang)}</p></div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-44 rounded-xl" />))
         : (certificates ?? []).length === 0 ? (
           <div className="sm:col-span-2 lg:col-span-3 text-center py-16 text-muted-foreground">
-            <Trophy className="h-16 w-16 mx-auto mb-4 opacity-20" /><p className="text-lg font-medium">Aucun certificat</p><p className="text-sm">Terminez vos cours pour obtenir des certificats</p>
+            <Trophy className="h-16 w-16 mx-auto mb-4 opacity-20" /><p className="text-lg font-medium">{t('common.no_data', lang)}</p><p className="text-sm">{t('common.not_found', lang)}</p>
           </div>
         ) : (certificates ?? []).map((c: any) => (
           <Card key={c.id} className="border-2 border-amber-200 dark:border-amber-900/50 hover:shadow-lg transition-all group">
@@ -47,10 +50,10 @@ export default function StudentCertificatesPage() {
               <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{c.description ?? ''}</p>
               <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-muted-foreground">
                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(c.issued_date)}</span>
-                {c.expiry_date && <span className="flex items-center gap-1">Expire {formatDate(c.expiry_date)}</span>}
+                {c.expiry_date && <span className="flex items-center gap-1">{t('common.date', lang)}: {formatDate(c.expiry_date)}</span>}
               </div>
               <Button variant="outline" size="sm" className="w-full mt-4 h-8 text-xs gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all" onClick={() => { if (c.certificate_url) downloadFile.mutate({ fileUrl: c.certificate_url, filename: `${c.title}.pdf` }); }} disabled={downloadFile.isPending}>
-                {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}Télécharger
+                {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{t('common.download', lang)}
               </Button>
             </CardContent>
           </Card>

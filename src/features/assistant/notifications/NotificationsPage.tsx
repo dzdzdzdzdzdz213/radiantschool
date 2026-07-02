@@ -10,8 +10,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
 import { formatDateTime } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function NotificationsPage() {
+  const { lang } = useLang();
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -43,24 +46,24 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
-          <p className="text-sm text-muted-foreground mt-1">Envoyer et gérer les notifications</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.notifications', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('notifications.subtitle', lang)}</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="gap-2">
-          <Plus className="h-4 w-4" />Nouvelle notification
+          <Plus className="h-4 w-4" />{t('notifications.new', lang)}
         </Button>
       </div>
 
       {showForm && (
         <Card>
-          <CardHeader><CardTitle className="text-sm">Envoyer une notification</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t('notifications.send', lang)}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <Input placeholder="Titre" value={title} onChange={e => setTitle(e.target.value)} />
-            <Textarea placeholder="Message..." value={message} onChange={e => setMessage(e.target.value)} rows={4} />
+            <Input placeholder={t('notifications.title_placeholder', lang)} value={title} onChange={e => setTitle(e.target.value)} />
+            <Textarea placeholder={t('notifications.message_placeholder', lang)} value={message} onChange={e => setMessage(e.target.value)} rows={4} />
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
+              <Button variant="outline" onClick={() => setShowForm(false)}>{t('common.cancel', lang)}</Button>
               <Button onClick={() => sendMutation.mutate()} disabled={sendMutation.isPending || !title || !message}>
-                <Send className="h-4 w-4 mr-2" />{sendMutation.isPending ? 'Envoi...' : 'Envoyer'}
+                <Send className="h-4 w-4 mr-2" />{sendMutation.isPending ? t('common.loading', lang) : t('common.send', lang)}
               </Button>
             </div>
           </CardContent>
@@ -72,18 +75,18 @@ export default function NotificationsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Titre</TableHead>
-                <TableHead className="hidden sm:table-cell">Message</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
-                <TableHead className="text-right">Lu</TableHead>
+                <TableHead>{t('notifications.title', lang)}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('common.message', lang)}</TableHead>
+                <TableHead>{t('common.type', lang)}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('common.date', lang)}</TableHead>
+                <TableHead className="text-right">{t('notifications.read', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
               )) : (notifications ?? []).length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Aucune notification</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               ) : (
                 (notifications ?? []).map((n: any) => (
                   <TableRow key={n.id}>
@@ -93,7 +96,7 @@ export default function NotificationsPage() {
                     <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{formatDateTime(n.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <span className={`text-xs ${n.is_read ? 'text-muted-foreground' : 'text-primary font-medium'}`}>
-                        {n.is_read ? 'Lu' : 'Nouveau'}
+                        {n.is_read ? t('notifications.read', lang) : t('common.new', lang)}
                       </span>
                     </TableCell>
                   </TableRow>

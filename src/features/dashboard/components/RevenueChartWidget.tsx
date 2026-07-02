@@ -2,6 +2,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface RevenueChartWidgetProps {
   data: { date: string; amount: number }[];
@@ -21,16 +23,16 @@ function ChartSkeleton() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ lang }: { lang: any }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Revenus (30 jours)</CardTitle>
+        <CardTitle>{t('dashboard.stat.revenue', lang)}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center h-[280px]">
-          <p className="text-sm text-muted-foreground">Aucune donnée de revenus</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Les données apparaîtront après les premiers paiements</p>
+          <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">{t('common.info', lang)}</p>
         </div>
       </CardContent>
     </Card>
@@ -58,8 +60,9 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export default function RevenueChartWidget({ data, loading }: RevenueChartWidgetProps) {
+  const { lang } = useLang();
   if (loading) return <ChartSkeleton />;
-  if (!data || data.length === 0) return <EmptyState />;
+  if (!data || data.length === 0) return <EmptyState lang={lang} />;
 
   const formatted = data.map(d => ({ ...d, label: d.date.slice(5) }));
   const maxVal = Math.max(...data.map(d => d.amount), 1);
@@ -68,9 +71,9 @@ export default function RevenueChartWidget({ data, loading }: RevenueChartWidget
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-semibold">Revenus (30 jours)</CardTitle>
+        <CardTitle className="text-sm font-semibold">{t('dashboard.stat.revenue', lang)}</CardTitle>
         <span className="text-xs font-medium rounded-lg px-2.5 py-1 bg-primary/10 text-primary">
-          +{data.length} jours
+          +{data.length} {t('common.today', lang)}
         </span>
       </CardHeader>
       <CardContent>

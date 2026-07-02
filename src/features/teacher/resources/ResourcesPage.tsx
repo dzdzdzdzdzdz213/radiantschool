@@ -10,10 +10,13 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate } from '@/lib/utils';
 import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function ResourcesPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { lang } = useLang();
   const qc = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState('');
@@ -55,9 +58,9 @@ export default function ResourcesPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_resources'] });
-      toast('Fichier ajouté', 'success');
+      toast(t('success.created', lang, 'Fichier'), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -67,13 +70,13 @@ export default function ResourcesPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_resources'] });
-      toast('Ressource supprimée', 'success');
+      toast(t('success.deleted', lang, 'Ressource'), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Supprimer cette ressource ?')) deleteMutation.mutate(id);
+    if (window.confirm(t('common.confirm', lang))) deleteMutation.mutate(id);
   };
 
   const handleAddFile = () => fileInputRef.current?.click();
@@ -82,14 +85,14 @@ export default function ResourcesPage() {
     <div className="space-y-6">
       <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadMutation.mutate(e.target.files[0]); }} />
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Ressources</h1><p className="text-sm text-muted-foreground mt-1">Documents et supports de cours</p></div>
-        <Button className="h-9 gap-2" onClick={handleAddFile} disabled={uploadMutation.isPending}><Plus className="h-4 w-4" />{uploadMutation.isPending ? 'Upload...' : 'Ajouter'}</Button>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.resources', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
+        <Button className="h-9 gap-2" onClick={handleAddFile} disabled={uploadMutation.isPending}><Plus className="h-4 w-4" />{uploadMutation.isPending ? t('common.loading', lang) : t('common.add', lang)}</Button>
       </div>
       <Card>
         <CardHeader className="pb-3">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
+            <Input placeholder={t('common.search', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
           </div>
         </CardHeader>
         <CardContent>
@@ -97,7 +100,7 @@ export default function ResourcesPage() {
             {isLoading ? Array.from({ length: 6 }).map((_, i) => (<div key={i} className="h-28 bg-muted rounded-xl animate-pulse" />))
             : (resources ?? []).length === 0 ? (
               <div className="sm:col-span-2 lg:col-span-3 text-center py-12 text-muted-foreground">
-                <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucune ressource</p>
+                <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
               </div>
             ) : (resources ?? []).map((r: any) => (
               <div key={r.id} className="group rounded-xl border p-4 hover:bg-accent/30 transition-colors">
@@ -113,7 +116,7 @@ export default function ResourcesPage() {
                 <h4 className="text-sm font-medium mt-3 truncate">{r.title}</h4>
                 {r.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>}
                 <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground">
-                  <span>{r.type ?? 'Document'}</span>
+                  <span>{r.type ?? t('common.type', lang)}</span>
                   <span>{formatDate(r.created_at)}</span>
                 </div>
               </div>

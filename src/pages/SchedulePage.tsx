@@ -77,7 +77,7 @@ export default function SchedulePage() {
   const [weekOffset, setWeekOffset] = useState(0);
 
   if (isError) {
-    return <div className="flex items-center justify-center gap-2 py-20 text-red-500"><AlertCircle className="h-5 w-5" />Erreur de chargement des cours</div>;
+    return <div className="flex items-center justify-center gap-2 py-20 text-red-500"><AlertCircle className="h-5 w-5" />{t('errors.load_error', lang, 'des cours')}</div>;
   }
 
   const refDate = new Date();
@@ -115,7 +115,7 @@ export default function SchedulePage() {
             className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover-bg-page"
             style={{ color: 'var(--fg-muted)' }}
           >
-            {lang === 'fr' ? "Aujourd'hui" : lang === 'en' ? 'Today' : 'اليوم'}
+            {t('common.today', lang)}
           </button>
           <div className="flex items-center rounded-lg border" style={{ borderColor: 'var(--border)' }}>
             <button onClick={() => setWeekOffset(o => o - 1)} className="p-2 transition-colors hover-bg-page rounded-l-lg">

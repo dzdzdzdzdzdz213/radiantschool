@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
-export default function BackButton({ to, label = 'Retour' }: { to?: string; label?: string }) {
+export default function BackButton({ to, label }: { to?: string; label?: string }) {
+  const { lang } = useLang();
   const navigate = useNavigate();
 
   return (
@@ -15,7 +18,7 @@ export default function BackButton({ to, label = 'Retour' }: { to?: string; labe
       }}
     >
       <ArrowLeft className="h-3.5 w-3.5" />
-      {label}
+      {label ?? t('common.back', lang)}
     </button>
   );
 }

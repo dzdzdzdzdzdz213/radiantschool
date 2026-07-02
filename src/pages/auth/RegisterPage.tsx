@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { UserPlus, ArrowLeft, GraduationCap, UserCheck, Mail, Phone, Lock, Users, Eye, EyeOff } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 const LEVELS = [
   { value: 'primaire', label: 'Primaire' },
@@ -148,6 +150,7 @@ export default function RegisterPage() {
   const [showPw, setShowPw] = useState(false);
   const [emailBusy, setEmailBusy] = useState(false);
   const { signUp } = useAuth();
+  const { lang } = useLang();
   const navigate = useNavigate();
 
   function setField(field: string, value: string) {
@@ -227,7 +230,7 @@ export default function RegisterPage() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: `color-mix(in srgb, #22c55e 10%, transparent)` }}>
             <UserCheck className="h-7 w-7" style={{ color: '#22c55e' }} />
           </div>
-          <h2 className="text-xl font-bold mb-2">Inscription réussie !</h2>
+              <h2 className="text-xl font-bold mb-2">{t('auth.register_success', lang)}</h2>
           <p className="text-sm" style={{ color: 'var(--fg-muted)' }}>
             {type === 'parent'
               ? 'Votre compte parent a été créé. Vous allez être redirigé vers la page de connexion.'
@@ -242,7 +245,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center p-4" style={{ backgroundColor: 'var(--bg)' }}>
       <div className="w-full max-w-lg">
         <Link to="/" className="mb-4 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
-          <ArrowLeft className="h-3.5 w-3.5" /> Retour
+          <ArrowLeft className="h-3.5 w-3.5" /> {t('common.back', lang)}
         </Link>
 
         {step === 'choose' ? (
@@ -251,8 +254,8 @@ export default function RegisterPage() {
               <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl shadow-lg" style={{ backgroundColor: 'var(--primary)' }}>
                 <UserPlus className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-2xl font-black">Créer un compte</h1>
-              <p className="text-sm mt-1" style={{ color: 'var(--fg-muted)' }}>Qui souhaite s'inscrire ?</p>
+              <h1 className="text-2xl font-black">{t('auth.create_account', lang)}</h1>
+              <p className="text-sm mt-1" style={{ color: 'var(--fg-muted)' }}>{t('auth.select_role', lang)}</p>
             </div>
 
             <div className="grid gap-4">
@@ -281,7 +284,7 @@ export default function RegisterPage() {
             </div>
 
             <p className="mt-8 text-center text-sm" style={{ color: 'var(--fg-muted)' }}>
-              Déjà un compte ? <Link to="/login" className="font-medium transition-all hover:opacity-80" style={{ color: 'var(--primary)' }}>Se connecter</Link>
+              {t('auth.already_have_account', lang)} <Link to="/login" className="font-medium transition-all hover:opacity-80" style={{ color: 'var(--primary)' }}>{t('auth.sign_in', lang)}</Link>
             </p>
           </>
         ) : (
@@ -308,12 +311,12 @@ export default function RegisterPage() {
                   <Field name="firstName" label="Prénom" required icon={<UserCheck />} {...fieldProps} />
                   <Field name="lastName" label="Nom" required icon={<UserCheck />} {...fieldProps} />
                 </div>
-                <Field name="email" label="Email" type="email" required icon={<Mail />} {...fieldProps} />
-                <Field name="phone" label="Téléphone" type="tel" placeholder="05XX XX XX XX" icon={<Phone />} {...fieldProps} />
+                <Field name="email" label={t('auth.email', lang)} type="email" required icon={<Mail />} {...fieldProps} />
+                <Field name="phone" label={t('common.phone', lang)} type="tel" placeholder="05XX XX XX XX" icon={<Phone />} {...fieldProps} />
                 <div className="mb-3">
                   <label className="mb-1.5 block text-sm font-medium flex items-center gap-1.5">
                     <Lock className="h-3.5 w-3.5" style={{ color: 'var(--primary)' }} />
-                    Mot de passe <span style={{ color: '#ef4444' }}>*</span>
+                    {t('auth.password', lang)} <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -379,11 +382,11 @@ export default function RegisterPage() {
               )}
 
               <button type="submit" disabled={isLoading} className="w-full rounded-xl py-3 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md disabled:opacity-50" style={{ backgroundColor: 'var(--primary)' }}>
-                {isLoading ? 'Inscription...' : "S'inscrire"}
+                {isLoading ? 'Inscription...' : t('auth.register', lang)}
               </button>
 
               <p className="mt-5 text-center text-sm" style={{ color: 'var(--fg-muted)' }}>
-                Déjà un compte ? <Link to="/login" className="font-medium transition-all hover:opacity-80" style={{ color: 'var(--primary)' }}>Se connecter</Link>
+                {t('auth.already_have_account', lang)} <Link to="/login" className="font-medium transition-all hover:opacity-80" style={{ color: 'var(--primary)' }}>{t('auth.sign_in', lang)}</Link>
               </p>
             </form>
 

@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
@@ -12,6 +14,7 @@ import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentVipClassesPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -29,7 +32,7 @@ export default function StudentVipClassesPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours VIP', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.vip_classes', lang)), 'error'); }, [isError]);
 
   const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(
     async () => {
@@ -41,24 +44,24 @@ export default function StudentVipClassesPage() {
       });
       if (error) throw error;
     },
-    { successMessage: 'Demande de cours VIP envoyée', invalidateQueries: [['student_vip_classes']] },
+    { successMessage: t('success.sent', lang, t('nav.vip_classes', lang)), invalidateQueries: [['student_vip_classes']] },
   );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2"><h1 className="text-2xl font-bold tracking-tight">Cours VIP</h1><Star className="h-5 w-5 text-amber-500" /></div>
-        <Button className="h-9 gap-2" onClick={() => bookMutation.mutate()} disabled={bookMutation.isPending}>{bookMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}Réserver</Button>
+        <div className="flex items-center gap-2"><h1 className="text-2xl font-bold tracking-tight">{t('nav.vip_classes', lang)}</h1><Star className="h-5 w-5 text-amber-500" /></div>
+        <Button className="h-9 gap-2" onClick={() => bookMutation.mutate()} disabled={bookMutation.isPending}>{bookMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}{t('common.add', lang)}</Button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-32 rounded-xl" />))
         : (lessons ?? []).length === 0 ? (
-          <div className="sm:col-span-2 lg:col-span-3 text-center py-16 text-muted-foreground"><Star className="h-16 w-16 mx-auto mb-4 opacity-20" /><p className="text-lg font-medium">Aucun cours VIP</p><p className="text-sm">Réservez une session exclusive</p></div>
+          <div className="sm:col-span-2 lg:col-span-3 text-center py-16 text-muted-foreground"><Star className="h-16 w-16 mx-auto mb-4 opacity-20" /><p className="text-lg font-medium">{t('common.no_data', lang)}</p><p className="text-sm">{t('common.not_found', lang)}</p></div>
         ) : (lessons ?? []).map((l: any) => (
           <Card key={l.id} className="border-amber-200 dark:border-amber-900 hover:shadow-md transition-all">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
-                <Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{l.status === 'completed' ? 'Effectué' : l.status === 'cancelled' ? 'Annulé' : 'Planifié'}</Badge>
+                <Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}</Badge>
                 <span className="text-sm font-semibold flex items-center gap-1"><Euro className="h-3.5 w-3.5" />{l.price ?? 0}</span>
               </div>
               <p className="font-medium text-sm">{l.teacherName}</p>

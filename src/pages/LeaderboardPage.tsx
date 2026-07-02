@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getFullName } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { Star, Trophy, Medal, Award, Funnel } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
@@ -35,6 +37,7 @@ const CATEGORIES = [
 ];
 
 export default function LeaderboardPage() {
+  const { lang } = useLang();
   const { toast } = useToast();
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLevel, setFilterLevel] = useState<number | ''>('');
@@ -111,7 +114,7 @@ export default function LeaderboardPage() {
   });
 
   useEffect(() => {
-    if (error) toast('Erreur de chargement', 'error');
+    if (error) toast(t('errors.load_error', lang, 'du classement'), 'error');
   }, [error]);
 
   const displayList = (() => {
@@ -144,7 +147,7 @@ export default function LeaderboardPage() {
           style={{ backgroundColor: showFilters ? 'var(--primary)' : 'var(--primary-light)', color: showFilters ? 'white' : 'var(--primary)' }}
         >
           <Funnel className="h-4 w-4" />
-          Filtres
+          {t('common.filter', lang)}
         </button>
       </div>
 

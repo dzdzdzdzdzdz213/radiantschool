@@ -10,10 +10,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function OnlineClassesPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { lang } = useLang();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
 
@@ -68,60 +71,60 @@ export default function OnlineClassesPage() {
       qc.invalidateQueries({ queryKey: ['teacher_online_sessions'] });
       setShowModal(false);
       setForm({ title: '', course_id: '', date: '', start_time: '', end_time: '', meeting_link: '' });
-      toast('Session planifiée', 'success');
+      toast(t('success.created', lang, 'Session'), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Cours en ligne</h1><p className="text-sm text-muted-foreground mt-1">Sessions virtuelles et classes à distance</p></div>
-        <Button className="h-9 gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{createMutation.isPending ? 'Création...' : 'Planifier'}</Button>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.online_classes', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
+        <Button className="h-9 gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{createMutation.isPending ? t('common.loading', lang) : t('common.add', lang)}</Button>
       </div>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowModal(false)}>
           <div className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Planifier une session</h2>
+              <h2 className="text-lg font-semibold">{t('common.add', lang)}</h2>
               <button onClick={() => setShowModal(false)} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Titre *</Label>
-                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Titre de la session" className="h-9" />
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.name', lang)} *</Label>
+                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t('common.name', lang)} className="h-9" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Matière</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{'Matière'}</Label>
                 <select value={form.course_id} onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">Sélectionner une matière</option>
+                  <option value="">{'Sélectionner une matière'}</option>
                   {(courses ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Date</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.date', lang)}</Label>
                 <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="h-9" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Début</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">{t('common.time', lang)}</Label>
                   <Input type="time" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} className="h-9" />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Fin</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">{'Fin'}</Label>
                   <Input type="time" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} className="h-9" />
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Lien de réunion</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.details', lang)}</Label>
                 <Input value={form.meeting_link} onChange={e => setForm(f => ({ ...f, meeting_link: e.target.value }))} placeholder="https://meet.google.com/..." className="h-9" />
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>Annuler</Button>
+              <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
               <Button size="sm" className="h-9" disabled={!form.title || createMutation.isPending} onClick={() => createMutation.mutate()}>
-                {createMutation.isPending ? 'Création...' : 'Planifier'}
+                {createMutation.isPending ? t('common.loading', lang) : t('common.create', lang)}
               </Button>
             </div>
           </div>
@@ -131,7 +134,7 @@ export default function OnlineClassesPage() {
         <CardHeader className="pb-3">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
+            <Input placeholder={t('common.search', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
           </div>
         </CardHeader>
         <CardContent>
@@ -139,17 +142,17 @@ export default function OnlineClassesPage() {
             {isLoading ? Array.from({ length: 6 }).map((_, i) => (<div key={i} className="h-32 bg-muted rounded-xl animate-pulse" />))
             : isError ? (
               <div className="sm:col-span-2 lg:col-span-3 text-center py-12 text-muted-foreground">
-                <Video className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Erreur de chargement des sessions</p>
+                <Video className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('errors.load_error', lang, '')}</p>
               </div>
             ) : (sessions ?? []).length === 0 ? (
               <div className="sm:col-span-2 lg:col-span-3 text-center py-12 text-muted-foreground">
-                <Video className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucune session planifiée</p>
+                <Video className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
               </div>
             ) : (sessions ?? []).map((s: any) => (
               <div key={s.id} className="rounded-xl border p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-center justify-between mb-3">
                   <Badge variant={s.status === 'completed' ? 'secondary' : s.status === 'live' ? 'success' : 'outline'}>
-                    {s.status === 'completed' ? 'Terminé' : s.status === 'live' ? 'En direct' : 'Planifié'}
+                    {s.status === 'completed' ? t('status.completed', lang) : s.status === 'live' ? t('status.live', lang) : t('status.upcoming', lang)}
                   </Badge>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Monitor className="h-3 w-3" />{s.platform ?? 'Zoom'}
@@ -162,7 +165,7 @@ export default function OnlineClassesPage() {
                   <span className="flex items-center gap-1"><Users className="h-3 w-3" />{formatTime(s.start_time)}</span>
                 </div>
                 <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-2" asChild>
-                  <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />Rejoindre</a>
+                  <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />{'Rejoindre'}</a>
                 </Button>
               </div>
             ))}

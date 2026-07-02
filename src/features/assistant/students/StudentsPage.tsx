@@ -10,9 +10,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getInitials, formatDateTime, getStatusColor } from '@/lib/utils';
 import { useStudents } from './useStudents';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function StudentsPage() {
   const navigate = useNavigate();
+  const { lang } = useLang();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -23,12 +26,12 @@ export default function StudentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Élèves</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gérer les inscriptions et informations des élèves</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.students', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('students.subtitle', lang)}</p>
         </div>
         <Button onClick={() => navigate('/assistant/students/new')} className="gap-2">
           <Plus className="h-4 w-4" />
-          Nouvel élève
+          {t('students.new', lang)}
         </Button>
       </div>
 
@@ -38,7 +41,7 @@ export default function StudentsPage() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher un élève..."
+                placeholder={t('common.search_student', lang)}
                 value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1); }}
                 className="h-9 pl-9"
@@ -53,7 +56,7 @@ export default function StudentsPage() {
                   onClick={() => { setStatusFilter(statusFilter === s ? '' : s); setPage(1); }}
                   className="h-8"
                 >
-                  {s === 'active' ? 'Actif' : s === 'pending' ? 'En attente' : s === 'inactive' ? 'Inactif' : 'Suspendu'}
+                  {s === 'active' ? t('status.active', lang) : s === 'pending' ? t('status.pending', lang) : s === 'inactive' ? t('status.inactive', lang) : t('status.suspended', lang)}
                 </Button>
               ))}
             </div>
@@ -63,11 +66,11 @@ export default function StudentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Élève</TableHead>
-                <TableHead className="hidden sm:table-cell">Email</TableHead>
-                <TableHead className="hidden md:table-cell">Téléphone</TableHead>
-                <TableHead className="hidden lg:table-cell">Type</TableHead>
-                <TableHead className="text-right">Statut</TableHead>
+                <TableHead>{t('nav.students', lang)}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('common.email', lang)}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('common.phone', lang)}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t('common.type', lang)}</TableHead>
+                <TableHead className="text-right">{t('common.status', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -82,7 +85,7 @@ export default function StudentsPage() {
               ) : data?.data.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    Aucun élève trouvé
+                    {t('common.no_results', lang)}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -101,7 +104,7 @@ export default function StudentsPage() {
                         </Avatar>
                         <div>
                           <p className="text-sm font-medium">{student.firstName} {student.lastName}</p>
-                          <p className="text-xs text-muted-foreground">Inscrit le {formatDateTime(student.createdAt)}</p>
+                          <p className="text-xs text-muted-foreground">{t('students.registered_on', lang)} {formatDateTime(student.createdAt)}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -110,7 +113,7 @@ export default function StudentsPage() {
                     <TableCell className="hidden lg:table-cell text-sm">{student.studentType ?? '—'}</TableCell>
                     <TableCell className="text-right">
                       <Badge variant={student.status === 'active' ? 'success' : student.status === 'pending' ? 'warning' : student.status === 'suspended' ? 'destructive' : 'outline'}>
-                        {student.status === 'active' ? 'Actif' : student.status === 'pending' ? 'En attente' : student.status === 'inactive' ? 'Inactif' : 'Suspendu'}
+                        {student.status === 'active' ? t('status.active', lang) : student.status === 'pending' ? t('status.pending', lang) : student.status === 'inactive' ? t('status.inactive', lang) : t('status.suspended', lang)}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -120,10 +123,10 @@ export default function StudentsPage() {
           </Table>
           {data && data.meta.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground">{data.meta.total} élèves</p>
+              <p className="text-sm text-muted-foreground">{t('common.total', lang)} : {data.meta.total}</p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Précédent</Button>
-                <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage(p => p + 1)}>Suivant</Button>
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{t('common.previous', lang)}</Button>
+                <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage(p => p + 1)}>{t('common.next', lang)}</Button>
               </div>
             </div>
           )}

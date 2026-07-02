@@ -6,17 +6,27 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 const reportTypes = [
-  { id: 'attendance', label: 'Rapport de présence', icon: BarChart3 },
-  { id: 'revenue', label: 'Rapport financier', icon: FileText },
-  { id: 'registrations', label: 'Rapport inscriptions', icon: FileText },
-  { id: 'payments', label: 'Rapport paiements', icon: FileText },
-  { id: 'teacher_workload', label: 'Charge enseignants', icon: BarChart3 },
+  { id: 'attendance', label: '', icon: BarChart3 },
+  { id: 'revenue', label: '', icon: FileText },
+  { id: 'registrations', label: '', icon: FileText },
+  { id: 'payments', label: '', icon: FileText },
+  { id: 'teacher_workload', label: '', icon: BarChart3 },
 ] as const;
 
 export default function ReportsPage() {
+  const { lang } = useLang();
   const { toast } = useToast();
+  const reportLabels: Record<string, string> = {
+    attendance: t('reports.attendance', lang),
+    revenue: t('reports.revenue', lang),
+    registrations: t('reports.registrations', lang),
+    payments: t('reports.payments', lang),
+    teacher_workload: t('reports.teacher_workload', lang),
+  };
   const [selected, setSelected] = useState('revenue');
   const { data: revenue, isLoading, isError } = useQuery({
     queryKey: ['assistant_report_revenue'],
@@ -31,12 +41,12 @@ export default function ReportsPage() {
   });
 
   useEffect(() => {
-    if (isError) toast('Erreur lors du chargement des données', 'error');
+    if (isError) toast(t('errors.load_error', lang, t('reports.data', lang)), 'error');
   }, [isError]);
 
   const exportCSV = (filename: string) => {
     if (!revenue || revenue.length === 0) {
-      toast('Aucune donnée à exporter', 'error');
+      toast(t('common.no_data', lang), 'error');
       return;
     }
     const headers = ['Date', 'Revenu'];
@@ -49,15 +59,15 @@ export default function ReportsPage() {
     a.download = `${filename}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast(`Export ${filename} généré`, 'success');
+    toast(t('reports.export_success', lang), 'success');
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Rapports</h1>
-          <p className="text-sm text-muted-foreground mt-1">Générer et exporter des rapports</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.reports', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('reports.subtitle', lang)}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileSpreadsheet className="h-4 w-4" />Excel</Button>
@@ -75,7 +85,7 @@ export default function ReportsPage() {
             >
               <div className="flex items-center gap-3">
                 <r.icon className="h-4 w-4" />
-                <span className="text-sm">{r.label}</span>
+                <span className="text-sm">{reportLabels[r.id]}</span>
               </div>
             </button>
           ))}
@@ -84,8 +94,8 @@ export default function ReportsPage() {
         <Card className="lg:col-span-3">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm">Aperçu - 30 derniers jours</CardTitle>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportCSV('rapport-financier')}><Download className="h-4 w-4" />Exporter</Button>
+              <CardTitle className="text-sm">{t('reports.preview', lang)}</CardTitle>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportCSV('rapport-financier')}><Download className="h-4 w-4" />{t('common.export', lang)}</Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -94,7 +104,7 @@ export default function ReportsPage() {
             ) : selected === 'revenue' && (
               <div className="space-y-2">
                 {(revenue ?? []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">Aucune donnée disponible</p>
+                  <p className="text-sm text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>
                 ) : (
                   (revenue ?? []).slice(0, 10).map((r: any) => (
                     <div key={r.date} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
@@ -106,7 +116,7 @@ export default function ReportsPage() {
               </div>
             )}
             {selected !== 'revenue' && (
-              <p className="text-sm text-muted-foreground text-center py-8">Sélectionnez un type de rapport</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t('reports.select_type', lang)}</p>
             )}
           </CardContent>
         </Card>

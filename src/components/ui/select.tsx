@@ -1,6 +1,8 @@
 import { cn } from '@/lib/utils';
 import { forwardRef, useState, Children } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface SelectProps {
   value: string;
@@ -43,10 +45,11 @@ const SelectItem = forwardRef<HTMLButtonElement, SelectItemProps>(({ value, chil
 SelectItem.displayName = 'SelectItem';
 
 export function Select({ value, onValueChange, placeholder, children, className }: SelectProps) {
+  const { lang } = useLang();
   const [open, setOpen] = useState(false);
 
   const items: any[] = [];
-  let triggerLabel = placeholder ?? 'Sélectionner...';
+  let triggerLabel = placeholder ?? t('common.select', lang);
 
   const processChildren = (child: any) => {
     if (!child) return;

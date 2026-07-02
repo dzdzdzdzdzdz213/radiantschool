@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/utils';
@@ -15,6 +17,7 @@ import { uploadAvatar } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentProfilePage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -38,7 +41,7 @@ export default function StudentProfilePage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement du profil', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.profile', lang)), 'error'); }, [isError]);
 
   const updateMutation = useMutation({
     mutationFn: async () => {
@@ -46,8 +49,8 @@ export default function StudentProfilePage() {
       const { error } = await (supabase as any).from('users').update({ first_name: form.first_name, last_name: form.last_name, phone: form.phone, address: form.address, bio: form.bio }).eq('id', profile.id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['student_profile'] }); setEditing(false); toast('Profil mis à jour', 'success'); },
-    onError: (err: any) => { toast(err?.message ?? 'Erreur lors de la mise à jour', 'error'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['student_profile'] }); setEditing(false); toast(t('success.updated', lang, t('nav.profile', lang)), 'success'); },
+    onError: (err: any) => { toast(err?.message ?? t('errors.update_error', lang, t('nav.profile', lang)), 'error'); },
   });
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,9 +60,9 @@ export default function StudentProfilePage() {
     try {
       await uploadAvatar(profile.id, file);
       qc.invalidateQueries({ queryKey: ['student_profile'] });
-      toast('Photo mise à jour', 'success');
+      toast(t('success.updated', lang, t('nav.profile', lang)), 'success');
     } catch (err: any) {
-      toast(err?.message ?? 'Erreur lors du téléchargement', 'error');
+      toast(err?.message ?? t('errors.update_error', lang, t('nav.profile', lang)), 'error');
     } finally {
       setUploadingAvatar(false);
     }
@@ -69,7 +72,7 @@ export default function StudentProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Mon profil</h1><p className="text-sm text-muted-foreground mt-1">Gérez vos informations personnelles</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.profile', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.settings', lang)}</p></div>
       <div className="grid lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1">
           <CardContent className="p-6 text-center">
@@ -83,46 +86,46 @@ export default function StudentProfilePage() {
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
             <h2 className="text-lg font-semibold mt-4">{studentProfile?.first_name ?? ''} {studentProfile?.last_name ?? ''}</h2>
-            <p className="text-sm text-muted-foreground">Élève</p>
+            <p className="text-sm text-muted-foreground">{t('role.student', lang)}</p>
             {studentProfile?.students?.registration_number && (
               <Badge variant="outline" className="mt-2 text-[10px] font-mono">{studentProfile.students.registration_number}</Badge>
             )}
             <Separator className="my-4" />
             <div className="space-y-2 text-left text-sm">
               <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" />{studentProfile?.email ?? ''}</p>
-              <p className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" />{studentProfile?.phone ?? 'Non renseigné'}</p>
-              <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{studentProfile?.address ?? 'Non renseigné'}</p>
-              <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />Membre depuis le {new Date(studentProfile?.created_at ?? Date.now()).toLocaleDateString('fr-FR')}</p>
+              <p className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" />{studentProfile?.phone ?? t('common.not_found', lang)}</p>
+              <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{studentProfile?.address ?? t('common.not_found', lang)}</p>
+              <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />{t('common.date', lang)}: {new Date(studentProfile?.created_at ?? Date.now()).toLocaleDateString('fr-FR')}</p>
             </div>
           </CardContent>
         </Card>
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-sm"><User className="h-4 w-4 inline mr-2" />Informations</CardTitle><Button variant={editing ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => { if (editing) { if (!form.first_name.trim() || !form.last_name.trim()) { toast('Le prénom et le nom sont requis', 'error'); return; } updateMutation.mutate(); } else setEditing(true); }} disabled={updateMutation.isPending}>{editing ? <>{updateMutation.isPending ? <Loader className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}Enregistrer</> : 'Modifier'}</Button></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-sm"><User className="h-4 w-4 inline mr-2" />{t('common.info', lang)}</CardTitle><Button variant={editing ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => { if (editing) { if (!form.first_name.trim() || !form.last_name.trim()) { toast(t('common.required', lang), 'error'); return; } updateMutation.mutate(); } else setEditing(true); }} disabled={updateMutation.isPending}>{editing ? <>{updateMutation.isPending ? <Loader className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1" />}{t('common.save', lang)}</> : t('common.edit', lang)}</Button></CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 gap-4">
-                <div><label className="text-xs text-muted-foreground mb-1 block">Prénom</label><Input value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} disabled={!editing} className="h-9" /></div>
-                <div><label className="text-xs text-muted-foreground mb-1 block">Nom</label><Input value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} disabled={!editing} className="h-9" /></div>
-                <div><label className="text-xs text-muted-foreground mb-1 block">Téléphone</label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} disabled={!editing} className="h-9" /></div>
-                <div><label className="text-xs text-muted-foreground mb-1 block">Adresse</label><Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} disabled={!editing} className="h-9" /></div>
-                <div className="sm:col-span-2"><label className="text-xs text-muted-foreground mb-1 block">Bio</label><textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} disabled={!editing} className="w-full min-h-[80px] rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none" /></div>
+                <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.first_name', lang)}</label><Input value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} disabled={!editing} className="h-9" /></div>
+                <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.last_name', lang)}</label><Input value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} disabled={!editing} className="h-9" /></div>
+                <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.phone', lang)}</label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} disabled={!editing} className="h-9" /></div>
+                <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.address', lang)}</label><Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} disabled={!editing} className="h-9" /></div>
+                <div className="sm:col-span-2"><label className="text-xs text-muted-foreground mb-1 block">{t('common.description', lang)}</label><textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} disabled={!editing} className="w-full min-h-[80px] rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none" /></div>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-sm"><Award className="h-4 w-4 inline mr-2" />Statistiques</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm"><Award className="h-4 w-4 inline mr-2" />{t('dashboard.stat.avg_grade', lang)}</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                  { label: 'Cours suivis', value: studentProfile?.students?.total_courses ?? 0, icon: BookOpen },
-                  { label: 'Présences', value: `${studentProfile?.students?.attendance_rate ?? 0}%`, icon: Shield },
-                  { label: 'Certificats', value: studentProfile?.students?.certificates_count ?? 0, icon: Award },
-                  { label: 'Moyenne', value: `${studentProfile?.students?.average_grade ?? '-'}/20`, icon: Award },
+                  { labelKey: 'nav.my_courses', value: studentProfile?.students?.total_courses ?? 0, icon: BookOpen },
+                  { labelKey: 'nav.attendance', value: `${studentProfile?.students?.attendance_rate ?? 0}%`, icon: Shield },
+                  { labelKey: 'nav.certificates', value: studentProfile?.students?.certificates_count ?? 0, icon: Award },
+                  { labelKey: 'dashboard.stat.avg_grade', value: `${studentProfile?.students?.average_grade ?? '-'}/20`, icon: Award },
                 ].map((stat, i) => (
                   <div key={i} className="text-center p-3 rounded-xl bg-accent/50">
                     <stat.icon className="h-5 w-5 mx-auto text-primary mb-1" />
                     <p className="text-lg font-bold">{stat.value}</p>
-                    <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{t(stat.labelKey, lang)}</p>
                   </div>
                 ))}
               </div>

@@ -7,8 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { formatDateTime } from '@/lib/utils';
 import { useRegistrations, useApproveRegistration, useRejectRegistration } from './useRegistrations';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function RegistrationsPage() {
+  const { lang } = useLang();
   const [tab, setTab] = useState('pending');
   const { data, isLoading } = useRegistrations('', 1, tab === 'pending' ? 'pending' : '');
   const approve = useApproveRegistration();
@@ -17,23 +20,23 @@ export default function RegistrationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Inscriptions</h1>
-        <p className="text-sm text-muted-foreground mt-1">Gérer les inscriptions, validations et liste d'attente</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('nav.registrations', lang)}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('registrations.subtitle', lang)}</p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="pending" className="gap-2">
             <Clock className="h-4 w-4" />
-            En attente
+            {t('status.pending', lang)}
           </TabsTrigger>
           <TabsTrigger value="active" className="gap-2">
             <Check className="h-4 w-4" />
-            Confirmées
+            {t('status.confirmed', lang)}
           </TabsTrigger>
           <TabsTrigger value="all" className="gap-2">
             <UserPlus className="h-4 w-4" />
-            Toutes
+            {t('common.all', lang)}
           </TabsTrigger>
         </TabsList>
 
@@ -43,11 +46,11 @@ export default function RegistrationsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Élève</TableHead>
-                    <TableHead>Cours</TableHead>
-                    <TableHead className="hidden md:table-cell">Date</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('nav.students', lang)}</TableHead>
+                    <TableHead>{t('nav.courses', lang)}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('common.date', lang)}</TableHead>
+                    <TableHead>{t('common.status', lang)}</TableHead>
+                    <TableHead className="text-right">{t('common.actions', lang)}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -58,7 +61,7 @@ export default function RegistrationsPage() {
                       </TableRow>
                     ))
                   ) : data?.data.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Aucune inscription trouvée</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
                   ) : (
                     data?.data.map((reg) => (
                       <TableRow key={reg.id}>
@@ -67,7 +70,7 @@ export default function RegistrationsPage() {
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{formatDateTime(reg.enrollmentDate)}</TableCell>
                         <TableCell>
                           <Badge variant={reg.status === 'active' ? 'success' : reg.status === 'pending' ? 'warning' : 'destructive'}>
-                            {reg.status === 'active' ? 'Confirmé' : reg.status === 'pending' ? 'En attente' : 'Rejeté'}
+                            {reg.status === 'active' ? t('status.confirmed', lang) : reg.status === 'pending' ? t('status.pending', lang) : t('status.cancelled', lang)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">

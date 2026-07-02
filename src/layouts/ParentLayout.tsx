@@ -5,18 +5,9 @@ import Header from '@/components/layout/Header';
 import BackButton from '@/components/ui/BackButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { NavItem } from '@/components/layout/Sidebar';
-
-const items: NavItem[] = [
-  { label: 'Tableau de bord', path: '/parent/dashboard', icon: 'LayoutDashboard' },
-  { label: 'Mes enfants', path: '/parent/children', icon: 'Users' },
-  { label: "S'inscrire", path: '/parent/enroll', icon: 'GraduationCap' },
-  { label: 'Emploi du temps', path: '/parent/schedule', icon: 'Calendar' },
-  { label: 'Paiements', path: '/parent/payments', icon: 'DollarSign' },
-  { label: 'Factures', path: '/parent/invoices', icon: 'FileText' },
-  { label: 'Messages', path: '/parent/messages', icon: 'MessageSquare' },
-  { label: 'Profil', path: '/parent/profile', icon: 'UserCircle' },
-];
 
 function ParentFallback() {
   return (
@@ -35,7 +26,18 @@ function ParentFallback() {
 }
 
 export default function ParentLayout() {
+  const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const items: NavItem[] = [
+    { label: t('nav.dashboard', lang), path: '/parent/dashboard', icon: 'LayoutDashboard' },
+    { label: t('nav.students', lang), path: '/parent/children', icon: 'Users' },
+    { label: t('auth.register', lang), path: '/parent/enroll', icon: 'GraduationCap' },
+    { label: t('nav.schedule', lang), path: '/parent/schedule', icon: 'Calendar' },
+    { label: t('nav.payments', lang), path: '/parent/payments', icon: 'DollarSign' },
+    { label: t('nav.invoices', lang), path: '/parent/invoices', icon: 'FileText' },
+    { label: t('nav.messages', lang), path: '/parent/messages', icon: 'MessageSquare' },
+    { label: t('nav.profile', lang), path: '/parent/profile', icon: 'UserCircle' },
+  ];
   return (
     <div className="flex h-screen overflow-hidden bg-page">
       <Sidebar items={items} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -43,7 +45,7 @@ export default function ParentLayout() {
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mb-4">
-            <BackButton label="← Retour au site" to="/" />
+            <BackButton label={t('common.back_to_site', lang)} to="/" />
           </div>
           <ErrorBoundary>
             <Suspense fallback={<ParentFallback />}>

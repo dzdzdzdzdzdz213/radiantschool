@@ -5,12 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentOnlineClassesPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -31,16 +34,16 @@ export default function StudentOnlineClassesPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours en ligne', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.online_classes', lang)), 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Cours en ligne</h1><p className="text-sm text-muted-foreground mt-1">Rejoignez vos sessions virtuelles</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.online_classes', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.online_classes', lang)}</p></div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-44 rounded-xl" />))
         : (sessions ?? []).length === 0 ? (
           <div className="sm:col-span-2 lg:col-span-3 text-center py-16 text-muted-foreground">
-            <Video className="h-16 w-16 mx-auto mb-4 opacity-20" /><p className="text-lg font-medium">Aucune session en ligne</p><p className="text-sm">Les sessions planifiées apparaîtront ici</p>
+            <Video className="h-16 w-16 mx-auto mb-4 opacity-20" /><p className="text-lg font-medium">{t('common.no_data', lang)}</p><p className="text-sm">{t('common.not_found', lang)}</p>
           </div>
         ) : (sessions ?? []).map((s: any) => (
           <Card key={s.id} className="hover:shadow-md transition-all">
@@ -48,7 +51,7 @@ export default function StudentOnlineClassesPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center"><Video className="h-5 w-5 text-violet-600" /></div>
                 <Badge variant={s.status === 'live' ? 'success' : s.status === 'completed' ? 'secondary' : 'outline'} className="text-[10px]">
-                  {s.status === 'live' ? 'En direct' : s.status === 'completed' ? 'Terminé' : 'Planifié'}
+                  {s.status === 'live' ? t('status.live', lang) : s.status === 'completed' ? t('status.completed', lang) : t('status.upcoming', lang)}
                 </Badge>
               </div>
               <h3 className="font-semibold text-sm mb-1">{s.title}</h3>
@@ -59,7 +62,7 @@ export default function StudentOnlineClassesPage() {
                 <span className="flex items-center gap-1"><Monitor className="h-3 w-3" />{s.platform ?? 'Zoom'}</span>
               </div>
               <Button variant={s.status === 'live' ? 'default' : 'outline'} size="sm" className="w-full h-8 text-xs gap-1.5" asChild>
-                <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" />Rejoindre</a>
+                <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t('nav.registrations', lang)}</a>
               </Button>
             </CardContent>
           </Card>

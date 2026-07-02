@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
@@ -15,6 +17,7 @@ const typeIcons: Record<string, any> = { alert: AlertCircle, info: Info, announc
 const typeColors: Record<string, string> = { alert: 'text-red-500 bg-red-500/10', info: 'text-blue-500 bg-blue-500/10', announcement: 'text-violet-500 bg-violet-500/10', payment: 'text-emerald-500 bg-emerald-500/10', message: 'text-sky-500 bg-sky-500/10' };
 
 export default function StudentNotificationsPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const [tab, setTab] = useState('all');
 
@@ -41,18 +44,18 @@ export default function StudentNotificationsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Notifications</h1><p className="text-sm text-muted-foreground mt-1">{unreadCount} non lue(s)</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.notifications', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{unreadCount} {t('common.not_found', lang)}</p></div>
         <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={() => { if (profile?.id) markRead.mutate({ userId: profile.id }); }} disabled={markRead.isPending || unreadCount === 0}>
-          {markRead.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}Tout marquer comme lu
+          {markRead.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}{t('common.confirm', lang)}
         </Button>
       </div>
       <Card>
-        <CardHeader className="pb-0"><Tabs value={tab} onValueChange={setTab}><TabsList><TabsTrigger value="all">Toutes</TabsTrigger><TabsTrigger value="unread">Non lues {unreadCount > 0 && <Badge variant="default" className="ml-1.5 text-[9px] h-4 px-1">{unreadCount}</Badge>}</TabsTrigger></TabsList></Tabs></CardHeader>
+        <CardHeader className="pb-0"><Tabs value={tab} onValueChange={setTab}><TabsList><TabsTrigger value="all">{t('common.all', lang)}</TabsTrigger><TabsTrigger value="unread">{t('common.none', lang)} {unreadCount > 0 && <Badge variant="default" className="ml-1.5 text-[9px] h-4 px-1">{unreadCount}</Badge>}</TabsTrigger></TabsList></Tabs></CardHeader>
         <CardContent className="pt-4">
           <div className="space-y-2">
             {isLoading ? Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-20 rounded-xl" />))
             : filtered.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground"><Bell className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucune notification</p></div>
+              <div className="text-center py-12 text-muted-foreground"><Bell className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p></div>
             ) : filtered.map((n: any) => {
               const Icon = typeIcons[n.type] ?? Bell;
               const color = typeColors[n.type] ?? 'text-primary bg-primary/10';

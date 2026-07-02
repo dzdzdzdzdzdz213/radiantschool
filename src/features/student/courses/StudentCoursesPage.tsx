@@ -6,11 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentCoursesPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -45,39 +48,39 @@ export default function StudentCoursesPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement des cours', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, 'cours'), 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Mes cours</h1><p className="text-sm text-muted-foreground mt-1">{enrollments?.length ?? 0} cours inscrits</p></div>
-        <Button className="h-9 gap-2" onClick={() => navigate('/student/enroll')}><BookOpen className="h-4 w-4" />S'inscrire</Button>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.my_courses', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{enrollments?.length ?? 0} {t('nav.courses', lang)}</p></div>
+        <Button className="h-9 gap-2" onClick={() => navigate('/student/enroll')}><BookOpen className="h-4 w-4" />{t('nav.registrations', lang)}</Button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? Array.from({ length: 6 }).map((_, i) => (<div key={i} className="h-48 bg-muted rounded-2xl animate-pulse" />))
         : (enrollments ?? []).length === 0 ? (
           <div className="sm:col-span-2 lg:col-span-3 text-center py-16 text-muted-foreground">
             <BookOpen className="h-16 w-16 mx-auto mb-4 opacity-20" />
-            <p className="text-lg font-medium mb-1">Aucun cours inscrit</p>
-            <p className="text-sm mb-4">Inscrivez-vous à un cours pour commencer</p>
-            <Button onClick={() => navigate('/student/enroll')}>Parcourir les cours</Button>
+            <p className="text-lg font-medium mb-1">{t('common.no_data', lang)}</p>
+            <p className="text-sm mb-4">{t('common.no_results', lang)}</p>
+            <Button onClick={() => navigate('/student/enroll')}>{t('nav.courses', lang)}</Button>
           </div>
         ) : (enrollments ?? []).map((e: any) => (
           <Card key={e.id} className="hover:shadow-md transition-all duration-300 cursor-pointer group" onClick={() => navigate(`/student/courses/${e.course.id}`)}>
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-3">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center"><BookOpen className="h-5 w-5 text-primary" /></div>
-                <Badge variant={e.status === 'active' ? 'success' : 'outline'} className="text-[10px]">{e.status === 'active' ? 'Actif' : e.status}</Badge>
+                <Badge variant={e.status === 'active' ? 'success' : 'outline'} className="text-[10px]">{e.status === 'active' ? t('status.active', lang) : e.status}</Badge>
               </div>
               <h3 className="font-semibold text-sm mb-1 group-hover:text-primary transition-colors">{e.course.name}</h3>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{e.course.description}</p>
               <div className="space-y-1.5 text-xs text-muted-foreground">
                 <p className="flex items-center gap-1.5"><Users className="h-3 w-3" />{e.course.teacher}</p>
-                <p className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{e.course.duration || 'À déterminer'}</p>
+                <p className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{e.course.duration || t('common.pending', lang)}</p>
                 <p className="flex items-center gap-1.5"><DollarSign className="h-3 w-3" />{e.course.price} DA</p>
               </div>
               <div className="mt-3">
-                <div className="flex justify-between text-[10px] mb-1"><span>Progression</span><span>{e.progress}%</span></div>
+                <div className="flex justify-between text-[10px] mb-1"><span>{t('common.status', lang)}</span><span>{e.progress}%</span></div>
                 <div className="h-1.5 bg-accent rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all" style={{ width: `${e.progress}%` }} /></div>
               </div>
             </CardContent>

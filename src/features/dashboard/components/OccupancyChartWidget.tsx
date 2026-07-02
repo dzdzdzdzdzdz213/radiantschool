@@ -1,6 +1,8 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface OccupancyItem {
   name: string;
@@ -27,16 +29,16 @@ function ChartSkeleton() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ lang }: { lang: any }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Occupation des salles</CardTitle>
+        <CardTitle>{t('dashboard.stat.occupancy', lang)}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center h-[280px]">
-          <p className="text-sm text-muted-foreground">Aucune salle attribuée</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Les données apparaîtront après l'assignation des salles</p>
+          <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">{t('common.info', lang)}</p>
         </div>
       </CardContent>
     </Card>
@@ -53,12 +55,13 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
+  const { lang } = useLang();
   if (!active || !payload || !payload[0]) return null;
   const d = payload[0].payload;
   return (
     <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-lg">
       <p className="text-xs font-semibold">{d.room?.name ?? d.name}</p>
-      <p className="text-xs mt-1 text-muted-foreground">{d.current_enrollments}/{d.capacity} élèves ({d.pct}%)</p>
+      <p className="text-xs mt-1 text-muted-foreground">{d.current_enrollments}/{d.capacity} {t('role.student', lang)} ({d.pct}%)</p>
     </div>
   );
 }
@@ -71,13 +74,14 @@ function getBarColor(pct: number): string {
 }
 
 export default function OccupancyChartWidget({ data, loading }: OccupancyChartWidgetProps) {
+  const { lang } = useLang();
   if (loading) return <ChartSkeleton />;
-  if (!data || data.length === 0) return <EmptyState />;
+  if (!data || data.length === 0) return <EmptyState lang={lang} />;
 
   const chartData = data
     .map(d => ({
       ...d,
-      roomName: d.room?.name ?? 'Sans salle',
+      roomName: d.room?.name ?? '',
       pct: d.capacity > 0 ? Math.round((d.current_enrollments / d.capacity) * 100) : 0,
     }))
     .sort((a, b) => b.pct - a.pct)
@@ -86,9 +90,9 @@ export default function OccupancyChartWidget({ data, loading }: OccupancyChartWi
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-semibold">Occupation des salles</CardTitle>
+        <CardTitle className="text-sm font-semibold">{t('dashboard.stat.occupancy', lang)}</CardTitle>
         <span className="text-xs font-medium rounded-lg px-2.5 py-1 bg-accent/10 text-accent">
-          {chartData.length} cours
+          {chartData.length} {t('nav.courses', lang)}
         </span>
       </CardHeader>
       <CardContent>

@@ -8,8 +8,11 @@ import { Label } from '@/components/ui/label';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function RoomsPage() {
+  const { lang } = useLang();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -22,7 +25,7 @@ export default function RoomsPage() {
   });
 
   useEffect(() => {
-    if (isError) toast('Erreur lors du chargement des salles', 'error');
+    if (isError) toast(t('errors.load_error', lang, t('nav.rooms', lang)), 'error');
   }, [isError]);
 
   const [showModal, setShowModal] = useState(false);
@@ -32,24 +35,24 @@ export default function RoomsPage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!roomName.trim()) throw new Error('Le nom de la salle est requis');
+      if (!roomName.trim()) throw new Error(t('rooms.name_required', lang));
       const capacity = parseInt(roomCapacity, 10);
-      if (isNaN(capacity) || capacity <= 0) throw new Error('La capacité doit être supérieure à 0');
+      if (isNaN(capacity) || capacity <= 0) throw new Error(t('rooms.capacity_invalid', lang));
       const { error } = await (supabase as any).from('rooms').insert({ name: roomName.trim(), capacity, floor: roomFloor.trim() || null, status: 'available' });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_rooms'] }); toast('Salle créée', 'success'); setShowModal(false); setRoomName(''); setRoomCapacity(''); setRoomFloor(''); },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_rooms'] }); toast(t('success.created', lang, t('rooms.room', lang)), 'success'); setShowModal(false); setRoomName(''); setRoomCapacity(''); setRoomFloor(''); },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Salles</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gérer les salles et réservations</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.rooms', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('rooms.subtitle', lang)}</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />Nouvelle salle</Button>
+        <Button className="gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{t('rooms.new', lang)}</Button>
       </div>
 
       {showModal && (
@@ -57,26 +60,26 @@ export default function RoomsPage() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
-              <CardTitle className="text-sm">Nouvelle salle</CardTitle>
+              <CardTitle className="text-sm">{t('rooms.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Nom de la salle *</Label>
-                <Input placeholder="Nom" value={roomName} onChange={e => setRoomName(e.target.value)} />
+                <Label>{t('rooms.name', lang)} *</Label>
+                <Input placeholder={t('common.name', lang)} value={roomName} onChange={e => setRoomName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Capacité *</Label>
-                <Input type="number" placeholder="Nombre de places" value={roomCapacity} onChange={e => setRoomCapacity(e.target.value)} />
+                <Label>{t('rooms.capacity', lang)} *</Label>
+                <Input type="number" placeholder={t('rooms.capacity_placeholder', lang)} value={roomCapacity} onChange={e => setRoomCapacity(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Étage</Label>
-                <Input placeholder="Étage (optionnel)" value={roomFloor} onChange={e => setRoomFloor(e.target.value)} />
+                <Label>{t('rooms.floor', lang)}</Label>
+                <Input placeholder={t('rooms.floor_placeholder', lang)} value={roomFloor} onChange={e => setRoomFloor(e.target.value)} />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setShowModal(false)}>Annuler</Button>
+                <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
                 <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-                  {createMutation.isPending ? 'Création...' : 'Créer la salle'}
+                  {createMutation.isPending ? t('common.loading', lang) : t('rooms.create', lang)}
                 </Button>
               </div>
             </CardContent>
@@ -89,7 +92,7 @@ export default function RoomsPage() {
           <Card key={i}><CardHeader className="pb-3"><div className="h-24 bg-muted rounded-xl animate-pulse" /></CardHeader></Card>
         )) : (rooms ?? []).length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
-            <MapPin className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucune salle</p>
+            <MapPin className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
           </div>
         ) : (rooms ?? []).map((room: any) => (
           <Card key={room.id} className="hover:shadow-md transition-shadow">
@@ -101,18 +104,18 @@ export default function RoomsPage() {
                   </div>
                   <div>
                     <CardTitle className="text-base">{room.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground">Étage {room.floor ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground">{t('rooms.floor', lang)} {room.floor ?? '—'}</p>
                   </div>
                 </div>
                 <Badge variant={room.status === 'available' ? 'success' : room.status === 'occupied' ? 'destructive' : 'warning'}>
-                  {room.status === 'available' ? 'Libre' : room.status === 'occupied' ? 'Occupée' : 'Réservée'}
+                  {room.status === 'available' ? t('rooms.available', lang) : room.status === 'occupied' ? t('rooms.occupied', lang) : t('rooms.reserved', lang)}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Capacité</span>
-                <span className="font-medium">{room.capacity} places</span>
+                <span className="text-muted-foreground">{t('rooms.capacity', lang)}</span>
+                <span className="font-medium">{room.capacity} {t('rooms.seats', lang)}</span>
               </div>
               {room.equipment && (
                 <div className="mt-2 flex flex-wrap gap-1">

@@ -7,9 +7,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, getInitials } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function ReviewsPage() {
   const { profile } = useAuth();
+  const { lang } = useLang();
   const [search, setSearch] = useState('');
 
   const { data: reviews, isLoading } = useQuery({
@@ -34,17 +37,17 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold tracking-tight">Avis</h1><p className="text-sm text-muted-foreground mt-1">{reviews?.length ?? 0} avis · {avgRating.toFixed(1)}/5 moyenne</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.reviews', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{reviews?.length ?? 0} avis · {avgRating.toFixed(1)}/5 moyenne</p></div>
       </div>
       <Card>
         <CardHeader className="pb-3">
-          <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Rechercher par élève..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div>
+          <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder={t('common.search', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {isLoading ? Array.from({ length: 4 }).map((_, i) => (<div key={i} className="h-24 bg-muted rounded-xl animate-pulse" />))
             : (reviews ?? []).length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground"><Star className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucun avis pour le moment</p></div>
+              <div className="text-center py-12 text-muted-foreground"><Star className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p></div>
             ) : (reviews ?? []).map((r: any) => (
               <div key={r.id} className="rounded-xl border p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-start gap-3">

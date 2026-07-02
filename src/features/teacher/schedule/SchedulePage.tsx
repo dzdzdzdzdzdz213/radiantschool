@@ -8,12 +8,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getDayLabel, formatTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 export default function TeacherSchedulePage() {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { lang } = useLang();
   const today = new Date();
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
   const [startDate, setStartDate] = useState(weekStart);
@@ -40,8 +43,8 @@ export default function TeacherSchedulePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Mon emploi du temps</h1>
-          <p className="text-sm text-muted-foreground mt-1">Planning hebdomadaire de vos cours</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.my_schedule', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('nav.schedule', lang)}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => { const d = new Date(startDate); d.setDate(d.getDate() - 7); setStartDate(d); }}><ChevronLeft className="h-4 w-4" /></Button>
@@ -52,7 +55,7 @@ export default function TeacherSchedulePage() {
 
       {isError && (
         <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-4 text-center">
-          <p className="text-red-600 font-medium text-sm">Erreur de chargement de l'emploi du temps</p>
+          <p className="text-red-600 font-medium text-sm">{t('errors.load_error', lang, '')}</p>
         </div>
       )}
       <div className="grid gap-4 lg:grid-cols-6">
@@ -81,7 +84,7 @@ export default function TeacherSchedulePage() {
                 ))
               )}
               {(schedules?.[day]?.length ?? 0) > 5 && (
-                <p className="text-[10px] text-muted-foreground text-center">+{schedules![day].length - 5} autres</p>
+                <p className="text-[10px] text-muted-foreground text-center">+{schedules![day].length - 5} {'autres'}</p>
               )}
             </CardContent>
           </Card>

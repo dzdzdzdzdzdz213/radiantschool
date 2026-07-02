@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { Camera, Loader } from 'lucide-react';
 import { getAvatarUrl, uploadAvatar } from '@/lib/storage';
 import { useToast } from '@/components/ui/Toast';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface Props {
   userId: string;
@@ -12,6 +14,7 @@ interface Props {
 }
 
 export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }: Props) {
+  const { lang } = useLang();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
@@ -31,7 +34,7 @@ export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }:
       const path = await uploadAvatar(userId, file);
       onUpdate?.(path);
     } catch {
-      toast("Échec du téléchargement de l'avatar", 'error');
+      toast(t('errors.save_error', lang, "de l'avatar"), 'error');
       setPreview(null);
     } finally {
       setUploading(false);

@@ -11,10 +11,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getInitials } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function TeacherStudentsPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { lang } = useLang();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
 
@@ -43,27 +46,27 @@ export default function TeacherStudentsPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Mes élèves</h1><p className="text-sm text-muted-foreground mt-1">Consulter les profils et informations de vos élèves</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.students', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.search_student', lang)}</p></div>
       <Card>
         <CardHeader className="pb-3">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Rechercher un élève..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
+            <Input placeholder={t('common.search_student', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
           </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Élève</TableHead>
-                <TableHead className="hidden sm:table-cell">Email</TableHead>
-                <TableHead className="hidden md:table-cell">Téléphone</TableHead>
-                <TableHead className="text-right">Statut</TableHead>
+                <TableHead>{t('nav.students', lang)}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t('common.email', lang)}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('common.phone', lang)}</TableHead>
+                <TableHead className="text-right">{t('common.status', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? Array.from({ length: 5 }).map((_, i) => (<TableRow key={i}>{[1, 2, 3, 4].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>))
-              : (students ?? []).length === 0 ? <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Aucun élève trouvé</TableCell></TableRow>
+              : (students ?? []).length === 0 ? <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
               : (students ?? []).map((s: any) => (
                 <TableRow key={s.id} className="cursor-pointer hover:bg-accent/50" onClick={() => navigate(`/teacher/students/${s.id}`)}>
                   <TableCell>
@@ -74,7 +77,7 @@ export default function TeacherStudentsPage() {
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-sm">{s.email}</TableCell>
                   <TableCell className="hidden md:table-cell text-sm">{s.phone ?? '—'}</TableCell>
-                  <TableCell className="text-right"><Badge variant={s.status === 'active' ? 'success' : 'outline'}>{s.status === 'active' ? 'Actif' : 'Inactif'}</Badge></TableCell>
+                  <TableCell className="text-right"><Badge variant={s.status === 'active' ? 'success' : 'outline'}>{s.status === 'active' ? t('status.active', lang) : t('status.inactive', lang)}</Badge></TableCell>
                 </TableRow>
               ))}
             </TableBody>

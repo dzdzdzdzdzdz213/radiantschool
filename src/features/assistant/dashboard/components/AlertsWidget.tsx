@@ -1,6 +1,8 @@
 import { AlertTriangle, Info, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { DashboardAlert } from '../useAssistantDashboard';
 
 interface AlertsWidgetProps {
@@ -15,6 +17,7 @@ const severityConfig = {
 };
 
 export default function AlertsWidget({ alerts, loading }: AlertsWidgetProps) {
+  const { lang } = useLang();
   const navigate = useNavigate();
 
   if (loading) {
@@ -34,7 +37,7 @@ export default function AlertsWidget({ alerts, loading }: AlertsWidgetProps) {
     <div className="rounded-2xl border border-border bg-card p-5">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <AlertCircle className="h-4 w-4 text-amber-500" />
-        Alertes
+        {t('common.warning', lang)}
       </h3>
       <div className="space-y-2">
         {alerts.map((alert) => {

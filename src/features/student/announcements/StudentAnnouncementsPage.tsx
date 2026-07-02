@@ -5,12 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 
 export default function StudentAnnouncementsPage() {
+  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
@@ -35,18 +38,18 @@ export default function StudentAnnouncementsPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast('Erreur lors du chargement des annonces', 'error'); }, [isError]);
+  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.announcements', lang)), 'error'); }, [isError]);
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight">Annonces</h1><p className="text-sm text-muted-foreground mt-1">Communications du centre et de vos cours</p></div>
+      <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.announcements', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('nav.announcements', lang)}</p></div>
       <Card>
-        <CardHeader className="pb-3"><div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div></CardHeader>
+        <CardHeader className="pb-3"><div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder={t('common.search', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" /></div></CardHeader>
         <CardContent>
           <div className="space-y-3">
             {isLoading ? Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-24 rounded-xl" />))
             : (announcements ?? []).length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground"><Megaphone className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>Aucune annonce</p></div>
+              <div className="text-center py-12 text-muted-foreground"><Megaphone className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p></div>
             ) : (announcements ?? []).map((a: any) => (
               <div key={a.id} className={`rounded-xl border p-4 hover:bg-accent/30 transition-colors ${a.is_pinned ? 'border-primary/20 bg-primary/[0.02]' : ''}`}>
                 <div className="flex items-start gap-3">
@@ -56,7 +59,7 @@ export default function StudentAnnouncementsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-semibold">{a.title}</h4>
-                      {a.is_pinned && <Badge variant="outline" className="text-[9px]">Épinglé</Badge>}
+                      {a.is_pinned && <Badge variant="outline" className="text-[9px]">{t('status.active', lang)}</Badge>}
                       {a.courseName && <Badge variant="secondary" className="text-[9px]">{a.courseName}</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{a.content}</p>
