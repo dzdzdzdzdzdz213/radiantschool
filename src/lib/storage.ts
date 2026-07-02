@@ -26,7 +26,4 @@ export async function uploadAvatar(userId: string, file: File): Promise<string |
   return path;
 }
 
-export async function deleteAvatar(path: string): Promise<void> {
-  const { error } = await supabase.storage.from(BUCKET).remove([path]);
-  if (error) throw error;
-}
+

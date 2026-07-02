@@ -38,17 +38,14 @@ const AssistantSettingsPage = lazy(() => import('@/features/assistant/settings/S
 const UsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const CoursesPage = lazy(() => import('@/pages/CoursesPage'));
 const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
-const AttendancePageOld = lazy(() => import('@/pages/AttendancePage'));
 const PaymentsPageOld = lazy(() => import('@/pages/PaymentsPage'));
 const InvoicesPageOld = lazy(() => import('@/pages/InvoicesPage'));
-const ReportsPageOld = lazy(() => import('@/pages/ReportsPage'));
 const MessagesPage = lazy(() => import('@/pages/MessagesPage'));
 const SchedulePageOld = lazy(() => import('@/pages/SchedulePage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const TeacherEvaluationsPage = lazy(() => import('@/pages/TeacherEvaluationsPage'));
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
 const StudentDetailPage = lazy(() => import('@/pages/StudentDetailPage'));
-const StudentReviewsPageOld = lazy(() => import('@/pages/student/StudentReviewsPage'));
 const LeaderboardPage = lazy(() => import('@/pages/LeaderboardPage'));
 const EnrollPage = lazy(() => import('@/pages/EnrollPage'));
 const TeacherDashboardPage = lazy(() => import('@/features/teacher/dashboard/TeacherDashboardPage'));

@@ -78,16 +78,4 @@ export function getDayLabel(day: string): string {
   return labels[day] || day;
 }
 
-export const DAYS_OF_WEEK = [
-  'saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday',
-] as const;
 
-export function buildQueryParams(params: Record<string, string | number | boolean | undefined>): string {
-  const search = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== '') {
-      search.set(key, String(value));
-    }
-  });
-  return search.toString();
-}
