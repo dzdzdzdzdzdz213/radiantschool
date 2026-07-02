@@ -1,10 +1,17 @@
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import type { UserRole } from '@/types/models';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles: UserRole[];
+}
+
+function RedirectEffect({ to }: { to: string }) {
+  const navigate = useNavigate();
+  useEffect(() => { navigate(to, { replace: true }); }, [navigate, to]);
+  return null;
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
@@ -19,11 +26,11 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <RedirectEffect to="/login" />;
   }
 
   if (profile && !allowedRoles.includes(profile.role)) {
-    return <Navigate to={`/${profile.role}/dashboard`} replace />;
+    return <RedirectEffect to={`/${profile.role}/dashboard`} />;
   }
 
   return <>{children}</>;

@@ -1,4 +1,5 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
+import SafeRedirect from '@/components/SafeRedirect';
 
 function lazyRoute(importFn: () => Promise<{ default: React.ComponentType<any> }>) {
   return () => importFn().then(m => ({ Component: m.default }));
@@ -102,7 +103,7 @@ export const router = createBrowserRouter([
     path: '/admin',
     lazy: lazyRoute(() => import('@/routes/AdminRoute')),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
+      { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(AdminDashboardPage) },
       { path: 'users', lazy: lazyRoute(UsersPage) },
       { path: 'users/:id', lazy: lazyRoute(StudentDetailPage) },
@@ -122,7 +123,7 @@ export const router = createBrowserRouter([
     path: '/assistant',
     lazy: lazyRoute(() => import('@/routes/AssistantRoute')),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
+      { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(AssistantDashboardPage) },
       { path: 'students', lazy: lazyRoute(StudentsPage) },
       { path: 'students/new', lazy: lazyRoute(StudentsPage) },
@@ -158,7 +159,7 @@ export const router = createBrowserRouter([
     path: '/teacher',
     lazy: lazyRoute(() => import('@/routes/TeacherRoute')),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
+      { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(TeacherDashboardPage) },
       { path: 'students', lazy: lazyRoute(TeacherStudentsPage) },
       { path: 'students/:id', lazy: lazyRoute(StudentDetailPage) },
@@ -188,7 +189,7 @@ export const router = createBrowserRouter([
     path: '/student',
     lazy: lazyRoute(() => import('@/routes/StudentRoute')),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
+      { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(StudentDashboardPage) },
       { path: 'courses', lazy: lazyRoute(StudentCoursesPage) },
       { path: 'courses/:id', lazy: lazyRoute(CourseDetailPage) },
@@ -217,7 +218,7 @@ export const router = createBrowserRouter([
     path: '/parent',
     lazy: lazyRoute(() => import('@/routes/ParentRoute')),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
+      { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', lazy: lazyRoute(DashboardPage) },
       { path: 'children', lazy: lazyRoute(CoursesPage) },
       { path: 'children/:id', lazy: lazyRoute(StudentDetailPage) },
@@ -239,6 +240,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/login" replace />,
+    element: <SafeRedirect to="/login" />,
   },
 ]);
