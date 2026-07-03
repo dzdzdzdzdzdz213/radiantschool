@@ -94,7 +94,7 @@ export function useStudentDashboard() {
         privateLessons: privateLessonData,
         vipLessons: vipData,
         certificatesEarned: certData,
-        nextClassToday: nextClass?.course?.name ?? null,
+        nextClassToday: nextClass ? `${nextClass.course?.name ?? ''} à ${nextClass.start_time ?? ''}` : null,
         nextClassTime: nextClass?.start_time ?? null,
         nextClassCourse: nextClass?.course?.name ?? null,
         nextClassRoom: nextClass?.room?.name ?? null,

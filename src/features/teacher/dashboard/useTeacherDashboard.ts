@@ -40,18 +40,32 @@ export function useTeacherDashboard() {
     queryKey: ['teacher_dashboard_kpi', teacherId],
     queryFn: async () => {
       if (!teacherId) return {} as TeacherKpi;
-      const [todayClasses, studentsToday, attendanceRate, absent, upcoming, assignments, resources, completed, privateLessons, vip] = await Promise.all([
+
+      const { data: scheduleList } = await (supabase as any)
+        .from('course_schedules')
+        .select('id, day_of_week')
+        .eq('teacher_id', teacherId);
+
+      const allScheduleIds = (scheduleList ?? []).filter((s: any) => s.id).map((s: any) => s.id);
+      const todayScheduleIds = (scheduleList ?? []).filter((s: any) => s.day_of_week === dayName && s.id).map((s: any) => s.id);
+      const validAll = allScheduleIds.length > 0 ? allScheduleIds : [-1];
+      const validToday = todayScheduleIds.length > 0 ? todayScheduleIds : [-1];
+
+      const [todayClasses, studentsToday, absent, upcoming, assignments, resources, completed, privateLessons, vip] = await Promise.all([
         (supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).then((r: any) => r.count ?? 0),
-        (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).then((r: any) => r.count ?? 0),
-        (supabase as any).rpc('get_dashboard_stats').then((r: any) => (r.data?.attendance_rate_today ?? 0)),
-        (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).eq('status', 'absent').then((r: any) => r.count ?? 0),
-        (supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).gte('start_time', currentTime).then((r: any) => r.count ?? 0),
+        (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).in('course_schedule_id', validToday).then((r: any) => r.count ?? 0),
+        (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).eq('status', 'absent').in('course_schedule_id', validToday).then((r: any) => r.count ?? 0),
+        (supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).gte('start_time', currentTime).then((r: any) => r.count ?? 0),
         (supabase as any).from('assignments').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).is('due_date', null).then((r: any) => r.count ?? 0),
         (supabase as any).from('resources').select('id', { count: 'exact', head: true }).eq('uploaded_by', teacherId).then((r: any) => r.count ?? 0),
-        (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('status', 'present').then((r: any) => r.count ?? 0),
-        (supabase as any).from('course_enrollments').select('id', { count: 'exact', head: true }).eq('status', 'active').then((r: any) => r.count ?? 0),
-        (supabase as any).from('course_enrollments').select('id', { count: 'exact', head: true }).eq('status', 'active').then((r: any) => r.count ?? 0),
+        (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('status', 'present').in('course_schedule_id', validAll).then((r: any) => r.count ?? 0),
+        (supabase as any).from('private_lessons').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('date', today).then((r: any) => r.count ?? 0),
+        (supabase as any).from('vip_classes').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('date', today).then((r: any) => r.count ?? 0),
       ]);
+
+      const totalPresent = todayClasses > 0 ? studentsToday : 0;
+      const attendanceRate = totalPresent > 0 ? Math.round((totalPresent / (totalPresent + absent)) * 100) : 0;
+
       return {
         todayClasses, studentsToday, attendanceRate, absentStudents: absent,
         upcomingClasses: upcoming, assignmentsPending: assignments, resourcesUploaded: resources,
@@ -88,8 +102,8 @@ export function useTeacherDashboard() {
     staleTime: 30_000,
   });
 
-  const isLoading = kpiQuery.isLoading;
-  const isError = kpiQuery.isError;
+  const isLoading = kpiQuery.isLoading || todayClassesQuery.isLoading;
+  const isError = kpiQuery.isError || todayClassesQuery.isError;
 
   return {
     kpi: kpiQuery.data ?? {

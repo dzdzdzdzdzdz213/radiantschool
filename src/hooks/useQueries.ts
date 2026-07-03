@@ -160,7 +160,7 @@ export function useRevenueChartData() {
 export function useOccupancyData() {
   return useQuery({
     queryKey: ['occupancy'],
-    queryFn: () => api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'name, current_enrollments, capacity, room:rooms(name)').then(r => r.data.filter((c: any) => c.room_id != null)),
+    queryFn: () => api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'name, current_enrollments, capacity, room_id, room:rooms(name)').then(r => r.data.filter((c: any) => c.room_id != null)),
   });
 }
 
