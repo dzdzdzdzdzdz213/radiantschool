@@ -31,8 +31,10 @@ export interface TodayClass {
 export function useTeacherDashboard() {
   const { profile } = useAuth();
   const teacherId = profile?.id;
-  const today = new Date().toISOString().split('T')[0];
-  const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()];
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
   const kpiQuery = useQuery({
     queryKey: ['teacher_dashboard_kpi', teacherId],
@@ -43,7 +45,7 @@ export function useTeacherDashboard() {
         (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).then((r: any) => r.count ?? 0),
         (supabase as any).rpc('get_dashboard_stats', { stat: 'attendance_rate' }).then((r: any) => r.data ?? 0),
         (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).eq('status', 'absent').then((r: any) => r.count ?? 0),
-        (supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).gte('start_time', '12:00').then((r: any) => r.count ?? 0),
+        (supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).gte('start_time', currentTime).then((r: any) => r.count ?? 0),
         (supabase as any).from('assignments').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).is('due_date', null).then((r: any) => r.count ?? 0),
         (supabase as any).from('resources').select('id', { count: 'exact', head: true }).eq('uploaded_by', teacherId).then((r: any) => r.count ?? 0),
         (supabase as any).rpc('calculate_teacher_payroll', { p_teacher_id: teacherId, p_month: new Date().getMonth() + 1, p_year: new Date().getFullYear() }).then((r: any) => r.data?.hours ?? 0),

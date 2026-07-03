@@ -169,7 +169,7 @@ export function useTodaySchedule() {
   const today = dayNames[new Date().getDay()];
   return useQuery({
     queryKey: ['today_schedule', today],
-    queryFn: () => api.list('course_schedules', { filters: [{ column: 'day_of_week', operator: 'eq', value: today }], sort: [{ column: 'start_time', direction: 'asc' }] }, 'id, start_time, end_time, course:courses(name, room:rooms(name)), teacher:users(first_name, last_name)').then(r => r.data),
+    queryFn: () => api.list('course_schedules', { filters: [{ column: 'day_of_week', operator: 'eq', value: today }], sort: [{ column: 'start_time', direction: 'asc' }] }, 'id, start_time, end_time, course:courses(name), room:rooms(name), teacher:users(first_name, last_name)').then(r => r.data),
   });
 }
 

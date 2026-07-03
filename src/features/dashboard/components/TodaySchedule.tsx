@@ -8,7 +8,8 @@ interface ScheduleItem {
   id: number;
   start_time: string;
   end_time: string;
-  course: { name: string; room: { name: string } | null } | null;
+  course: { name: string } | null;
+  room: { name: string } | null;
   teacher: { first_name: string; last_name: string } | null;
 }
 
@@ -89,10 +90,10 @@ export default function TodaySchedule({ data, loading }: TodayScheduleProps) {
                           <span className="truncate">{item.teacher.first_name} {item.teacher.last_name}</span>
                         </div>
                       )}
-                      {item.course?.room && (
+                      {item.room && (
                         <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                           <MapPin className="h-3 w-3" />
-                          <span>{item.course.room.name}</span>
+                          <span>{item.room.name}</span>
                         </div>
                       )}
                     </div>
