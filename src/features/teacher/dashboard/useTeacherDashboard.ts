@@ -40,16 +40,14 @@ export function useTeacherDashboard() {
     queryKey: ['teacher_dashboard_kpi', teacherId],
     queryFn: async () => {
       if (!teacherId) return {} as TeacherKpi;
-      const [todayClasses, studentsToday, attendanceRate, absent, upcoming, assignments, resources, hours, revenue, completed, privateLessons, vip] = await Promise.all([
+      const [todayClasses, studentsToday, attendanceRate, absent, upcoming, assignments, resources, completed, privateLessons, vip] = await Promise.all([
         (supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).then((r: any) => r.count ?? 0),
         (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).then((r: any) => r.count ?? 0),
-        (supabase as any).rpc('get_dashboard_stats', { stat: 'attendance_rate' }).then((r: any) => r.data ?? 0),
+        (supabase as any).rpc('get_dashboard_stats').then((r: any) => (r.data?.attendance_rate_today ?? 0)),
         (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).eq('status', 'absent').then((r: any) => r.count ?? 0),
         (supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).gte('start_time', currentTime).then((r: any) => r.count ?? 0),
         (supabase as any).from('assignments').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).is('due_date', null).then((r: any) => r.count ?? 0),
         (supabase as any).from('resources').select('id', { count: 'exact', head: true }).eq('uploaded_by', teacherId).then((r: any) => r.count ?? 0),
-        (supabase as any).rpc('calculate_teacher_payroll', { p_teacher_id: teacherId, p_month: new Date().getMonth() + 1, p_year: new Date().getFullYear() }).then((r: any) => r.data?.hours ?? 0),
-        (supabase as any).rpc('calculate_teacher_payroll', { p_teacher_id: teacherId, p_month: new Date().getMonth() + 1, p_year: new Date().getFullYear() }).then((r: any) => r.data?.total ?? 0),
         (supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('status', 'present').then((r: any) => r.count ?? 0),
         (supabase as any).from('course_enrollments').select('id', { count: 'exact', head: true }).eq('status', 'active').then((r: any) => r.count ?? 0),
         (supabase as any).from('course_enrollments').select('id', { count: 'exact', head: true }).eq('status', 'active').then((r: any) => r.count ?? 0),
@@ -57,7 +55,7 @@ export function useTeacherDashboard() {
       return {
         todayClasses, studentsToday, attendanceRate, absentStudents: absent,
         upcomingClasses: upcoming, assignmentsPending: assignments, resourcesUploaded: resources,
-        teachingHoursMonth: hours, revenueMonth: revenue, completedLessons: completed,
+        teachingHoursMonth: 0, revenueMonth: 0, completedLessons: completed,
         privateLessonsToday: privateLessons, vipSessionsToday: vip,
       } as TeacherKpi;
     },

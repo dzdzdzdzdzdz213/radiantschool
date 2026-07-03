@@ -28,14 +28,14 @@ export default function RevenuePage() {
       if (e2) throw e2;
       const { data: sessions, error: e3 } = await (supabase as any).from('course_schedules').select('course_id').eq('teacher_id', profile.id);
       if (e3) throw e3;
-      const { data: payouts, error: e4 } = await (supabase as any).from('teacher_payroll').select('amount, status, paid_at').eq('teacher_id', profile.id);
+      const { data: payouts, error: e4 } = await (supabase as any).from('teacher_payroll').select('net_pay, gross_pay, status, paid_at').eq('teacher_id', profile.id);
       if (e4) throw e4;
       const completedPrivate = (privateL ?? []).filter((l: any) => l.status === 'completed');
       const completedVip = (vipL ?? []).filter((l: any) => l.status === 'completed');
       const totalPrivate = completedPrivate.reduce((s: number, l: any) => s + (l.price ?? 0), 0);
       const totalVip = completedVip.reduce((s: number, l: any) => s + (l.price ?? 0), 0);
       const lastPayout = (payouts ?? []).filter((p: any) => p.status === 'paid').sort((a: any, b: any) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime())[0];
-      return { totalPrivate, totalVip, totalRevenue: totalPrivate + totalVip, completedCount: completedPrivate.length + completedVip.length, lastPayout: lastPayout?.amount ?? 0, pendingPayouts: (payouts ?? []).filter((p: any) => p.status === 'pending').reduce((s: number, p: any) => s + (p.amount ?? 0), 0), sessions: (sessions ?? []).length };
+      return { totalPrivate, totalVip, totalRevenue: totalPrivate + totalVip, completedCount: completedPrivate.length + completedVip.length, lastPayout: lastPayout?.net_pay ?? 0, pendingPayouts: (payouts ?? []).filter((p: any) => p.status === 'pending').reduce((s: number, p: any) => s + (p.net_pay ?? 0), 0), sessions: (sessions ?? []).length };
     },
     enabled: !!profile?.id,
   });
