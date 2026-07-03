@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
@@ -12,6 +12,9 @@ export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { lang } = useLang();
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => clearTimeout(redirectTimer.current), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +24,7 @@ export default function ResetPasswordPage() {
     const { error: err } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (err) setError(err.message);
-    else { setDone(true); setTimeout(() => navigate('/login'), 2000); }
+    else { setDone(true); redirectTimer.current = setTimeout(() => navigate('/login'), 2000); }
   };
 
   return (

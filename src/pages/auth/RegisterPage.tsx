@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent, type ClipboardEvent } from 'react';
+import { useState, useEffect, useRef, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
@@ -152,6 +152,9 @@ export default function RegisterPage() {
   const { signUp } = useAuth();
   const { lang } = useLang();
   const navigate = useNavigate();
+  const successTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => clearTimeout(successTimer.current), []);
 
   function setField(field: string, value: string) {
     setForm(p => ({ ...p, [field]: value }));
@@ -218,7 +221,7 @@ export default function RegisterPage() {
     );
     setIsLoading(false);
     if (result.error) setError(result.error);
-    else { setSuccess(true); setTimeout(() => navigate('/login'), 3000); }
+    else { setSuccess(true); successTimer.current = setTimeout(() => navigate('/login'), 3000); }
   };
 
   const fieldProps = { form, fieldErrors, setField, setFieldErrors, checkEmail };

@@ -12,6 +12,7 @@ const ROLE_META: Record<string, { title: string; badge: string; icon: string }> 
   admin: { title: 'Administration', badge: "Espace Admin", icon: '⚡' },
   teacher: { title: 'Connexion Enseignant', badge: "Espace Prof", icon: '📚' },
   assistant: { title: 'Connexion Assistant', badge: "Espace Assistant", icon: '📋' },
+  parent: { title: 'Connexion Parent', badge: "Espace Parent", icon: '👨‍👩‍👧‍👦' },
 };
 
 const DEMOS = [
@@ -41,7 +42,7 @@ export default function LoginPage() {
 
   const meta = ROLE_META[role] ?? ROLE_META.student;
 
-  if (profile) {
+  if (profile && !isLoading) {
     navigate(getDefaultRoute(profile.role), { replace: true });
     return null;
   }
@@ -121,7 +122,7 @@ export default function LoginPage() {
     const r = await signIn(d.email, 'demo123');
     if (!r.error) { setDemoLoading(null); return; }
 
-    const up = await signUp(d.email, 'demo123', d.firstName, d.lastName, d.role);
+    const up = await signUp(d.email, 'demo123', d.firstName, d.lastName, d.role as 'admin' | 'assistant' | 'teacher' | 'student' | 'parent');
     if (up.error) {
       const e = up.error.toLowerCase();
       if (e.includes('already') || e.includes('exists') || e.includes('registered')) {
@@ -185,34 +186,36 @@ export default function LoginPage() {
           )}
         </form>
 
-        {/* DEMO */}
-        <div className="mt-6 rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--fg-muted)' }}>Connexion rapide</p>
-          <div className="flex flex-wrap gap-2">
-            {DEMOS.map((d) => (
-              <button key={d.role} type="button" onClick={() => demoLogin(d)} disabled={demoLoading !== null}
-                className="text-sm font-medium px-4 py-2 rounded-lg border transition-all hover:opacity-70 disabled:opacity-40" style={{ borderColor: 'var(--border)' }}>
-                {demoLoading === d.role ? <Loader className="inline h-4 w-4 animate-spin" /> : d.label}
-              </button>
-            ))}
+        {import.meta.env.DEV && (<>
+          {/* DEMO */}
+          <div className="mt-6 rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+            <p className="text-xs font-semibold mb-3" style={{ color: 'var(--fg-muted)' }}>Connexion rapide</p>
+            <div className="flex flex-wrap gap-2">
+              {DEMOS.map((d) => (
+                <button key={d.role} type="button" onClick={() => demoLogin(d)} disabled={demoLoading !== null}
+                  className="text-sm font-medium px-4 py-2 rounded-lg border transition-all hover:opacity-70 disabled:opacity-40" style={{ borderColor: 'var(--border)' }}>
+                  {demoLoading === d.role ? <Loader className="inline h-4 w-4 animate-spin" /> : d.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* SETUP */}
-        {showSetup && (
-          <div className="mt-4 rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-            <p className="text-xs font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--fg-muted)' }}>
-              <Key className="h-3.5 w-3.5" /> Configuration unique
-            </p>
-            <p className="text-xs mb-3" style={{ color: 'var(--fg-muted)' }}>
-              Va dans Supabase → Project Settings → API → copie la <strong>service_role key</strong> et colle-la ici :
-            </p>
-            <input type="password" value={svcKey} onChange={(e) => setSvcKey(e.target.value)} placeholder="service_role key..." className="w-full rounded-lg border px-3 py-2 text-xs outline-none mb-3" style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--fg)' }} />
-            <button onClick={runSetup} disabled={setupLoading || !svcKey} className="w-full rounded-lg py-2 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: 'var(--primary)' }}>
-              {setupLoading ? <Loader className="inline h-3.5 w-3.5 animate-spin" /> : 'Créer les 4 comptes démo'}
-            </button>
-          </div>
-        )}
+          {/* SETUP */}
+          {showSetup && (
+            <div className="mt-4 rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+              <p className="text-xs font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--fg-muted)' }}>
+                <Key className="h-3.5 w-3.5" /> Configuration unique
+              </p>
+              <p className="text-xs mb-3" style={{ color: 'var(--fg-muted)' }}>
+                Va dans Supabase → Project Settings → API → copie la <strong>service_role key</strong> et colle-la ici :
+              </p>
+              <input type="password" value={svcKey} onChange={(e) => setSvcKey(e.target.value)} placeholder="service_role key..." className="w-full rounded-lg border px-3 py-2 text-xs outline-none mb-3" style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--fg)' }} />
+              <button onClick={runSetup} disabled={setupLoading || !svcKey} className="w-full rounded-lg py-2 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: 'var(--primary)' }}>
+                {setupLoading ? <Loader className="inline h-3.5 w-3.5 animate-spin" /> : 'Créer les 4 comptes démo'}
+              </button>
+            </div>
+          )}
+        </>)}
 
         <p className="mt-6 text-center text-xs" style={{ color: 'var(--fg-muted)', opacity: 0.4 }}>
           Radiant Academy &copy; {new Date().getFullYear()}
