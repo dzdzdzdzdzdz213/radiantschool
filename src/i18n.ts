@@ -173,7 +173,7 @@ const fr: Dict = {
   'nav.courses': 'Cours',
   'nav.evaluations': 'Évaluations',
   'nav.homework': 'Devoirs',
-  'nav.assignments': 'Devoirs',
+  'nav.assignments': 'Travaux notés',
   'nav.resources': 'Ressources',
   'nav.online_classes': 'Cours en ligne',
   'nav.private_lessons': 'Cours particuliers',

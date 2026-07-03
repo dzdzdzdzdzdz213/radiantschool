@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, Shield, Globe, Palette, Lock, Moon, Smartphone, Eye, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateUserSettings, useUpdatePassword } from '@/hooks/useMutationFeedback';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -16,8 +17,8 @@ export default function TeacherSettingsPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { lang } = useLang();
-  const [notifications, setNotifications] = useState({ email: true, push: true, sms: false, homework: true, messages: true, grades: false });
-  const [visibility, setVisibility] = useState({ showEmail: false, showPhone: true, showSchedule: true });
+  const [notifications, setNotifications] = useState({ email_notifications: true, push_notifications: true, sms_notifications: false, homework_reminders: true, message_alerts: true, grade_alerts: false });
+  const [visibility, setVisibility] = useState({ show_email: false, show_phone: true, show_schedule: true });
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,13 +26,30 @@ export default function TeacherSettingsPage() {
   const updateSettings = useUpdateUserSettings();
   const updatePassword = useUpdatePassword();
 
-  const debouncedNotif = useDebounce(notifications, 500);
-  const debouncedVis = useDebounce(visibility, 500);
+  const { data: userSettings } = useQuery({
+    queryKey: ['teacher_settings', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return {};
+      const { data } = await (supabase as any)
+        .from('users')
+        .select('email_notifications, push_notifications, sms_notifications, homework_reminders, message_alerts, grade_alerts, show_email, show_phone, show_schedule')
+        .eq('id', profile.id)
+        .single();
+      return data ?? {};
+    },
+    enabled: !!profile?.id,
+  });
+
+  useEffect(() => {
+    if (!userSettings) return;
+    setNotifications(prev => ({ ...prev, ...userSettings }));
+    setVisibility(prev => ({ ...prev, ...userSettings }));
+  }, [userSettings]);
 
   const handleNotifChange = (key: string, value: boolean) => {
     setNotifications(s => {
       const next = { ...s, [key]: value };
-      if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [`notifications_${key}`]: value } });
+      if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [key]: value } });
       return next;
     });
   };
@@ -39,7 +57,7 @@ export default function TeacherSettingsPage() {
   const handleVisChange = (key: string, value: boolean) => {
     setVisibility(s => {
       const next = { ...s, [key]: value };
-      if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [`visibility_${key}`]: value } });
+      if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [key]: value } });
       return next;
     });
   };
@@ -66,9 +84,9 @@ export default function TeacherSettingsPage() {
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Bell className="h-4 w-4" />{t('dashboard.notifications', lang)}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {[
-              { key: 'email', label: t('common.email', lang), desc: 'Notifications par email' },
-              { key: 'push', label: 'Notifications push', desc: 'Notifications push' },
-              { key: 'sms', label: 'Notifications SMS', desc: 'Notifications SMS' },
+              { key: 'email_notifications', label: t('common.email', lang), desc: 'Notifications par email' },
+              { key: 'push_notifications', label: 'Notifications push', desc: 'Notifications push' },
+              { key: 'sms_notifications', label: 'Notifications SMS', desc: 'Notifications SMS' },
             ].map(n => (
               <div key={n.key} className="flex items-center justify-between">
                 <div><p className="text-sm font-medium">{n.label}</p><p className="text-xs text-muted-foreground">{n.desc}</p></div>
@@ -81,9 +99,9 @@ export default function TeacherSettingsPage() {
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Eye className="h-4 w-4" />{'Visibilité du profil'}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {[
-              { key: 'showEmail', label: t('common.email', lang), desc: 'Visible par les élèves' },
-              { key: 'showPhone', label: t('common.phone', lang), desc: 'Visible par les élèves' },
-              { key: 'showSchedule', label: t('nav.schedule', lang), desc: 'Visible par les parents' },
+              { key: 'show_email', label: t('common.email', lang), desc: 'Visible par les élèves' },
+              { key: 'show_phone', label: t('common.phone', lang), desc: 'Visible par les élèves' },
+              { key: 'show_schedule', label: t('nav.schedule', lang), desc: 'Visible par les parents' },
             ].map(v => (
               <div key={v.key} className="flex items-center justify-between">
                 <div><p className="text-sm font-medium">{v.label}</p><p className="text-xs text-muted-foreground">{v.desc}</p></div>
