@@ -42,32 +42,6 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
-// Preload child route chunks
-import('@/features/assistant/dashboard/AssistantDashboardPage').catch(() => {});
-import('@/features/assistant/students/StudentsPage').catch(() => {});
-import('@/features/assistant/parents/ParentsPage').catch(() => {});
-import('@/features/assistant/registrations/RegistrationsPage').catch(() => {});
-import('@/features/assistant/attendance/AttendancePage').catch(() => {});
-import('@/features/assistant/rfid/RfidPage').catch(() => {});
-import('@/features/assistant/groups/GroupsPage').catch(() => {});
-import('@/features/assistant/schedules/SchedulesPage').catch(() => {});
-import('@/features/assistant/rooms/RoomsPage').catch(() => {});
-import('@/features/assistant/payments/PaymentsPage').catch(() => {});
-import('@/features/assistant/invoices/InvoicesPage').catch(() => {});
-import('@/features/assistant/notifications/NotificationsPage').catch(() => {});
-import('@/features/assistant/emails/EmailsPage').catch(() => {});
-import('@/features/assistant/resources/ResourcesPage').catch(() => {});
-import('@/features/assistant/campaigns/CampaignsPage').catch(() => {});
-import('@/features/assistant/reports/ReportsPage').catch(() => {});
-import('@/features/assistant/calendar/CalendarPage').catch(() => {});
-import('@/features/assistant/search/SearchPage').catch(() => {});
-import('@/features/assistant/settings/SettingsPage').catch(() => {});
-import('@/pages/StudentDetailPage').catch(() => {});
-import('@/pages/CoursesPage').catch(() => {});
-import('@/pages/CourseDetailPage').catch(() => {});
-import('@/pages/MessagesPage').catch(() => {});
-import('@/pages/ProfilePage').catch(() => {});
-
 export default function AssistantLayout() {
   const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);

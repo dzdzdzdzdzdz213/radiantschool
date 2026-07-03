@@ -23,30 +23,6 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
-// Preload child route chunks
-import('@/features/student/dashboard/StudentDashboardPage').catch(() => {});
-import('@/features/student/courses/StudentCoursesPage').catch(() => {});
-import('@/features/student/schedule/StudentSchedulePage').catch(() => {});
-import('@/features/student/calendar/StudentCalendarPage').catch(() => {});
-import('@/features/student/attendance/StudentAttendancePage').catch(() => {});
-import('@/features/student/homework/StudentHomeworkPage').catch(() => {});
-import('@/features/student/resources/StudentResourcesPage').catch(() => {});
-import('@/features/student/online-classes/StudentOnlineClassesPage').catch(() => {});
-import('@/features/student/private-lessons/StudentPrivateLessonsPage').catch(() => {});
-import('@/features/student/vip-classes/StudentVipClassesPage').catch(() => {});
-import('@/features/student/payments/StudentPaymentsPage').catch(() => {});
-import('@/features/student/invoices/StudentInvoicesPage').catch(() => {});
-import('@/features/student/certificates/StudentCertificatesPage').catch(() => {});
-import('@/features/student/announcements/StudentAnnouncementsPage').catch(() => {});
-import('@/features/student/messages/StudentMessagesPage').catch(() => {});
-import('@/features/student/notifications/StudentNotificationsPage').catch(() => {});
-import('@/features/student/reviews/StudentReviewsPage').catch(() => {});
-import('@/features/student/profile/StudentProfilePage').catch(() => {});
-import('@/features/student/settings/StudentSettingsPage').catch(() => {});
-import('@/pages/EnrollPage').catch(() => {});
-import('@/pages/CourseDetailPage').catch(() => {});
-import('@/pages/LeaderboardPage').catch(() => {});
-
 export default function StudentLayout() {
   const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);

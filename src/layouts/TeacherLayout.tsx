@@ -23,31 +23,6 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
-// Preload child route chunks
-import('@/features/teacher/dashboard/TeacherDashboardPage').catch(() => {});
-import('@/features/teacher/students/TeacherStudentsPage').catch(() => {});
-import('@/features/teacher/schedule/SchedulePage').catch(() => {});
-import('@/features/teacher/calendar/CalendarPage').catch(() => {});
-import('@/features/teacher/attendance/TeacherAttendancePage').catch(() => {});
-import('@/features/teacher/assignments/AssignmentsPage').catch(() => {});
-import('@/features/teacher/homework/HomeworkPage').catch(() => {});
-import('@/features/teacher/resources/ResourcesPage').catch(() => {});
-import('@/features/teacher/online-classes/OnlineClassesPage').catch(() => {});
-import('@/features/teacher/private-lessons/PrivateLessonsPage').catch(() => {});
-import('@/features/teacher/vip-classes/VipClassesPage').catch(() => {});
-import('@/features/teacher/announcements/AnnouncementsPage').catch(() => {});
-import('@/features/teacher/messages/MessagesPage').catch(() => {});
-import('@/features/teacher/reports/ReportsPage').catch(() => {});
-import('@/features/teacher/revenue/RevenuePage').catch(() => {});
-import('@/features/teacher/reviews/ReviewsPage').catch(() => {});
-import('@/features/teacher/profile/TeacherProfilePage').catch(() => {});
-import('@/features/teacher/settings/TeacherSettingsPage').catch(() => {});
-import('@/pages/StudentDetailPage').catch(() => {});
-import('@/pages/CoursesPage').catch(() => {});
-import('@/pages/CourseDetailPage').catch(() => {});
-import('@/pages/TeacherEvaluationsPage').catch(() => {});
-import('@/pages/LeaderboardPage').catch(() => {});
-
 export default function TeacherLayout() {
   const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);

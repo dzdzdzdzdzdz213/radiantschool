@@ -25,17 +25,6 @@ function ParentFallback() {
   );
 }
 
-// Preload child route chunks
-import('@/pages/DashboardPage').catch(() => {});
-import('@/pages/CoursesPage').catch(() => {});
-import('@/pages/StudentDetailPage').catch(() => {});
-import('@/pages/EnrollPage').catch(() => {});
-import('@/pages/PaymentsPage').catch(() => {});
-import('@/pages/InvoicesPage').catch(() => {});
-
-import('@/pages/MessagesPage').catch(() => {});
-import('@/pages/ProfilePage').catch(() => {});
-
 export default function ParentLayout() {
   const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);

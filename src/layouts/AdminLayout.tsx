@@ -42,20 +42,6 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
-// Start preloading child route chunks at module level (before React renders)
-import('@/features/dashboard/AdminDashboardPage').catch(() => {});
-import('@/pages/admin/UsersPage').catch(() => {});
-import('@/pages/CoursesPage').catch(() => {});
-import('@/pages/CourseDetailPage').catch(() => {});
-import('@/features/assistant/attendance/AttendancePage').catch(() => {});
-import('@/pages/PaymentsPage').catch(() => {});
-import('@/pages/InvoicesPage').catch(() => {});
-import('@/features/assistant/reports/ReportsPage').catch(() => {});
-import('@/pages/MessagesPage').catch(() => {});
-import('@/pages/ProfilePage').catch(() => {});
-import('@/pages/admin/SettingsPage').catch(() => {});
-import('@/pages/StudentDetailPage').catch(() => {});
-
 export default function AdminLayout() {
   const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);
