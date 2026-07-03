@@ -15,7 +15,19 @@ import RfidSummary from './components/RfidSummary';
 export default function AssistantDashboardPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
-  const { kpi, pendingRegistrations, overduePayments, roomStatus, activeTeachers, alerts, quickActions, scheduleData, scheduleLoading, rfidData, isLoading } = useAssistantDashboard();
+  const { kpi, pendingRegistrations, overduePayments, roomStatus, activeTeachers, alerts, quickActions, scheduleData, scheduleLoading, rfidData, isLoading, isError } = useAssistantDashboard();
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div><h1 className="text-2xl font-bold tracking-tight">Bonjour, {profile?.firstName ?? ''}</h1><p className="text-sm text-muted-foreground mt-1">Voici le résumé des opérations du jour</p></div>
+        <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-6 text-center">
+          <p className="text-red-600 font-medium">Erreur de chargement des données</p>
+          <p className="text-sm text-red-500 mt-1">Veuillez rafraîchir la page ou réessayer plus tard.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

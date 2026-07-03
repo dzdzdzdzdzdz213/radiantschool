@@ -14,9 +14,9 @@ import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
-import DashboardPage from '@/pages/DashboardPage';
 import AdminDashboardPage from '@/features/dashboard/AdminDashboardPage';
 import AssistantDashboardPage from '@/features/assistant/dashboard/AssistantDashboardPage';
+import ParentDashboardPage from '@/features/parent/dashboard/ParentDashboardPage';
 import StudentsPage from '@/features/assistant/students/StudentsPage';
 import ParentsPage from '@/features/assistant/parents/ParentsPage';
 import RegistrationsPage from '@/features/assistant/registrations/RegistrationsPage';
@@ -222,7 +222,7 @@ export const router = createBrowserRouter([
     Component: ParentRoute,
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
-      { path: 'dashboard', Component: DashboardPage },
+      { path: 'dashboard', Component: ParentDashboardPage },
       { path: 'children', Component: CoursesPage },
       { path: 'children/:id', Component: StudentDetailPage },
       { path: 'enroll', Component: EnrollPage },

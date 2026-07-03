@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Minus, type LucideIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, type LucideIcon } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,15 +26,8 @@ function KpiSkeleton() {
   );
 }
 
-const generateSparkline = (base: number, points = 14) =>
-  Array.from({ length: points }, (_, i) => ({
-    value: Math.max(0, base + Math.round((Math.random() - 0.5) * base * 0.3 * (1 + i * 0.02))),
-  }));
-
 export default function KpiCard({ title, value, subtitle, trend, icon: Icon, sparklineData, loading, className }: KpiCardProps) {
   if (loading) return <KpiSkeleton />;
-
-  const slData = sparklineData ?? (parseInt(value.replace(/[^0-9]/g, '')) ? generateSparkline(parseInt(value.replace(/[^0-9]/g, '')) || 100) : undefined);
 
   return (
     <motion.div
@@ -66,10 +59,10 @@ export default function KpiCard({ title, value, subtitle, trend, icon: Icon, spa
             <Icon className="h-5 w-5 text-primary" />
           </div>
         </div>
-        {slData && slData.length > 1 && (
+        {sparklineData && sparklineData.length > 1 && (
           <div className="absolute bottom-0 left-0 right-0 h-12 opacity-20 pointer-events-none">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={slData}>
+              <LineChart data={sparklineData}>
                 <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>

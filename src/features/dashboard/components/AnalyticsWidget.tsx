@@ -1,6 +1,8 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { AnalyticsMetric } from '@/features/dashboard/useAdminDashboard';
 
 interface AnalyticsWidgetProps {
@@ -66,13 +68,14 @@ function AnalyticsMetricRow({ metric }: { metric: AnalyticsMetric }) {
   );
 }
 
-export default function AnalyticsWidget({ metrics, loading, title = 'Analyses' }: AnalyticsWidgetProps) {
+export default function AnalyticsWidget({ metrics, loading, title }: AnalyticsWidgetProps) {
+  const { lang } = useLang();
   if (loading) return <AnalyticsWidgetSkeleton />;
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+        <CardTitle className="text-sm font-semibold">{title ?? t('dashboard.stat.analytics', lang)}</CardTitle>
       </CardHeader>
       <CardContent>
         {metrics.length === 0 ? (

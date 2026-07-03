@@ -61,7 +61,11 @@ export function useRealtimeSubscription({
     };
 
     channel.on('postgres_changes', changesConfig, handleChange);
-    channel.subscribe();
+    channel.subscribe((status) => {
+      if (status !== 'SUBSCRIBED') {
+        console.warn(`[realtime] Channel ${channelName} status: ${status}`);
+      }
+    });
 
     return () => {
       supabase.removeChannel(channel);

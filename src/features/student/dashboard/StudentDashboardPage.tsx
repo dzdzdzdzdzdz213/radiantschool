@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Calendar, Clock, BookOpen, ClipboardCheck, FileText, DollarSign,
-  Award, Star, UserPlus, Video, TrendingUp, GraduationCap,
-  ArrowRight, Bell, Play, Download, MessageSquare, CreditCard,
+  Award, Star, UserPlus, Video, GraduationCap,
+  ArrowRight, Download, MessageSquare, CreditCard,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ import { useLang } from '@/contexts/LangContext';
 import { t, type Lang } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/student/dashboard/useStudentDashboard';
-import { getInitials } from '@/lib/utils';
 
 const kpiConfig = [
   { key: 'attendanceRate', labelKey: 'dashboard.stat.attendance_rate', icon: ClipboardCheck, suffix: '%', color: 'text-emerald-500' },
@@ -71,13 +69,19 @@ export default function StudentDashboardPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const { lang } = useLang();
-  const { kpi, kpiLoading } = useStudentDashboard();
-  const [greeting] = useState(() => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Bonjour';
-    if (h < 17) return 'Bon après-midi';
-    return 'Bonsoir';
-  });
+  const { kpi, kpiLoading, kpiError } = useStudentDashboard();
+
+  if (kpiError) {
+    return (
+      <div className="space-y-6">
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('dashboard.greeting', lang, profile?.firstName ?? '')}</h1><p className="text-sm text-muted-foreground mt-1">Votre tableau de bord</p></div>
+        <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-6 text-center">
+          <p className="text-red-600 font-medium">Erreur de chargement des données</p>
+          <p className="text-sm text-red-500 mt-1">Veuillez rafraîchir la page ou réessayer plus tard.</p>
+        </div>
+      </div>
+    );
+  }
 
   const kpiValues: Record<string, number> = {
     attendanceRate: kpi?.attendanceRate ?? 0,
@@ -103,7 +107,7 @@ export default function StudentDashboardPage() {
               <GraduationCap className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">{greeting}, {profile?.firstName ?? ''}</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.greeting', lang, profile?.firstName ?? '')}</h1>
               <p className="text-sm text-muted-foreground">
                 {kpi?.nextClassToday ? (
                   <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{t('status.upcoming', lang)}: {kpi.nextClassCourse} — {kpi.nextClassTime}</span>
@@ -155,7 +159,7 @@ export default function StudentDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm">{t('nav.my_courses', lang)}</CardTitle>
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate('/student/schedule')}>
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => navigate('/student/courses')}>
               {t('common.view_all', lang)} <ArrowRight className="h-3 w-3" />
             </Button>
           </CardHeader>

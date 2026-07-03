@@ -4,7 +4,7 @@ import TeacherKpiCards from './components/TeacherKpiCards';
 import { BookOpen, ClipboardCheck, FileText, Bell, Calendar, BarChart3, Users, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { cn, formatTime } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 const quickActions = [
   { label: 'Prendre les présences', icon: ClipboardCheck, path: '/teacher/attendance', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },

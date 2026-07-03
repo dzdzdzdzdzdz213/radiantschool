@@ -96,8 +96,8 @@ export function useAdminDashboard() {
     staleTime: 10_000,
   });
 
-  const isLoading = kpi.isLoading || revenue.isLoading || occupancy.isLoading || schedule.isLoading || activity.isLoading || alerts.isLoading || registrationsQuery.isLoading;
-  const isError = kpi.isError || revenue.isError;
+  const isLoading = kpi.isLoading || revenue.isLoading || occupancy.isLoading || schedule.isLoading || activity.isLoading || alerts.isLoading || registrationsQuery.isLoading || attendanceSummaryQuery.isLoading;
+  const isError = kpi.isError || revenue.isError || occupancy.isError || schedule.isError || activity.isError || alerts.isError || registrationsQuery.isError || attendanceSummaryQuery.isError;
 
   // Construire les alertes depuis les données
   const alertItems: AlertItem[] = [];

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BookOpen, Users, ClipboardCheck, Clock, BarChart3, DollarSign, Star, GraduationCap, FileText, Bell, UserPlus, Calendar } from 'lucide-react';
+import { BookOpen, Users, ClipboardCheck, Clock, BarChart3, DollarSign, Star, GraduationCap, FileText, UserPlus, Calendar } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import type { TeacherKpi } from '../useTeacherDashboard';
 
