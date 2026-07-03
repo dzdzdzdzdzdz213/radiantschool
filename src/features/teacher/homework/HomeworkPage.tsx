@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Search, Plus, BookOpen, CheckCircle, Clock, AlertCircle, X } from 'lucide-react';
+import { Search, Plus, BookOpen, CheckCircle, Clock, AlertCircle, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
@@ -55,6 +56,42 @@ export default function HomeworkPage() {
       return data ?? [];
     },
     enabled: !!profile?.id,
+  });
+
+  const [editTarget, setEditTarget] = useState<any>(null);
+  const [gradeForm, setGradeForm] = useState({ grade: '', feedback: '' });
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!editTarget) return;
+      const { error } = await (supabase as any)
+        .from('assignment_submissions')
+        .update({ grade: gradeForm.grade ? Number(gradeForm.grade) : null, feedback: gradeForm.feedback || null })
+        .eq('id', editTarget.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_homework'] });
+      setEditTarget(null);
+      setGradeForm({ grade: '', feedback: '' });
+      toast(t('success.updated', lang, 'Note'), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!deleteTarget) return;
+      const { error } = await (supabase as any).from('assignment_submissions').delete().eq('id', deleteTarget.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_homework'] });
+      setDeleteTarget(null);
+      toast(t('success.deleted', lang, ''), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const createMutation = useMutation({
@@ -123,6 +160,43 @@ export default function HomeworkPage() {
           </div>
         </div>
       )}
+      {editTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => { setEditTarget(null); setGradeForm({ grade: '', feedback: '' }); }}>
+          <div className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{'Noter'}</h2>
+              <button onClick={() => { setEditTarget(null); setGradeForm({ grade: '', feedback: '' }); }} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="text-sm text-muted-foreground">{editTarget.studentName} — {editTarget.assignment?.title}</p>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">{'Note /20'}</Label>
+                <Input type="number" min="0" max="20" step="0.5" value={gradeForm.grade} onChange={e => setGradeForm(f => ({ ...f, grade: e.target.value }))} className="h-9" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">{'Feedback'}</Label>
+                <Textarea value={gradeForm.feedback} onChange={e => setGradeForm(f => ({ ...f, feedback: e.target.value }))} placeholder={'Commentaire...'} />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="outline" size="sm" className="h-9" onClick={() => { setEditTarget(null); setGradeForm({ grade: '', feedback: '' }); }}>{t('common.cancel', lang)}</Button>
+              <Button size="sm" className="h-9" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate()}>
+                {updateMutation.isPending ? t('common.loading', lang) : t('common.save', lang)}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title={t('common.confirm_delete', lang, '')}
+        message={deleteTarget ? `${'Supprimer la remise de'} ${deleteTarget.studentName} ?` : ''}
+        onConfirm={() => deleteMutation.mutate()}
+        loading={deleteMutation.isPending}
+      />
+
       <Card>
         <CardHeader className="pb-3">
           <div className="relative max-w-md">
@@ -150,6 +224,10 @@ export default function HomeworkPage() {
                   <div className="text-right shrink-0">
                     <p className="text-xs text-muted-foreground">{STATUS_LABELS[s.status] ?? s.status}</p>
                     {s.grade && <p className="text-sm font-semibold">{s.grade}/20</p>}
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => { setEditTarget(s); setGradeForm({ grade: String(s.grade ?? ''), feedback: s.feedback ?? '' }); }} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => setDeleteTarget(s)} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center text-red-500"><Trash2 className="h-4 w-4" /></button>
                   </div>
                 </div>
               );
