@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email_verified: false, phone: options?.phone || null,
       });
       if (insertError) {
-        await supabase.auth.admin.deleteUser(data.user.id).catch(() => {});
+        await supabase.auth.signOut();
         return { error: insertError.message };
       }
 
@@ -149,8 +149,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch {
-        try { await supabase.from('users').delete().eq('id', data.user.id); } catch {}
-        try { await supabase.auth.admin.deleteUser(data.user.id); } catch {}
+        await supabase.from('users').delete().eq('id', data.user.id).catch(() => {});
+        await supabase.auth.signOut();
         return { error: 'Échec de la création du profil. Veuillez réessayer.' };
       }
 
