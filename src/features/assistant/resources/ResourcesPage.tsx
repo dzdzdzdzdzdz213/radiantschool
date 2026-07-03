@@ -12,6 +12,7 @@ import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function ResourcesPage() {
   const { lang } = useLang();
@@ -65,8 +66,17 @@ export default function ResourcesPage() {
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => { if (confirmDelete) deleteMutation.mutate(confirmDelete.id, { onSettled: () => setConfirmDelete(null) }); }}
+        message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
+        loading={deleteMutation.isPending}
+      />
       <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadMutation.mutate(e.target.files[0]); }} />
       <div className="flex items-center justify-between">
         <div>
@@ -113,7 +123,7 @@ export default function ResourcesPage() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_url, filename: r.name })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost" className="text-red-500" onClick={() => { if (window.confirm(t('resources.delete_confirm', lang))) deleteMutation.mutate(r.id); }} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>

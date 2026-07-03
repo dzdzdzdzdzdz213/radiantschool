@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function CampaignsPage() {
   const { lang } = useLang();
@@ -90,14 +91,17 @@ export default function CampaignsPage() {
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const confirmDelete = (id: string, name: string) => {
-    if (window.confirm(`${t('common.confirm_delete', lang)} "${name}" ?`)) {
-      deleteMutation.mutate(id);
-    }
-  };
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => { if (confirmDelete) deleteMutation.mutate(confirmDelete.id, { onSettled: () => setConfirmDelete(null) }); }}
+        message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
+        loading={deleteMutation.isPending}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.campaigns', lang)}</h1>
@@ -159,7 +163,7 @@ export default function CampaignsPage() {
                 <div className="flex items-center gap-1">
                   <Badge variant={c.is_active ? 'success' : 'outline'}>{c.is_active ? t('status.active', lang) : t('status.inactive', lang)}</Badge>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(c)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(c.id, c.name)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: c.id, name: c.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
             </CardHeader>

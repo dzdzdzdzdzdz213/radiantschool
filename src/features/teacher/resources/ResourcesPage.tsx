@@ -12,6 +12,7 @@ import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function ResourcesPage() {
   const { profile } = useAuth();
@@ -75,14 +76,19 @@ export default function ResourcesPage() {
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const handleDelete = (id: string) => {
-    if (window.confirm(t('common.confirm', lang))) deleteMutation.mutate(id);
-  };
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   const handleAddFile = () => fileInputRef.current?.click();
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => { if (confirmDelete) deleteMutation.mutate(confirmDelete.id, { onSettled: () => setConfirmDelete(null) }); }}
+        message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
+        loading={deleteMutation.isPending}
+      />
       <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadMutation.mutate(e.target.files[0]); }} />
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.resources', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
@@ -110,7 +116,7 @@ export default function ResourcesPage() {
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button variant="ghost" size="sm" className="h-7 w-7" onClick={() => downloadFile.mutate({ fileUrl: r.file_url, filename: r.title })} disabled={downloadFile.isPending}><Download className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 text-red-500" onClick={() => handleDelete(r.id)} disabled={deleteMutation.isPending}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.title })} disabled={deleteMutation.isPending}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
                 <h4 className="text-sm font-medium mt-3 truncate">{r.title}</h4>

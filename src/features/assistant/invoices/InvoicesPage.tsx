@@ -12,6 +12,7 @@ import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice } fro
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function InvoicesPage() {
   const { lang } = useLang();
@@ -83,17 +84,17 @@ export default function InvoicesPage() {
     }
   };
 
-  const confirmDelete = (id: string, number: string) => {
-    if (window.confirm(`${t('common.confirm_delete', lang)} "${number}" ?`)) {
-      deleteInvoice.mutate(id, {
-        onSuccess: () => toast(t('success.deleted', lang, t('nav.invoices', lang)), 'success'),
-        onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
-      });
-    }
-  };
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => { if (confirmDelete) deleteInvoice.mutate(confirmDelete.id, { onSuccess: () => toast(t('success.deleted', lang, t('nav.invoices', lang)), 'success'), onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'), onSettled: () => setConfirmDelete(null) }); }}
+        message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
+        loading={deleteInvoice.isPending}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.invoices', lang)}</h1>
@@ -187,7 +188,7 @@ export default function InvoicesPage() {
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(inv)}><Pencil className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(inv.id, inv.invoiceNumber)} disabled={deleteInvoice.isPending}><Trash2 className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: inv.id, name: inv.invoiceNumber })} disabled={deleteInvoice.isPending}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                       </TableCell>
                     </TableRow>

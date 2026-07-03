@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function CoursesPage() {
   const { data: courses, isLoading } = useCourses();
@@ -83,11 +84,7 @@ export default function CoursesPage() {
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const confirmDelete = (id: string, name: string) => {
-    if (window.confirm(`${t('common.confirm_delete', lang)} "${name}" ?`)) {
-      deleteMutation.mutate(id);
-    }
-  };
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   const filtered = (courses ?? []).filter((c: any) => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
@@ -97,6 +94,13 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-4">
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => { if (confirmDelete) deleteMutation.mutate(confirmDelete.id, { onSettled: () => setConfirmDelete(null) }); }}
+        message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
+        loading={deleteMutation.isPending}
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('nav.courses', lang)}</h1>
         <Button className="h-9 gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('common.add', lang)}</Button>
@@ -173,7 +177,7 @@ export default function CoursesPage() {
                 <div className="flex items-center gap-1">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(c.status)}`}>{c.status}</span>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(c)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(c.id, c.name)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: c.id, name: c.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
               <div className="space-y-1 text-sm text-muted">
