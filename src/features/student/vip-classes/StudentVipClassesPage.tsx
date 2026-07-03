@@ -9,7 +9,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { formatDate, formatTime } from '@/lib/utils';
+import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 
@@ -62,7 +62,7 @@ export default function StudentVipClassesPage() {
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}</Badge>
-                <span className="text-sm font-semibold flex items-center gap-1"><Euro className="h-3.5 w-3.5" />{l.price ?? 0}</span>
+                <span className="text-sm font-semibold flex items-center gap-1"><Euro className="h-3.5 w-3.5" />{formatCurrency(l.price ?? 0)}</span>
               </div>
               <p className="font-medium text-sm">{l.teacherName}</p>
               <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">

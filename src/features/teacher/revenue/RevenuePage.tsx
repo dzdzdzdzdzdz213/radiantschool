@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -60,12 +60,12 @@ export default function RevenuePage() {
             if (!revenue) { toast(t('common.error', lang), 'error'); return; }
             const csv = [
               'Description,Valeur',
-              `${'Revenu total'},${revenue.totalRevenue} €`,
-              `${t('status.pending', lang)},${revenue.pendingPayouts} €`,
-              `${'Dernier paiement'},${revenue.lastPayout} €`,
+              `${'Revenu total'},${formatCurrency(revenue.totalRevenue)}`,
+              `${t('status.pending', lang)},${formatCurrency(revenue.pendingPayouts)}`,
+              `${'Dernier paiement'},${formatCurrency(revenue.lastPayout)}`,
               `${'Sessions'},${revenue.sessions}`,
-              `${t('nav.private_lessons', lang)},${revenue.totalPrivate} €`,
-              `${t('nav.vip_classes', lang)},${revenue.totalVip} €`,
+              `${t('nav.private_lessons', lang)},${formatCurrency(revenue.totalPrivate)}`,
+              `${t('nav.vip_classes', lang)},${formatCurrency(revenue.totalVip)}`,
               `${'Sessions complétées'},${revenue.completedCount}`,
             ].join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -86,15 +86,15 @@ export default function RevenuePage() {
         ))}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Euro className="h-3.5 w-3.5" />{'Revenu total'}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-20 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{revenue?.totalRevenue ?? 0} €</p>}</CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Banknote className="h-3.5 w-3.5" />{t('status.pending', lang)}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-20 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold text-amber-600">{revenue?.pendingPayouts ?? 0} €</p>}</CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Wallet className="h-3.5 w-3.5" />{'Dernier paiement'}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-20 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{revenue?.lastPayout ?? 0} €</p>}</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Euro className="h-3.5 w-3.5" />{'Revenu total'}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-20 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{formatCurrency(revenue?.totalRevenue ?? 0)}</p>}</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Banknote className="h-3.5 w-3.5" />{t('status.pending', lang)}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-20 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold text-amber-600">{formatCurrency(revenue?.pendingPayouts ?? 0)}</p>}</CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Wallet className="h-3.5 w-3.5" />{'Dernier paiement'}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-20 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{formatCurrency(revenue?.lastPayout ?? 0)}</p>}</CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2"><Receipt className="h-3.5 w-3.5" />{'Sessions'}</CardTitle></CardHeader><CardContent>{isLoading ? <div className="h-8 w-20 bg-muted rounded animate-pulse" /> : <p className="text-2xl font-bold">{revenue?.sessions ?? 0}</p>}</CardContent></Card>
       </div>
       <Card><CardHeader><CardTitle className="text-sm">{'Détail des revenus'}</CardTitle></CardHeader><CardContent>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50"><div className="flex items-center gap-3"><span className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center"><Euro className="h-4 w-4 text-primary" /></span><div><p className="text-sm font-medium">{t('nav.private_lessons', lang)}</p><p className="text-xs text-muted-foreground">{revenue?.completedCount ?? 0} sessions</p></div></div><p className="text-lg font-semibold">{revenue?.totalPrivate ?? 0} €</p></div>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50"><div className="flex items-center gap-3"><span className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center"><Euro className="h-4 w-4 text-amber-600" /></span><div><p className="text-sm font-medium">{t('nav.vip_classes', lang)}</p><p className="text-xs text-muted-foreground">{'Premium'}</p></div></div><p className="text-lg font-semibold">{revenue?.totalVip ?? 0} €</p></div>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50"><div className="flex items-center gap-3"><span className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center"><Euro className="h-4 w-4 text-primary" /></span><div><p className="text-sm font-medium">{t('nav.private_lessons', lang)}</p><p className="text-xs text-muted-foreground">{revenue?.completedCount ?? 0} sessions</p></div></div><p className="text-lg font-semibold">{formatCurrency(revenue?.totalPrivate ?? 0)}</p></div>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50"><div className="flex items-center gap-3"><span className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center"><Euro className="h-4 w-4 text-amber-600" /></span><div><p className="text-sm font-medium">{t('nav.vip_classes', lang)}</p><p className="text-xs text-muted-foreground">{'Premium'}</p></div></div><p className="text-lg font-semibold">{formatCurrency(revenue?.totalVip ?? 0)}</p></div>
         </div>
       </CardContent></Card>
     </div>

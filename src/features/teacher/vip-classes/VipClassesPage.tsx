@@ -9,7 +9,7 @@ import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { formatDate, formatTime } from '@/lib/utils';
+import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -47,10 +47,12 @@ export default function VipClassesPage() {
     queryKey: ['teacher_students_select', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
+      const { data: courseIds } = await (supabase as any).from('courses').select('id').eq('teacher_id', profile.id);
+      if (!courseIds?.length) return [];
       const { data } = await (supabase as any)
         .from('course_enrollments')
         .select('student:users!student_id(id, first_name, last_name)')
-        .eq('course.teacher_id', profile.id);
+        .in('course_id', courseIds.map((c: any) => c.id));
       const unique = new Map();
       for (const e of data ?? []) {
         if (e.student?.id) unique.set(e.student.id, { id: e.student.id, name: `${e.student.first_name ?? ''} ${e.student.last_name ?? ''}` });
@@ -196,7 +198,7 @@ export default function VipClassesPage() {
                   <Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">
                     {l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}
                   </Badge>
-                  <span className="text-sm font-semibold flex items-center gap-1"><Euro className="h-3.5 w-3.5" />{l.price ?? 0}</span>
+                  <span className="text-sm font-semibold flex items-center gap-1"><Euro className="h-3.5 w-3.5" />{formatCurrency(l.price ?? 0)}</span>
                 </div>
                 <h4 className="text-sm font-medium">{l.studentName}</h4>
                 <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">

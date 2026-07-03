@@ -19,11 +19,14 @@ export default function ReportsPage() {
     queryKey: ['teacher_reports', profile?.id, period],
     queryFn: async () => {
       if (!profile?.id) return null;
-      const [totalResult] = await Promise.all([
-        (supabase as any).from('course_enrollments').select('*', { count: 'exact', head: true }).eq('course.teacher_id', profile.id).then((r: any) => { if (r.error) throw r.error; return r; }),
-      ]);
-      const totalStudents = totalResult.count ?? 0;
-      const { data: r1, error: e1 } = await (supabase as any).from('attendance').select('status, count').eq('course_schedule.course.teacher_id', profile.id);
+      const { data: tCourses } = await (supabase as any).from('courses').select('id').eq('teacher_id', profile.id);
+      const courseIdList = (tCourses ?? []).map((c: any) => c.id);
+      const totalStudents = courseIdList.length
+        ? (await (supabase as any).from('course_enrollments').select('*', { count: 'exact', head: true }).in('course_id', courseIdList).then((r: any) => { if (r.error) throw r.error; return r; })).count ?? 0
+        : 0;
+      const { data: r1, error: e1 } = courseIdList.length
+        ? await (supabase as any).from('attendance').select('status, count, course_schedule:course_schedules!fk_attendance_schedule(course_id)').in('course_schedule.course_id', courseIdList).then((r: any) => r)
+        : { data: [], error: null };
       if (e1) throw e1;
       const { data: r2, error: e2 } = await (supabase as any).from('assignments').select('id, grade').eq('teacher_id', profile.id);
       if (e2) throw e2;

@@ -10,7 +10,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { formatDate, formatTime } from '@/lib/utils';
+import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 
@@ -66,7 +66,7 @@ export default function StudentPrivateLessonsPage() {
                   <TableCell className="text-sm font-medium">{l.teacherName}</TableCell>
                   <TableCell className="text-sm">{formatDate(l.date)}</TableCell>
                   <TableCell className="text-sm">{formatTime(l.start_time)} - {formatTime(l.end_time)}</TableCell>
-                  <TableCell className="text-sm">{l.price ?? 0} €</TableCell>
+                  <TableCell className="text-sm">{formatCurrency(l.price ?? 0)}</TableCell>
                   <TableCell className="text-right"><Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'}>{l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}</Badge></TableCell>
                 </TableRow>
               ))}
