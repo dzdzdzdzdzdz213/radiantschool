@@ -76,10 +76,6 @@ export default function SchedulePage() {
   const { data: courses, isLoading, isError } = useCourses();
   const [weekOffset, setWeekOffset] = useState(0);
 
-  if (isError) {
-    return <div className="flex items-center justify-center gap-2 py-20 text-red-500"><AlertCircle className="h-5 w-5" />{t('errors.load_error', lang, 'des cours')}</div>;
-  }
-
   const refDate = new Date();
   refDate.setDate(refDate.getDate() + weekOffset * 7);
   const weekDates = useMemo(() => getWeekDates(refDate), [refDate]);
@@ -131,7 +127,9 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isError ? (
+        <div className="flex items-center justify-center gap-2 py-20 text-red-500"><AlertCircle className="h-5 w-5" />{t('errors.load_error', lang, 'des cours')}</div>
+      ) : isLoading ? (
         <div className="flex items-center justify-center py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-2" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
         </div>
