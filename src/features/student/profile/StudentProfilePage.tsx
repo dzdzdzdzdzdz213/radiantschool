@@ -113,14 +113,13 @@ export default function StudentProfilePage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-sm"><Award className="h-4 w-4 inline mr-2" />{t('dashboard.stat.avg_grade', lang)}</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm"><Award className="h-4 w-4 inline mr-2" />{t('dashboard.stat.evaluations', lang)}</CardTitle></CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {[
                   { labelKey: 'nav.my_courses', value: studentProfile?.students?.total_courses ?? 0, icon: BookOpen },
                   { labelKey: 'nav.attendance', value: `${studentProfile?.students?.attendance_rate ?? 0}%`, icon: Shield },
                   { labelKey: 'nav.certificates', value: studentProfile?.students?.certificates_count ?? 0, icon: Award },
-                  { labelKey: 'dashboard.stat.avg_grade', value: `${studentProfile?.students?.average_grade ?? '-'}/20`, icon: Award },
                 ].map((stat, i) => (
                   <div key={i} className="text-center p-3 rounded-xl bg-accent/50">
                     <stat.icon className="h-5 w-5 mx-auto text-primary mb-1" />

@@ -25,7 +25,7 @@ const kpiConfig = [
   { key: 'upcomingLessons', labelKey: 'status.upcoming', icon: Clock, suffix: '', color: 'text-sky-500' },
   { key: 'pendingPayments', labelKey: 'status.pending', icon: DollarSign, suffix: '', color: 'text-red-500' },
   { key: 'remainingBalance', labelKey: 'common.total', icon: CreditCard, suffix: ' DA', color: 'text-orange-500' },
-  { key: 'learningProgress', labelKey: 'dashboard.stat.avg_grade', icon: TrendingUp, suffix: '%', color: 'text-primary' },
+
   { key: 'privateLessons', labelKey: 'nav.private_lessons', icon: UserPlus, suffix: '', color: 'text-indigo-500' },
   { key: 'vipLessons', labelKey: 'nav.vip_classes', icon: Star, suffix: '', color: 'text-amber-500' },
   { key: 'certificatesEarned', labelKey: 'nav.certificates', icon: Award, suffix: '', color: 'text-emerald-500' },
@@ -191,17 +191,6 @@ export default function StudentDashboardPage() {
               <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-12 rounded-xl" />))}</div>
             ) : (
               <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1"><span>{t('common.total', lang)}</span><span className="font-medium">{kpi?.learningProgress ?? 0}%</span></div>
-                  <div className="h-2.5 bg-accent rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${kpi?.learningProgress ?? 0}%` }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                      className="h-full bg-primary rounded-full"
-                    />
-                  </div>
-                </div>
                 <div className="flex justify-between text-sm"><span>{t('dashboard.stat.attendance', lang)}</span><span className="font-medium">{kpi?.attendanceRate ?? 0}%</span></div>
                 <div className="h-2 bg-accent rounded-full overflow-hidden">
                   <motion.div
