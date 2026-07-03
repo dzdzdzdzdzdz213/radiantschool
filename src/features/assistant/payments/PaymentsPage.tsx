@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, X } from 'lucide-react';
+import { Search, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Select, SelectItem } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
-import { usePayments, useCreatePayment } from './usePayments';
+import { usePayments, useCreatePayment, useUpdatePayment, useDeletePayment } from './usePayments';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -21,33 +21,75 @@ export default function PaymentsPage() {
   const debouncedSearch = useDebounce(search, 300);
   const { data, isLoading, isError } = usePayments(debouncedSearch, page);
   const createPayment = useCreatePayment();
+  const updatePayment = useUpdatePayment();
+  const deletePayment = useDeletePayment();
 
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, t('nav.payments', lang)), 'error');
   }, [isError]);
 
   const [showModal, setShowModal] = useState(false);
-  const [studentName, setStudentName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [paymentType, setPaymentType] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({ student_id: '', amount: '', payment_method: '', payment_type: '' });
 
-  const handleCreatePayment = () => {
-    if (!studentName || !amount || !paymentMethod || !paymentType) {
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm({ student_id: '', amount: '', payment_method: '', payment_type: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id);
+    setForm({
+      student_id: item.student_id ?? item.studentName ?? '',
+      amount: item.amount?.toString() ?? '',
+      payment_method: item.method ?? '',
+      payment_type: item.type ?? '',
+    });
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
+    if (!form.amount || !form.payment_method || !form.payment_type) {
       toast(t('payments.fill_fields', lang), 'error');
       return;
     }
-    createPayment.mutate(
-      { student_id: studentName, amount: parseFloat(amount), payment_method: paymentMethod, payment_type: paymentType },
-      {
-        onSuccess: () => {
-          toast(t('success.created', lang, t('nav.payments', lang)), 'success');
-          setShowModal(false);
-          setStudentName(''); setAmount(''); setPaymentMethod(''); setPaymentType('');
+    if (editingId) {
+      updatePayment.mutate(
+        { id: editingId, data: { amount: parseFloat(form.amount), payment_method: form.payment_method, payment_type: form.payment_type } },
+        {
+          onSuccess: () => {
+            toast(t('success.updated', lang, t('nav.payments', lang)), 'success');
+            setShowModal(false);
+            setEditingId(null);
+            setForm({ student_id: '', amount: '', payment_method: '', payment_type: '' });
+          },
+          onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
         },
+      );
+    } else {
+      const studentId = form.student_id || undefined;
+      createPayment.mutate(
+        { student_id: studentId, amount: parseFloat(form.amount), payment_method: form.payment_method, payment_type: form.payment_type },
+        {
+          onSuccess: () => {
+            toast(t('success.created', lang, t('nav.payments', lang)), 'success');
+            setShowModal(false);
+            setForm({ student_id: '', amount: '', payment_method: '', payment_type: '' });
+          },
+          onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+        },
+      );
+    }
+  };
+
+  const confirmDelete = (id: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} ${t('nav.payments', lang)} ?`)) {
+      deletePayment.mutate(id, {
+        onSuccess: () => toast(t('success.deleted', lang, t('nav.payments', lang)), 'success'),
         onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
-      },
-    );
+      });
+    }
   };
 
   return (
@@ -57,7 +99,7 @@ export default function PaymentsPage() {
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.payments', lang)}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('payments.subtitle', lang)}</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowModal(true)}><Plus className="h-4 w-4" />{t('payments.new', lang)}</Button>
+        <Button className="gap-2" onClick={openCreateModal}><Plus className="h-4 w-4" />{t('payments.new', lang)}</Button>
       </div>
 
       {showModal && (
@@ -65,21 +107,21 @@ export default function PaymentsPage() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
-              <CardTitle className="text-sm">{t('payments.new', lang)}</CardTitle>
+              <CardTitle className="text-sm">{editingId ? t('common.edit', lang) : t('payments.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('nav.students', lang)}</Label>
-                <Input placeholder={t('payments.student_placeholder', lang)} value={studentName} onChange={e => setStudentName(e.target.value)} />
+                <Input placeholder={t('payments.student_placeholder', lang)} value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('common.amount', lang)}</Label>
-                <Input type="number" placeholder={t('common.amount', lang)} value={amount} onChange={e => setAmount(e.target.value)} />
+                <Input type="number" placeholder={t('common.amount', lang)} value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('payments.method', lang)}</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod} placeholder={t('payments.select_method', lang)}>
+                <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))} placeholder={t('payments.select_method', lang)}>
                   <SelectItem value="cash">{t('payments.cash', lang)}</SelectItem>
                   <SelectItem value="card">{t('payments.card', lang)}</SelectItem>
                   <SelectItem value="check">{t('payments.check', lang)}</SelectItem>
@@ -88,7 +130,7 @@ export default function PaymentsPage() {
               </div>
               <div className="space-y-2">
                 <Label>{t('common.type', lang)}</Label>
-                <Select value={paymentType} onValueChange={setPaymentType} placeholder={t('payments.select_type', lang)}>
+                <Select value={form.payment_type} onValueChange={v => setForm(f => ({ ...f, payment_type: v }))} placeholder={t('payments.select_type', lang)}>
                   <SelectItem value="tuition">{t('payments.tuition', lang)}</SelectItem>
                   <SelectItem value="registration">{t('nav.registrations', lang)}</SelectItem>
                   <SelectItem value="material">{t('payments.material', lang)}</SelectItem>
@@ -97,8 +139,8 @@ export default function PaymentsPage() {
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-                <Button onClick={handleCreatePayment} disabled={createPayment.isPending}>
-                  {createPayment.isPending ? t('common.loading', lang) : t('payments.create', lang)}
+                <Button onClick={handleSave} disabled={createPayment.isPending || updatePayment.isPending}>
+                  {(createPayment.isPending || updatePayment.isPending) ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('payments.create', lang))}
                 </Button>
               </div>
             </CardContent>
@@ -121,15 +163,16 @@ export default function PaymentsPage() {
                 <TableHead className="hidden sm:table-cell">{t('payments.method', lang)}</TableHead>
                 <TableHead className="hidden md:table-cell">{t('common.date', lang)}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t('payments.receipt', lang)}</TableHead>
+                <TableHead className="w-20">{t('common.actions', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
+                  <TableRow key={i}>{[1, 2, 3, 4, 5, 6].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
                 ))
               ) : data?.data.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
               ) : (
                 data?.data.map((p) => (
                   <TableRow key={p.id}>
@@ -138,6 +181,12 @@ export default function PaymentsPage() {
                     <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{p.method}</TableCell>
                     <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{formatDateTime(p.paymentDate)}</TableCell>
                     <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">{p.receiptNumber ?? '—'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(p)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(p.id)} disabled={deletePayment.isPending}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

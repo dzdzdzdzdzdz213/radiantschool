@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, X } from 'lucide-react';
+import { MapPin, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,21 +29,62 @@ export default function RoomsPage() {
   }, [isError]);
 
   const [showModal, setShowModal] = useState(false);
-  const [roomName, setRoomName] = useState('');
-  const [roomCapacity, setRoomCapacity] = useState('');
-  const [roomFloor, setRoomFloor] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: '', capacity: '', floor: '' });
 
-  const createMutation = useMutation({
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm({ name: '', capacity: '', floor: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id);
+    setForm({ name: item.name ?? '', capacity: item.capacity?.toString() ?? '', floor: item.floor?.toString() ?? '' });
+    setShowModal(true);
+  };
+
+  const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!roomName.trim()) throw new Error(t('rooms.name_required', lang));
-      const capacity = parseInt(roomCapacity, 10);
+      if (!form.name.trim()) throw new Error(t('rooms.name_required', lang));
+      const capacity = parseInt(form.capacity, 10);
       if (isNaN(capacity) || capacity <= 0) throw new Error(t('rooms.capacity_invalid', lang));
-      const { error } = await (supabase as any).from('rooms').insert({ name: roomName.trim(), capacity, floor: roomFloor.trim() || null, status: 'available' });
-      if (error) throw error;
+      const payload = { name: form.name.trim(), capacity, floor: form.floor.trim() || null, status: 'available' };
+      if (editingId) {
+        const { error } = await (supabase as any).from('rooms').update(payload).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from('rooms').insert(payload);
+        if (error) throw error;
+      }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_rooms'] }); toast(t('success.created', lang, t('rooms.room', lang)), 'success'); setShowModal(false); setRoomName(''); setRoomCapacity(''); setRoomFloor(''); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_rooms'] });
+      toast(t(editingId ? 'success.updated' : 'success.created', lang, t('rooms.room', lang)), 'success');
+      setShowModal(false);
+      setEditingId(null);
+      setForm({ name: '', capacity: '', floor: '' });
+    },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('rooms').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_rooms'] });
+      toast(t('success.deleted', lang, t('rooms.room', lang)), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const confirmDelete = (id: string, name: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} "${name}" ?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -52,7 +93,7 @@ export default function RoomsPage() {
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.rooms', lang)}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('rooms.subtitle', lang)}</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{t('rooms.new', lang)}</Button>
+        <Button className="gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('rooms.new', lang)}</Button>
       </div>
 
       {showModal && (
@@ -60,26 +101,26 @@ export default function RoomsPage() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
-              <CardTitle className="text-sm">{t('rooms.new', lang)}</CardTitle>
+              <CardTitle className="text-sm">{editingId ? t('common.edit', lang) : t('rooms.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('rooms.name', lang)} *</Label>
-                <Input placeholder={t('common.name', lang)} value={roomName} onChange={e => setRoomName(e.target.value)} />
+                <Input placeholder={t('common.name', lang)} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('rooms.capacity', lang)} *</Label>
-                <Input type="number" placeholder={t('rooms.capacity_placeholder', lang)} value={roomCapacity} onChange={e => setRoomCapacity(e.target.value)} />
+                <Input type="number" placeholder={t('rooms.capacity_placeholder', lang)} value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('rooms.floor', lang)}</Label>
-                <Input placeholder={t('rooms.floor_placeholder', lang)} value={roomFloor} onChange={e => setRoomFloor(e.target.value)} />
+                <Input placeholder={t('rooms.floor_placeholder', lang)} value={form.floor} onChange={e => setForm(f => ({ ...f, floor: e.target.value }))} />
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-                <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-                  {createMutation.isPending ? t('common.loading', lang) : t('rooms.create', lang)}
+                <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+                  {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('rooms.create', lang))}
                 </Button>
               </div>
             </CardContent>
@@ -107,9 +148,13 @@ export default function RoomsPage() {
                     <p className="text-xs text-muted-foreground">{t('rooms.floor', lang)} {room.floor ?? '—'}</p>
                   </div>
                 </div>
-                <Badge variant={room.status === 'available' ? 'success' : room.status === 'occupied' ? 'destructive' : 'warning'}>
-                  {room.status === 'available' ? t('rooms.available', lang) : room.status === 'occupied' ? t('rooms.occupied', lang) : t('rooms.reserved', lang)}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  <Badge variant={room.status === 'available' ? 'success' : room.status === 'occupied' ? 'destructive' : 'warning'}>
+                    {room.status === 'available' ? t('rooms.available', lang) : room.status === 'occupied' ? t('rooms.occupied', lang) : t('rooms.reserved', lang)}
+                  </Badge>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(room)}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(room.id, room.name)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Send, Plus } from 'lucide-react';
+import { Bell, Send, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +12,11 @@ import { api } from '@/lib/api';
 import { formatDateTime } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useToast } from '@/components/ui/Toast';
 
 export default function NotificationsPage() {
   const { lang } = useLang();
+  const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -41,6 +43,23 @@ export default function NotificationsPage() {
       setTitle(''); setMessage(''); setShowForm(false);
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('notifications').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_notifications'] });
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const confirmDelete = (id: string, title: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} "${title}" ?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -80,13 +99,14 @@ export default function NotificationsPage() {
                 <TableHead>{t('common.type', lang)}</TableHead>
                 <TableHead className="hidden md:table-cell">{t('common.date', lang)}</TableHead>
                 <TableHead className="text-right">{t('notifications.read', lang)}</TableHead>
+                <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
+                <TableRow key={i}>{[1, 2, 3, 4, 5, 6].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
               )) : (notifications ?? []).length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               ) : (
                 (notifications ?? []).map((n: any) => (
                   <TableRow key={n.id}>
@@ -98,6 +118,9 @@ export default function NotificationsPage() {
                       <span className={`text-xs ${n.is_read ? 'text-muted-foreground' : 'text-primary font-medium'}`}>
                         {n.is_read ? t('notifications.read', lang) : t('common.new', lang)}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(n.id, n.title)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
                 ))

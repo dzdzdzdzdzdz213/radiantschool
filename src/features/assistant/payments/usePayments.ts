@@ -47,3 +47,25 @@ export function useCreatePayment() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_payments'] }); },
   });
 }
+
+export function useUpdatePayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const { error } = await (supabase as any).from('payments').update(data).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_payments'] }); },
+  });
+}
+
+export function useDeletePayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('payments').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_payments'] }); },
+  });
+}

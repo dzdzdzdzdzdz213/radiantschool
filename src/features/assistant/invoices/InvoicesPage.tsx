@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, FileText, X } from 'lucide-react';
+import { Search, Plus, FileText, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +8,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { useInvoices, useCreateInvoice } from './useInvoices';
+import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice } from './useInvoices';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -22,32 +22,74 @@ export default function InvoicesPage() {
   const debouncedSearch = useDebounce(search, 300);
   const { data, isLoading, isError } = useInvoices(debouncedSearch, page, statusFilter);
   const createInvoice = useCreateInvoice();
+  const updateInvoice = useUpdateInvoice();
+  const deleteInvoice = useDeleteInvoice();
 
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, t('nav.invoices', lang)), 'error');
   }, [isError]);
 
   const [showModal, setShowModal] = useState(false);
-  const [studentName, setStudentName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({ student_id: '', total_amount: '', due_date: '' });
 
-  const handleCreateInvoice = () => {
-    if (!studentName || !amount || !dueDate) {
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm({ student_id: '', total_amount: '', due_date: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id);
+    setForm({
+      student_id: item.student_id ?? item.studentName ?? '',
+      total_amount: item.totalAmount?.toString() ?? '',
+      due_date: item.dueDate ?? '',
+    });
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
+    if (!form.total_amount || !form.due_date) {
       toast(t('invoices.fill_fields', lang), 'error');
       return;
     }
-    createInvoice.mutate(
-      { student_id: studentName, total_amount: parseFloat(amount), due_date: dueDate, status: 'unpaid', paid_amount: 0 },
-      {
-        onSuccess: () => {
-          toast(t('success.created', lang, t('nav.invoices', lang)), 'success');
-          setShowModal(false);
-          setStudentName(''); setAmount(''); setDueDate('');
+    if (editingId) {
+      updateInvoice.mutate(
+        { id: editingId, data: { total_amount: parseFloat(form.total_amount), due_date: form.due_date } },
+        {
+          onSuccess: () => {
+            toast(t('success.updated', lang, t('nav.invoices', lang)), 'success');
+            setShowModal(false);
+            setEditingId(null);
+            setForm({ student_id: '', total_amount: '', due_date: '' });
+          },
+          onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
         },
+      );
+    } else {
+      const studentId = form.student_id || undefined;
+      createInvoice.mutate(
+        { student_id: studentId, total_amount: parseFloat(form.total_amount), due_date: form.due_date, status: 'unpaid', paid_amount: 0 },
+        {
+          onSuccess: () => {
+            toast(t('success.created', lang, t('nav.invoices', lang)), 'success');
+            setShowModal(false);
+            setForm({ student_id: '', total_amount: '', due_date: '' });
+          },
+          onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+        },
+      );
+    }
+  };
+
+  const confirmDelete = (id: string, number: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} "${number}" ?`)) {
+      deleteInvoice.mutate(id, {
+        onSuccess: () => toast(t('success.deleted', lang, t('nav.invoices', lang)), 'success'),
         onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
-      },
-    );
+      });
+    }
   };
 
   return (
@@ -57,7 +99,7 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.invoices', lang)}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('invoices.subtitle', lang)}</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowModal(true)}><Plus className="h-4 w-4" />{t('invoices.new', lang)}</Button>
+        <Button className="gap-2" onClick={openCreateModal}><Plus className="h-4 w-4" />{t('invoices.new', lang)}</Button>
       </div>
 
       {showModal && (
@@ -65,26 +107,26 @@ export default function InvoicesPage() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
-              <CardTitle className="text-sm">{t('invoices.new', lang)}</CardTitle>
+              <CardTitle className="text-sm">{editingId ? t('common.edit', lang) : t('invoices.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('nav.students', lang)}</Label>
-                <Input placeholder={t('invoices.student_placeholder', lang)} value={studentName} onChange={e => setStudentName(e.target.value)} />
+                <Input placeholder={t('invoices.student_placeholder', lang)} value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('common.amount', lang)}</Label>
-                <Input type="number" placeholder={t('common.amount', lang)} value={amount} onChange={e => setAmount(e.target.value)} />
+                <Input type="number" placeholder={t('common.amount', lang)} value={form.total_amount} onChange={e => setForm(f => ({ ...f, total_amount: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('invoices.due_date', lang)}</Label>
-                <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+                <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} />
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-                <Button onClick={handleCreateInvoice} disabled={createInvoice.isPending}>
-                  {createInvoice.isPending ? t('common.loading', lang) : t('invoices.create', lang)}
+                <Button onClick={handleSave} disabled={createInvoice.isPending || updateInvoice.isPending}>
+                  {(createInvoice.isPending || updateInvoice.isPending) ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('invoices.create', lang))}
                 </Button>
               </div>
             </CardContent>
@@ -117,15 +159,16 @@ export default function InvoicesPage() {
                 <TableHead className="hidden sm:table-cell">{t('status.paid', lang)}</TableHead>
                 <TableHead className="hidden md:table-cell">{t('invoices.due_date', lang)}</TableHead>
                 <TableHead className="text-right">{t('common.status', lang)}</TableHead>
+                <TableHead className="w-20">{t('common.actions', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>{[1, 2, 3, 4, 5, 6].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
+                  <TableRow key={i}>{[1, 2, 3, 4, 5, 6, 7].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
                 ))
               ) : data?.data.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{t('common.no_results', lang)}</TableCell></TableRow>
               ) : (
                 data?.data.map((inv) => {
                   const remaining = inv.totalAmount - inv.paidAmount;
@@ -140,6 +183,12 @@ export default function InvoicesPage() {
                         <Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'partially_paid' ? 'warning' : inv.status === 'overdue' ? 'destructive' : 'outline'}>
                           {remaining <= 0 ? t('status.paid', lang) : inv.status === 'overdue' ? t('status.late', lang) : `${formatCurrency(remaining)}`}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(inv)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(inv.id, inv.invoiceNumber)} disabled={deleteInvoice.isPending}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

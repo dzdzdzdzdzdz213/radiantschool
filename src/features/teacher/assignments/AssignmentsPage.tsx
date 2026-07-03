@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, FileText, Calendar, Clock, Download, X } from 'lucide-react';
+import { Search, Plus, FileText, Calendar, Clock, Download, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +44,7 @@ export default function AssignmentsPage() {
   });
 
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', description: '', due_date: '', course_id: '' });
 
   const { data: courses } = useQuery({
@@ -56,40 +57,81 @@ export default function AssignmentsPage() {
     enabled: !!profile?.id,
   });
 
-  const createMutation = useMutation({
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm({ title: '', description: '', due_date: '', course_id: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id);
+    setForm({
+      title: item.title ?? '',
+      description: item.description ?? '',
+      due_date: item.due_date ? item.due_date.split('T')[0] : '',
+      course_id: item.course_id ?? '',
+    });
+    setShowModal(true);
+  };
+
+  const saveMutation = useMutation({
     mutationFn: async () => {
       if (!profile?.id) return;
-      const { error } = await (supabase as any).from('assignments').insert({
+      const payload = {
         teacher_id: profile.id,
         title: form.title,
         description: form.description,
         due_date: form.due_date || null,
         course_id: form.course_id || null,
-        created_at: new Date().toISOString(),
-      });
-      if (error) throw error;
+      };
+      if (editingId) {
+        const { error } = await (supabase as any).from('assignments').update(payload).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from('assignments').insert({ ...payload, created_at: new Date().toISOString() });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_assignments'] });
       setShowModal(false);
+      setEditingId(null);
       setForm({ title: '', description: '', due_date: '', course_id: '' });
-      toast(t('success.created', lang, 'Devoir'), 'success');
+      toast(t(editingId ? 'success.updated' : 'success.created', lang, t('nav.assignments', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('assignments').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_assignments'] });
+      toast(t('success.deleted', lang, t('nav.assignments', lang)), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const confirmDelete = (id: string, title: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} "${title}" ?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.assignments', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
-        <Button className="h-9 gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{createMutation.isPending ? t('common.loading', lang) : t('common.add', lang)}</Button>
+        <Button className="h-9 gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('common.add', lang)}</Button>
       </div>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowModal(false)}>
           <div className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t('common.add', lang)}</h2>
+              <h2 className="text-lg font-semibold">{editingId ? t('common.edit', lang) : t('common.add', lang)}</h2>
               <button onClick={() => setShowModal(false)} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-3">
@@ -115,8 +157,8 @@ export default function AssignmentsPage() {
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-              <Button size="sm" className="h-9" disabled={!form.title || createMutation.isPending} onClick={() => createMutation.mutate()}>
-                {createMutation.isPending ? t('common.loading', lang) : t('common.create', lang)}
+              <Button size="sm" className="h-9" disabled={!form.title || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+                {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
               </Button>
             </div>
           </div>
@@ -156,7 +198,11 @@ export default function AssignmentsPage() {
                     {a.due_date && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{'Remise: '}{formatDate(a.due_date)}</span>}
                   </div>
                 </div>
-                {a.file_url && <Button variant="ghost" size="sm" className="shrink-0" onClick={() => downloadFile.mutate({ fileUrl: a.file_url, filename: a.title })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>}
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(a)}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(a.id, a.title)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                  {a.file_url && <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => downloadFile.mutate({ fileUrl: a.file_url, filename: a.title })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>}
+                </div>
               </div>
             ))}
           </div>

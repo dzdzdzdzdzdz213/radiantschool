@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, User, Calendar, Clock, Euro, CheckCircle, XCircle, X } from 'lucide-react';
+import { Search, Plus, User, Calendar, Clock, Euro, CheckCircle, XCircle, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +40,7 @@ export default function PrivateLessonsPage() {
   });
 
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ student_id: '', date: '', start_time: '', end_time: '', price: '' });
 
   const { data: students } = useQuery({
@@ -59,41 +60,77 @@ export default function PrivateLessonsPage() {
     enabled: !!profile?.id,
   });
 
-  const createMutation = useMutation({
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm({ student_id: '', date: '', start_time: '', end_time: '', price: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id);
+    setForm({ student_id: item.student_id ?? '', date: item.date ?? '', start_time: item.start_time ?? '', end_time: item.end_time ?? '', price: item.price?.toString() ?? '' });
+    setShowModal(true);
+  };
+
+  const saveMutation = useMutation({
     mutationFn: async () => {
       if (!profile?.id) return;
-      const { error } = await (supabase as any).from('private_lessons').insert({
+      const payload = {
         teacher_id: profile.id,
         student_id: form.student_id || null,
         date: form.date || new Date().toISOString().split('T')[0],
         start_time: form.start_time || '09:00',
         end_time: form.end_time || '10:00',
         price: form.price ? parseFloat(form.price) : 0,
-        status: 'scheduled',
-      });
-      if (error) throw error;
+      };
+      if (editingId) {
+        const { error } = await (supabase as any).from('private_lessons').update(payload).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from('private_lessons').insert({ ...payload, status: 'scheduled' });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_private_lessons'] });
       setShowModal(false);
+      setEditingId(null);
       setForm({ student_id: '', date: '', start_time: '', end_time: '', price: '' });
-      toast(t('success.created', lang, 'Cours'), 'success');
+      toast(t(editingId ? 'success.updated' : 'success.created', lang, 'Cours particulier'), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('private_lessons').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_private_lessons'] });
+      toast(t('success.deleted', lang, 'Cours particulier'), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const confirmDelete = (id: string, name: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} "${name}" ?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.private_lessons', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
-        <Button className="h-9 gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{createMutation.isPending ? t('common.loading', lang) : t('common.add', lang)}</Button>
+        <Button className="h-9 gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('common.add', lang)}</Button>
       </div>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowModal(false)}>
           <div className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t('common.add', lang)}</h2>
+              <h2 className="text-lg font-semibold">{editingId ? t('common.edit', lang) : t('common.add', lang)}</h2>
               <button onClick={() => setShowModal(false)} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-3">
@@ -125,8 +162,8 @@ export default function PrivateLessonsPage() {
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-              <Button size="sm" className="h-9" disabled={createMutation.isPending} onClick={() => createMutation.mutate()}>
-                {createMutation.isPending ? t('common.loading', lang) : t('common.create', lang)}
+              <Button size="sm" className="h-9" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+                {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
               </Button>
             </div>
           </div>
@@ -148,12 +185,13 @@ export default function PrivateLessonsPage() {
                 <TableHead className="hidden md:table-cell">{t('common.time', lang)}</TableHead>
                 <TableHead>{t('common.price', lang)}</TableHead>
                 <TableHead className="text-right">{t('common.status', lang)}</TableHead>
+                <TableHead className="w-20">{t('common.actions', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? Array.from({ length: 4 }).map((_, i) => (<TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>))
-              : isError ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('errors.load_error', lang, '')}</TableCell></TableRow>
-              : (lessons ?? []).length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
+              {isLoading ? Array.from({ length: 4 }).map((_, i) => (<TableRow key={i}>{[1, 2, 3, 4, 5, 6].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>))
+              : isError ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('errors.load_error', lang, '')}</TableCell></TableRow>
+              : (lessons ?? []).length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               : (lessons ?? []).map((l: any) => (
                 <TableRow key={l.id}>
                   <TableCell className="text-sm font-medium">{l.studentName}</TableCell>
@@ -164,6 +202,12 @@ export default function PrivateLessonsPage() {
                     <Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'}>
                       {l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(l)}><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(l.id, l.studentName)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

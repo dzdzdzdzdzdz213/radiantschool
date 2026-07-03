@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Video, Monitor, Calendar, Users, X } from 'lucide-react';
+import { Search, Plus, Video, Monitor, Calendar, Users, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,7 @@ export default function OnlineClassesPage() {
   });
 
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', course_id: '', date: '', start_time: '', end_time: '', meeting_link: '' });
 
   const { data: courses } = useQuery({
@@ -50,44 +51,82 @@ export default function OnlineClassesPage() {
     enabled: !!profile?.id,
   });
 
-  const createMutation = useMutation({
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm({ title: '', course_id: '', date: '', start_time: '', end_time: '', meeting_link: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    const startDate = item.start_time ? item.start_time.split('T')[0] : '';
+    const startTime = item.start_time ? item.start_time.split('T')[1]?.substring(0, 5) : '';
+    const endTime = item.end_time ? item.end_time.split('T')[1]?.substring(0, 5) : '';
+    setEditingId(item.id);
+    setForm({ title: item.title ?? '', course_id: item.course_id ?? '', date: startDate, start_time: startTime, end_time: endTime, meeting_link: item.meeting_url ?? '' });
+    setShowModal(true);
+  };
+
+  const saveMutation = useMutation({
     mutationFn: async () => {
       if (!profile?.id) return;
       const startDateTime = form.date ? new Date(`${form.date}T${form.start_time || '09:00'}`).toISOString() : new Date().toISOString();
       const endDateTime = form.date ? new Date(`${form.date}T${form.end_time || '10:00'}`).toISOString() : new Date().toISOString();
-      const { error } = await (supabase as any).from('online_classes').insert({
+      const payload = {
         teacher_id: profile.id,
         title: form.title,
         course_id: form.course_id || null,
         meeting_url: form.meeting_link || null,
         start_time: startDateTime,
         end_time: endDateTime,
-        status: 'scheduled',
-        created_at: new Date().toISOString(),
-      });
-      if (error) throw error;
+      };
+      if (editingId) {
+        const { error } = await (supabase as any).from('online_classes').update(payload).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from('online_classes').insert({ ...payload, status: 'scheduled', created_at: new Date().toISOString() });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_online_sessions'] });
       setShowModal(false);
+      setEditingId(null);
       setForm({ title: '', course_id: '', date: '', start_time: '', end_time: '', meeting_link: '' });
-      toast(t('success.created', lang, 'Session'), 'success');
+      toast(t(editingId ? 'success.updated' : 'success.created', lang, 'Session'), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('online_classes').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher_online_sessions'] });
+      toast(t('success.deleted', lang, 'Session'), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const confirmDelete = (id: string, title: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} "${title}" ?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold tracking-tight">{t('nav.online_classes', lang)}</h1><p className="text-sm text-muted-foreground mt-1">{t('common.description', lang)}</p></div>
-        <Button className="h-9 gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{createMutation.isPending ? t('common.loading', lang) : t('common.add', lang)}</Button>
+        <Button className="h-9 gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('common.add', lang)}</Button>
       </div>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowModal(false)}>
           <div className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t('common.add', lang)}</h2>
+              <h2 className="text-lg font-semibold">{editingId ? t('common.edit', lang) : t('common.add', lang)}</h2>
               <button onClick={() => setShowModal(false)} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-3">
@@ -123,8 +162,8 @@ export default function OnlineClassesPage() {
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-              <Button size="sm" className="h-9" disabled={!form.title || createMutation.isPending} onClick={() => createMutation.mutate()}>
-                {createMutation.isPending ? t('common.loading', lang) : t('common.create', lang)}
+              <Button size="sm" className="h-9" disabled={!form.title || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+                {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
               </Button>
             </div>
           </div>
@@ -164,9 +203,13 @@ export default function OnlineClassesPage() {
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(s.start_time)}</span>
                   <span className="flex items-center gap-1"><Users className="h-3 w-3" />{formatTime(s.start_time)}</span>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-2" asChild>
-                  <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />{'Rejoindre'}</a>
-                </Button>
+                <div className="flex gap-1 mt-3">
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-2" asChild>
+                    <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />{'Rejoindre'}</a>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(s)}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(s.id, s.title)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                </div>
               </div>
             ))}
           </div>

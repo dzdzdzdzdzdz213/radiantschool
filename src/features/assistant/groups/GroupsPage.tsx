@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Users, X } from 'lucide-react';
+import { Search, Plus, Users, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,21 +34,62 @@ export default function GroupsPage() {
   }, [isError]);
 
   const [showModal, setShowModal] = useState(false);
-  const [groupName, setGroupName] = useState('');
-  const [groupDesc, setGroupDesc] = useState('');
-  const [groupCapacity, setGroupCapacity] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: '', description: '', capacity: '' });
 
-  const createMutation = useMutation({
+  const openCreateModal = () => {
+    setEditingId(null);
+    setForm({ name: '', description: '', capacity: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id);
+    setForm({ name: item.name ?? '', description: item.description ?? '', capacity: item.capacity?.toString() ?? '' });
+    setShowModal(true);
+  };
+
+  const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!groupName.trim()) throw new Error(t('groups.name_required', lang));
-      const capacity = parseInt(groupCapacity, 10);
+      if (!form.name.trim()) throw new Error(t('groups.name_required', lang));
+      const capacity = parseInt(form.capacity, 10);
       if (isNaN(capacity) || capacity <= 0) throw new Error(t('groups.capacity_invalid', lang));
-      const { error } = await (supabase as any).from('courses').insert({ name: groupName.trim(), description: groupDesc.trim(), capacity, type: 'normal', status: 'active' });
-      if (error) throw error;
+      const payload = { name: form.name.trim(), description: form.description.trim(), capacity, type: 'normal', status: 'active' };
+      if (editingId) {
+        const { error } = await (supabase as any).from('courses').update(payload).eq('id', editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from('courses').insert(payload);
+        if (error) throw error;
+      }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_groups'] }); toast(t('success.created', lang, t('nav.groups', lang)), 'success'); setShowModal(false); setGroupName(''); setGroupDesc(''); setGroupCapacity(''); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_groups'] });
+      toast(t(editingId ? 'success.updated' : 'success.created', lang, t('nav.groups', lang)), 'success');
+      setShowModal(false);
+      setEditingId(null);
+      setForm({ name: '', description: '', capacity: '' });
+    },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from('courses').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_groups'] });
+      toast(t('success.deleted', lang, t('nav.groups', lang)), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const confirmDelete = (id: string, name: string) => {
+    if (window.confirm(`${t('common.confirm_delete', lang)} "${name}" ?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -57,7 +98,7 @@ export default function GroupsPage() {
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.groups', lang)}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('groups.subtitle', lang)}</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowModal(true)} disabled={createMutation.isPending}><Plus className="h-4 w-4" />{t('groups.new', lang)}</Button>
+        <Button className="gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('groups.new', lang)}</Button>
       </div>
 
       {showModal && (
@@ -65,26 +106,26 @@ export default function GroupsPage() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
-              <CardTitle className="text-sm">{t('groups.new', lang)}</CardTitle>
+              <CardTitle className="text-sm">{editingId ? t('common.edit', lang) : t('groups.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('common.name', lang)} *</Label>
-                <Input placeholder={t('common.name', lang)} value={groupName} onChange={e => setGroupName(e.target.value)} />
+                <Input placeholder={t('common.name', lang)} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{t('common.description', lang)}</Label>
-                <Textarea placeholder={t('groups.desc_placeholder', lang)} value={groupDesc} onChange={e => setGroupDesc(e.target.value)} rows={3} />
+                <Textarea placeholder={t('groups.desc_placeholder', lang)} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
               </div>
               <div className="space-y-2">
                 <Label>{t('groups.capacity', lang)} *</Label>
-                <Input type="number" placeholder={t('groups.capacity_placeholder', lang)} value={groupCapacity} onChange={e => setGroupCapacity(e.target.value)} />
+                <Input type="number" placeholder={t('groups.capacity_placeholder', lang)} value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-                <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-                  {createMutation.isPending ? t('common.loading', lang) : t('groups.create', lang)}
+                <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+                  {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('groups.create', lang))}
                 </Button>
               </div>
             </CardContent>
@@ -107,9 +148,13 @@ export default function GroupsPage() {
                   <CardTitle className="text-base">{g.name}</CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">{g.level?.name ?? '—'}</p>
                 </div>
-                <Badge variant={g.status === 'active' ? 'success' : 'outline'}>
-                  {g.status === 'active' ? t('status.active', lang) : t('status.inactive', lang)}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  <Badge variant={g.status === 'active' ? 'success' : 'outline'}>
+                    {g.status === 'active' ? t('status.active', lang) : t('status.inactive', lang)}
+                  </Badge>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(g)}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => confirmDelete(g.id, g.name)} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
