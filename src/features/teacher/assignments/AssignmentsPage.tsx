@@ -35,11 +35,10 @@ export default function AssignmentsPage() {
         .select('id, title, description, due_date, created_at, file_url, course:courses(name)')
         .eq('teacher_id', profile.id)
         .order('created_at', { ascending: false });
+      if (debouncedSearch) q = q.ilike('title', `%${debouncedSearch}%`);
       const { data, error } = await q;
       if (error) throw error;
-      let items = data ?? [];
-      if (debouncedSearch) items = items.filter((i: any) => i.title?.toLowerCase().includes(debouncedSearch.toLowerCase()));
-      return items;
+      return data ?? [];
     },
     enabled: !!profile?.id,
   });

@@ -70,8 +70,8 @@ export default function ReportsPage() {
           <p className="text-sm text-muted-foreground mt-1">{t('reports.subtitle', lang)}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileSpreadsheet className="h-4 w-4" />Excel</Button>
-          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileText className="h-4 w-4" />PDF</Button>
+          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileSpreadsheet className="h-4 w-4" />{t('reports.export_excel', lang)}</Button>
+          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileText className="h-4 w-4" />CSV</Button>
         </div>
       </div>
 

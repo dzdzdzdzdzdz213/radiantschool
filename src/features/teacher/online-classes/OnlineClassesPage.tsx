@@ -25,15 +25,15 @@ export default function OnlineClassesPage() {
     queryKey: ['teacher_online_sessions', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
-      const { data, error } = await (supabase as any)
+      let q = (supabase as any)
         .from('online_classes')
         .select('id, title, description, platform, meeting_url, start_time, end_time, status, created_at, course:courses(name)')
         .eq('teacher_id', profile.id)
         .order('start_time', { ascending: false });
+      if (search) q = q.ilike('title', `%${search}%`);
+      const { data, error } = await q;
       if (error) throw error;
-      let items = data ?? [];
-      if (search) items = items.filter((i: any) => i.title?.toLowerCase().includes(search.toLowerCase()));
-      return items;
+      return data ?? [];
     },
     enabled: !!profile?.id,
   });

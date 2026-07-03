@@ -15,6 +15,10 @@ export default function ReportsPage() {
   const { lang } = useLang();
   const [period, setPeriod] = useState<'month' | 'trimester' | 'year'>('month');
 
+  const dateFrom = period === 'month' ? new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+    : period === 'trimester' ? new Date(new Date().getFullYear(), Math.floor(new Date().getMonth() / 3) * 3, 1).toISOString()
+    : new Date(new Date().getFullYear(), 0, 1).toISOString();
+
   const { data: stats, isLoading, isError } = useQuery({
     queryKey: ['teacher_reports', profile?.id, period],
     queryFn: async () => {
@@ -25,10 +29,10 @@ export default function ReportsPage() {
         ? (await (supabase as any).from('course_enrollments').select('*', { count: 'exact', head: true }).in('course_id', courseIdList).then((r: any) => { if (r.error) throw r.error; return r; })).count ?? 0
         : 0;
       const { data: r1, error: e1 } = courseIdList.length
-        ? await (supabase as any).from('attendance').select('status, count, course_schedule:course_schedules!fk_attendance_schedule(course_id)').in('course_schedule.course_id', courseIdList).then((r: any) => r)
+        ? await (supabase as any).from('attendance').select('status, count, course_schedule:course_schedules!fk_attendance_schedule(course_id)').in('course_schedule.course_id', courseIdList).gte('date', dateFrom).then((r: any) => r)
         : { data: [], error: null };
       if (e1) throw e1;
-      const { data: r2, error: e2 } = await (supabase as any).from('assignments').select('id, grade').eq('teacher_id', profile.id);
+      const { data: r2, error: e2 } = await (supabase as any).from('assignments').select('id, grade').eq('teacher_id', profile.id).gte('created_at', dateFrom);
       if (e2) throw e2;
       const present = (r1 ?? []).filter((a: any) => a.status === 'present').length;
       const total = (r1 ?? []).length;
