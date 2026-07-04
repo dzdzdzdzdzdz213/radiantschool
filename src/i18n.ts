@@ -549,6 +549,23 @@ const fr: Dict = {
   'parents.create': 'Créer le parent',
   'parents.fill_fields': 'Veuillez remplir tous les champs obligatoires',
 
+  // --- Rooms ---
+  'rooms.subtitle': 'Gérer les salles',
+  'rooms.new': 'Nouvelle salle',
+  'rooms.name': 'Nom',
+  'rooms.name_required': 'Le nom est requis',
+  'rooms.capacity': 'Capacité',
+  'rooms.capacity_invalid': 'Capacité invalide',
+  'rooms.capacity_placeholder': 'ex: 30',
+  'rooms.floor': 'Étage',
+  'rooms.floor_placeholder': 'ex: 2',
+  'rooms.create': 'Créer',
+  'rooms.available': 'Disponible',
+  'rooms.occupied': 'Occupée',
+  'rooms.reserved': 'Réservée',
+  'rooms.seats': 'places',
+  'rooms.room': 'la salle',
+
   // --- Landing page additions ---
   'landing.category_all': 'Tous',
   'landing.category_primaire': 'Primaire',
@@ -1207,6 +1224,23 @@ const en: Dict = {
   'parents.create': 'Create Parent',
   'parents.fill_fields': 'Please fill all required fields',
 
+  // --- Rooms ---
+  'rooms.subtitle': 'Manage rooms',
+  'rooms.new': 'New Room',
+  'rooms.name': 'Name',
+  'rooms.name_required': 'Name is required',
+  'rooms.capacity': 'Capacity',
+  'rooms.capacity_invalid': 'Invalid capacity',
+  'rooms.capacity_placeholder': 'e.g. 30',
+  'rooms.floor': 'Floor',
+  'rooms.floor_placeholder': 'e.g. 2',
+  'rooms.create': 'Create',
+  'rooms.available': 'Available',
+  'rooms.occupied': 'Occupied',
+  'rooms.reserved': 'Reserved',
+  'rooms.seats': 'seats',
+  'rooms.room': 'the room',
+
   // --- Landing page additions ---
   'landing.category_all': 'All',
   'landing.category_primaire': 'Primary',
@@ -1864,6 +1898,23 @@ const ar: Dict = {
   'parents.children_label': 'طفل/أطفال',
   'parents.create': 'إنشاء ولي أمر',
   'parents.fill_fields': 'يرجى ملء جميع الحقول المطلوبة',
+
+  // --- Rooms ---
+  'rooms.subtitle': 'إدارة القاعات',
+  'rooms.new': 'قاعة جديدة',
+  'rooms.name': 'الاسم',
+  'rooms.name_required': 'الاسم مطلوب',
+  'rooms.capacity': 'السعة',
+  'rooms.capacity_invalid': 'سعة غير صالحة',
+  'rooms.capacity_placeholder': 'مثال: 30',
+  'rooms.floor': 'الطابق',
+  'rooms.floor_placeholder': 'مثال: 2',
+  'rooms.create': 'إنشاء',
+  'rooms.available': 'متاحة',
+  'rooms.occupied': 'مشغولة',
+  'rooms.reserved': 'محجوزة',
+  'rooms.seats': 'مقعد',
+  'rooms.room': 'القاعة',
 
   // --- Landing page additions ---
   'landing.category_all': 'الكل',
