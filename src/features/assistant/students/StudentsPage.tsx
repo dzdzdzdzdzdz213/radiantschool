@@ -1,35 +1,121 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
+import { Select, SelectItem } from '@/components/ui/select';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getInitials, formatDateTime } from '@/lib/utils';
-import { useStudents } from './useStudents';
+import { useStudents, useCreateStudent } from './useStudents';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useToast } from '@/components/ui/Toast';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function StudentsPage() {
   const navigate = useNavigate();
   const { lang } = useLang();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const debouncedSearch = useDebounce(search, 300);
-  const { data, isLoading } = useStudents(debouncedSearch, page, 20, statusFilter ? { status: statusFilter } : undefined);
+  const { data, isLoading, isError } = useStudents(debouncedSearch, page, 20, statusFilter ? { status: statusFilter } : undefined);
+
+  useErrorToast(isError, lang, t('nav.students', lang));
+
+  const createStudent = useCreateStudent();
+
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+
+  const openCreateModal = () => {
+    setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
+    if (!form.firstName || !form.lastName || !form.email) {
+      toast(t('students.fill_fields', lang), 'error');
+      return;
+    }
+    createStudent.mutate(
+      {
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        phone: form.phone || null,
+        status: form.status,
+        role: 'student',
+      },
+      {
+        onSuccess: () => {
+          toast(t('success.created', lang, t('nav.students', lang)), 'success');
+          setShowModal(false);
+          setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+        },
+        onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+      },
+    );
+  };
 
   return (
     <div className="space-y-6">
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
+          <Card className="relative w-full max-w-lg mx-4">
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle className="text-sm">{t('students.new', lang)}</CardTitle>
+              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('common.first_name', lang)} <span className="text-red-500">*</span></Label>
+                  <Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('common.last_name', lang)} <span className="text-red-500">*</span></Label>
+                  <Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('common.email', lang)} <span className="text-red-500">*</span></Label>
+                <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('common.phone', lang)}</Label>
+                <Input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('common.status', lang)}</Label>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+                  <SelectItem value="active">{t('status.active', lang)}</SelectItem>
+                  <SelectItem value="pending">{t('status.pending', lang)}</SelectItem>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
+                <Button onClick={handleSave} disabled={createStudent.isPending}>
+                  {createStudent.isPending ? t('common.loading', lang) : t('students.create', lang)}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.students', lang)}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('students.subtitle', lang)}</p>
         </div>
-        <Button onClick={() => navigate('/assistant/students/new')} className="gap-2">
+        <Button onClick={openCreateModal} className="gap-2">
           <Plus className="h-4 w-4" />
           {t('students.new', lang)}
         </Button>

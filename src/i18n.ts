@@ -519,6 +519,13 @@ const fr: Dict = {
   'payments.type_other': 'Autre',
   'payments.amount_placeholder': '0',
 
+  // --- Students ---
+  'students.new': 'Nouvel élève',
+  'students.subtitle': 'Gérer les élèves inscrits',
+  'students.registered_on': 'Inscrit le',
+  'students.create': 'Créer l\'élève',
+  'students.fill_fields': 'Veuillez remplir tous les champs obligatoires',
+
   // --- Invoices ---
   'invoices.invoice_no': 'N° Facture',
   'invoices.student_label': 'Élève',
@@ -1161,6 +1168,13 @@ const en: Dict = {
   'payments.type_other': 'Other',
   'payments.amount_placeholder': '0',
 
+  // --- Students ---
+  'students.new': 'New Student',
+  'students.subtitle': 'Manage enrolled students',
+  'students.registered_on': 'Registered on',
+  'students.create': 'Create Student',
+  'students.fill_fields': 'Please fill all required fields',
+
   // --- Invoices ---
   'invoices.invoice_no': 'Invoice No.',
   'invoices.student_label': 'Student',
@@ -1802,6 +1816,13 @@ const ar: Dict = {
   'payments.type_material': 'المواد',
   'payments.type_other': 'آخر',
   'payments.amount_placeholder': '0',
+
+  // --- Students ---
+  'students.new': 'طالب جديد',
+  'students.subtitle': 'إدارة الطلاب المسجلين',
+  'students.registered_on': 'مسجل في',
+  'students.create': 'إنشاء طالب',
+  'students.fill_fields': 'يرجى ملء جميع الحقول المطلوبة',
 
   // --- Invoices ---
   'invoices.invoice_no': 'رقم الفاتورة',
