@@ -33,15 +33,17 @@ export function usePublicStats() {
   return useQuery({
     queryKey: ['public-stats'],
     queryFn: async () => {
-      const [studentRes, evalRes, teacherRes, courseRes, typeRes] = await Promise.all([
+      const [studentRes, evalRes, teacherRes, courseRes, typeRes, levelsRes] = await Promise.all([
         supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'student').is('deleted_at', null),
         supabase.from('evaluations').select('average_score'),
         supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'teacher').is('deleted_at', null),
         supabase.from('courses').select('capacity').eq('status', 'active'),
         supabase.from('courses').select('type').eq('status', 'active'),
+        supabase.from('levels').select('id', { count: 'exact', head: true }),
       ]);
       const studentCount = studentRes.count ?? 0;
       const teacherCount = teacherRes.count ?? 0;
+      const levelCount = levelsRes.count ?? 0;
       const scores = (evalRes.data ?? []).map(r => r.average_score).filter(Boolean) as number[];
       const avgRating = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
       const successRate = scores.length > 0 ? Math.round((scores.filter(s => s >= 3).length / scores.length) * 100) : 0;
@@ -53,7 +55,7 @@ export function usePublicStats() {
       const minCapacity = capacities.length > 0 ? Math.min(...capacities) : 0;
       const types = new Set((typeRes.data ?? []).map(r => r.type).filter(Boolean));
       const typeCount = types.size;
-      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations: scores.length, teacherCount, minCapacity, typeCount };
+      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations: scores.length, teacherCount, minCapacity, typeCount, levelCount };
     },
     staleTime: 1000 * 60 * 5,
   });

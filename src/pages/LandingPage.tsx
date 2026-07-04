@@ -319,7 +319,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-stretch rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
                   {[
                     { icon: BookOpen, value: courses?.length ?? 0, key: 'stat.formations' },
-                    { icon: GraduationCap, value: levelCount, key: 'stat.niveaux' },
+                    { icon: GraduationCap, value: stats?.levelCount ?? levelCount, key: 'stat.niveaux' },
                     { icon: Users, value: teacherCount, key: 'stat.professeurs' },
                   ].map((s, i, arr) => (
                     <div key={s.key} className="flex items-center gap-3.5 px-8 py-5" style={{ borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
