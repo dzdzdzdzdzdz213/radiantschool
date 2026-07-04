@@ -12,18 +12,22 @@ function CountUp({ end = 0 }: { end?: number }) {
   const [c, setC] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | undefined;
     const obs = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting) return;
       let val = 0;
       const step = Math.ceil(end / 60);
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         val += step;
         if (val >= end) { setC(end); clearInterval(timer); } else setC(val);
       }, 20);
       obs.disconnect();
     }, { threshold: 0.3 });
     if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+    return () => {
+      obs.disconnect();
+      if (timer) clearInterval(timer);
+    };
   }, [end]);
   return <span ref={ref}>{c}</span>;
 }
@@ -41,9 +45,11 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (coursesError) toast('Erreur de chargement des formations', 'error');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coursesError]);
   useEffect(() => {
     if (statsError) toast('Erreur de chargement des statistiques', 'error');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsError]);
 
   const { theme, toggle } = useTheme();

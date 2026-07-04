@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useDebounce } from '@/hooks/useDebounce';
-import { getInitials, getStatusColor } from '@/lib/utils';
+import { getInitials } from '@/lib/utils';
 import { useParents } from './useParents';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';

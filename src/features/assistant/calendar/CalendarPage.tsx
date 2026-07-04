@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -27,9 +25,6 @@ export default function CalendarPage() {
   const { data: events, isLoading, isError } = useQuery({
     queryKey: ['assistant_calendar', currentMonth, currentYear],
     queryFn: async () => {
-      const start = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
-      const end = new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0];
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
       const dayNames = DAY_NAMES.map((_, i) => {
         const d = new Date(currentYear, currentMonth, 1 + i);
         return DAY_NAMES[(d.getDay() + 6) % 7];

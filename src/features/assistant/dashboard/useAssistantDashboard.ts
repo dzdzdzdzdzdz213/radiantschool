@@ -116,13 +116,14 @@ export function useAssistantDashboard() {
         vipStudentsToday: vip ?? 0,
       } as AssistantKpi;
     },
-    staleTime: 15_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const pendingRegistrationsQuery = useQuery({
     queryKey: ['assistant_pending_registrations', today],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('course_enrollments')
         .select('id, status, enrollment_date, student:users!student_id(first_name, last_name), course:courses(name)')
         .eq('status', 'pending')
@@ -136,13 +137,14 @@ export function useAssistantDashboard() {
         status: r.status,
       })) as PendingRegistration[];
     },
-    staleTime: 15_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const overduePaymentsQuery = useQuery({
     queryKey: ['assistant_overdue_payments', today],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('invoices')
         .select('id, total_amount, paid_amount, due_date, student:users!student_id(first_name, last_name)')
         .in('status', ['unpaid', 'partially_paid'])
@@ -158,12 +160,13 @@ export function useAssistantDashboard() {
       })) as OverduePayment[];
     },
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const roomStatusQuery = useQuery({
     queryKey: ['assistant_room_status', today],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('rooms')
         .select('id, name, capacity, status')
         .order('name');
@@ -175,6 +178,7 @@ export function useAssistantDashboard() {
       })) as RoomStatus[];
     },
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const activeTeachersQuery = useQuery({
@@ -182,7 +186,7 @@ export function useAssistantDashboard() {
     queryFn: async () => {
       const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses!inner(name, room_id), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
         .eq('day_of_week', dayName)
@@ -198,13 +202,14 @@ export function useAssistantDashboard() {
       })) as ActiveTeacher[];
     },
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const scheduleQuery = useQuery({
     queryKey: ['assistant_today_schedule', today],
     queryFn: async () => {
       const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses!inner(name), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
         .eq('day_of_week', dayName)
@@ -220,12 +225,13 @@ export function useAssistantDashboard() {
       })) as ScheduleItem[];
     },
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const rfidQuery = useQuery({
     queryKey: ['assistant_rfid_today', today],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('attendance')
         .select('id, date, status, created_at, student:users!student_id(first_name, last_name)')
         .eq('date', today)
@@ -239,7 +245,8 @@ export function useAssistantDashboard() {
         status: r.status === 'present' ? 'success' : 'failed',
       })) as RfidRecord[];
     },
-    staleTime: 15_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const alertsQuery = useQuery({
@@ -287,7 +294,8 @@ export function useAssistantDashboard() {
       return alerts;
     },
     enabled: !!kpiQuery.data,
-    staleTime: 15_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const quickActions: QuickAction[] = [

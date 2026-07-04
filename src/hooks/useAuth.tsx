@@ -1,9 +1,13 @@
-import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import type { UserProfile } from '@/types/models';
 import type { UserRole } from '@/types/models';
 
+/**
+ * Optional metadata for registration.
+ * For parent role: child info creates a linked student record.
+ */
 export interface SignUpOptions {
   phone?: string;
   guardianName?: string;
@@ -26,6 +30,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Provides authentication state and methods to the component tree.
+ * On mount: reads the Supabase session, fetches the user profile from
+ * the `users` table, and listens for `onAuthStateChange` events.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -181,6 +190,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Returns the current auth context. Must be called within an AuthProvider.
+ * Provides `user`, `profile`, `isLoading`, `signIn`, `signUp`, `signOut`,
+ * and `refreshProfile`.
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');

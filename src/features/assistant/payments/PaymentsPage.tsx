@@ -25,6 +25,7 @@ export default function PaymentsPage() {
   const updatePayment = useUpdatePayment();
   const deletePayment = useDeletePayment();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, t('nav.payments', lang)), 'error');
   }, [isError]);

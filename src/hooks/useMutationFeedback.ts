@@ -2,6 +2,10 @@ import { useMutation, useQueryClient, type UseMutationOptions, type MutationKey 
 import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
 
+/**
+ * Extended mutation options that add toast notifications and automatic
+ * query invalidation on success.
+ */
 interface MutationFeedbackOptions<TData, TError, TVariables, TContext> extends UseMutationOptions<TData, TError, TVariables, TContext> {
   successMessage?: string;
   errorMessage?: string;
@@ -9,6 +13,10 @@ interface MutationFeedbackOptions<TData, TError, TVariables, TContext> extends U
   loadingKey?: string;
 }
 
+/**
+ * Wraps a mutation function with automatic success/error toast
+ * notifications and optional query key invalidation on success.
+ */
 export function useMutationWithFeedback<TData = unknown, TError = Error, TVariables = unknown, TContext = unknown>(
   mutationFn: (variables: TVariables) => Promise<TData>,
   options: MutationFeedbackOptions<TData, TError, TVariables, TContext> = {},
@@ -19,19 +27,20 @@ export function useMutationWithFeedback<TData = unknown, TError = Error, TVariab
 
   return useMutation<TData, TError, TVariables, TContext>({
     mutationFn,
-    onSuccess: (data, variables, context) => {
+    onSuccess: (_data, _variables, _context) => {
       if (successMessage) toast(successMessage, 'success');
       if (invalidateQueries) {
         invalidateQueries.forEach(key => queryClient.invalidateQueries({ queryKey: key }));
       }
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, _context) => {
       const message = errorMessage ?? (error instanceof Error ? error.message : 'Une erreur est survenue');
       toast(message, 'error');
     },
   });
 }
 
+/** Updates a user's settings row and invalidates the profile cache. */
 export function useUpdateUserSettings() {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -51,12 +60,13 @@ export function useUpdateUserSettings() {
   });
 }
 
+/** Changes the current user's password after verifying the current password. */
 export function useUpdatePassword() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email: '', password: currentPassword });
+    mutationFn: async ({ currentPassword, newPassword, email }: { currentPassword: string; newPassword: string; email?: string }) => {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: email ?? '', password: currentPassword });
       if (signInError) throw new Error('Mot de passe actuel incorrect');
 
       const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -71,6 +81,7 @@ export function useUpdatePassword() {
   });
 }
 
+/** Sends a message to another user and invalidates the messages cache. */
 export function useSendMessage() {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -95,6 +106,7 @@ export function useSendMessage() {
   });
 }
 
+/** Downloads a file from a URL by creating a temporary anchor element. */
 export function useDownloadFile() {
   const { toast } = useToast();
 
@@ -119,6 +131,7 @@ export function useDownloadFile() {
   });
 }
 
+/** Marks all unread notifications as read for the current user. */
 export function useMarkNotificationsRead() {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -138,6 +151,7 @@ export function useMarkNotificationsRead() {
   });
 }
 
+/** Deletes a single notification by ID. */
 export function useDeleteNotification() {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -157,6 +171,7 @@ export function useDeleteNotification() {
   });
 }
 
+/** Upserts a teacher evaluation from a student. Invalidates `reviews` and `student_my_reviews` caches. */
 export function useSubmitReview() {
   const { toast } = useToast();
   const qc = useQueryClient();

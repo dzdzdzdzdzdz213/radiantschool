@@ -15,6 +15,10 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+/**
+ * Returns the `toast` function from the nearest ToastProvider.
+ * Throws if used outside a ToastProvider.
+ */
 export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error('useToast must be used within ToastProvider');
@@ -42,6 +46,11 @@ const BORDER_COLORS: Record<ToastType, string> = {
   warning: 'rgba(245,158,11,0.25)',
 };
 
+/**
+ * Provides a toast notification system. Toasts auto-dismiss after 4 seconds
+ * and stack from bottom-right. Supports `success`, `error`, `info`, and
+ * `warning` variants.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 

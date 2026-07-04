@@ -1,4 +1,4 @@
-import { Award, Download, Calendar, BookOpen, Trophy, Loader } from 'lucide-react';
+import { Award, Download, Calendar, Trophy, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';

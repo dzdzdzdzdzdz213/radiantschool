@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { type Lang, LANGUAGES, getDir } from '@/i18n';
+import { type Lang, getDir } from '@/i18n';
 
 interface LangCtx {
   lang: Lang;
@@ -9,6 +9,11 @@ interface LangCtx {
 
 const Ctx = createContext<LangCtx>({ lang: 'fr', dir: 'ltr', setLang: () => {} });
 
+/**
+ * Provides the current language (`fr` / `en` / `ar`) and direction
+ * (`ltr` / `rtl`) via context. Persists to localStorage and sets
+ * `lang` and `dir` attributes on `document.documentElement`.
+ */
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>(() => {
     try {
@@ -33,4 +38,5 @@ export function LangProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** Returns the current language context: `lang`, `dir`, and `setLang`. */
 export const useLang = () => useContext(Ctx);

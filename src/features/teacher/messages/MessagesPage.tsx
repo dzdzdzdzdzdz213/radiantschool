@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Search, Send, Paperclip, User, Phone, Video, MessageSquare } from 'lucide-react';
+import { Search, Send, Paperclip, Phone, Video, MessageSquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

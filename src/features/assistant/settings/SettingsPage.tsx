@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Globe, Palette, User, Shield } from 'lucide-react';
+import { Bell, Globe, Palette, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';

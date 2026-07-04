@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { Plus, Calendar, Clock, Euro, CheckCircle, XCircle, User, Loader } from 'lucide-react';
+import { Plus, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
@@ -33,6 +33,7 @@ export default function StudentPrivateLessonsPage() {
     enabled: !!profile?.id,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.private_lessons', lang)), 'error'); }, [isError]);
 
   const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(

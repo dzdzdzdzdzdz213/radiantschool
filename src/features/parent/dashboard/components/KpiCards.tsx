@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { Users, Calendar, FileText, TrendingUp, DollarSign, Bell, GraduationCap } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { ParentKpi } from '../useParentDashboard';
 
 interface KpiCardsProps {
@@ -8,17 +10,18 @@ interface KpiCardsProps {
   loading?: boolean;
 }
 
-const kpiConfig = [
-  { key: 'childrenCount', label: 'Enfants inscrits', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950', format: (v: number) => String(v) },
-  { key: 'totalUpcomingClasses', label: 'Cours aujourd\'hui', icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950', format: (v: number) => String(v) },
-  { key: 'totalPendingHomework', label: 'Devoirs à rendre', icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950', format: (v: number) => String(v) },
-  { key: 'totalCompletedHomework', label: 'Devoirs rendus', icon: GraduationCap, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950', format: (v: number) => String(v) },
-  { key: 'overallAttendanceRate', label: 'Taux de présence', icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950', format: (v: number) => `${v}%` },
-  { key: 'totalOutstandingBalance', label: 'Solde impayé', icon: DollarSign, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950', format: (v: number) => formatCurrency(v) },
-  { key: 'unreadNotifications', label: 'Notifications', icon: Bell, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950', format: (v: number) => String(v) },
-] as const;
-
 export default function KpiCards({ kpi, loading }: KpiCardsProps) {
+  const { lang } = useLang();
+
+  const kpiConfig = [
+    { key: 'childrenCount', label: t('dashboard.children_enrolled', lang), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950', format: (v: number) => String(v) },
+    { key: 'totalUpcomingClasses', label: t('dashboard.courses_today', lang), icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950', format: (v: number) => String(v) },
+    { key: 'totalPendingHomework', label: t('dashboard.homework_pending', lang), icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950', format: (v: number) => String(v) },
+    { key: 'totalCompletedHomework', label: t('dashboard.homework_completed', lang), icon: GraduationCap, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950', format: (v: number) => String(v) },
+    { key: 'overallAttendanceRate', label: t('dashboard.stat.attendance_rate', lang), icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950', format: (v: number) => `${v}%` },
+    { key: 'totalOutstandingBalance', label: t('dashboard.outstanding_balance', lang), icon: DollarSign, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950', format: (v: number) => formatCurrency(v) },
+    { key: 'unreadNotifications', label: t('dashboard.notifications', lang), icon: Bell, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950', format: (v: number) => String(v) },
+  ] as const;
   if (loading) {
     return <>{Array.from({ length: 7 }).map((_, i) => <div key={i} className="rounded-2xl border border-border bg-card p-5 space-y-3 animate-pulse"><div className="h-3 w-24 bg-muted rounded" /><div className="h-8 w-20 bg-muted rounded" /><div className="h-3 w-16 bg-muted rounded" /></div>)}</>;
   }

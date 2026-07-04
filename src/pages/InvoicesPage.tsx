@@ -2,7 +2,7 @@ import { useInvoices } from '@/hooks/useQueries';
 import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { FileText, AlertCircle } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useEffect } from 'react';
 
@@ -11,6 +11,7 @@ export default function InvoicesPage() {
   const { data: invoices, isLoading, isError } = useInvoices();
   const { toast } = useToast();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, 'des factures'), 'error');
   }, [isError]);

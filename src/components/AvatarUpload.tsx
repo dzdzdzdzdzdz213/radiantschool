@@ -13,6 +13,11 @@ interface Props {
   onUpdate?: (url: string | null) => void;
 }
 
+/**
+ * Avatar upload widget. Displays the current avatar (or initials fallback),
+ * a camera button for selecting a new image, and a loading spinner during
+ * upload. Uses Supabase Storage `avatars` bucket.
+ */
 export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }: Props) {
   const { lang } = useLang();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +32,8 @@ export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }:
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setPreview(URL.createObjectURL(file));
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
     setUploading(true);
 
     try {
@@ -38,6 +44,7 @@ export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }:
       setPreview(null);
     } finally {
       setUploading(false);
+      URL.revokeObjectURL(objectUrl);
     }
   };
 

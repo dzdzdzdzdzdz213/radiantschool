@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Shield, Globe, Lock, Moon, Eye, Save, Smartphone, Mail, MessageSquare, ChevronDown, Loader } from 'lucide-react';
+import { Bell, Globe, Lock, Eye, Mail, MessageSquare, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectItem } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -141,7 +140,7 @@ export default function StudentSettingsPage() {
             <Button size="sm" className="h-9" onClick={() => {
               if (newPassword !== confirmPassword) { toast(t('auth.confirm_password', lang), 'error'); return; }
               if (!currentPassword || !newPassword) { toast(t('common.required', lang), 'error'); return; }
-              updatePassword.mutate({ currentPassword, newPassword });
+              updatePassword.mutate({ currentPassword, newPassword, email: profile?.email });
             }} disabled={updatePassword.isPending}>
               {updatePassword.isPending ? <Loader className="h-4 w-4 mr-1 animate-spin" /> : null}{t('auth.reset_password', lang)}
             </Button>

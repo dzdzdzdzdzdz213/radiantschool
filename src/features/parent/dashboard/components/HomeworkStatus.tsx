@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { FileText, ArrowRight } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
 import type { HomeworkItem } from '../useParentDashboard';
 
 interface HomeworkStatusProps {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Shield, Globe, Palette, Lock, Moon, Smartphone, Eye, Save } from 'lucide-react';
+import { Bell, Globe, Lock, Eye, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -67,7 +67,7 @@ export default function TeacherSettingsPage() {
     if (!newPassword) { toast(t('validation.required', lang), 'error'); return; }
     if (newPassword.length < 6) { toast(t('validation.min_length', lang, '6'), 'error'); return; }
     if (newPassword !== confirmPassword) { toast(t('validation.password_mismatch', lang), 'error'); return; }
-    updatePassword.mutate({ currentPassword, newPassword });
+    updatePassword.mutate({ currentPassword, newPassword, email: profile?.email });
     setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
   };
 

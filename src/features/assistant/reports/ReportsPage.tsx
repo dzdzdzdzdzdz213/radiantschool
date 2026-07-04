@@ -40,6 +40,7 @@ export default function ReportsPage() {
     },
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, t('reports.data', lang)), 'error');
   }, [isError]);

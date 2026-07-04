@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getDayLabel, formatTime } from '@/lib/utils';
-import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 
@@ -15,7 +14,6 @@ const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'
 
 export default function TeacherSchedulePage() {
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { lang } = useLang();
   const today = new Date();
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));

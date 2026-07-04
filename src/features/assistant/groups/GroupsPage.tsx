@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Users, X, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Users, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,6 +29,7 @@ export default function GroupsPage() {
     },
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, t('nav.groups', lang)), 'error');
   }, [isError]);

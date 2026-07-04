@@ -9,6 +9,11 @@ interface ThemeCtx {
 
 const Ctx = createContext<ThemeCtx>({ theme: 'light', toggle: () => {} });
 
+/**
+ * Provides the current theme (`light` / `dark`) and a toggle function.
+ * Defaults to the system preference. Persists to localStorage and sets
+ * `data-theme` on `document.documentElement`.
+ */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     try {
@@ -30,4 +35,5 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** Returns the current theme context: `theme` and `toggle`. */
 export const useTheme = () => useContext(Ctx);

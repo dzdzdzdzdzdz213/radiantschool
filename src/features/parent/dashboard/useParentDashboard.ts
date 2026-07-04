@@ -97,22 +97,24 @@ export function useParentDashboard() {
     queryKey: ['parent_children', parentId],
     queryFn: async () => {
       if (!parentId) return [];
-      const { data: relations } = await (supabase as any)
+      const { data: relations } = await supabase
         .from('student_parent')
         .select('student_id')
         .eq('parent_id', parentId);
       if (!relations || relations.length === 0) return [];
       const studentIds = relations.map((r: any) => r.student_id);
-      const { data: users } = await (supabase as any)
+      const { data: users } = await supabase
         .from('users')
         .select('id, first_name, last_name, email')
         .in('id', studentIds);
       return (users ?? []).map((u: any) => ({
         id: u.id, firstName: u.first_name ?? '', lastName: u.last_name ?? '', email: u.email ?? '',
+        levelName: null, attendanceRate: 0, pendingHomework: 0, upcomingClasses: 0,
       }));
     },
     enabled: !!parentId,
-    staleTime: 30_000,
+    staleTime: 300_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const childrenIds = childrenQuery.data?.map((c: any) => c.id) ?? [];
@@ -129,12 +131,12 @@ export function useParentDashboard() {
       }
 
       const [activeEnrollments, attendanceData, pendingHomework, completedHomework, invoices, notifications] = await Promise.all([
-        (supabase as any).from('course_enrollments')
+        supabase.from('course_enrollments')
           .select('course_id')
           .in('student_id', childrenIds)
           .eq('status', 'active')
           .then((r: any) => [...new Set((r.data ?? []).map((e: any) => e.course_id))] as number[]),
-        (supabase as any).from('attendance')
+        supabase.from('attendance')
           .select('student_id, status')
           .in('student_id', childrenIds)
           .eq('date', today)
@@ -153,23 +155,23 @@ export function useParentDashboard() {
             });
             return perStudent;
           }),
-        (supabase as any).from('assignment_submissions')
+        supabase.from('assignment_submissions')
           .select('id', { count: 'exact', head: true })
           .in('student_id', childrenIds)
           .eq('status', 'pending')
           .then((r: any) => r.count ?? 0),
-        (supabase as any).from('assignment_submissions')
+        supabase.from('assignment_submissions')
           .select('id', { count: 'exact', head: true })
           .in('student_id', childrenIds)
           .eq('status', 'completed')
           .then((r: any) => r.count ?? 0),
-        (supabase as any).from('invoices')
+        supabase.from('invoices')
           .select('id, total_amount, paid_amount, status, student_id')
           .in('student_id', childrenIds)
           .neq('status', 'paid')
           .neq('status', 'cancelled')
           .then((r: any) => r.data ?? []),
-        (supabase as any).from('notifications')
+        supabase.from('notifications')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', parentId)
           .eq('is_read', false)
@@ -178,7 +180,7 @@ export function useParentDashboard() {
 
       let upcomingCount = 0;
       if (activeEnrollments.length > 0) {
-        const { count } = await (supabase as any)
+        const { count } = await supabase
           .from('course_schedules')
           .select('id', { count: 'exact', head: true })
           .in('course_id', activeEnrollments)
@@ -206,14 +208,15 @@ export function useParentDashboard() {
       };
     },
     enabled: !!parentId && childrenIds.length > 0,
-    staleTime: 15_000,
+    staleTime: 60_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const upcomingClassesQuery = useQuery({
     queryKey: ['parent_upcoming_classes', parentId, dayName, ...childrenIds],
     queryFn: async () => {
       if (!parentId || childrenIds.length === 0) return [];
-      const { data: enrollments } = await (supabase as any)
+      const { data: enrollments } = await supabase
         .from('course_enrollments')
         .select('course_id')
         .in('student_id', childrenIds)
@@ -221,14 +224,14 @@ export function useParentDashboard() {
       const courseIds = [...new Set((enrollments ?? []).map((e: any) => e.course_id))];
       if (courseIds.length === 0) return [];
 
-      const { data: schedules } = await (supabase as any)
+      const { data: schedules } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course_id, room:rooms(name), teacher:users!teacher_id(first_name, last_name)')
         .in('course_id', courseIds)
         .eq('day_of_week', dayName)
         .order('start_time');
 
-      const { data: courseNames } = await (supabase as any)
+      const { data: courseNames } = await supabase
         .from('courses')
         .select('id, name')
         .in('id', courseIds);
@@ -241,7 +244,7 @@ export function useParentDashboard() {
         childNameMap[c.id] = `${c.firstName} ${c.lastName}`;
       });
 
-      const { data: scheduleEnrollments } = await (supabase as any)
+      const { data: scheduleEnrollments } = await supabase
         .from('course_enrollments')
         .select('student_id, course_id')
         .in('student_id', childrenIds)
@@ -274,14 +277,15 @@ export function useParentDashboard() {
       return result;
     },
     enabled: !!parentId && childrenIds.length > 0,
-    staleTime: 15_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const recentPaymentsQuery = useQuery({
     queryKey: ['parent_recent_payments', parentId, ...childrenIds],
     queryFn: async () => {
       if (!parentId || childrenIds.length === 0) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('payments')
         .select('id, student_id, amount, payment_date, payment_method, payment_type, reference, recorded_by')
         .in('student_id', childrenIds)
@@ -306,13 +310,14 @@ export function useParentDashboard() {
     },
     enabled: !!parentId && childrenIds.length > 0,
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const invoicesQuery = useQuery({
     queryKey: ['parent_invoices', parentId, ...childrenIds],
     queryFn: async () => {
       if (!parentId || childrenIds.length === 0) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('invoices')
         .select('id, invoice_number, student_id, total_amount, paid_amount, due_date, status')
         .in('student_id', childrenIds)
@@ -337,13 +342,14 @@ export function useParentDashboard() {
     },
     enabled: !!parentId && childrenIds.length > 0,
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const homeworkQuery = useQuery({
     queryKey: ['parent_homework', parentId, ...childrenIds],
     queryFn: async () => {
       if (!parentId || childrenIds.length === 0) return [];
-      const { data: submissions } = await (supabase as any)
+      const { data: submissions } = await supabase
         .from('assignment_submissions')
         .select('id, assignment_id, student_id, status, submitted_at, grade, feedback')
         .in('student_id', childrenIds)
@@ -353,7 +359,7 @@ export function useParentDashboard() {
       if (!submissions || submissions.length === 0) return [];
 
       const assignmentIds = [...new Set(submissions.map((s: any) => s.assignment_id))];
-      const { data: assignments } = await (supabase as any)
+      const { data: assignments } = await supabase
         .from('assignments')
         .select('id, title, due_date, course_id')
         .in('id', assignmentIds);
@@ -362,7 +368,7 @@ export function useParentDashboard() {
       (assignments ?? []).forEach((a: any) => { assignmentMap[a.id] = a; });
 
       const courseIds = [...new Set((assignments ?? []).map((a: any) => a.course_id))];
-      const { data: courses } = await (supabase as any)
+      const { data: courses } = await supabase
         .from('courses')
         .select('id, name')
         .in('id', courseIds);
@@ -388,6 +394,7 @@ export function useParentDashboard() {
     },
     enabled: !!parentId && childrenIds.length > 0,
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const activityQuery = useQuery({
@@ -403,7 +410,7 @@ export function useParentDashboard() {
       });
 
       const [attendanceActivity, paymentActivity, submissionActivity] = await Promise.all([
-        (supabase as any).from('attendance')
+        supabase.from('attendance')
           .select('id, student_id, date, status, created_at')
           .in('student_id', childrenIds)
           .gte('created_at', thirtyDaysAgo)
@@ -415,7 +422,7 @@ export function useParentDashboard() {
             description: `${childNameMap[a.student_id] ?? 'Élève'} ${a.status === 'present' ? 'présent' : a.status === 'absent' ? 'absent' : 'en retard'} le ${a.date ?? ''}`,
             timestamp: a.created_at ?? '',
           }))),
-        (supabase as any).from('payments')
+        supabase.from('payments')
           .select('id, student_id, amount, payment_date, created_at')
           .in('student_id', childrenIds)
           .gte('created_at', thirtyDaysAgo)
@@ -427,7 +434,7 @@ export function useParentDashboard() {
             description: `Paiement de ${p.amount ?? 0} DA pour ${childNameMap[p.student_id] ?? 'élève'}`,
             timestamp: p.created_at ?? '',
           }))),
-        (supabase as any).from('assignment_submissions')
+        supabase.from('assignment_submissions')
           .select('id, student_id, grade, status, created_at, assignment:assignments!inner(title)')
           .in('student_id', childrenIds)
           .gte('created_at', thirtyDaysAgo)
@@ -449,13 +456,14 @@ export function useParentDashboard() {
     },
     enabled: !!parentId && childrenIds.length > 0,
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const notificationsQuery = useQuery({
     queryKey: ['parent_notifications', parentId],
     queryFn: async () => {
       if (!parentId) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('notifications')
         .select('id, title, message, type, is_read, created_at')
         .eq('user_id', parentId)
@@ -464,7 +472,8 @@ export function useParentDashboard() {
       return data ?? [];
     },
     enabled: !!parentId,
-    staleTime: 15_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const isLoading = childrenQuery.isLoading || kpiQuery.isLoading ||

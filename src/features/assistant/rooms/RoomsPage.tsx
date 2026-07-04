@@ -25,6 +25,7 @@ export default function RoomsPage() {
     },
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, t('nav.rooms', lang)), 'error');
   }, [isError]);

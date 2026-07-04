@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -9,7 +9,6 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { lang } = useLang();
   const redirectTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);

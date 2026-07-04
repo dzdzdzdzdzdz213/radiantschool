@@ -3,6 +3,13 @@
   "plugins": ["react", "typescript", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "react/no-string-refs": "warn",
+    "react/self-closing-comp": "warn",
+    "typescript/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "typescript/prefer-as-const": "warn",
+    "oxc/no-const-enum": "warn",
+    "no-debugger": "error",
+    "no-alert": "warn"
   }
 }

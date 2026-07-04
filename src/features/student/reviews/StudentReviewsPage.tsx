@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, ThumbsUp, MessageSquare, Calendar, Send, Loader } from 'lucide-react';
+import { Star, MessageSquare, Calendar, Send, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';

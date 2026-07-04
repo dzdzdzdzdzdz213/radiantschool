@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Star, ThumbsUp, MessageSquare, Calendar } from 'lucide-react';
+import { Search, Star, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';

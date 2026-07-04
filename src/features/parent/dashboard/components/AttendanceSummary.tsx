@@ -3,11 +3,11 @@ import { CalendarCheck } from 'lucide-react';
 import type { ChildInfo } from '../useParentDashboard';
 
 interface AttendanceSummaryProps {
-  children: ChildInfo[];
+  childList: ChildInfo[];
   loading?: boolean;
 }
 
-export default function AttendanceSummary({ children, loading }: AttendanceSummaryProps) {
+export default function AttendanceSummary({ childList: children, loading }: AttendanceSummaryProps) {
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-5 space-y-3">

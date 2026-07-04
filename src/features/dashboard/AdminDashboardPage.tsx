@@ -6,8 +6,6 @@ import { t } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useAdminDashboard, type AnalyticsMetric } from '@/features/dashboard/useAdminDashboard';
 import AlertBanner from '@/features/dashboard/components/AlertBanner';
 import KpiCard from '@/features/dashboard/components/KpiCard';
@@ -53,7 +51,7 @@ function PageHeader({ name }: { name: string }) {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">En direct</span>
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('status.live', lang)}</span>
             </div>
           </div>
         </CardContent>
@@ -84,19 +82,20 @@ function LoadingGrid() {
 
 export default function AdminDashboardPage() {
   const { profile } = useAuth();
+  const { lang } = useLang();
   const {
     kpi, revenueData, occupancyData, scheduleData, activityData,
     recentRegistrations, attendanceSummary, alertItems,
-    isLoading, isError,
+    isLoading,
   } = useAdminDashboard();
 
   if (isLoading) return <LoadingGrid />;
 
   const analyticsMetrics: AnalyticsMetric[] = [
-    { label: 'Revenu moyen par élève', value: formatCurrency(kpi.totalRevenue / Math.max(kpi.activeStudents, 1)), change: 8, trend: 'up' },
-    { label: 'Taux de rétention', value: '82%', change: 3, trend: 'up' },
-    { label: 'Nouveaux ce mois', value: String(kpi.newStudentsMonth), change: kpi.newStudentsMonth > 0 ? 12 : 0, trend: kpi.newStudentsMonth > 0 ? 'up' : 'neutral' },
-    { label: 'Cours actifs', value: String(revenueData.length > 0 ? Math.ceil(revenueData.length / 3) : '—'), change: 0, trend: 'neutral' },
+    { label: t('dashboard.stat.revenue', lang), value: formatCurrency(kpi.totalRevenue / Math.max(kpi.activeStudents, 1)), change: 8, trend: 'up' },
+    { label: t('dashboard.stat.retention', lang), value: '82%', change: 3, trend: 'up' },
+    { label: t('dashboard.stat.new_students', lang), value: String(kpi.newStudentsMonth), change: kpi.newStudentsMonth > 0 ? 12 : 0, trend: kpi.newStudentsMonth > 0 ? 'up' : 'neutral' },
+    { label: t('dashboard.stat.courses', lang), value: String(revenueData.length > 0 ? Math.ceil(revenueData.length / 3) : '—'), change: 0, trend: 'neutral' },
   ];
 
   return (
@@ -112,41 +111,41 @@ export default function AdminDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <KpiCard
-          title="Revenus"
+          title={t('common.revenue', lang)}
           value={formatCurrency(kpi.totalRevenue)}
           subtitle="30 derniers jours"
           icon={DollarSign}
           trend={{ up: true, pct: '+12%' }}
         />
         <KpiCard
-          title="Élèves actifs"
+          title={t('dashboard.stat.active_students', lang)}
           value={String(kpi.activeStudents)}
-          subtitle="Inscrits ce mois"
+          subtitle={t('dashboard.stat.new_students', lang)}
           icon={Users}
           trend={kpi.newStudentsMonth > 0 ? { up: true, pct: `+${kpi.newStudentsMonth}` } : undefined}
         />
         <KpiCard
-          title="Présences"
+          title={t('dashboard.stat.attendance', lang)}
           value={kpi.attendanceRate != null ? `${kpi.attendanceRate}%` : '—'}
-          subtitle="Moyenne générale"
+          subtitle={t('dashboard.stat.avg_grade', lang)}
           icon={CalendarCheck}
           trend={kpi.attendanceRate != null && kpi.attendanceRate >= 90 ? { up: true, pct: '+3%' } : { up: false, pct: '-2%' }}
         />
         <KpiCard
-          title="Occupation"
+          title={t('dashboard.stat.occupancy', lang)}
           value={kpi.occupancyRate != null ? `${kpi.occupancyRate}%` : '—'}
           subtitle="Capacité utilisée"
           icon={Building2}
         />
         <KpiCard
-          title="Inscriptions"
+          title={t('nav.registrations', lang)}
           value={String(kpi.newStudentsMonth)}
-          subtitle="Ce mois-ci"
+          subtitle={t('common.this_month', lang)}
           icon={TrendingUp}
           trend={kpi.newStudentsMonth > 5 ? { up: true, pct: '+18%' } : undefined}
         />
         <KpiCard
-          title="Alertes"
+          title={t('status.alert', lang)}
           value={String(kpi.pendingApprovals + kpi.unpaidInvoices)}
           subtitle={`${kpi.pendingApprovals} en attente, ${kpi.unpaidInvoices} impayés`}
           icon={Bell}
@@ -165,7 +164,7 @@ export default function AdminDashboardPage() {
         </div>
         <div className="space-y-6">
           <AttendanceWidget data={attendanceSummary} />
-          <AnalyticsWidget metrics={analyticsMetrics} title="Analyses rapides" />
+          <AnalyticsWidget metrics={analyticsMetrics} title={t('dashboard.stat.analytics', lang)} />
         </div>
       </div>
 

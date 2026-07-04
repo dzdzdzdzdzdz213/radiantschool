@@ -5,30 +5,33 @@ import { BookOpen, ClipboardCheck, FileText, Bell, Calendar, BarChart3, Users, V
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-
-const quickActions = [
-  { label: 'Prendre les présences', icon: ClipboardCheck, path: '/teacher/attendance', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },
-  { label: 'Uploader ressource', icon: FileText, path: '/teacher/resources', color: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400' },
-  { label: 'Créer un devoir', icon: BookOpen, path: '/teacher/assignments', color: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' },
-  { label: 'Publier annonce', icon: Bell, path: '/teacher/announcements', color: 'bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400' },
-  { label: 'Démarrer cours en ligne', icon: Video, path: '/teacher/online-classes', color: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400' },
-  { label: 'Voir emploi du temps', icon: Calendar, path: '/teacher/schedule', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400' },
-  { label: 'Rapport de présence', icon: BarChart3, path: '/teacher/reports', color: 'bg-violet-50 text-violet-600 dark:bg-violet-950 dark:text-violet-400' },
-  { label: 'Liste des élèves', icon: Users, path: '/teacher/students', color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400' },
-];
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function TeacherDashboardPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { lang } = useLang();
   const { kpi, todayClasses, isLoading, isError } = useTeacherDashboard();
+
+  const quickActions = [
+    { label: t('dashboard.take_attendance', lang), icon: ClipboardCheck, path: '/teacher/attendance', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },
+    { label: t('dashboard.upload_resource', lang), icon: FileText, path: '/teacher/resources', color: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400' },
+    { label: t('dashboard.create_assignment', lang), icon: BookOpen, path: '/teacher/assignments', color: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' },
+    { label: t('dashboard.publish_announcement', lang), icon: Bell, path: '/teacher/announcements', color: 'bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400' },
+    { label: t('dashboard.start_online_class', lang), icon: Video, path: '/teacher/online-classes', color: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400' },
+    { label: t('dashboard.view_schedule', lang), icon: Calendar, path: '/teacher/schedule', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400' },
+    { label: t('dashboard.attendance_report', lang), icon: BarChart3, path: '/teacher/reports', color: 'bg-violet-50 text-violet-600 dark:bg-violet-950 dark:text-violet-400' },
+    { label: t('dashboard.student_list', lang), icon: Users, path: '/teacher/students', color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400' },
+  ];
 
   if (isError) {
     return (
       <div className="space-y-6">
-        <div><h1 className="text-2xl font-bold tracking-tight">Bonjour, {profile?.firstName ?? ''}</h1><p className="text-sm text-muted-foreground mt-1">Votre tableau de bord enseignant</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('dashboard.greeting', lang, profile?.firstName ?? '')}</h1><p className="text-sm text-muted-foreground mt-1">{t('dashboard.subtitle.teacher', lang)}</p></div>
         <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-6 text-center">
-          <p className="text-red-600 font-medium">Erreur de chargement des données</p>
-          <p className="text-sm text-red-500 mt-1">Veuillez rafraîchir la page ou réessayer plus tard.</p>
+          <p className="text-red-600 font-medium">{t('dashboard.load_error', lang)}</p>
+          <p className="text-sm text-red-500 mt-1">{t('dashboard.load_error_retry', lang)}</p>
         </div>
       </div>
     );
@@ -38,8 +41,8 @@ export default function TeacherDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Bonjour, {profile?.firstName ?? ''}</h1>
-          <p className="text-sm text-muted-foreground mt-1">Votre tableau de bord enseignant</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.greeting', lang, profile?.firstName ?? '')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('dashboard.subtitle.teacher', lang)}</p>
         </div>
         <div className="text-sm text-muted-foreground whitespace-nowrap">
           {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -51,7 +54,7 @@ export default function TeacherDashboardPage() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-5">
-        <h3 className="text-sm font-semibold mb-4">Actions rapides</h3>
+        <h3 className="text-sm font-semibold mb-4">{t('dashboard.quick_actions', lang)}</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {quickActions.map((action, idx) => (
             <motion.button key={action.path} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2, delay: idx * 0.02 }}
@@ -71,10 +74,10 @@ export default function TeacherDashboardPage() {
         <div className="rounded-2xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" />
-            Cours aujourd'hui
+            {t('dashboard.courses_today', lang)}
           </h3>
           {todayClasses.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Aucun cours programmé aujourd'hui</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('dashboard.no_courses_today', lang)}</p>
           ) : (
             <div className="space-y-2">
               {todayClasses.map((c) => (
@@ -85,10 +88,10 @@ export default function TeacherDashboardPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{c.courseName}</p>
-                    <p className="text-xs text-muted-foreground truncate">{c.roomName} • {c.studentCount} élèves</p>
+                    <p className="text-xs text-muted-foreground truncate">{c.roomName} • {c.studentCount} {t('dashboard.students_count', lang)}</p>
                   </div>
                   <span className="shrink-0 text-[10px] font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                    {c.studentCount} prés.
+                    {c.studentCount} {t('dashboard.present_count', lang)}
                   </span>
                 </div>
               ))}
@@ -99,14 +102,14 @@ export default function TeacherDashboardPage() {
         <div className="rounded-2xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-primary" />
-            Aperçu du mois
+            {t('dashboard.month_overview', lang)}
           </h3>
           <div className="space-y-4">
             {[
-              { label: 'Heures d\'enseignement', value: `${kpi.teachingHoursMonth}h`, color: 'text-blue-600', progress: Math.min(kpi.teachingHoursMonth / 40 * 100, 100) },
-              { label: 'Revenu', value: `${(kpi.revenueMonth / 1000).toFixed(1)}k DA`, color: 'text-green-600', progress: Math.min(kpi.revenueMonth / 100000 * 100, 100) },
-              { label: 'Taux de présence', value: `${kpi.attendanceRate}%`, color: 'text-emerald-600', progress: kpi.attendanceRate },
-              { label: 'Devoirs à corriger', value: String(kpi.assignmentsPending), color: 'text-amber-600', progress: Math.min(kpi.assignmentsPending * 10, 100) },
+              { label: t('dashboard.teaching_hours', lang), value: `${kpi.teachingHoursMonth}h`, color: 'text-blue-600', progress: Math.min(kpi.teachingHoursMonth / 40 * 100, 100) },
+              { label: t('common.revenue', lang), value: `${(kpi.revenueMonth / 1000).toFixed(1)}k DA`, color: 'text-green-600', progress: Math.min(kpi.revenueMonth / 100000 * 100, 100) },
+              { label: t('dashboard.stat.attendance_rate', lang), value: `${kpi.attendanceRate}%`, color: 'text-emerald-600', progress: kpi.attendanceRate },
+              { label: t('teacher.kpi_homework_pending', lang), value: String(kpi.assignmentsPending), color: 'text-amber-600', progress: Math.min(kpi.assignmentsPending * 10, 100) },
             ].map((item) => (
               <div key={item.label}>
                 <div className="flex items-center justify-between text-sm mb-1.5">

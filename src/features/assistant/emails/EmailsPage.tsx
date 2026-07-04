@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, Plus, Mail } from 'lucide-react';
+import { Send, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,7 @@ export default function EmailsPage() {
     },
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (emailsError) toast(t('errors.load_error', lang, t('nav.emails', lang)), 'error');
   }, [emailsError]);

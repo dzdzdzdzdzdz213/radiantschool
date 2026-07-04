@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Bell, LogOut, Sun, Moon, Globe, Search, User, Settings, HelpCircle, Loader } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -9,7 +8,6 @@ import { getRoleLabel, getInitials } from '@/lib/utils';
 import { getAvatarUrl } from '@/lib/storage';
 import { t, LANGUAGES } from '@/i18n';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +26,6 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/Toast';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -179,7 +176,6 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   const { lang, setLang } = useLang();
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {

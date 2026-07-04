@@ -3,11 +3,11 @@ import { Users, ArrowRight } from 'lucide-react';
 import type { ChildInfo } from '../useParentDashboard';
 
 interface ChildrenOverviewProps {
-  children: ChildInfo[];
+  childList: ChildInfo[];
   loading?: boolean;
 }
 
-export default function ChildrenOverview({ children, loading }: ChildrenOverviewProps) {
+export default function ChildrenOverview({ childList: children, loading }: ChildrenOverviewProps) {
   const navigate = useNavigate();
 
   if (loading) {

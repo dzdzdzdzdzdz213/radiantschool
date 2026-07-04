@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, FileText, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,7 @@ export default function InvoicesPage() {
   const updateInvoice = useUpdateInvoice();
   const deleteInvoice = useDeleteInvoice();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isError) toast(t('errors.load_error', lang, t('nav.invoices', lang)), 'error');
   }, [isError]);

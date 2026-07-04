@@ -17,7 +17,7 @@ interface SelectItemProps {
   children: React.ReactNode;
 }
 
-const SelectContext = { value: '', onValueChange: (v: string) => {}, open: false, setOpen: (o: boolean) => {} };
+
 
 const SelectTrigger = forwardRef<HTMLButtonElement, { className?: string; children: React.ReactNode }>(
   ({ className, children }, ref) => (
@@ -37,7 +37,7 @@ const SelectContent = forwardRef<HTMLDivElement, { className?: string; children:
 );
 SelectContent.displayName = 'SelectContent';
 
-const SelectItem = forwardRef<HTMLButtonElement, SelectItemProps>(({ value, children }, ref) => (
+const SelectItem = forwardRef<HTMLButtonElement, SelectItemProps>(({ children }, ref) => (
   <button ref={ref} className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent focus:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
     {children}
   </button>

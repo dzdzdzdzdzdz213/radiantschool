@@ -2,43 +2,57 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
+/** All users with their student profile relation. Sorted by newest first. */
 export function useUsers() {
   return useQuery({
     queryKey: ['users'],
     queryFn: () => api.list('users', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, students(*)').then(r => r.data),
+    staleTime: 120_000,
   });
 }
 
+/** All users with role `student`, including the `students` relation. */
 export function useStudents() {
   return useQuery({
     queryKey: ['students'],
     queryFn: () => api.list('users', { filters: [{ column: 'role', operator: 'eq', value: 'student' }], sort: [{ column: 'created_at', direction: 'desc' }] }, '*, students(*)').then(r => r.data),
+    staleTime: 120_000,
   });
 }
 
+/** All courses with subject, teacher, room, and level relations. */
 export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
     queryFn: () => api.list('courses', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream)').then(r => r.data),
+    staleTime: 120_000,
   });
 }
 
+/** Single course by ID with relations and schedules. Disabled when `id` is falsy. */
 export function useCourse(id: number) {
   return useQuery({
     queryKey: ['course', id],
     queryFn: () => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)'),
     enabled: !!id,
+    staleTime: 120_000,
   });
 }
 
+/** Enrollments for a specific course, including student details. */
 export function useCourseEnrollments(courseId: number) {
   return useQuery({
     queryKey: ['enrollments', courseId],
     queryFn: () => api.list('course_enrollments', { filters: [{ column: 'course_id', operator: 'eq', value: courseId }] }, '*, student:users(first_name, last_name, email, phone)').then(r => r.data),
+    staleTime: 120_000,
     enabled: !!courseId,
   });
 }
 
+/**
+ * Attendance records filtered by optional date and course.
+ * When the current user is a teacher, filters to only their course schedules.
+ */
 export function useAttendance(date?: string, courseId?: number) {
   const { profile } = useAuth();
   return useQuery({
@@ -54,9 +68,11 @@ export function useAttendance(date?: string, courseId?: number) {
       return r.data;
     },
     enabled: !!profile,
+    staleTime: 60_000,
   });
 }
 
+/** Payments, optionally filtered by student. Includes student name relation. */
 export function usePayments(studentId?: string) {
   return useQuery({
     queryKey: ['payments', studentId],
@@ -66,23 +82,30 @@ export function usePayments(studentId?: string) {
       const r = await api.list('payments', { filters, sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:users(first_name, last_name)');
       return r.data;
     },
+    staleTime: 60_000,
   });
 }
 
+/** All invoices with student name relation, newest first. */
 export function useInvoices() {
   return useQuery({
     queryKey: ['invoices'],
     queryFn: () => api.list('invoices', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:users(first_name, last_name)').then(r => r.data),
+    staleTime: 120_000,
   });
 }
 
+/** Aggregated KPIs from the `dashboard_kpi` view. Stale after 60 s. */
 export function useDashboardKPI() {
   return useQuery({
     queryKey: ['dashboard_kpi'],
     queryFn: () => api.list('dashboard_kpi').then(r => r.data?.[0] ?? null),
+    staleTime: 60_000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
+/** Current user's notifications, sorted by newest. Disabled when unauthenticated. */
 export function useNotifications() {
   const { profile } = useAuth();
   return useQuery({
@@ -93,9 +116,11 @@ export function useNotifications() {
       return r.data;
     },
     enabled: !!profile?.id,
+    staleTime: 60_000,
   });
 }
 
+/** Messages where the current user is sender or receiver. */
 export function useMessages() {
   const { profile } = useAuth();
   return useQuery({
@@ -109,27 +134,34 @@ export function useMessages() {
   });
 }
 
+/** All academic levels, sorted by `sort_order`. Rarely changes. */
 export function useLevels() {
   return useQuery({
     queryKey: ['levels'],
     queryFn: () => api.list('levels', { sort: [{ column: 'sort_order', direction: 'asc' }] }).then(r => r.data),
+    staleTime: 600_000,
   });
 }
 
+/** All subjects, sorted alphabetically by name. Rarely changes. */
 export function useSubjects() {
   return useQuery({
     queryKey: ['subjects'],
     queryFn: () => api.list('subjects', { sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
+    staleTime: 600_000,
   });
 }
 
+/** Active rooms sorted by name. */
 export function useRooms() {
   return useQuery({
     queryKey: ['rooms'],
     queryFn: () => api.list('rooms', { filters: [{ column: 'status', operator: 'eq', value: 'active' }], sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
+    staleTime: 300_000,
   });
 }
 
+/** Daily revenue totals for the last 30 days as `{ date, amount }` pairs. Every day in the range is present (zero-filled). */
 export function useRevenueChartData() {
   return useQuery({
     queryKey: ['revenue_chart'],
@@ -154,25 +186,37 @@ export function useRevenueChartData() {
       }
       return result;
     },
+    staleTime: 60_000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
+/** Active courses with room assignments: current enrollment vs capacity. */
 export function useOccupancyData() {
   return useQuery({
     queryKey: ['occupancy'],
     queryFn: () => api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'name, current_enrollments, capacity, room_id, room:rooms(name)').then(r => r.data.filter((c: any) => c.room_id != null)),
+    staleTime: 60_000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
+/** Today's course schedules with course, room, and teacher relations. */
 export function useTodaySchedule() {
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const today = dayNames[new Date().getDay()];
   return useQuery({
     queryKey: ['today_schedule', today],
     queryFn: () => api.list('course_schedules', { filters: [{ column: 'day_of_week', operator: 'eq', value: today }], sort: [{ column: 'start_time', direction: 'asc' }] }, 'id, start_time, end_time, course:courses(name), room:rooms(name), teacher:users(first_name, last_name)').then(r => r.data),
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
+/**
+ * Combined recent activity timeline: enrollments, payments, and attendance
+ * merged and sorted by time, limited to the 10 most recent events.
+ */
 export function useRecentActivity() {
   return useQuery({
     queryKey: ['recent_activity'],
@@ -190,9 +234,15 @@ export function useRecentActivity() {
       items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
       return items.slice(0, 10);
     },
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
+/**
+ * Admin alert dashboard data: pending user approvals, overdue invoices,
+ * near-full courses (≥80 % capacity), and critical notifications.
+ */
 export function useAdminAlerts() {
   return useQuery({
     queryKey: ['admin_alerts'],
@@ -220,5 +270,7 @@ export function useAdminAlerts() {
         criticalNotifications: notifsRes.data ?? [],
       };
     },
+    staleTime: 60_000,
+    gcTime: 5 * 60 * 1000,
   });
 }

@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Filter, ChevronDown } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useDebounce } from '@/hooks/useDebounce';
-import { getInitials, formatDateTime, getStatusColor } from '@/lib/utils';
+import { getInitials, formatDateTime } from '@/lib/utils';
 import { useStudents } from './useStudents';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';

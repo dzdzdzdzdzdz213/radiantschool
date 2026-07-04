@@ -36,6 +36,15 @@ function InactiveAccount({ profile }: { profile: UserProfile }) {
   );
 }
 
+/**
+ * Route guard that renders children only when:
+ * - User is authenticated
+ * - Profile status is `active`
+ * - User's role is in `allowedRoles`
+ *
+ * Otherwise redirects to `/login`, shows an inactive-account page,
+ * or redirects to the user's own role dashboard.
+ */
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, profile, isLoading } = useAuth();
 

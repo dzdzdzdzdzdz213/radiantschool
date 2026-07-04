@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Send, Plus, Trash2 } from 'lucide-react';
+import { Send, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,7 +103,7 @@ export default function NotificationsPage() {
                 <TableHead>{t('common.type', lang)}</TableHead>
                 <TableHead className="hidden md:table-cell">{t('common.date', lang)}</TableHead>
                 <TableHead className="text-right">{t('notifications.read', lang)}</TableHead>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>

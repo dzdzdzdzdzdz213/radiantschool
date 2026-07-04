@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Calendar, CheckCircle, XCircle, Clock, CreditCard as RfidIcon, Filter } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, CreditCard as RfidIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

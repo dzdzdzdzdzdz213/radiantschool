@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Send, Paperclip, Phone, Video, MessageSquare, User, Loader } from 'lucide-react';
+import { Search, Send, Paperclip, Phone, Video, MessageSquare, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -56,9 +56,11 @@ export default function StudentMessagesPage() {
     enabled: !!selectedId,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (conversationsError) toast(t('errors.load_error', lang, t('nav.messages', lang)), 'error');
   }, [conversationsError]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (messagesError) toast(t('errors.load_error', lang, t('nav.messages', lang)), 'error');
   }, [messagesError]);

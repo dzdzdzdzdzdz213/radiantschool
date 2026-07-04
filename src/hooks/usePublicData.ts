@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
+/** Active courses with subject, level, teacher, room, and schedules for the public landing page. Stale after 5 min. */
 export function usePublicCourses() {
   return useQuery({
     queryKey: ['public-courses'],
@@ -23,6 +24,11 @@ export function usePublicCourses() {
   });
 }
 
+/**
+ * Aggregated public statistics for the landing page: student count,
+ * teacher count, average rating, success rate, years active, and more.
+ * Stale after 5 min.
+ */
 export function usePublicStats() {
   return useQuery({
     queryKey: ['public-stats'],

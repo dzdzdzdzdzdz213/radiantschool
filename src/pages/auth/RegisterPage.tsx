@@ -15,7 +15,6 @@ const LEVELS = [
 const NAME_FIELDS = ['firstName', 'lastName', 'childFirstName', 'childLastName', 'guardianName'];
 const PHONE_FIELDS = ['phone', 'guardianPhone'];
 const NAME_REGEX = /^[a-zA-Za-zÀ-ž\s\-']+$/;
-const DZ_PHONE_REGEX = /^(05|06|07)\d{8}$/;
 
 function validateName(v: string): string | null {
   if (!v.trim()) return 'Ce champ est requis';

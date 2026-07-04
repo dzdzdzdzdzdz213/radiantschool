@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Search, FileText, Download, CreditCard, Calendar, AlertCircle, Loader } from 'lucide-react';
+import { Search, Download, CreditCard, AlertCircle, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,7 +18,6 @@ import { useToast } from '@/components/ui/Toast';
 export default function StudentInvoicesPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
-  const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const downloadFile = useDownloadFile();
   const { toast } = useToast();
@@ -39,6 +38,7 @@ export default function StudentInvoicesPage() {
     enabled: !!profile?.id,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.invoices', lang)), 'error'); }, [isError]);
 
   const payMutation = useMutationWithFeedback(

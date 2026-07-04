@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon } from 'lucide-react';
+
 import { useToast } from '@/components/ui/Toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -18,7 +18,7 @@ export default function SettingsPage() {
   const [autoInvoice, setAutoInvoice] = useState(true);
   const [currency, setCurrency] = useState('DZD');
 
-  const { data: settings, isLoading: settingsLoading } = useQuery({
+  const { isLoading: settingsLoading } = useQuery({
     queryKey: ['admin_settings'],
     queryFn: async () => {
       const { data } = await (supabase as any).from('center_settings').select('*').single();

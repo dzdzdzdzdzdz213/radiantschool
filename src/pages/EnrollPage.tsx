@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { ChevronRight, ChevronLeft, Check, Loader, GraduationCap, BookOpen, Users, Clock, MapPin, DollarSign, Star } from 'lucide-react';
+import { ChevronLeft, Check, Loader, GraduationCap, BookOpen, Clock, MapPin } from 'lucide-react';
 
 interface Level {
   id: number; name: string; category: string; stream: string | null; year: number | null; sort_order: number;
@@ -40,7 +39,6 @@ const MAX_COURSES_PER_STUDENT = 5;
 export default function EnrollPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -64,7 +62,6 @@ export default function EnrollPage() {
   const [selectedChild, setSelectedChild] = useState<any>(null);
 
   const isParent = profile?.role === 'parent';
-  const isStudent = profile?.role === 'student';
   const userId = selectedChild?.id || profile?.id;
 
   useEffect(() => {
@@ -97,13 +94,7 @@ export default function EnrollPage() {
 
   const categoryLevels = levels.filter(l => l.category === category);
   const filteredByStream = stream ? categoryLevels.filter(l => l.stream === stream) : categoryLevels;
-  const filteredLevels = selectedLevel ? [selectedLevel] : filteredByStream;
-
   const availableStreams = [...new Set(categoryLevels.filter((l): l is Level & { stream: string } => !!l.stream).map(l => l.stream))];
-
-  const subjectsForLevel = selectedLevel
-    ? subjects
-    : [];
 
   const handleSearch = async () => {
     if (!selectedLevel || !selectedSubject || !courseType) return;

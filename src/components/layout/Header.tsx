@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { useNavigate } from 'react-router-dom';
-import { getFullName, getRoleLabel } from '@/lib/utils';
+import { getFullName } from '@/lib/utils';
 import { getAvatarUrl } from '@/lib/storage';
 import { LANGUAGES, t } from '@/i18n';
 import { useState } from 'react';

@@ -8,6 +8,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY env vars');
 }
 
+/**
+ * Typed Supabase client. Configures session persistence, auto-refresh,
+ * URL-based session detection, and 10 events/second realtime throttle.
+ */
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,

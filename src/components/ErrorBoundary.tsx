@@ -9,12 +9,15 @@ interface Props {
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
+/**
+ * React error boundary that catches render errors and shows a fallback UI
+ * with retry, go-back, and go-home actions. Delegates to a class-based
+ * inner component for `componentDidCatch` support.
+ */
 export function ErrorBoundary({ children, fallback, onError }: Props) {
-  const { lang } = useLang();
-
   try {
     return <ErrorBoundaryInner fallback={fallback} onError={onError}>{children}</ErrorBoundaryInner>;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

@@ -74,10 +74,10 @@ export default function StudentDashboardPage() {
   if (kpiError) {
     return (
       <div className="space-y-6">
-        <div><h1 className="text-2xl font-bold tracking-tight">{t('dashboard.greeting', lang, profile?.firstName ?? '')}</h1><p className="text-sm text-muted-foreground mt-1">Votre tableau de bord</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight">{t('dashboard.greeting', lang, profile?.firstName ?? '')}</h1><p className="text-sm text-muted-foreground mt-1">{t('dashboard.your_dashboard', lang)}</p></div>
         <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-6 text-center">
-          <p className="text-red-600 font-medium">Erreur de chargement des données</p>
-          <p className="text-sm text-red-500 mt-1">Veuillez rafraîchir la page ou réessayer plus tard.</p>
+          <p className="text-red-600 font-medium">{t('dashboard.load_error', lang)}</p>
+          <p className="text-sm text-red-500 mt-1">{t('dashboard.load_error_retry', lang)}</p>
         </div>
       </div>
     );

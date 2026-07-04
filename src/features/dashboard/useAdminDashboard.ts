@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { api, type PaginatedResult } from '@/lib/api';
+import { api } from '@/lib/api';
 import { useDashboardKPI, useRevenueChartData, useOccupancyData, useTodaySchedule, useRecentActivity, useAdminAlerts } from '@/hooks/useQueries';
 import { useRealtimeDashboard } from '@/hooks/useRealtime';
 
@@ -71,7 +71,8 @@ export function useAdminDashboard() {
       },
       'id, first_name, last_name, email, phone, status, created_at',
     ),
-    staleTime: 15_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   // Résumé des présences du jour
@@ -93,7 +94,8 @@ export function useAdminDashboard() {
         rate: total > 0 ? Math.round((present / total) * 100) : 0,
       } as AttendanceSummary;
     },
-    staleTime: 10_000,
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const isLoading = kpi.isLoading || revenue.isLoading || occupancy.isLoading || schedule.isLoading || activity.isLoading || alerts.isLoading || registrationsQuery.isLoading || attendanceSummaryQuery.isLoading;

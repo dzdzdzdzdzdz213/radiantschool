@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Megaphone, Pin, Calendar, MessageSquare, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, Megaphone, Pin, Calendar, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

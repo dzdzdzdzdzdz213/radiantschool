@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Search, FileText, Calendar, Clock, CheckCircle, AlertCircle, Upload, Loader } from 'lucide-react';
+import { Search, FileText, Calendar, Clock, AlertCircle, Upload, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,9 +16,7 @@ import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 export default function StudentHomeworkPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
-  const qc = useQueryClient();
   const [search, setSearch] = useState('');
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
 
   const { data: homework, isLoading } = useQuery({
     queryKey: ['student_homework', profile?.id, search],

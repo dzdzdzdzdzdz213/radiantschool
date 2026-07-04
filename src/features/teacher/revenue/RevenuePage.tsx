@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { Euro, TrendingUp, TrendingDown, Calendar, Download, Wallet, Banknote, Receipt } from 'lucide-react';
+import { Euro, Download, Wallet, Banknote, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { formatDate, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';

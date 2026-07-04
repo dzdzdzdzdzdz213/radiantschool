@@ -17,9 +17,13 @@ interface UseRealtimeOptions {
   onDelete?: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void;
 }
 
-// ─── useRealtimeSubscription ─────────────────────────────────
-// Subscribes to PostgreSQL changes and auto-invalidates React Query cache
-
+/**
+ * Subscribes to PostgreSQL changes on a public schema table and
+ * auto-invalidates the given React Query keys on any insert, update,
+ * or delete event. Optionally fires event-specific callbacks.
+ *
+ * Uses a stable ref for options to avoid re-subscribing on every render.
+ */
 export function useRealtimeSubscription({
   table,
   event = '*',
@@ -63,19 +67,21 @@ export function useRealtimeSubscription({
     channel.on('postgres_changes', changesConfig, handleChange);
     channel.subscribe((status) => {
       if (status !== 'SUBSCRIBED') {
-        console.warn(`[realtime] Channel ${channelName} status: ${status}`);
+        if (import.meta.env.DEV) console.warn(`[realtime] Channel ${channelName} status: ${status}`);
       }
     });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [table, event, filter]);
+  }, [table, event, filter, queryClient]);
 }
 
-// ─── useRealtimeDashboard ────────────────────────────────────
-// Subscribe to all critical dashboard tables for live updates
-
+/**
+ * Convenience hook that subscribes to all critical dashboard tables:
+ * payments, attendance, course_enrollments, users, notifications,
+ * invoices, courses, and messages.
+ */
 export function useRealtimeDashboard() {
   useRealtimeSubscription({
     table: 'payments',

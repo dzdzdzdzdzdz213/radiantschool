@@ -222,6 +222,7 @@ export interface Database {
         Row: {
           id: number;
           student_id: string;
+          teacher_id: string | null;
           amount: number;
           payment_date: string;
           payment_method: string;
@@ -235,6 +236,7 @@ export interface Database {
         };
         Insert: {
           student_id: string;
+          teacher_id?: string;
           amount: number;
           payment_method: string;
           payment_type: string;
@@ -247,6 +249,7 @@ export interface Database {
         Update: {
           payment_method?: string;
           payment_type?: string;
+          teacher_id?: string;
           notes?: string;
         };
         Relationships: [
@@ -345,33 +348,41 @@ export interface Database {
           id: number;
           student_id: string;
           teacher_id: string;
-          teaching_quality: number;
-          communication: number;
-          punctuality: number;
-          organization: number;
-          average_score: number;
+          course_id: number;
+          teaching_quality: number | null;
+          communication: number | null;
+          punctuality: number | null;
+          organization: number | null;
+          score: number | null;
+          average_score: number | null;
           comment: string | null;
           created_at: string;
         };
         Insert: {
           student_id: string;
           teacher_id: string;
-          teaching_quality: number;
-          communication: number;
-          punctuality: number;
-          organization: number;
-          comment?: string;
+          course_id: number;
+          teaching_quality?: number | null;
+          communication?: number | null;
+          punctuality?: number | null;
+          organization?: number | null;
+          score?: number | null;
+          average_score?: number | null;
+          comment?: string | null;
         };
         Update: {
-          comment?: string;
+          teaching_quality?: number | null;
+          communication?: number | null;
+          punctuality?: number | null;
+          organization?: number | null;
+          score?: number | null;
+          average_score?: number | null;
+          comment?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_evaluations_student',
-            columns: ['student_id'],
-            referencedRelation: 'users',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_evaluations_student'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_evaluations_teacher'; columns: ['teacher_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_evaluations_course'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
         ];
       };
       notifications: {
@@ -383,6 +394,7 @@ export interface Database {
           type: string;
           category: string;
           is_read: boolean;
+          read_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -391,10 +403,11 @@ export interface Database {
           message: string;
           type?: string;
           category?: string;
+          read_at?: string | null;
         };
         Update: {
           is_read?: boolean;
-          read_at?: string;
+          read_at?: string | null;
         };
         Relationships: [
           {
@@ -528,28 +541,19 @@ export interface Database {
           student_id: string;
           parent_id: string;
           relationship: string | null;
+          created_at: string;
         };
         Insert: {
           student_id: string;
           parent_id: string;
-          relationship?: string;
+          relationship?: string | null;
         };
         Update: {
-          relationship?: string;
+          relationship?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_sp_student',
-            columns: ['student_id'],
-            referencedRelation: 'users',
-            referencedColumns: ['id'],
-          },
-          {
-            foreignKeyName: 'fk_sp_parent',
-            columns: ['parent_id'],
-            referencedRelation: 'users',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_student_parent_student'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_student_parent_parent'; columns: ['parent_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
         ];
       };
       rooms: {
@@ -578,137 +582,118 @@ export interface Database {
       private_lessons: {
         Row: {
           id: number;
-          teacher_id: string;
           student_id: string;
-          date: string | null;
-          start_time: string | null;
-          end_time: string | null;
+          teacher_id: string;
+          course_id: number;
+          date: string;
+          start_time: string;
+          end_time: string;
           price: number;
           status: string;
           notes: string | null;
           created_at: string;
         };
         Insert: {
-          teacher_id: string;
           student_id: string;
+          teacher_id: string;
+          course_id: number;
+          date: string;
+          start_time: string;
+          end_time: string;
+          price: number;
+          status?: string;
+          notes?: string | null;
+        };
+        Update: {
           date?: string;
           start_time?: string;
           end_time?: string;
           price?: number;
           status?: string;
-          notes?: string;
-        };
-        Update: {
-          status?: string;
-          notes?: string;
-          start_time?: string;
-          end_time?: string;
-          price?: number;
+          notes?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_private_lessons_teacher',
-            columns: ['teacher_id'],
-            referencedRelation: 'teachers',
-            referencedColumns: ['id'],
-          },
-          {
-            foreignKeyName: 'fk_private_lessons_student',
-            columns: ['student_id'],
-            referencedRelation: 'students',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_private_lessons_student'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_private_lessons_teacher'; columns: ['teacher_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_private_lessons_course'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
         ];
       };
       vip_classes: {
         Row: {
           id: number;
-          teacher_id: string;
           student_id: string;
-          date: string | null;
-          start_time: string | null;
-          end_time: string | null;
+          teacher_id: string;
+          course_id: number;
+          date: string;
+          start_time: string;
+          end_time: string;
           price: number;
           status: string;
           notes: string | null;
           created_at: string;
         };
         Insert: {
-          teacher_id: string;
           student_id: string;
+          teacher_id: string;
+          course_id: number;
+          date: string;
+          start_time: string;
+          end_time: string;
+          price: number;
+          status?: string;
+          notes?: string | null;
+        };
+        Update: {
           date?: string;
           start_time?: string;
           end_time?: string;
           price?: number;
           status?: string;
-          notes?: string;
-        };
-        Update: {
-          status?: string;
-          notes?: string;
-          price?: number;
+          notes?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_vip_classes_teacher',
-            columns: ['teacher_id'],
-            referencedRelation: 'teachers',
-            referencedColumns: ['id'],
-          },
-          {
-            foreignKeyName: 'fk_vip_classes_student',
-            columns: ['student_id'],
-            referencedRelation: 'students',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_vip_classes_student'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_vip_classes_teacher'; columns: ['teacher_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_vip_classes_course'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
         ];
       };
       online_classes: {
         Row: {
           id: number;
+          course_id: number;
           teacher_id: string;
-          course_id: number | null;
           title: string;
           description: string | null;
-          platform: string | null;
-          meeting_url: string | null;
-          start_time: string | null;
-          end_time: string | null;
+          meeting_url: string;
+          date: string;
+          start_time: string;
+          end_time: string;
           status: string;
           created_at: string;
         };
         Insert: {
+          course_id: number;
           teacher_id: string;
-          course_id?: number;
           title: string;
-          description?: string;
-          platform?: string;
-          meeting_url?: string;
-          start_time?: string;
-          end_time?: string;
+          description?: string | null;
+          meeting_url: string;
+          date: string;
+          start_time: string;
+          end_time: string;
           status?: string;
         };
         Update: {
           title?: string;
-          description?: string;
+          description?: string | null;
           meeting_url?: string;
+          date?: string;
           start_time?: string;
           end_time?: string;
           status?: string;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_online_classes_teacher',
-            columns: ['teacher_id'],
-            referencedRelation: 'teachers',
-            referencedColumns: ['id'],
-          },
-          {
-            foreignKeyName: 'fk_online_classes_course',
-            columns: ['course_id'],
-            referencedRelation: 'courses',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_online_classes_course'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_online_classes_teacher'; columns: ['teacher_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
         ];
       };
       assignments: {
@@ -738,6 +723,7 @@ export interface Database {
           due_date?: string;
           file_url?: string;
           max_grade?: number;
+          teacher_id?: string;
         };
         Relationships: [
           {
@@ -797,73 +783,48 @@ export interface Database {
       announcements: {
         Row: {
           id: number;
-          teacher_id: string | null;
-          course_id: number | null;
+          course_id: number;
+          teacher_id: string;
           title: string;
           content: string;
-          is_pinned: boolean;
           created_at: string;
         };
         Insert: {
-          teacher_id?: string;
-          course_id?: number;
+          course_id: number;
+          teacher_id: string;
           title: string;
           content: string;
-          is_pinned?: boolean;
         };
         Update: {
           title?: string;
           content?: string;
-          is_pinned?: boolean;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_announcements_teacher',
-            columns: ['teacher_id'],
-            referencedRelation: 'teachers',
-            referencedColumns: ['id'],
-          },
-          {
-            foreignKeyName: 'fk_announcements_course',
-            columns: ['course_id'],
-            referencedRelation: 'courses',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_announcements_course'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_announcements_teacher'; columns: ['teacher_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
         ];
       };
       certificates: {
         Row: {
           id: number;
           student_id: string;
-          course_id: number | null;
-          title: string;
-          description: string | null;
-          issued_date: string;
-          expiry_date: string | null;
+          course_id: number;
           certificate_url: string | null;
+          issued_at: string;
           created_at: string;
         };
         Insert: {
           student_id: string;
-          course_id?: number;
-          title: string;
-          description?: string;
-          issued_date?: string;
-          expiry_date?: string;
-          certificate_url?: string;
+          course_id: number;
+          certificate_url?: string | null;
+          issued_at?: string;
         };
         Update: {
-          title?: string;
-          description?: string;
-          certificate_url?: string;
+          certificate_url?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_certificates_student',
-            columns: ['student_id'],
-            referencedRelation: 'students',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_certificates_student'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_certificates_course'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
         ];
       };
       conversations: {
@@ -937,54 +898,45 @@ export interface Database {
       rfid_scans: {
         Row: {
           id: number;
-          rfid_code: string;
-          student_id: string | null;
-          status: string;
+          student_id: string;
+          rfid_tag: string;
           scanned_at: string;
+          direction: string;
           created_at: string;
         };
         Insert: {
-          rfid_code: string;
-          student_id?: string;
-          status?: string;
+          student_id: string;
+          rfid_tag: string;
           scanned_at?: string;
+          direction: string;
         };
         Update: {
-          status?: string;
-          student_id?: string;
+          direction?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: 'fk_rfid_scans_student'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
       };
       center_settings: {
         Row: {
           id: number;
           center_name: string;
-          address: string | null;
-          phone: string | null;
-          wilaya: string | null;
-          currency: string;
-          email_notifications: boolean;
-          sms_notifications: boolean;
-          auto_invoice: boolean;
-          created_at: string;
+          wilaya: string;
+          notifications_enabled: boolean;
+          sms_enabled: boolean;
+          updated_at: string;
         };
         Insert: {
-          center_name?: string;
-          address?: string;
-          phone?: string;
+          center_name: string;
           wilaya?: string;
-          currency?: string;
-          email_notifications?: boolean;
-          sms_notifications?: boolean;
-          auto_invoice?: boolean;
+          notifications_enabled?: boolean;
+          sms_enabled?: boolean;
         };
         Update: {
           center_name?: string;
-          address?: string;
-          phone?: string;
-          email_notifications?: boolean;
-          sms_notifications?: boolean;
-          auto_invoice?: boolean;
+          wilaya?: string;
+          notifications_enabled?: boolean;
+          sms_enabled?: boolean;
         };
         Relationships: [];
       };
@@ -995,8 +947,8 @@ export interface Database {
           month: number;
           year: number;
           gross_pay: number;
-          deductions: number;
           net_pay: number;
+          deductions: number | null;
           status: string;
           paid_at: string | null;
           created_at: string;
@@ -1005,26 +957,117 @@ export interface Database {
           teacher_id: string;
           month: number;
           year: number;
-          gross_pay?: number;
-          deductions?: number;
-          net_pay?: number;
+          gross_pay: number;
+          net_pay: number;
+          deductions?: number | null;
           status?: string;
-          paid_at?: string;
+          paid_at?: string | null;
         };
         Update: {
           gross_pay?: number;
-          deductions?: number;
           net_pay?: number;
+          deductions?: number | null;
           status?: string;
-          paid_at?: string;
+          paid_at?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'fk_tp_teacher',
-            columns: ['teacher_id'],
-            referencedRelation: 'teachers',
-            referencedColumns: ['id'],
-          },
+          { foreignKeyName: 'fk_teacher_payroll_teacher'; columns: ['teacher_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
+      };
+      resources: {
+        Row: {
+          id: number;
+          name: string;
+          description: string | null;
+          file_path: string;
+          file_type: string;
+          file_size: number | null;
+          course_id: number | null;
+          uploaded_by: string;
+          created_at: string;
+        };
+        Insert: {
+          name: string;
+          description?: string | null;
+          file_path: string;
+          file_type: string;
+          file_size?: number | null;
+          course_id?: number | null;
+          uploaded_by: string;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          file_path?: string;
+          file_type?: string;
+          file_size?: number | null;
+          course_id?: number | null;
+          uploaded_by?: string;
+        };
+        Relationships: [
+          { foreignKeyName: 'fk_resources_course'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_resources_teacher'; columns: ['uploaded_by']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
+      };
+      campaigns: {
+        Row: {
+          id: number;
+          title: string;
+          message: string;
+          target_role: string | null;
+          is_active: boolean;
+          sent_count: number | null;
+          created_at: string;
+        };
+        Insert: {
+          title: string;
+          message: string;
+          target_role?: string | null;
+          is_active?: boolean;
+          sent_count?: number | null;
+        };
+        Update: {
+          title?: string;
+          message?: string;
+          target_role?: string | null;
+          is_active?: boolean;
+          sent_count?: number | null;
+        };
+        Relationships: [];
+      };
+      teacher_contracts: {
+        Row: {
+          id: number;
+          teacher_id: string;
+          contract_type: string;
+          hourly_rate: number | null;
+          monthly_salary: number | null;
+          percentage: number | null;
+          start_date: string;
+          end_date: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          teacher_id: string;
+          contract_type: string;
+          hourly_rate?: number | null;
+          monthly_salary?: number | null;
+          percentage?: number | null;
+          start_date: string;
+          end_date?: string | null;
+          status?: string;
+        };
+        Update: {
+          contract_type?: string;
+          hourly_rate?: number | null;
+          monthly_salary?: number | null;
+          percentage?: number | null;
+          end_date?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          { foreignKeyName: 'fk_teacher_contracts_teacher'; columns: ['teacher_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
         ];
       };
     };

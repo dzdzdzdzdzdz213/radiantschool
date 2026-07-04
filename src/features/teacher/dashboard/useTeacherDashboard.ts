@@ -39,11 +39,11 @@ export function useTeacherDashboard() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
 
   const kpiQuery = useQuery({
-    queryKey: ['teacher_dashboard_kpi', teacherId],
+    queryKey: ['teacher_dashboard_kpi', teacherId, today],
     queryFn: async () => {
       if (!teacherId) return null;
 
-      const { data: scheduleList } = await (supabase as any)
+      const { data: scheduleList } = await supabase
         .from('course_schedules')
         .select('id, day_of_week, start_time, end_time')
         .eq('teacher_id', teacherId);
@@ -53,25 +53,25 @@ export function useTeacherDashboard() {
       const validAll = allScheduleIds.length > 0 ? allScheduleIds : [-1];
       const validToday = todayScheduleIds.length > 0 ? todayScheduleIds : [-1];
 
-      const safe = (p: Promise<any>) => p.catch(() => 0);
-      const safeArr = (p: Promise<any>) => p.then((r: any) => r.data ?? []).catch(() => []);
+      const safe = (p: PromiseLike<any>) => Promise.resolve(p).catch(() => 0);
+      const safeArr = (p: PromiseLike<any>) => Promise.resolve(p).then((r: any) => r.data ?? []).catch(() => []);
 
       const [teacherAssignmentIds] = await Promise.all([
-        safeArr((supabase as any).from('assignments').select('id').eq('teacher_id', teacherId).then((r: any) => ({ data: (r.data ?? []).map((a: any) => a.id) }))),
+        safeArr(supabase.from('assignments').select('id').eq('teacher_id', teacherId).then((r: any) => ({ data: (r.data ?? []).map((a: any) => a.id) }))),
       ]);
       const validAssignments = teacherAssignmentIds.length > 0 ? teacherAssignmentIds : [-1];
 
       const [todayClasses, studentsToday, absent, upcoming, assignmentsToGrade, resources, completed, privateLessons, vip, teachingHours, revenue] = await Promise.all([
-        safe((supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).in('course_schedule_id', validToday).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).eq('status', 'absent').in('course_schedule_id', validToday).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).gte('start_time', currentTime).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('assignment_submissions').select('id', { count: 'exact', head: true }).is('grade', null).neq('status', 'pending').in('assignment_id', validAssignments).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('resources').select('id', { count: 'exact', head: true }).eq('uploaded_by', teacherId).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('attendance').select('id', { count: 'exact', head: true }).eq('status', 'present').in('course_schedule_id', validAll).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('private_lessons').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('date', today).then((r: any) => r.count ?? 0)),
-        safe((supabase as any).from('vip_classes').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('date', today).then((r: any) => r.count ?? 0)),
-        safeArr((supabase as any).from('course_schedules').select('day_of_week, start_time, end_time').eq('teacher_id', teacherId).then((r: any) => {
+        safe(supabase.from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).in('course_schedule_id', validToday).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('date', today).eq('status', 'absent').in('course_schedule_id', validToday).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).gte('start_time', currentTime).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('assignment_submissions').select('id', { count: 'exact', head: true }).is('grade', null).neq('status', 'pending').in('assignment_id', validAssignments).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('resources' as never).select('id', { count: 'exact', head: true }).eq('uploaded_by' as never, teacherId).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('status', 'present').in('course_schedule_id', validAll).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('private_lessons' as never).select('id', { count: 'exact', head: true }).eq('teacher_id' as never, teacherId).eq('date' as never, today).then((r: any) => r.count ?? 0)),
+        safe(supabase.from('vip_classes' as never).select('id', { count: 'exact', head: true }).eq('teacher_id' as never, teacherId).eq('date' as never, today).then((r: any) => r.count ?? 0)),
+        safeArr(supabase.from('course_schedules').select('day_of_week, start_time, end_time').eq('teacher_id', teacherId).then((r: any) => {
           const data = r.data ?? [];
           const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
           let totalHours = 0;
@@ -94,7 +94,7 @@ export function useTeacherDashboard() {
           });
           return { data: [totalHours] };
         }).then((r: any) => r.data[0])),
-        safeArr((supabase as any).from('payments').select('amount').eq('teacher_id', teacherId).gte('created_at', `${monthStart}T00:00:00`).lte('created_at', `${today}T23:59:59`).then((r: any) => {
+        safeArr(supabase.from('payments' as never).select('amount').eq('teacher_id' as never, teacherId).gte('created_at' as never, `${monthStart}T00:00:00`).lte('created_at' as never, `${today}T23:59:59`).then((r: any) => {
           const total = (r.data ?? []).reduce((sum: number, p: any) => sum + (p.amount ?? 0), 0);
           return { data: [total] };
         }).then((r: any) => r.data[0])),
@@ -111,14 +111,15 @@ export function useTeacherDashboard() {
       };
     },
     enabled: !!teacherId,
-    staleTime: 15_000,
+    staleTime: 60_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const todayClassesQuery = useQuery({
     queryKey: ['teacher_today_classes', teacherId, dayName],
     queryFn: async () => {
       if (!teacherId) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses!inner(name, current_enrollments), room:rooms(name)')
         .eq('teacher_id', teacherId)
@@ -137,6 +138,7 @@ export function useTeacherDashboard() {
     },
     enabled: !!teacherId,
     staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const isLoading = kpiQuery.isLoading || todayClassesQuery.isLoading;

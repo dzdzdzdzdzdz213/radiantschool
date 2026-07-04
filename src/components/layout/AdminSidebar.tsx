@@ -6,12 +6,11 @@ import {
   Bell, Search, X, MapPin, ChevronLeft, GraduationCap, Star, UserPlus,
   Award, Megaphone, Video, Clock,
 } from 'lucide-react';
-import { cn, getInitials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,

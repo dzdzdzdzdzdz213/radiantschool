@@ -73,11 +73,11 @@ export default function LeaderboardPage() {
       const grouped: Record<string, { sums: number[]; count: number }> = {};
       evals.forEach(e => {
         if (!grouped[e.teacher_id]) grouped[e.teacher_id] = { sums: [0, 0, 0, 0, 0], count: 0 };
-        grouped[e.teacher_id].sums[0] += e.teaching_quality;
-        grouped[e.teacher_id].sums[1] += e.communication;
-        grouped[e.teacher_id].sums[2] += e.punctuality;
-        grouped[e.teacher_id].sums[3] += e.organization;
-        grouped[e.teacher_id].sums[4] += e.average_score;
+        grouped[e.teacher_id].sums[0] += e.teaching_quality ?? 0;
+        grouped[e.teacher_id].sums[1] += e.communication ?? 0;
+        grouped[e.teacher_id].sums[2] += e.punctuality ?? 0;
+        grouped[e.teacher_id].sums[3] += e.organization ?? 0;
+        grouped[e.teacher_id].sums[4] += e.average_score ?? 0;
         grouped[e.teacher_id].count++;
       });
 
@@ -115,6 +115,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (error) toast(t('errors.load_error', lang, 'du classement'), 'error');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error]);
 
   const displayList = (() => {

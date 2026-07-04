@@ -1,24 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Calendar, DollarSign, FileText, MessageSquare, UserPlus, School, Bell } from 'lucide-react';
+import { Users, Calendar, DollarSign, FileText, MessageSquare, UserPlus, School } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const actions = [
-  { label: 'Mes enfants', icon: Users, path: '/parent/children', color: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' },
-  { label: 'Emploi du temps', icon: Calendar, path: '/parent/schedule', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' },
-  { label: 'Paiements', icon: DollarSign, path: '/parent/payments', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },
-  { label: 'Factures', icon: FileText, path: '/parent/invoices', color: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400' },
-  { label: 'Messages', icon: MessageSquare, path: '/parent/messages', color: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400' },
-  { label: 'Inscrire un enfant', icon: UserPlus, path: '/parent/enroll', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400' },
-  { label: 'Profil', icon: School, path: '/parent/profile', color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400' },
-];
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 export default function QuickActions() {
   const navigate = useNavigate();
+  const { lang } = useLang();
+
+  const actions = [
+    { label: t('parent.my_children', lang), icon: Users, path: '/parent/children', color: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' },
+    { label: t('parent.schedule', lang), icon: Calendar, path: '/parent/schedule', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' },
+    { label: t('parent.payments', lang), icon: DollarSign, path: '/parent/payments', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },
+    { label: t('parent.invoices', lang), icon: FileText, path: '/parent/invoices', color: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400' },
+    { label: t('parent.messages', lang), icon: MessageSquare, path: '/parent/messages', color: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400' },
+    { label: t('parent.enroll_child', lang), icon: UserPlus, path: '/parent/enroll', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400' },
+    { label: t('parent.profile', lang), icon: School, path: '/parent/profile', color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400' },
+  ];
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <h3 className="text-sm font-semibold mb-4">Actions rapides</h3>
+      <h3 className="text-sm font-semibold mb-4">{t('dashboard.quick_actions', lang)}</h3>
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {actions.map((action, idx) => {
           const Icon = action.icon;

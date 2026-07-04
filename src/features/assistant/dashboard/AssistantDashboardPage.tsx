@@ -1,6 +1,4 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useLang } from '@/contexts/LangContext';
-import { t } from '@/i18n';
 import { useAssistantDashboard } from './useAssistantDashboard';
 import KpiCards from './components/KpiCards';
 import QuickActions from './components/QuickActions';
@@ -14,7 +12,6 @@ import RfidSummary from './components/RfidSummary';
 
 export default function AssistantDashboardPage() {
   const { profile } = useAuth();
-  const { lang } = useLang();
   const { kpi, pendingRegistrations, overduePayments, roomStatus, activeTeachers, alerts, quickActions, scheduleData, scheduleLoading, rfidData, isLoading, isError } = useAssistantDashboard();
 
   if (isError) {
