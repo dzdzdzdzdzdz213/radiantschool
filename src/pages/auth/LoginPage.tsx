@@ -1,4 +1,4 @@
-import { useState, useEffect, type ComponentType } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRoute } from '@/lib/permissions';
@@ -87,20 +87,10 @@ export default function LoginPage() {
           )}
         </form>
 
-        {import.meta.env.DEV && <DemoLoginLazy />}
-
         <p className="mt-6 text-center text-xs" style={{ color: 'var(--fg-muted)', opacity: 0.4 }}>
           Radiant Academy &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>
   );
-}
-
-function DemoLoginLazy() {
-  const [Panel, setPanel] = useState<ComponentType | null>(null);
-  useEffect(() => {
-    import('./DemoLoginPanel').then(m => setPanel(() => m.default));
-  }, []);
-  return Panel ? <Panel /> : null;
 }

@@ -625,20 +625,6 @@ const fr: Dict = {
   'settings.phone_not_provided': 'Non renseigné',
   'settings.sms_suffix': 'SMS',
 
-  // --- Demo ---
-  'demo.student': 'Étudiant',
-  'demo.teacher': 'Professeur',
-  'demo.assistant': 'Assistant',
-  'demo.admin': 'Admin',
-  'demo.quick_login': 'Connexion rapide',
-  'demo.setup_title': 'Configuration unique',
-  'demo.setup_instructions': 'Va dans Supabase → Project Settings → API → service_role key, copie-la ici et colle-la.',
-  'demo.service_role_placeholder': 'service_role key...',
-  'demo.create_accounts': 'Créer les 4 comptes démo',
-  'demo.error_prefix': (_e: string) => `Erreur sur`,
-  'demo.success': '✅ 4 comptes démo créés avec succès !',
-  'demo.rate_limit': 'Rate limit Supabase. Colle ta clé service_role pour configurer en 1 clic',
-
   // --- Protected route ---
   'protected.account_inactive_title': 'Compte non actif',
   'protected.account_inactive_desc': 'Votre compte est en attente de validation par l\'administration.',
@@ -1281,20 +1267,6 @@ const en: Dict = {
   'settings.phone_not_provided': 'Not provided',
   'settings.sms_suffix': 'SMS',
 
-  // --- Demo ---
-  'demo.student': 'Student',
-  'demo.teacher': 'Teacher',
-  'demo.assistant': 'Assistant',
-  'demo.admin': 'Admin',
-  'demo.quick_login': 'Quick login',
-  'demo.setup_title': 'One-time setup',
-  'demo.setup_instructions': 'Go to Supabase → Project Settings → API → service_role key, copy it here and paste.',
-  'demo.service_role_placeholder': 'service_role key...',
-  'demo.create_accounts': 'Create 4 demo accounts',
-  'demo.error_prefix': (_e: string) => `Error on`,
-  'demo.success': '✅ 4 demo accounts created successfully!',
-  'demo.rate_limit': 'Supabase rate limit. Paste your service_role key to set up in 1 click',
-
   // --- Protected route ---
   'protected.account_inactive_title': 'Inactive account',
   'protected.account_inactive_desc': 'Your account is pending validation by the administration.',
@@ -1936,20 +1908,6 @@ const ar: Dict = {
   'settings.phone_placeholder': '+213 5XX XX XX XX',
   'settings.phone_not_provided': 'غير مقدم',
   'settings.sms_suffix': 'SMS',
-
-  // --- Demo ---
-  'demo.student': 'طالب',
-  'demo.teacher': 'أستاذ',
-  'demo.assistant': 'مساعد',
-  'demo.admin': 'مدير',
-  'demo.quick_login': 'دخول سريع',
-  'demo.setup_title': 'إعداد لمرة واحدة',
-  'demo.setup_instructions': 'اذهب إلى Supabase → Project Settings → API → service_role key، انسخها هنا والصقها.',
-  'demo.service_role_placeholder': 'مفتاح service_role...',
-  'demo.create_accounts': 'إنشاء 4 حسابات تجريبية',
-  'demo.error_prefix': (_e: string) => `خطأ في`,
-  'demo.success': '✅ تم إنشاء 4 حسابات تجريبية بنجاح!',
-  'demo.rate_limit': 'حد Supabase. الصق مفتاح service_role للإعداد بنقرة واحدة',
 
   // --- Protected route ---
   'protected.account_inactive_title': 'الحساب غير نشط',
