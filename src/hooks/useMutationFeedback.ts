@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, type UseMutationOptions, type MutationKey } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database';
 
 /**
  * Extended mutation options that add toast notifications and automatic
@@ -46,8 +47,8 @@ export function useUpdateUserSettings() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, settings }: { userId: string; settings: Record<string, unknown> }) => {
-      const { error } = await (supabase as any).from('users').update(settings).eq('id', userId);
+    mutationFn: async ({ userId, settings }: { userId: string; settings: Database['public']['Tables']['users']['Update'] }) => {
+      const { error } = await supabase.from('users').update(settings).eq('id', userId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -88,12 +89,11 @@ export function useSendMessage() {
 
   return useMutation({
     mutationFn: async ({ receiverId, subject, body, senderId }: { receiverId: string; subject: string; body: string; senderId: string }) => {
-      const { error } = await (supabase as any).from('messages').insert({
+      const { error } = await supabase.from('messages').insert({
         sender_id: senderId,
         receiver_id: receiverId,
         subject,
         body,
-        created_at: new Date().toISOString(),
       });
       if (error) throw error;
     },
@@ -138,7 +138,7 @@ export function useMarkNotificationsRead() {
 
   return useMutation({
     mutationFn: async ({ userId }: { userId: string }) => {
-      const { error } = await (supabase as any).from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
+      const { error } = await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -157,8 +157,8 @@ export function useDeleteNotification() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('notifications').delete().eq('id', id);
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('notifications').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -178,7 +178,7 @@ export function useSubmitReview() {
 
   return useMutation({
     mutationFn: async ({ studentId, teacherId, rating, comment }: { studentId: string; teacherId: string; rating: number; comment: string }) => {
-      const { error } = await (supabase as any).from('evaluations').upsert({
+      const { error } = await supabase.from('evaluations').upsert({
         student_id: studentId,
         teacher_id: teacherId,
         teaching_quality: rating,
@@ -186,7 +186,6 @@ export function useSubmitReview() {
         punctuality: rating,
         organization: rating,
         comment,
-        created_at: new Date().toISOString(),
       }, { onConflict: 'student_id,teacher_id' });
       if (error) throw error;
     },

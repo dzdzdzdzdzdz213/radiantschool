@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Video, ExternalLink, Calendar, Clock, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,15 +6,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
-import { useToast } from '@/components/ui/Toast';
-
 export default function StudentOnlineClassesPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
-  const { toast } = useToast();
 
   const { data: sessions, isLoading, isError } = useQuery({
     queryKey: ['student_online_classes', profile?.id],
@@ -34,8 +31,7 @@ export default function StudentOnlineClassesPage() {
     enabled: !!profile?.id,
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.online_classes', lang)), 'error'); }, [isError]);
+  useErrorToast(isError, lang, t('nav.online_classes', lang));
 
   return (
     <div className="space-y-6">

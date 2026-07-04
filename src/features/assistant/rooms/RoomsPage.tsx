@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { MapPin, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function RoomsPage() {
@@ -25,10 +26,7 @@ export default function RoomsPage() {
     },
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (isError) toast(t('errors.load_error', lang, t('nav.rooms', lang)), 'error');
-  }, [isError]);
+  useErrorToast(isError, lang, t('nav.rooms', lang));
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

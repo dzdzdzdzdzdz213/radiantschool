@@ -102,12 +102,12 @@ export function useParentDashboard() {
         .select('student_id')
         .eq('parent_id', parentId);
       if (!relations || relations.length === 0) return [];
-      const studentIds = relations.map((r: any) => r.student_id);
+      const studentIds = relations.map((r) => r.student_id);
       const { data: users } = await supabase
         .from('users')
         .select('id, first_name, last_name, email')
         .in('id', studentIds);
-      return (users ?? []).map((u: any) => ({
+      return (users ?? []).map((u) => ({
         id: u.id, firstName: u.first_name ?? '', lastName: u.last_name ?? '', email: u.email ?? '',
         levelName: null, attendanceRate: 0, pendingHomework: 0, upcomingClasses: 0,
       }));
@@ -117,7 +117,7 @@ export function useParentDashboard() {
     gcTime: 5 * 60 * 1000,
   });
 
-  const childrenIds = childrenQuery.data?.map((c: any) => c.id) ?? [];
+  const childrenIds = childrenQuery.data?.map((c) => c.id) ?? [];
 
   const kpiQuery = useQuery({
     queryKey: ['parent_dashboard_kpi', parentId, childrenIds.join(',')],
@@ -135,18 +135,18 @@ export function useParentDashboard() {
           .select('course_id')
           .in('student_id', childrenIds)
           .eq('status', 'active')
-          .then((r: any) => [...new Set((r.data ?? []).map((e: any) => e.course_id))] as number[]),
+          .then((r) => [...new Set((r.data ?? []).map((e) => e.course_id))] as number[]),
         supabase.from('attendance')
           .select('student_id, status')
           .in('student_id', childrenIds)
           .eq('date', today)
-          .then((r: any) => {
+          .then((r) => {
             const records = r.data ?? [];
             const perStudent: Record<string, { present: number; absent: number; late: number; total: number }> = {};
             childrenIds.forEach((id: string) => {
               perStudent[id] = { present: 0, absent: 0, late: 0, total: 0 };
             });
-            records.forEach((a: any) => {
+            records.forEach((a) => {
               if (!perStudent[a.student_id]) return;
               perStudent[a.student_id].total += 1;
               if (a.status === 'present') perStudent[a.student_id].present += 1;
@@ -159,23 +159,23 @@ export function useParentDashboard() {
           .select('id', { count: 'exact', head: true })
           .in('student_id', childrenIds)
           .eq('status', 'pending')
-          .then((r: any) => r.count ?? 0),
+          .then((r) => r.count ?? 0),
         supabase.from('assignment_submissions')
           .select('id', { count: 'exact', head: true })
           .in('student_id', childrenIds)
           .eq('status', 'completed')
-          .then((r: any) => r.count ?? 0),
+          .then((r) => r.count ?? 0),
         supabase.from('invoices')
           .select('id, total_amount, paid_amount, status, student_id')
           .in('student_id', childrenIds)
           .neq('status', 'paid')
           .neq('status', 'cancelled')
-          .then((r: any) => r.data ?? []),
+          .then((r) => r.data ?? []),
         supabase.from('notifications')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', parentId)
           .eq('is_read', false)
-          .then((r: any) => r.count ?? 0),
+          .then((r) => r.count ?? 0),
       ]);
 
       let upcomingCount = 0;
@@ -189,11 +189,12 @@ export function useParentDashboard() {
         upcomingCount = count ?? 0;
       }
 
-      const totalAttendanceEntries = Object.values(attendanceData).reduce((sum: number, s: any) => sum + s.total, 0);
-      const totalPresentEntries = Object.values(attendanceData).reduce((sum: number, s: any) => sum + s.present, 0);
+      type AttStats = { present: number; absent: number; late: number; total: number };
+      const totalAttendanceEntries = Object.values(attendanceData).reduce((sum: number, s: AttStats) => sum + s.total, 0);
+      const totalPresentEntries = Object.values(attendanceData).reduce((sum: number, s: AttStats) => sum + s.present, 0);
       const overallRate = totalAttendanceEntries > 0 ? Math.round((totalPresentEntries / totalAttendanceEntries) * 100) : 0;
 
-      const outstandingBalance = invoices.reduce((sum: number, inv: any) =>
+      const outstandingBalance = invoices.reduce((sum: number, inv) =>
         sum + ((inv.total_amount ?? 0) - (inv.paid_amount ?? 0)), 0);
 
       return {
@@ -221,7 +222,7 @@ export function useParentDashboard() {
         .select('course_id')
         .in('student_id', childrenIds)
         .eq('status', 'active');
-      const courseIds = [...new Set((enrollments ?? []).map((e: any) => e.course_id))];
+      const courseIds = [...new Set((enrollments ?? []).map((e) => e.course_id))];
       if (courseIds.length === 0) return [];
 
       const { data: schedules } = await supabase
@@ -237,10 +238,10 @@ export function useParentDashboard() {
         .in('id', courseIds);
 
       const nameMap: Record<number, string> = {};
-      (courseNames ?? []).forEach((c: any) => { nameMap[c.id] = c.name; });
+      (courseNames ?? []).forEach((c) => { nameMap[c.id] = c.name; });
 
       const childNameMap: Record<string, string> = {};
-      (childrenQuery.data ?? []).forEach((c: any) => {
+      (childrenQuery.data ?? []).forEach((c) => {
         childNameMap[c.id] = `${c.firstName} ${c.lastName}`;
       });
 
@@ -252,13 +253,13 @@ export function useParentDashboard() {
         .eq('status', 'active');
 
       const studentCourseMap: Record<number, string[]> = {};
-      (scheduleEnrollments ?? []).forEach((e: any) => {
+      (scheduleEnrollments ?? []).forEach((e) => {
         if (!studentCourseMap[e.course_id]) studentCourseMap[e.course_id] = [];
         studentCourseMap[e.course_id].push(e.student_id);
       });
 
       const result: UpcomingClass[] = [];
-      (schedules ?? []).forEach((s: any) => {
+      (schedules ?? []).forEach((s) => {
         const enrolledStudents = studentCourseMap[s.course_id] ?? [];
         enrolledStudents.forEach((sid: string) => {
           result.push({
@@ -293,11 +294,11 @@ export function useParentDashboard() {
         .limit(10);
 
       const childNameMap: Record<string, string> = {};
-      (childrenQuery.data ?? []).forEach((c: any) => {
+      (childrenQuery.data ?? []).forEach((c) => {
         childNameMap[c.id] = `${c.firstName} ${c.lastName}`;
       });
 
-      return ((data ?? []) as any[]).map((p: any) => ({
+      return (data ?? []).map((p) => ({
         id: p.id,
         studentId: p.student_id,
         childName: childNameMap[p.student_id] ?? '',
@@ -325,11 +326,11 @@ export function useParentDashboard() {
         .limit(10);
 
       const childNameMap: Record<string, string> = {};
-      (childrenQuery.data ?? []).forEach((c: any) => {
+      (childrenQuery.data ?? []).forEach((c) => {
         childNameMap[c.id] = `${c.firstName} ${c.lastName}`;
       });
 
-      return ((data ?? []) as any[]).map((inv: any) => ({
+      return (data ?? []).map((inv) => ({
         id: inv.id,
         invoiceNumber: inv.invoice_number ?? '',
         studentId: inv.student_id,
@@ -358,29 +359,29 @@ export function useParentDashboard() {
 
       if (!submissions || submissions.length === 0) return [];
 
-      const assignmentIds = [...new Set(submissions.map((s: any) => s.assignment_id))];
+      const assignmentIds = [...new Set(submissions.map((s) => s.assignment_id))];
       const { data: assignments } = await supabase
         .from('assignments')
         .select('id, title, due_date, course_id')
         .in('id', assignmentIds);
 
-      const assignmentMap: Record<number, any> = {};
-      (assignments ?? []).forEach((a: any) => { assignmentMap[a.id] = a; });
+      const assignmentMap: Record<number, { title: string; due_date: string | null; course_id: number }> = {};
+      (assignments ?? []).forEach((a) => { assignmentMap[a.id] = a; });
 
-      const courseIds = [...new Set((assignments ?? []).map((a: any) => a.course_id))];
+      const courseIds = [...new Set((assignments ?? []).map((a) => a.course_id))];
       const { data: courses } = await supabase
         .from('courses')
         .select('id, name')
         .in('id', courseIds);
       const courseNameMap: Record<number, string> = {};
-      (courses ?? []).forEach((c: any) => { courseNameMap[c.id] = c.name; });
+      (courses ?? []).forEach((c) => { courseNameMap[c.id] = c.name; });
 
       const childNameMap: Record<string, string> = {};
-      (childrenQuery.data ?? []).forEach((c: any) => {
+      (childrenQuery.data ?? []).forEach((c) => {
         childNameMap[c.id] = `${c.firstName} ${c.lastName}`;
       });
 
-      return (submissions as any[]).map((s: any) => ({
+      return (submissions).map((s) => ({
         id: s.id,
         assignmentTitle: assignmentMap[s.assignment_id]?.title ?? '',
         childName: childNameMap[s.student_id] ?? '',
@@ -405,7 +406,7 @@ export function useParentDashboard() {
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
       const childNameMap: Record<string, string> = {};
-      (childrenQuery.data ?? []).forEach((c: any) => {
+      (childrenQuery.data ?? []).forEach((c) => {
         childNameMap[c.id] = `${c.firstName} ${c.lastName}`;
       });
 
@@ -416,7 +417,7 @@ export function useParentDashboard() {
           .gte('created_at', thirtyDaysAgo)
           .order('created_at', { ascending: false })
           .limit(10)
-          .then((r: any) => (r.data ?? []).map((a: any) => ({
+          .then((r) => (r.data ?? []).map((a) => ({
             id: a.id, childName: childNameMap[a.student_id] ?? '',
             type: a.status === 'present' ? 'presence' : a.status === 'absent' ? 'absence' : 'retard',
             description: `${childNameMap[a.student_id] ?? 'Élève'} ${a.status === 'present' ? 'présent' : a.status === 'absent' ? 'absent' : 'en retard'} le ${a.date ?? ''}`,
@@ -428,7 +429,7 @@ export function useParentDashboard() {
           .gte('created_at', thirtyDaysAgo)
           .order('created_at', { ascending: false })
           .limit(10)
-          .then((r: any) => (r.data ?? []).map((p: any) => ({
+          .then((r) => (r.data ?? []).map((p) => ({
             id: p.id, childName: childNameMap[p.student_id] ?? '',
             type: 'payment',
             description: `Paiement de ${p.amount ?? 0} DA pour ${childNameMap[p.student_id] ?? 'élève'}`,
@@ -440,7 +441,7 @@ export function useParentDashboard() {
           .gte('created_at', thirtyDaysAgo)
           .order('created_at', { ascending: false })
           .limit(10)
-          .then((r: any) => (r.data ?? []).map((s: any) => ({
+          .then((r) => (r.data ?? []).map((s) => ({
             id: s.id, childName: childNameMap[s.student_id] ?? '',
             type: s.status === 'completed' ? 'homework_done' : 'homework',
             description: s.assignment?.title
@@ -450,9 +451,10 @@ export function useParentDashboard() {
           }))),
       ]);
 
-      return [...attendanceActivity, ...paymentActivity, ...submissionActivity]
+      const allActivities: ActivityItem[] = [...attendanceActivity, ...paymentActivity, ...submissionActivity]
         .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
-        .slice(0, 15) as ActivityItem[];
+        .slice(0, 15);
+      return allActivities;
     },
     enabled: !!parentId && childrenIds.length > 0,
     staleTime: 30_000,

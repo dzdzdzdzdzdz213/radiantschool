@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { Star, Trophy, Medal, Award, Funnel } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
 
 interface TeacherRating {
   teacherId: string;
@@ -38,7 +38,6 @@ const CATEGORIES = [
 
 export default function LeaderboardPage() {
   const { lang } = useLang();
-  const { toast } = useToast();
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLevel, setFilterLevel] = useState<number | ''>('');
   const [filterSubject, setFilterSubject] = useState<number | ''>('');
@@ -113,10 +112,7 @@ export default function LeaderboardPage() {
     },
   });
 
-  useEffect(() => {
-    if (error) toast(t('errors.load_error', lang, 'du classement'), 'error');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [error]);
+  useErrorToast(!!error, lang, 'du classement');
 
   const displayList = (() => {
     if (!filterCategory && !filterLevel) return teachers;

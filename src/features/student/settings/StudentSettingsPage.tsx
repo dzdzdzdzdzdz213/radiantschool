@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
@@ -47,7 +48,7 @@ export default function StudentSettingsPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (settingsError) toast(t('errors.load_error', lang, t('nav.settings', lang)), 'error'); }, [settingsError]);
+  useErrorToast(settingsError, lang, t('nav.settings', lang));
 
   useEffect(() => {
     if (!userSettings) return;

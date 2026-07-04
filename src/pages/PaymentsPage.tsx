@@ -7,8 +7,10 @@ import { Search, Plus, DollarSign, X } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function PaymentsPage() {
+  const { profile } = useAuth();
   const { lang } = useLang();
   const { toast } = useToast();
   const { data: payments, isLoading } = usePayments();
@@ -19,11 +21,12 @@ export default function PaymentsPage() {
 
   const createPayment = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from('payments').insert({
+      const { error } = await supabase.from('payments').insert({
         student_id: form.student_id,
         amount: Number(form.amount),
         payment_method: form.payment_method,
         payment_type: form.payment_type,
+        recorded_by: profile!.id,
         receipt_number: form.receipt_number || `PAY-${Date.now()}`,
       });
       if (error) throw error;

@@ -1,19 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getDayLabel, formatTime } from '@/lib/utils';
-import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 export default function SchedulesPage() {
   const { lang } = useLang();
-  const { toast } = useToast();
   const today = new Date();
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
@@ -36,10 +35,7 @@ export default function SchedulesPage() {
     },
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (isError) toast(t('errors.load_error', lang, t('nav.schedule', lang)), 'error');
-  }, [isError]);
+  useErrorToast(isError, lang, t('nav.schedule', lang));
 
   const changeWeek = (direction: number) => {
     setChangingWeek(true);

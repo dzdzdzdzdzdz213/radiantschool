@@ -31,7 +31,7 @@ for (const table of rlsTables) {
   try {
     await client.query(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`);
     console.log(`  ${table}: RLS enabled`);
-  } catch(e) {}
+  } catch {}
 }
 
 console.log('Done. Public access policies added.');

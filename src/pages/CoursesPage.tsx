@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCourses } from '@/hooks/useQueries';
+import { useCourses, useSubjects, useLevels } from '@/hooks/useQueries';
+import { useUsers } from '@/hooks/useQueries';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
@@ -12,10 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Select, SelectItem } from '@/components/ui/select';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function CoursesPage() {
   const { data: courses, isLoading } = useCourses();
+  const { data: subjects } = useSubjects();
+  const { data: levels } = useLevels();
+  const { data: allUsers } = useUsers();
   const { lang } = useLang();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -23,13 +28,15 @@ export default function CoursesPage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
+  const teachers = allUsers?.filter((u: any) => u.role === 'teacher') ?? [];
+
   const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', price: '', capacity: '', start_date: '', end_date: '' });
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState({ name: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '' });
 
   const openCreateModal = () => {
     setEditingId(null);
-    setForm({ name: '', price: '', capacity: '', start_date: '', end_date: '' });
+    setForm({ name: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '' });
     setShowModal(true);
   };
 
@@ -41,24 +48,37 @@ export default function CoursesPage() {
       capacity: item.capacity?.toString() ?? '',
       start_date: item.start_date ?? '',
       end_date: item.end_date ?? '',
+      subject_id: item.subject_id?.toString() ?? '',
+      level_id: item.level_id?.toString() ?? '',
+      teacher_id: item.teacher_id ?? '',
     });
     setShowModal(true);
   };
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = {
+      const base = {
         name: form.name.trim(),
         price: form.price ? parseFloat(form.price) : 0,
         capacity: form.capacity ? parseInt(form.capacity, 10) : 1,
-        start_date: form.start_date || null,
-        end_date: form.end_date || null,
+        start_date: form.start_date,
+        end_date: form.end_date,
       };
       if (editingId) {
-        const { error } = await (supabase as any).from('courses').update(payload).eq('id', editingId);
+        const { error } = await supabase.from('courses').update({
+          ...base,
+          subject_id: form.subject_id ? parseInt(form.subject_id, 10) : undefined,
+          level_id: form.level_id ? parseInt(form.level_id, 10) : undefined,
+          teacher_id: form.teacher_id || undefined,
+        }).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any).from('courses').insert(payload);
+        const { error } = await supabase.from('courses').insert({
+          ...base,
+          subject_id: parseInt(form.subject_id, 10),
+          level_id: parseInt(form.level_id, 10),
+          teacher_id: form.teacher_id,
+        });
         if (error) throw error;
       }
     },
@@ -67,14 +87,14 @@ export default function CoursesPage() {
       toast(t(editingId ? 'success.updated' : 'success.created', lang, t('nav.courses', lang)), 'success');
       setShowModal(false);
       setEditingId(null);
-      setForm({ name: '', price: '', capacity: '', start_date: '', end_date: '' });
+      setForm({ name: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '' });
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('courses').delete().eq('id', id);
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('courses').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -84,7 +104,7 @@ export default function CoursesPage() {
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   const filtered = (courses ?? []).filter((c: any) => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
@@ -138,10 +158,34 @@ export default function CoursesPage() {
                   <Input type="date" value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} className="h-9" />
                 </div>
               </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.subject', lang)} *</Label>
+                <Select value={form.subject_id} onValueChange={v => setForm(f => ({ ...f, subject_id: v }))} placeholder={t('common.select', lang)}>
+                  {(subjects ?? []).map((s: any) => (
+                    <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.level', lang)} *</Label>
+                <Select value={form.level_id} onValueChange={v => setForm(f => ({ ...f, level_id: v }))} placeholder={t('common.select', lang)}>
+                  {(levels ?? []).map((l: any) => (
+                    <SelectItem key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</SelectItem>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.teacher', lang)} *</Label>
+                <Select value={form.teacher_id} onValueChange={v => setForm(f => ({ ...f, teacher_id: v }))} placeholder={t('common.select', lang)}>
+                  {teachers.map((t: any) => (
+                    <SelectItem key={t.id} value={t.id}>{getFullName(t.first_name, t.last_name)}</SelectItem>
+                  ))}
+                </Select>
+              </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-              <Button size="sm" className="h-9" disabled={!form.name || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+              <Button size="sm" className="h-9" disabled={!form.name || !form.subject_id || !form.level_id || !form.teacher_id || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
                 {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
               </Button>
             </div>

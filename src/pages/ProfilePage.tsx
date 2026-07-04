@@ -22,12 +22,12 @@ export default function ProfilePage() {
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from('users').update({
+      const { error } = await supabase.from('users').update({
         first_name: firstName,
         last_name: lastName,
         email,
         phone: phone || null,
-      }).eq('id', profile?.id);
+      }).eq('id', profile!.id);
       if (error) throw error;
     },
     onSuccess: () => {

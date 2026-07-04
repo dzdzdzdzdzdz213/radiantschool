@@ -3,18 +3,13 @@ import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/u
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { FileText } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
-import { useEffect } from 'react';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function InvoicesPage() {
   const { lang } = useLang();
   const { data: invoices, isLoading, isError } = useInvoices();
-  const { toast } = useToast();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (isError) toast(t('errors.load_error', lang, 'des factures'), 'error');
-  }, [isError]);
+  useErrorToast(isError, lang, 'des factures');
 
   return (
     <div className="space-y-4">

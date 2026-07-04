@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type KeyboardEvent, type ClipboardEvent } from 'react';
+import React, { useState, useEffect, useRef, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
@@ -71,7 +71,7 @@ interface FieldProps {
   name: string;
   label: string;
   type?: string;
-  icon?: any;
+  icon?: { type: React.ElementType; props: Record<string, unknown>; color?: string };
   required?: boolean;
   placeholder?: string;
   className?: string;

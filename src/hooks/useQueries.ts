@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, type FilterParams } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
 /** All users with their student profile relation. Sorted by newest first. */
@@ -33,7 +33,7 @@ export function useCourses() {
 export function useCourse(id: number) {
   return useQuery({
     queryKey: ['course', id],
-    queryFn: () => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)'),
+    queryFn: (): Promise<any> => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)'),
     enabled: !!id,
     staleTime: 120_000,
   });
@@ -58,7 +58,7 @@ export function useAttendance(date?: string, courseId?: number) {
   return useQuery({
     queryKey: ['attendance', date, courseId],
     queryFn: async () => {
-      const filters: any[] = [];
+      const filters: FilterParams[] = [];
       if (date) filters.push({ column: 'date', operator: 'eq', value: date });
       if (courseId) filters.push({ column: 'course_schedule_id', operator: 'eq', value: courseId });
       const r = await api.list('attendance', { filters, sort: [{ column: 'date', direction: 'desc' }] }, '*, student:users(first_name, last_name), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time, teacher_id)');
@@ -77,7 +77,7 @@ export function usePayments(studentId?: string) {
   return useQuery({
     queryKey: ['payments', studentId],
     queryFn: async () => {
-      const filters: any[] = [];
+      const filters: FilterParams[] = [];
       if (studentId) filters.push({ column: 'student_id', operator: 'eq', value: studentId });
       const r = await api.list('payments', { filters, sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:users(first_name, last_name)');
       return r.data;

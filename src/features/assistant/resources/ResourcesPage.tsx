@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Upload, FileText, Search, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function ResourcesPage() {
@@ -35,10 +36,7 @@ export default function ResourcesPage() {
     },
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (isError) toast(t('errors.load_error', lang, t('nav.resources', lang)), 'error');
-  }, [isError]);
+  useErrorToast(isError, lang, t('nav.resources', lang));
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {

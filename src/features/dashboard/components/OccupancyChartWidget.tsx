@@ -29,7 +29,7 @@ function ChartSkeleton() {
   );
 }
 
-function EmptyState({ lang }: { lang: any }) {
+function EmptyState({ lang }: { lang: 'fr' | 'en' | 'ar' }) {
   return (
     <Card>
       <CardHeader>

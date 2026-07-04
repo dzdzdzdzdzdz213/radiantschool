@@ -38,7 +38,7 @@ function TimelineSkeleton() {
   );
 }
 
-function formatTimeAgo(dateStr: string, lang: any): string {
+function formatTimeAgo(dateStr: string, lang: 'fr' | 'en' | 'ar'): string {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();

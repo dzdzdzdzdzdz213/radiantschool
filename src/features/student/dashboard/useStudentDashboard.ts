@@ -37,7 +37,7 @@ export function useStudentDashboard() {
         .select('course_id')
         .eq('student_id', studentId)
         .eq('status', 'active');
-      const enrolledCourseIds = (enrollments ?? []).map((e: any) => e.course_id);
+      const enrolledCourseIds = (enrollments ?? []).map((e) => e.course_id);
       const coursesEnrolled = enrolledCourseIds.length;
 
       const [
@@ -54,24 +54,24 @@ export function useStudentDashboard() {
         certData,
         nextClass,
       ] = await Promise.all([
-        supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('student_id', studentId).then((r: any) => r.count ?? 0),
-        supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'present').then((r: any) => r.count ?? 0),
+        supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('student_id', studentId).then((r) => r.count ?? 0),
+        supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'present').then((r) => r.count ?? 0),
         enrolledCourseIds.length > 0
-          ? supabase.from('course_schedules').select('id', { count: 'exact', head: true }).eq('day_of_week', dayName).in('course_id', enrolledCourseIds).then((r: any) => r.count ?? 0)
+          ? supabase.from('course_schedules').select('id', { count: 'exact', head: true }).eq('day_of_week', dayName).in('course_id', enrolledCourseIds).then((r) => r.count ?? 0)
           : Promise.resolve(0),
-        supabase.from('assignment_submissions').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'pending').then((r: any) => r.count ?? 0),
-        supabase.from('assignment_submissions').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r: any) => r.count ?? 0),
-        supabase.from('payments').select('id, amount', { count: 'exact', head: true }).eq('student_id', studentId).then((r: any) => ({ count: r.count ?? 0 })),
-        supabase.from('invoices').select('total_amount, paid_amount').eq('student_id', studentId).neq('status', 'paid').neq('status', 'cancelled').then((r: any) => (r.data ?? []).reduce((s: number, inv: any) => s + ((inv.total_amount ?? 0) - (inv.paid_amount ?? 0)), 0)),
-        supabase.from('assignment_submissions').select('grade').eq('student_id', studentId).not('grade', 'is', null).then((r: any) => {
-          const grades = (r.data ?? []).map((g: any) => g.grade).filter((g: number) => g != null);
+        supabase.from('assignment_submissions').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'pending').then((r) => r.count ?? 0),
+        supabase.from('assignment_submissions').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r) => r.count ?? 0),
+        supabase.from('payments').select('id, amount', { count: 'exact', head: true }).eq('student_id', studentId).then((r) => ({ count: r.count ?? 0 })),
+        supabase.from('invoices').select('total_amount, paid_amount').eq('student_id', studentId).neq('status', 'paid').neq('status', 'cancelled').then((r) => (r.data ?? []).reduce((s: number, inv) => s + ((inv.total_amount ?? 0) - (inv.paid_amount ?? 0)), 0)),
+        supabase.from('assignment_submissions').select('grade').eq('student_id', studentId).not('grade', 'is', null).then((r) => {
+          const grades = (r.data ?? []).map((g) => g.grade).filter((g: number) => g != null);
           return grades.length > 0 ? Math.round(grades.reduce((a: number, b: number) => a + b, 0) / grades.length) : 0;
         }),
-        supabase.from('private_lessons').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r: any) => r.count ?? 0),
-        supabase.from('vip_classes').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r: any) => r.count ?? 0),
-        supabase.from('certificates').select('id', { count: 'exact', head: true }).eq('student_id', studentId).then((r: any) => r.count ?? 0),
+        supabase.from('private_lessons').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r) => r.count ?? 0),
+        supabase.from('vip_classes').select('id', { count: 'exact', head: true }).eq('student_id', studentId).eq('status', 'completed').then((r) => r.count ?? 0),
+        supabase.from('certificates').select('id', { count: 'exact', head: true }).eq('student_id', studentId).then((r) => r.count ?? 0),
         enrolledCourseIds.length > 0
-          ? supabase.from('course_schedules').select('id, start_time, end_time, course:courses!inner(name), room:rooms(name)').eq('day_of_week', dayName).in('course_id', enrolledCourseIds).gte('start_time', currentTime).order('start_time').limit(1).then((r: any) => r.data?.[0] ?? null)
+          ? supabase.from('course_schedules').select('id, start_time, end_time, course:courses!inner(name), room:rooms(name)').eq('day_of_week', dayName).in('course_id', enrolledCourseIds).gte('start_time', currentTime).order('start_time').limit(1).then((r) => r.data?.[0] ?? null)
           : Promise.resolve(null),
       ]);
 

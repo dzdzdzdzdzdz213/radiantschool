@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BarChart3, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 const reportTypes = [
   { id: 'attendance', label: '', icon: BarChart3 },
@@ -40,10 +41,7 @@ export default function ReportsPage() {
     },
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (isError) toast(t('errors.load_error', lang, t('reports.data', lang)), 'error');
-  }, [isError]);
+  useErrorToast(isError, lang, t('reports.data', lang));
 
   const exportCSV = (filename: string) => {
     if (!revenue || revenue.length === 0) {

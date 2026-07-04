@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Plus, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,16 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
-import { useToast } from '@/components/ui/Toast';
-
 export default function StudentPrivateLessonsPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
-  const { toast } = useToast();
 
   const { data: lessons, isLoading, isError } = useQuery({
     queryKey: ['student_private_lessons', profile?.id],
@@ -33,8 +30,7 @@ export default function StudentPrivateLessonsPage() {
     enabled: !!profile?.id,
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.private_lessons', lang)), 'error'); }, [isError]);
+  useErrorToast(isError, lang, t('nav.private_lessons', lang));
 
   const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(
     async () => {

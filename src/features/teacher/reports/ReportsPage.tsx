@@ -23,16 +23,16 @@ export default function ReportsPage() {
     queryKey: ['teacher_reports', profile?.id, period],
     queryFn: async () => {
       if (!profile?.id) return null;
-      const { data: tCourses } = await (supabase as any).from('courses').select('id').eq('teacher_id', profile.id);
-      const courseIdList = (tCourses ?? []).map((c: any) => c.id);
+      const { data: tCourses } = await supabase.from('courses').select('id').eq('teacher_id', profile.id);
+      const courseIdList = (tCourses ?? []).map((c) => c.id);
       const totalStudents = courseIdList.length
-        ? (await (supabase as any).from('course_enrollments').select('*', { count: 'exact', head: true }).in('course_id', courseIdList).then((r: any) => { if (r.error) throw r.error; return r; })).count ?? 0
+        ? (await supabase.from('course_enrollments').select('*', { count: 'exact', head: true }).in('course_id', courseIdList)).count ?? 0
         : 0;
       const { data: r1, error: e1 } = courseIdList.length
-        ? await (supabase as any).from('attendance').select('status, count, course_schedule:course_schedules!fk_attendance_schedule(course_id)').in('course_schedule.course_id', courseIdList).gte('date', dateFrom).then((r: any) => r)
+        ? await supabase.from('attendance').select('status, course_schedule:course_schedules!inner(course_id)').in('course_schedule.course_id', courseIdList).gte('date', dateFrom)
         : { data: [], error: null };
       if (e1) throw e1;
-      const { data: r2, error: e2 } = await (supabase as any).from('assignments').select('id, grade').eq('teacher_id', profile.id).gte('created_at', dateFrom);
+      const { data: r2, error: e2 } = await supabase.from('assignments').select('id, grade').eq('teacher_id', profile.id).gte('created_at', dateFrom);
       if (e2) throw e2;
       const present = (r1 ?? []).filter((a: any) => a.status === 'present').length;
       const total = (r1 ?? []).length;

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { REALTIME_LISTEN_TYPES } from '@supabase/realtime-js';
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -41,13 +42,7 @@ export function useRealtimeSubscription({
     const channelName = `${table}-changes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase.channel(channelName);
 
-    const changesConfig: any = {
-      event: event as any,
-      schema: 'public',
-      table,
-    };
-    if (filter) changesConfig.filter = filter;
-
+    const changesConfig = { event, schema: 'public', table, filter };
     const handleChange = (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
       const opts = optionsRef.current;
       switch (payload.eventType) {
@@ -64,7 +59,7 @@ export function useRealtimeSubscription({
       queryClient.invalidateQueries({ queryKey: opts.queryKey });
     };
 
-    channel.on('postgres_changes', changesConfig, handleChange);
+    channel.on(REALTIME_LISTEN_TYPES.POSTGRES_CHANGES, changesConfig, handleChange);
     channel.subscribe((status) => {
       if (status !== 'SUBSCRIBED') {
         if (import.meta.env.DEV) console.warn(`[realtime] Channel ${channelName} status: ${status}`);

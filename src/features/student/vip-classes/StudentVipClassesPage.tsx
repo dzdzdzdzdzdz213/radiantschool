@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Plus, Star, Calendar, Clock, Euro, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,16 +6,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
-import { useToast } from '@/components/ui/Toast';
-
 export default function StudentVipClassesPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
-  const { toast } = useToast();
 
   const { data: lessons, isLoading, isError } = useQuery({
     queryKey: ['student_vip_classes', profile?.id],
@@ -32,7 +29,7 @@ export default function StudentVipClassesPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.vip_classes', lang)), 'error'); }, [isError]);
+  useErrorToast(isError, lang, t('nav.vip_classes', lang));
 
   const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(
     async () => {

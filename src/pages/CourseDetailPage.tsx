@@ -13,7 +13,7 @@ export default function CourseDetailPage() {
   const { lang } = useLang();
   const { toast } = useToast();
   const courseId = Number(id);
-  const { data: course, isLoading, isError: courseError } = useCourse(courseId) as any;
+  const { data: course, isLoading, isError: courseError } = useCourse(courseId);
   const { data: enrollments, isLoading: enrollLoading } = useCourseEnrollments(courseId);
 
   useEffect(() => {

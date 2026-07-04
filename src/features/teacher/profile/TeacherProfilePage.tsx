@@ -38,12 +38,12 @@ export default function TeacherProfilePage() {
     queryKey: ['teacher_profile_stats', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return null;
-      const { count: courseCount } = await (supabase as any).from('courses').select('*', { count: 'exact', head: true }).eq('teacher_id', profile.id);
-      const { data: teacherCourseIds } = await (supabase as any).from('courses').select('id').eq('teacher_id', profile.id);
+      const { count: courseCount } = await supabase.from('courses').select('*', { count: 'exact', head: true }).eq('teacher_id', profile.id);
+      const { data: teacherCourseIds } = await supabase.from('courses').select('id').eq('teacher_id', profile.id);
       const studentCount = teacherCourseIds?.length
-        ? (await (supabase as any).from('course_enrollments').select('student_id', { count: 'exact', head: true }).in('course_id', teacherCourseIds.map((c: any) => c.id))).count ?? 0
+        ? (await supabase.from('course_enrollments').select('student_id', { count: 'exact', head: true }).in('course_id', teacherCourseIds.map((c) => c.id))).count ?? 0
         : 0;
-      const { data: reviews } = await (supabase as any).from('evaluations').select('average_score').eq('teacher_id', profile.id);
+      const { data: reviews } = await supabase.from('evaluations').select('average_score').eq('teacher_id', profile.id);
       const avgRating = reviews?.length ? (reviews.reduce((s: number, r: any) => s + (r.average_score ?? 0), 0) / reviews.length) : 0;
       const yearsActive = teacherProfile?.created_at ? Math.floor((Date.now() - new Date(teacherProfile.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 0;
       return { courseCount: courseCount ?? 0, studentCount, avgRating, yearsActive };

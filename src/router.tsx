@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SafeRedirect from '@/components/SafeRedirect';
 import AdminRoute from '@/routes/AdminRoute';
 import AssistantRoute from '@/routes/AssistantRoute';
@@ -235,7 +236,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/leaderboard',
-    Component: LeaderboardPage,
+    element: <ProtectedRoute allowedRoles={['admin','teacher','student','parent','assistant']}><LeaderboardPage /></ProtectedRoute>,
   },
   {
     path: '/',

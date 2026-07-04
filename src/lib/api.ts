@@ -249,10 +249,11 @@ export const api = {
   /**
    * Calls a Supabase RPC function. The generic parameter should match
    * the return type of the Postgres function.
+   *
+   * For known function names, use {@link apiRpc} instead for type safety.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async rpc<T>(fn: string, args?: Record<string, unknown>): Promise<T> {
-    const { data, error } = await (supabase.rpc as any)(fn, args);
+    const { data, error } = await supabase.rpc(fn as never, args as never);
     if (error) throw ApiError.fromPostgrest(error);
     return data as T;
   },

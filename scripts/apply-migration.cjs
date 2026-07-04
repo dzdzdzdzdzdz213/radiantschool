@@ -126,11 +126,11 @@ async function run() {
   try {
     await client.query("ALTER TABLE course_schedules ENABLE ROW LEVEL SECURITY");
     ok++;
-  } catch(_e) {}
+  } catch {}
   try {
     await client.query("ALTER TABLE attendance ENABLE ROW LEVEL SECURITY");
     ok++;
-  } catch(_e) {}
+  } catch {}
 
   // Fix the INSERT/UPDATE/DELETE policy syntax
   try {

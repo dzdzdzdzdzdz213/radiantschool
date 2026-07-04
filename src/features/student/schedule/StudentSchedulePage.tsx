@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Clock, MapPin, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,17 +6,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatTime, getDayLabel } from '@/lib/utils';
-import { useToast } from '@/components/ui/Toast';
-
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
 export default function StudentSchedulePage() {
   const { lang } = useLang();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const today = new Date();
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
   const [startDate, setStartDate] = useState(weekStart);
@@ -45,7 +43,7 @@ export default function StudentSchedulePage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.schedule', lang)), 'error'); }, [isError]);
+  useErrorToast(isError, lang, t('nav.schedule', lang));
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Search, Download, CreditCard, AlertCircle, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,18 +9,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useDownloadFile, useMutationWithFeedback } from '@/hooks/useMutationFeedback';
-import { useToast } from '@/components/ui/Toast';
-
 export default function StudentInvoicesPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
   const [search, setSearch] = useState('');
   const downloadFile = useDownloadFile();
-  const { toast } = useToast();
 
   const { data: invoices, isLoading, isError } = useQuery({
     queryKey: ['student_invoices', profile?.id],
@@ -38,8 +36,7 @@ export default function StudentInvoicesPage() {
     enabled: !!profile?.id,
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.invoices', lang)), 'error'); }, [isError]);
+  useErrorToast(isError, lang, t('nav.invoices', lang));
 
   const payMutation = useMutationWithFeedback(
     async ({ invoiceId }: { invoiceId: string }) => {

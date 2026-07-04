@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Users, Clock, DollarSign } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,15 +6,13 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { useToast } from '@/components/ui/Toast';
-
 export default function StudentCoursesPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const { data: enrollments, isLoading, isError } = useQuery({
     queryKey: ['student_courses', profile?.id],
@@ -47,7 +44,7 @@ export default function StudentCoursesPage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, 'cours'), 'error'); }, [isError]);
+  useErrorToast(isError, lang, 'cours');
 
   return (
     <div className="space-y-6">

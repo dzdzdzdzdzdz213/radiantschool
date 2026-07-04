@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Search, CheckCircle, XCircle, Clock, CreditCard as RfidIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,15 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
-import { useToast } from '@/components/ui/Toast';
-
 export default function StudentAttendancePage() {
   const { lang } = useLang();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [search, setSearch] = useState('');
 
   const { data: attendanceData, isLoading, isError } = useQuery({
@@ -47,7 +45,7 @@ export default function StudentAttendancePage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.attendance', lang)), 'error'); }, [isError]);
+  useErrorToast(isError, lang, t('nav.attendance', lang));
 
   const rate = attendanceData && attendanceData.stats.total > 0
     ? Math.round(((attendanceData.stats.present + attendanceData.stats.late) / attendanceData.stats.total) * 100)

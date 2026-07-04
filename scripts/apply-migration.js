@@ -5,7 +5,6 @@ function splitSQL(sql) {
   const statements = [];
   let current = '';
   let inDollar = false;
-  let dollarTag = '';
   let inString = false;
 
   for (let i = 0; i < sql.length; i++) {
@@ -127,11 +126,11 @@ async function run() {
   try {
     await client.query("ALTER TABLE course_schedules ENABLE ROW LEVEL SECURITY");
     ok++;
-  } catch(e) {}
+  } catch {}
   try {
     await client.query("ALTER TABLE attendance ENABLE ROW LEVEL SECURITY");
     ok++;
-  } catch(e) {}
+  } catch {}
 
   // Fix the INSERT/UPDATE/DELETE policy syntax
   try {

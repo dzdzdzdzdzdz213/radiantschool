@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice } fro
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function InvoicesPage() {
@@ -26,10 +27,7 @@ export default function InvoicesPage() {
   const updateInvoice = useUpdateInvoice();
   const deleteInvoice = useDeleteInvoice();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (isError) toast(t('errors.load_error', lang, t('nav.invoices', lang)), 'error');
-  }, [isError]);
+  useErrorToast(isError, lang, t('nav.invoices', lang));
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Camera, Mail, Phone, MapPin, Calendar, BookOpen, Award, Save, User, Shield, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/utils';
@@ -41,7 +42,7 @@ export default function StudentProfilePage() {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => { if (isError) toast(t('errors.load_error', lang, t('nav.profile', lang)), 'error'); }, [isError]);
+  useErrorToast(isError, lang, t('nav.profile', lang));
 
   const updateMutation = useMutation({
     mutationFn: async () => {

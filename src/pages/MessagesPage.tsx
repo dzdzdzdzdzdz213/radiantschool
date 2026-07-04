@@ -24,12 +24,11 @@ export default function MessagesPage() {
     mutationFn: async () => {
       if (!selectedMsg || !profile?.id) return;
       const receiverId = selectedMsg.sender_id === profile?.id ? selectedMsg.receiver_id : selectedMsg.sender_id;
-      const { error } = await (supabase as any).from('messages').insert({
+      const { error } = await supabase.from('messages').insert({
         sender_id: profile.id,
         receiver_id: receiverId,
         subject: selectedMsg.subject,
         body: reply,
-        created_at: new Date().toISOString(),
       });
       if (error) throw error;
     },
