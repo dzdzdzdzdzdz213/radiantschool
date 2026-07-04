@@ -158,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch {
-        try { await supabase.from('users').delete().eq('id', data.user.id); } catch {}
+        try { await supabase.from('users').delete().eq('id', data.user.id); } catch (e) { console.error('Failed to rollback user record after failed signup:', e); }
         await supabase.auth.signOut();
         return { error: 'Échec de la création du profil. Veuillez réessayer.' };
       }
