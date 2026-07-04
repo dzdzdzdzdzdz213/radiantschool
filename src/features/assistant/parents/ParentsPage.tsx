@@ -1,34 +1,112 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getInitials } from '@/lib/utils';
-import { useParents } from './useParents';
+import { useParents, useCreateParent } from './useParents';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useToast } from '@/components/ui/Toast';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function ParentsPage() {
   const navigate = useNavigate();
   const { lang } = useLang();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
-  const { data, isLoading } = useParents(debouncedSearch, page);
+  const { data, isLoading, isError } = useParents(debouncedSearch, page);
+
+  useErrorToast(isError, lang, t('nav.parents', lang));
+
+  const createParent = useCreateParent();
+
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+
+  const openCreateModal = () => {
+    setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
+    if (!form.firstName || !form.lastName || !form.email) {
+      toast(t('parents.fill_fields', lang), 'error');
+      return;
+    }
+    createParent.mutate(
+      {
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        phone: form.phone || null,
+        status: form.status,
+        role: 'parent',
+      },
+      {
+        onSuccess: () => {
+          toast(t('success.created', lang, t('nav.parents', lang)), 'success');
+          setShowModal(false);
+          setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+        },
+        onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+      },
+    );
+  };
 
   return (
     <div className="space-y-6">
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
+          <Card className="relative w-full max-w-lg mx-4">
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle className="text-sm">{t('parents.new', lang)}</CardTitle>
+              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('common.first_name', lang)} <span className="text-red-500">*</span></Label>
+                  <Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('common.last_name', lang)} <span className="text-red-500">*</span></Label>
+                  <Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('common.email', lang)} <span className="text-red-500">*</span></Label>
+                <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('common.phone', lang)}</Label>
+                <Input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
+                <Button onClick={handleSave} disabled={createParent.isPending}>
+                  {createParent.isPending ? t('common.loading', lang) : t('parents.create', lang)}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.parents', lang)}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('parents.subtitle', lang)}</p>
         </div>
-        <Button onClick={() => navigate('/assistant/parents/new')} className="gap-2">
+        <Button onClick={openCreateModal} className="gap-2">
           <Plus className="h-4 w-4" />
           {t('parents.new', lang)}
         </Button>

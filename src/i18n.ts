@@ -540,6 +540,15 @@ const fr: Dict = {
   'parent.enroll_child': 'Inscrire un enfant',
   'parent.profile': 'Profil',
 
+  // --- Assistant parents management ---
+  'parents.new': 'Nouveau parent',
+  'parents.subtitle': 'Gérer les parents d\'élèves',
+  'parents.search': 'Rechercher un parent...',
+  'parents.children': 'Enfants',
+  'parents.children_label': 'enfant(s)',
+  'parents.create': 'Créer le parent',
+  'parents.fill_fields': 'Veuillez remplir tous les champs obligatoires',
+
   // --- Landing page additions ---
   'landing.category_all': 'Tous',
   'landing.category_primaire': 'Primaire',
@@ -1189,6 +1198,15 @@ const en: Dict = {
   'parent.enroll_child': 'Enroll a child',
   'parent.profile': 'Profile',
 
+  // --- Assistant parents management ---
+  'parents.new': 'New Parent',
+  'parents.subtitle': 'Manage parents',
+  'parents.search': 'Search parents...',
+  'parents.children': 'Children',
+  'parents.children_label': 'child(ren)',
+  'parents.create': 'Create Parent',
+  'parents.fill_fields': 'Please fill all required fields',
+
   // --- Landing page additions ---
   'landing.category_all': 'All',
   'landing.category_primaire': 'Primary',
@@ -1837,6 +1855,15 @@ const ar: Dict = {
   'parent.messages': 'الرسائل',
   'parent.enroll_child': 'تسجيل طفل',
   'parent.profile': 'الملف الشخصي',
+
+  // --- Assistant parents management ---
+  'parents.new': 'ولي أمر جديد',
+  'parents.subtitle': 'إدارة أولياء الأمور',
+  'parents.search': 'البحث عن ولي أمر...',
+  'parents.children': 'الأبناء',
+  'parents.children_label': 'طفل/أطفال',
+  'parents.create': 'إنشاء ولي أمر',
+  'parents.fill_fields': 'يرجى ملء جميع الحقول المطلوبة',
 
   // --- Landing page additions ---
   'landing.category_all': 'الكل',
