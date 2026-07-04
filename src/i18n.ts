@@ -72,6 +72,7 @@ const fr: Dict = {
   'dashboard.stat.attendance_rate': 'Taux de présence',
   'dashboard.stat.avg_grade': 'Moyenne générale',
   'dashboard.stat.analytics': 'Analyses rapides',
+  'dashboard.stat.retention': 'Taux de rétention',
   'dashboard.quick_actions': 'Actions rapides',
   'dashboard.notifications': 'Notifications',
   'dashboard.no_notifications': 'Aucune notification',
@@ -157,6 +158,8 @@ const fr: Dict = {
   'common.dark_mode': 'Mode sombre',
   'common.first_name': 'Prénom',
   'common.last_name': 'Nom',
+  'common.message': 'Message',
+  'common.pending': 'En attente',
 
   // --- Navigation ---
   'nav.dashboard': 'Tableau de bord',
@@ -317,6 +320,7 @@ const fr: Dict = {
   'status.upcoming': 'À venir',
   'status.in_progress': 'En cours',
   'status.archived': 'Archivé',
+  'status.alert': 'Alerte',
 
   // --- Roles ---
   'role.admin': 'Admin',
@@ -671,10 +675,147 @@ const fr: Dict = {
   'attendance.method': 'Méthode',
   'attendance.manual': 'Manuel',
   'attendance.presence': 'Présence',
+  'attendance.subtitle': 'Gérer les présences',
   'attendance.mark': 'Pointer mes élèves',
   'teacher.my_students': 'Mes élèves',
   'teacher.my_schedule': 'Mon emploi du temps',
   'teacher.my_classes': 'Mes cours',
+
+  // --- Search ---
+  'search.subtitle': 'Rechercher dans la plateforme',
+  'search.placeholder': 'Rechercher des cours, étudiants, etc...',
+  'search.start_typing': 'Commencez à taper pour rechercher',
+  'search.search_in': 'Rechercher dans',
+
+  // --- RFID ---
+  'rfid.subtitle': 'Gestion des badges RFID',
+  'rfid.live_scan': 'Scan en direct',
+  'rfid.recent_scans': 'Scans récents',
+  'rfid.scan_placeholder': 'Approchez le badge du lecteur...',
+  'rfid.scanning': 'Scan en cours...',
+  'rfid.scan_error': 'Erreur de scan',
+  'rfid.history': 'Historique',
+  'rfid.waiting': 'En attente de badge...',
+  'rfid.waiting_hint': 'Approchez un badge pour l\'enregistrer',
+
+  // --- Campaigns ---
+  'campaigns.subtitle': 'Gérer les campagnes',
+  'campaigns.new': 'Nouvelle campagne',
+  'campaigns.campaign': 'Campagne',
+  'campaigns.name_required': 'Le nom est requis',
+  'campaigns.name_placeholder': 'Ex: Campagne été 2026',
+  'campaigns.desc_placeholder': 'Description de la campagne...',
+  'campaigns.start_date': 'Date de début',
+  'campaigns.end_date': 'Date de fin',
+  'campaigns.dates_required': 'Les dates sont requises',
+  'campaigns.max_seats': 'Places maximum',
+  'campaigns.unlimited': 'Illimité',
+  'campaigns.create': 'Créer la campagne',
+  'campaigns.date_order': 'La date de fin doit être après la date de début',
+
+  // --- Emails ---
+  'emails.subtitle': 'Gérer les emails',
+  'emails.compose': 'Nouveau message',
+  'emails.new': 'Nouvel email',
+  'emails.recipient': 'Destinataire',
+  'emails.recipients_placeholder': 'Ajouter des destinataires...',
+  'emails.subject': 'Objet',
+  'emails.subject_placeholder': 'Objet de l\'email...',
+  'emails.body_placeholder': 'Rédigez votre message...',
+  'emails.sent': 'Envoyé',
+  'emails.templates': 'Modèles',
+  'emails.template_registration': 'Inscription confirmée',
+  'emails.template_registration_subject': 'Confirmation d\'inscription',
+  'emails.template_payment_reminder': 'Rappel de paiement',
+  'emails.template_payment_subject': 'Paiement en attente',
+  'emails.template_absence': 'Avis d\'absence',
+  'emails.template_absence_subject': 'Absence signalée',
+
+  // --- Groups ---
+  'groups.subtitle': 'Gérer les groupes',
+  'groups.new': 'Nouveau groupe',
+  'groups.name_required': 'Le nom est requis',
+  'groups.capacity': 'Capacité',
+  'groups.capacity_invalid': 'Capacité invalide',
+  'groups.capacity_placeholder': 'Ex: 30',
+  'groups.desc_placeholder': 'Description du groupe...',
+  'groups.create': 'Créer le groupe',
+
+  // --- Invoices (additional) ---
+  'invoices.subtitle': 'Gérer les factures',
+  'invoices.new': 'Nouvelle facture',
+  'invoices.number': 'Numéro',
+  'invoices.due_date': 'Date d\'échéance',
+  'invoices.create': 'Créer la facture',
+  'invoices.student_placeholder': 'Sélectionner un étudiant...',
+  'invoices.fill_fields': 'Veuillez remplir tous les champs',
+
+  // --- Notifications ---
+  'notifications.subtitle': 'Gérer les notifications',
+  'notifications.new': 'Nouvelle notification',
+  'notifications.title': 'Titre',
+  'notifications.title_placeholder': 'Titre de la notification...',
+  'notifications.message_placeholder': 'Contenu de la notification...',
+  'notifications.send': 'Envoyer',
+  'notifications.read': 'Marquer comme lu',
+
+  // --- Payments (additional) ---
+  'payments.subtitle': 'Gérer les paiements',
+  'payments.new': 'Nouveau paiement',
+  'payments.create': 'Enregistrer le paiement',
+  'payments.select_method': 'Sélectionner une méthode',
+  'payments.select_type': 'Sélectionner un type',
+  'payments.student_placeholder': 'Sélectionner un étudiant...',
+  'payments.fill_fields': 'Veuillez remplir tous les champs',
+  'payments.card': 'Carte bancaire',
+  'payments.cash': 'Espèces',
+  'payments.check': 'Chèque',
+  'payments.transfer': 'Virement',
+  'payments.tuition': 'Frais de scolarité',
+  'payments.material': 'Matériel',
+
+  // --- Registrations ---
+  'registrations.subtitle': 'Gérer les inscriptions',
+
+  // --- Reports ---
+  'reports.subtitle': 'Générer des rapports',
+  'reports.select_type': 'Sélectionner un type de rapport',
+  'reports.attendance': 'Rapport de présence',
+  'reports.payments': 'Rapport des paiements',
+  'reports.revenue': 'Rapport des revenus',
+  'reports.registrations': 'Rapport des inscriptions',
+  'reports.teacher_workload': 'Charge de travail des enseignants',
+  'reports.data': 'Données du rapport',
+  'reports.preview': 'Aperçu',
+  'reports.export_excel': 'Exporter en Excel',
+  'reports.export_success': 'Rapport exporté avec succès',
+
+  // --- Resources ---
+  'resources.subtitle': 'Gérer les ressources',
+  'resources.category': 'Catégorie',
+  'resources.file': 'Fichier',
+  'resources.resource': 'Ressource',
+
+  // --- Schedule ---
+  'schedule.subtitle': 'Emploi du temps',
+  'schedule.others': 'Autres cours',
+
+  // --- Settings (additional) ---
+  'settings.subtitle': 'Paramètres du compte',
+  'settings.profile': 'Profil',
+  'settings.profile_info': 'Informations personnelles',
+  'settings.appearance': 'Apparence',
+  'settings.language': 'Langue',
+  'settings.theme_desc': 'Choisir le thème de l\'interface',
+  'settings.notif_prefs': 'Préférences de notification',
+  'settings.notif_rfid': 'Notifications RFID',
+  'settings.notif_rfid_desc': 'Recevoir des alertes lors des scans RFID',
+  'settings.notif_absences': 'Notifications d\'absence',
+  'settings.notif_absences_desc': 'Recevoir des alertes en cas d\'absence',
+  'settings.notif_inscriptions': 'Notifications d\'inscription',
+  'settings.notif_inscriptions_desc': 'Recevoir des alertes pour les nouvelles inscriptions',
+  'settings.notif_payments': 'Notifications de paiement',
+  'settings.notif_payments_desc': 'Recevoir des alertes pour les paiements',
 };
 
 const en: Dict = {
@@ -747,6 +888,7 @@ const en: Dict = {
   'dashboard.stat.attendance_rate': 'Attendance Rate',
   'dashboard.stat.avg_grade': 'Average Grade',
   'dashboard.stat.analytics': 'Quick Analytics',
+  'dashboard.stat.retention': 'Retention Rate',
   'dashboard.quick_actions': 'Quick Actions',
   'dashboard.notifications': 'Notifications',
   'dashboard.no_notifications': 'No notifications',
@@ -832,6 +974,8 @@ const en: Dict = {
   'common.dark_mode': 'Dark mode',
   'common.first_name': 'First Name',
   'common.last_name': 'Last Name',
+  'common.message': 'Message',
+  'common.pending': 'Pending',
 
   // --- Navigation ---
   'nav.dashboard': 'Dashboard',
@@ -992,6 +1136,7 @@ const en: Dict = {
   'status.upcoming': 'Upcoming',
   'status.in_progress': 'In Progress',
   'status.archived': 'Archived',
+  'status.alert': 'Alert',
 
   // --- Roles ---
   'role.admin': 'Admin',
@@ -1346,10 +1491,147 @@ const en: Dict = {
   'attendance.method': 'Method',
   'attendance.manual': 'Manual',
   'attendance.presence': 'Presence',
+  'attendance.subtitle': 'Manage attendance',
   'attendance.mark': 'Mark my students',
   'teacher.my_students': 'My students',
   'teacher.my_schedule': 'My schedule',
   'teacher.my_classes': 'My classes',
+
+  // --- Search ---
+  'search.subtitle': 'Search the platform',
+  'search.placeholder': 'Search courses, students...',
+  'search.start_typing': 'Start typing to search',
+  'search.search_in': 'Search in',
+
+  // --- RFID ---
+  'rfid.subtitle': 'RFID Badge Management',
+  'rfid.live_scan': 'Live Scan',
+  'rfid.recent_scans': 'Recent Scans',
+  'rfid.scan_placeholder': 'Bring the badge close to the reader...',
+  'rfid.scanning': 'Scanning...',
+  'rfid.scan_error': 'Scan Error',
+  'rfid.history': 'History',
+  'rfid.waiting': 'Waiting for badge...',
+  'rfid.waiting_hint': 'Bring a badge close to register it',
+
+  // --- Campaigns ---
+  'campaigns.subtitle': 'Manage campaigns',
+  'campaigns.new': 'New Campaign',
+  'campaigns.campaign': 'Campaign',
+  'campaigns.name_required': 'Name is required',
+  'campaigns.name_placeholder': 'E.g. Summer 2026 Campaign',
+  'campaigns.desc_placeholder': 'Campaign description...',
+  'campaigns.start_date': 'Start Date',
+  'campaigns.end_date': 'End Date',
+  'campaigns.dates_required': 'Dates are required',
+  'campaigns.max_seats': 'Max Seats',
+  'campaigns.unlimited': 'Unlimited',
+  'campaigns.create': 'Create Campaign',
+  'campaigns.date_order': 'End date must be after start date',
+
+  // --- Emails ---
+  'emails.subtitle': 'Manage emails',
+  'emails.compose': 'New Message',
+  'emails.new': 'New Email',
+  'emails.recipient': 'Recipient',
+  'emails.recipients_placeholder': 'Add recipients...',
+  'emails.subject': 'Subject',
+  'emails.subject_placeholder': 'Email subject...',
+  'emails.body_placeholder': 'Write your message...',
+  'emails.sent': 'Sent',
+  'emails.templates': 'Templates',
+  'emails.template_registration': 'Registration Confirmed',
+  'emails.template_registration_subject': 'Registration Confirmation',
+  'emails.template_payment_reminder': 'Payment Reminder',
+  'emails.template_payment_subject': 'Payment Pending',
+  'emails.template_absence': 'Absence Notice',
+  'emails.template_absence_subject': 'Absence Reported',
+
+  // --- Groups ---
+  'groups.subtitle': 'Manage groups',
+  'groups.new': 'New Group',
+  'groups.name_required': 'Name is required',
+  'groups.capacity': 'Capacity',
+  'groups.capacity_invalid': 'Invalid capacity',
+  'groups.capacity_placeholder': 'E.g. 30',
+  'groups.desc_placeholder': 'Group description...',
+  'groups.create': 'Create Group',
+
+  // --- Invoices (additional) ---
+  'invoices.subtitle': 'Manage invoices',
+  'invoices.new': 'New Invoice',
+  'invoices.number': 'Number',
+  'invoices.due_date': 'Due Date',
+  'invoices.create': 'Create Invoice',
+  'invoices.student_placeholder': 'Select a student...',
+  'invoices.fill_fields': 'Please fill all fields',
+
+  // --- Notifications ---
+  'notifications.subtitle': 'Manage notifications',
+  'notifications.new': 'New Notification',
+  'notifications.title': 'Title',
+  'notifications.title_placeholder': 'Notification title...',
+  'notifications.message_placeholder': 'Notification content...',
+  'notifications.send': 'Send',
+  'notifications.read': 'Mark as read',
+
+  // --- Payments (additional) ---
+  'payments.subtitle': 'Manage payments',
+  'payments.new': 'New Payment',
+  'payments.create': 'Record Payment',
+  'payments.select_method': 'Select a method',
+  'payments.select_type': 'Select a type',
+  'payments.student_placeholder': 'Select a student...',
+  'payments.fill_fields': 'Please fill all fields',
+  'payments.card': 'Credit Card',
+  'payments.cash': 'Cash',
+  'payments.check': 'Check',
+  'payments.transfer': 'Bank Transfer',
+  'payments.tuition': 'Tuition Fees',
+  'payments.material': 'Material',
+
+  // --- Registrations ---
+  'registrations.subtitle': 'Manage registrations',
+
+  // --- Reports ---
+  'reports.subtitle': 'Generate reports',
+  'reports.select_type': 'Select report type',
+  'reports.attendance': 'Attendance Report',
+  'reports.payments': 'Payments Report',
+  'reports.revenue': 'Revenue Report',
+  'reports.registrations': 'Registrations Report',
+  'reports.teacher_workload': 'Teacher Workload',
+  'reports.data': 'Report Data',
+  'reports.preview': 'Preview',
+  'reports.export_excel': 'Export to Excel',
+  'reports.export_success': 'Report exported successfully',
+
+  // --- Resources ---
+  'resources.subtitle': 'Manage resources',
+  'resources.category': 'Category',
+  'resources.file': 'File',
+  'resources.resource': 'Resource',
+
+  // --- Schedule ---
+  'schedule.subtitle': 'Schedule',
+  'schedule.others': 'Other courses',
+
+  // --- Settings (additional) ---
+  'settings.subtitle': 'Account settings',
+  'settings.profile': 'Profile',
+  'settings.profile_info': 'Personal information',
+  'settings.appearance': 'Appearance',
+  'settings.language': 'Language',
+  'settings.theme_desc': 'Choose interface theme',
+  'settings.notif_prefs': 'Notification preferences',
+  'settings.notif_rfid': 'RFID Notifications',
+  'settings.notif_rfid_desc': 'Receive alerts on RFID scans',
+  'settings.notif_absences': 'Absence Notifications',
+  'settings.notif_absences_desc': 'Receive absence alerts',
+  'settings.notif_inscriptions': 'Registration Notifications',
+  'settings.notif_inscriptions_desc': 'Receive alerts for new registrations',
+  'settings.notif_payments': 'Payment Notifications',
+  'settings.notif_payments_desc': 'Receive alerts for payments',
 };
 
 const ar: Dict = {
@@ -1422,6 +1704,7 @@ const ar: Dict = {
   'dashboard.stat.attendance_rate': 'نسبة الحضور',
   'dashboard.stat.avg_grade': 'المعدل العام',
   'dashboard.stat.analytics': 'تحليلات سريعة',
+  'dashboard.stat.retention': 'معدل الاحتفاظ',
   'dashboard.quick_actions': 'إجراءات سريعة',
   'dashboard.notifications': 'الإشعارات',
   'dashboard.no_notifications': 'لا توجد إشعارات',
@@ -1507,6 +1790,8 @@ const ar: Dict = {
   'common.dark_mode': 'الوضع الليلي',
   'common.first_name': 'الاسم الأول',
   'common.last_name': 'الاسم الأخير',
+  'common.message': 'رسالة',
+  'common.pending': 'قيد الانتظار',
 
   // --- Navigation ---
   'nav.dashboard': 'لوحة القيادة',
@@ -1667,6 +1952,7 @@ const ar: Dict = {
   'status.upcoming': 'قادم',
   'status.in_progress': 'قيد التنفيذ',
   'status.archived': 'مؤرشف',
+  'status.alert': 'تنبيه',
 
   // --- Roles ---
   'role.admin': 'مدير',
@@ -2021,10 +2307,147 @@ const ar: Dict = {
   'attendance.method': 'الطريقة',
   'attendance.manual': 'يدوي',
   'attendance.presence': 'الحضور',
+  'attendance.subtitle': 'إدارة الحضور',
   'attendance.mark': 'تسجيل طلابي',
   'teacher.my_students': 'طلابي',
   'teacher.my_schedule': 'جدولي',
   'teacher.my_classes': 'دروسي',
+
+  // --- Search ---
+  'search.subtitle': 'البحث في المنصة',
+  'search.placeholder': 'بحث عن دورات، طلاب...',
+  'search.start_typing': 'ابدأ الكتابة للبحث',
+  'search.search_in': 'البحث في',
+
+  // --- RFID ---
+  'rfid.subtitle': 'إدارة بطاقات RFID',
+  'rfid.live_scan': 'مسح مباشر',
+  'rfid.recent_scans': 'عمليات المسح الأخيرة',
+  'rfid.scan_placeholder': 'قرب البطاقة من القارئ...',
+  'rfid.scanning': 'جاري المسح...',
+  'rfid.scan_error': 'خطأ في المسح',
+  'rfid.history': 'السجل',
+  'rfid.waiting': 'بانتظار البطاقة...',
+  'rfid.waiting_hint': 'قرب بطاقة لتسجيلها',
+
+  // --- Campaigns ---
+  'campaigns.subtitle': 'إدارة الحملات',
+  'campaigns.new': 'حملة جديدة',
+  'campaigns.campaign': 'حملة',
+  'campaigns.name_required': 'الاسم مطلوب',
+  'campaigns.name_placeholder': 'مثال: حملة صيف 2026',
+  'campaigns.desc_placeholder': 'وصف الحملة...',
+  'campaigns.start_date': 'تاريخ البداية',
+  'campaigns.end_date': 'تاريخ النهاية',
+  'campaigns.dates_required': 'التواريخ مطلوبة',
+  'campaigns.max_seats': 'الحد الأقصى للمقاعد',
+  'campaigns.unlimited': 'غير محدود',
+  'campaigns.create': 'إنشاء الحملة',
+  'campaigns.date_order': 'تاريخ النهاية يجب أن يكون بعد تاريخ البداية',
+
+  // --- Emails ---
+  'emails.subtitle': 'إدارة البريد الإلكتروني',
+  'emails.compose': 'رسالة جديدة',
+  'emails.new': 'بريد جديد',
+  'emails.recipient': 'المستلم',
+  'emails.recipients_placeholder': 'أضف مستلمين...',
+  'emails.subject': 'الموضوع',
+  'emails.subject_placeholder': 'موضوع البريد...',
+  'emails.body_placeholder': 'اكتب رسالتك...',
+  'emails.sent': 'تم الإرسال',
+  'emails.templates': 'القوالب',
+  'emails.template_registration': 'تأكيد التسجيل',
+  'emails.template_registration_subject': 'تأكيد التسجيل',
+  'emails.template_payment_reminder': 'تذكير بالدفع',
+  'emails.template_payment_subject': 'دفع معلق',
+  'emails.template_absence': 'إشعار غياب',
+  'emails.template_absence_subject': 'تم الإبلاغ عن غياب',
+
+  // --- Groups ---
+  'groups.subtitle': 'إدارة المجموعات',
+  'groups.new': 'مجموعة جديدة',
+  'groups.name_required': 'الاسم مطلوب',
+  'groups.capacity': 'السعة',
+  'groups.capacity_invalid': 'سعة غير صالحة',
+  'groups.capacity_placeholder': 'مثال: 30',
+  'groups.desc_placeholder': 'وصف المجموعة...',
+  'groups.create': 'إنشاء المجموعة',
+
+  // --- Invoices (additional) ---
+  'invoices.subtitle': 'إدارة الفواتير',
+  'invoices.new': 'فاتورة جديدة',
+  'invoices.number': 'الرقم',
+  'invoices.due_date': 'تاريخ الاستحقاق',
+  'invoices.create': 'إنشاء الفاتورة',
+  'invoices.student_placeholder': 'اختر طالباً...',
+  'invoices.fill_fields': 'يرجى ملء جميع الحقول',
+
+  // --- Notifications ---
+  'notifications.subtitle': 'إدارة الإشعارات',
+  'notifications.new': 'إشعار جديد',
+  'notifications.title': 'العنوان',
+  'notifications.title_placeholder': 'عنوان الإشعار...',
+  'notifications.message_placeholder': 'محتوى الإشعار...',
+  'notifications.send': 'إرسال',
+  'notifications.read': 'تحديد كمقروء',
+
+  // --- Payments (additional) ---
+  'payments.subtitle': 'إدارة المدفوعات',
+  'payments.new': 'دفع جديد',
+  'payments.create': 'تسجيل الدفع',
+  'payments.select_method': 'اختر طريقة الدفع',
+  'payments.select_type': 'اختر نوع الدفع',
+  'payments.student_placeholder': 'اختر طالباً...',
+  'payments.fill_fields': 'يرجى ملء جميع الحقول',
+  'payments.card': 'بطاقة بنكية',
+  'payments.cash': 'نقداً',
+  'payments.check': 'شيك',
+  'payments.transfer': 'تحويل بنكي',
+  'payments.tuition': 'رسوم الدراسة',
+  'payments.material': 'المواد الدراسية',
+
+  // --- Registrations ---
+  'registrations.subtitle': 'إدارة التسجيلات',
+
+  // --- Reports ---
+  'reports.subtitle': 'إنشاء التقارير',
+  'reports.select_type': 'اختر نوع التقرير',
+  'reports.attendance': 'تقرير الحضور',
+  'reports.payments': 'تقرير المدفوعات',
+  'reports.revenue': 'تقرير الإيرادات',
+  'reports.registrations': 'تقرير التسجيلات',
+  'reports.teacher_workload': 'عبء عمل الأساتذة',
+  'reports.data': 'بيانات التقرير',
+  'reports.preview': 'معاينة',
+  'reports.export_excel': 'تصدير إلى Excel',
+  'reports.export_success': 'تم تصدير التقرير بنجاح',
+
+  // --- Resources ---
+  'resources.subtitle': 'إدارة الموارد',
+  'resources.category': 'الفئة',
+  'resources.file': 'ملف',
+  'resources.resource': 'مورد',
+
+  // --- Schedule ---
+  'schedule.subtitle': 'الجدول الدراسي',
+  'schedule.others': 'دورات أخرى',
+
+  // --- Settings (additional) ---
+  'settings.subtitle': 'إعدادات الحساب',
+  'settings.profile': 'الملف الشخصي',
+  'settings.profile_info': 'المعلومات الشخصية',
+  'settings.appearance': 'المظهر',
+  'settings.language': 'اللغة',
+  'settings.theme_desc': 'اختر مظهر الواجهة',
+  'settings.notif_prefs': 'تفضيلات الإشعارات',
+  'settings.notif_rfid': 'إشعارات RFID',
+  'settings.notif_rfid_desc': 'تلقي تنبيهات عند مسح RFID',
+  'settings.notif_absences': 'إشعارات الغياب',
+  'settings.notif_absences_desc': 'تلقي تنبيهات عند الغياب',
+  'settings.notif_inscriptions': 'إشعارات التسجيل',
+  'settings.notif_inscriptions_desc': 'تلقي تنبيهات عند تسجيلات جديدة',
+  'settings.notif_payments': 'إشعارات الدفع',
+  'settings.notif_payments_desc': 'تلقي تنبيهات عند الدفع',
 };
 
 const dicts: Record<Lang, Dict> = { fr, en, ar };
