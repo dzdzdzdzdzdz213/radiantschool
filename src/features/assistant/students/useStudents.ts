@@ -25,9 +25,8 @@ export function useStudents(search: string = '', page: number = 1, pageSize: num
         filters: [{ column: 'role', operator: 'eq' as const, value: 'student' }, { column: 'deleted_at', operator: 'is' as const, value: null }],
       };
       if (filters?.status) params.filters.push({ column: 'status', operator: 'eq', value: filters.status });
-      if (filters?.studentType) params.filters.push({ column: 'student_type', operator: 'eq', value: filters.studentType });
       if (search) { params.search = search; params.searchColumns = ['first_name', 'last_name', 'email']; }
-      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, student_type, created_at');
+      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, created_at, students(student_type)');
       const data = result.data.map((r: any) => ({
         id: r.id,
         firstName: r.first_name ?? '',
@@ -35,7 +34,7 @@ export function useStudents(search: string = '', page: number = 1, pageSize: num
         email: r.email ?? '',
         phone: r.phone ?? null,
         status: r.status ?? '',
-        studentType: r.student_type ?? null,
+        studentType: r.students?.student_type ?? null,
         levelName: r.level_name ?? null,
         courseCount: r.course_count ?? 0,
         createdAt: r.created_at ?? '',

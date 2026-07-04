@@ -33,20 +33,19 @@ export function usePublicStats() {
   return useQuery({
     queryKey: ['public-stats'],
     queryFn: async () => {
-      const [studentRes, evalRes, teacherRes, courseRes, typeRes] = await Promise.all([
-        supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'student').is('deleted_at', null),
-        supabase.from('evaluations').select('average_score'),
-        supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'teacher').is('deleted_at', null),
+      const [statsRes, courseRes, typeRes] = await Promise.all([
+        (supabase.rpc as any)('get_public_stats'),
         supabase.from('courses').select('capacity').eq('status', 'active'),
         supabase.from('courses').select('type').eq('status', 'active'),
       ]);
-      const studentCount = studentRes.count ?? 0;
-      const teacherCount = teacherRes.count ?? 0;
+      const stats = statsRes.data ?? {};
+      const studentCount = (stats as any).student_count ?? 0;
+      const teacherCount = (stats as any).teacher_count ?? 0;
+      const avgRating = (stats as any).avg_rating ?? 0;
+      const successRate = (stats as any).success_rate ?? 0;
+      const totalEvaluations = (stats as any).total_evaluations ?? 0;
       const { data: levelCategories } = await supabase.from('levels').select('category').not('category', 'is', null);
       const levelCount = new Set((levelCategories ?? []).map(r => r.category)).size;
-      const scores = (evalRes.data ?? []).map(r => r.average_score).filter(Boolean) as number[];
-      const avgRating = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-      const successRate = scores.length > 0 ? Math.round((scores.filter(s => s >= 3).length / scores.length) * 100) : 0;
       const firstCourse = await supabase.from('courses').select('start_date').eq('status', 'active').order('start_date', { ascending: true }).limit(1).maybeSingle();
       const yearsActive = firstCourse.data?.start_date
         ? Math.max(1, new Date().getFullYear() - new Date(firstCourse.data.start_date).getFullYear())
@@ -55,7 +54,7 @@ export function usePublicStats() {
       const minCapacity = capacities.length > 0 ? Math.min(...capacities) : 0;
       const types = new Set((typeRes.data ?? []).map(r => r.type).filter(Boolean));
       const typeCount = types.size;
-      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations: scores.length, teacherCount, minCapacity, typeCount, levelCount };
+      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations, teacherCount, minCapacity, typeCount, levelCount };
     },
     staleTime: 1000 * 60 * 5,
   });
