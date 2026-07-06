@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -26,6 +26,14 @@ function PageShell({ children }: { children: React.ReactNode }) {
 export default function TeacherLayout() {
   const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+    return () => { if (meta.parentElement) meta.parentElement.removeChild(meta); };
+  }, []);
   const teacherNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/teacher/dashboard', icon: 'LayoutDashboard' },
     { label: t('nav.my_schedule', lang), path: '/teacher/schedule', icon: 'Calendar' },
@@ -45,7 +53,6 @@ export default function TeacherLayout() {
     { label: t('nav.payments', lang), path: '/teacher/revenue', icon: 'DollarSign' },
     { label: t('nav.reviews', lang), path: '/teacher/reviews', icon: 'Star' },
     { label: t('nav.profile', lang), path: '/teacher/profile', icon: 'UserCircle' },
-    { label: t('nav.settings', lang), path: '/teacher/settings', icon: 'Settings' },
   ];
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
@@ -76,7 +83,6 @@ export default function TeacherLayout() {
         <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-4"><BackButton label={t('common.back_to_site', lang)} to="/" /></div>
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
                 <PageShell><Outlet /></PageShell>

@@ -44,9 +44,6 @@ export default function ParentLayout() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="mb-4">
-            <BackButton label={t('common.back_to_site', lang)} to="/" />
-          </div>
           <ErrorBoundary>
             <Suspense fallback={<ParentFallback />}>
               <Outlet />

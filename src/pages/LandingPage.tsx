@@ -62,9 +62,8 @@ export default function LandingPage() {
   const [catFilter, setCatFilter] = useState('');
   const [yearFilter, setYearFilter] = useState(0);
   const [streamFilter, setStreamFilter] = useState('');
-  const [subFilter, setSubFilter] = useState('');
 
-  type StreamOpt = { value: string; label: string; subs?: { value: string; label: string }[] };
+  type StreamOpt = { value: string; label: string };
 
   const STREAMS_BY_YEAR: Record<number, StreamOpt[]> = {
     1: [
@@ -72,30 +71,19 @@ export default function LandingPage() {
       { value: 'Lettres', label: 'Lettres' },
     ],
     2: [
+      { value: 'Scientifique', label: 'Scientifique' },
       { value: 'Mathématiques', label: 'Mathématiques' },
-      { value: 'Maths Techniques', label: 'Maths Techniques', subs: [
-        { value: 'Génie Mécanique', label: 'Génie Mécanique' },
-        { value: 'Génie des Procédés', label: 'Génie des Procédés' },
-        { value: 'Génie Électrique', label: 'Génie Électrique' },
-      ]},
-      { value: 'Lettres', label: 'Lettres', subs: [
-        { value: 'Langues', label: 'Langues' },
-        { value: 'Lettres', label: 'Lettres' },
-      ]},
-    ],
-    3: [
-      { value: 'Mathématiques', label: 'Mathématiques' },
-      { value: 'Maths Techniques', label: 'Maths Techniques', subs: [
-        { value: 'Génie Mécanique', label: 'Génie Mécanique' },
-        { value: 'Génie des Procédés', label: 'Génie des Procédés' },
-        { value: 'Génie Électrique', label: 'Génie Électrique' },
-      ]},
-      { value: 'Lettres', label: 'Lettres', subs: [
-        { value: 'Langues', label: 'Langues' },
-        { value: 'Lettres', label: 'Lettres' },
-      ]},
-      { value: 'Baccalauréat', label: 'BAC Toutes Sections' },
-    ],
+    { value: 'Maths Techniques', label: 'Maths Techniques' },
+    { value: 'Lettres', label: 'Lettres' },
+    { value: 'Gestion et Économie', label: 'Gestion et Économie' },
+  ],
+  3: [
+    { value: 'Scientifique', label: 'Scientifique' },
+    { value: 'Mathématiques', label: 'Mathématiques' },
+    { value: 'Lettres', label: 'Lettres' },
+    { value: 'Gestion et Économie', label: 'Gestion et Économie' },
+    { value: 'Baccalauréat', label: 'BAC Toutes Sections' },
+  ],
   };
 
   const CATEGORIES = [
@@ -123,13 +111,9 @@ export default function LandingPage() {
   };
 
   const activeStreams = catFilter === 'high_school' && yearFilter > 0 ? STREAMS_BY_YEAR[yearFilter] ?? [] : [];
-  const selectedStream = activeStreams.find(s => s.value === streamFilter);
-  const activeSubs = selectedStream?.subs ?? [];
-
   function resetSubFilters() {
     setYearFilter(0);
     setStreamFilter('');
-    setSubFilter('');
   }
 
   const filtered = (courses ?? []).filter((c: any) => {
@@ -138,9 +122,8 @@ export default function LandingPage() {
     const matchCat = !catFilter || c.level?.category === catFilter;
     const matchYear = !yearFilter
       || (yearFilter === -1 ? c.level?.name?.includes('4AM') || c.level?.name?.includes('BEM') : c.level?.year === yearFilter);
-    const matchStream = !streamFilter || c.level?.stream === streamFilter;
-    const matchSub = !subFilter || c.level?.stream === subFilter;
-    return matchSearch && matchCat && matchYear && matchStream && matchSub;
+  const matchStream = !streamFilter || c.level?.stream === streamFilter;
+  return matchSearch && matchCat && matchYear && matchStream;
   });
 
   const grouped = catFilter ? null : (() => {
@@ -203,7 +186,7 @@ export default function LandingPage() {
               <p className="text-xl font-bold" style={{ color: 'var(--primary)' }}>{formatCurrency(c.price)}</p>
               {c.capacity && <p className="text-[10px]" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{c.capacity} places</p>}
             </div>
-            <Link to="/register" className="btn-primary px-4 py-2 text-xs gap-1.5 transition-all duration-200 hover:shadow-md hover:shadow-[var(--primary)]/20">
+            <Link to="/enroll" className="btn-primary px-4 py-2 text-xs gap-1.5 transition-all duration-200 hover:shadow-md hover:shadow-[var(--primary)]/20">
               {t('section.formations.jeveux', lang)} <ChevronRight className="h-3.5 w-3.5 rtl-flip" />
             </Link>
           </div>
@@ -254,10 +237,7 @@ export default function LandingPage() {
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
-            <div className="hidden items-center gap-4 sm:flex ml-3">
-              <Link to="/login" className="btn-ghost px-5 py-2.5 text-sm">{t('nav.connexion', lang)}</Link>
-              <Link to="/register" className="btn-primary px-6 py-2.5 text-sm">{t('nav.inscription', lang)}</Link>
-            </div>
+
 
             <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-xl p-2.5 md:hidden transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -276,10 +256,7 @@ export default function LandingPage() {
                 )
               ))}
             </nav>
-            <div className="flex gap-3">
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="btn-ghost flex-1 py-3 text-center text-sm">{t('nav.connexion', lang)}</Link>
-              <Link to="/register" onClick={() => setMenuOpen(false)} className="btn-primary flex-1 py-3 text-center text-sm">{t('nav.inscription', lang)}</Link>
-            </div>
+
           </div>
         )}
       </header>
@@ -310,7 +287,7 @@ export default function LandingPage() {
                 <a href="#courses" className="btn-primary h-14 px-10 text-base gap-2.5 w-full sm:w-auto shadow-2xl shadow-[var(--primary)]/30 hover:shadow-[var(--primary)]/40 transition-all duration-300 active:scale-[0.97]">
                   {t('hero.cta1', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
                 </a>
-                <Link to="/register" className="btn-ghost h-14 px-10 text-base w-full sm:w-auto">
+                <Link to="/enroll" className="btn-ghost h-14 px-10 text-base w-full sm:w-auto">
                   {t('hero.cta2', lang)}
                 </Link>
               </div>
@@ -402,7 +379,7 @@ export default function LandingPage() {
               {YEAR_OPTIONS[catFilter].map((y) => (
                 <button
                   key={y.value}
-                  onClick={() => { setYearFilter(y.value); setStreamFilter(''); setSubFilter(''); }}
+                  onClick={() => { setYearFilter(y.value); setStreamFilter(''); }}
                   className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
                   style={{
                     backgroundColor: yearFilter === y.value ? 'var(--primary)' : 'var(--bg)',
@@ -425,7 +402,7 @@ export default function LandingPage() {
               {activeStreams.map((s) => (
                 <button
                   key={s.label}
-                  onClick={() => { setStreamFilter(streamFilter === s.value ? '' : s.value); setSubFilter(''); }}
+                  onClick={() => { setStreamFilter(streamFilter === s.value ? '' : s.value); }}
                   className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
                   style={{
                     backgroundColor: streamFilter === s.value ? 'var(--primary)' : 'var(--bg)',
@@ -433,30 +410,7 @@ export default function LandingPage() {
                     border: streamFilter === s.value ? 'none' : '1px solid var(--border)',
                   }}
                 >
-                  {s.label}{s.subs ? ' ▸' : ''}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Sub-stream chips (Génie Mécanique, etc.) */}
-          {activeSubs.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
-                <ChevronDown className="h-3 w-3 inline mr-1" />Spécialité
-              </span>
-              {activeSubs.map((sub) => (
-                <button
-                  key={sub.value}
-                  onClick={() => setSubFilter(sub.value)}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
-                  style={{
-                    backgroundColor: subFilter === sub.value ? 'var(--primary)' : 'var(--bg)',
-                    color: subFilter === sub.value ? '#fff' : 'var(--fg-muted)',
-                    border: subFilter === sub.value ? 'none' : '1px solid var(--border)',
-                  }}
-                >
-                  {sub.label}
+                  {s.label}
                 </button>
               ))}
             </div>
@@ -468,13 +422,11 @@ export default function LandingPage() {
               {[catFilter && CATEGORIES.find(c => c.value === catFilter)?.label,
                 yearFilter > 0 && YEAR_OPTIONS[catFilter]?.find(y => y.value === yearFilter)?.label,
                 streamFilter,
-                subFilter,
               ].filter(Boolean).join(' › ') && (
                 <span className="text-xs font-medium" style={{ color: 'var(--fg-muted)' }}>
                   {[catFilter && CATEGORIES.find(c => c.value === catFilter)?.label,
                     yearFilter > 0 && YEAR_OPTIONS[catFilter]?.find(y => y.value === yearFilter)?.label,
                     streamFilter,
-                    subFilter,
                   ].filter(Boolean).join(' › ')}
                 </span>
               )}
@@ -513,7 +465,7 @@ export default function LandingPage() {
                     <GraduationCap className="h-4 w-4" style={{ color: 'var(--primary)' }} />
                   </div>
                   <h3 className="text-xl font-bold tracking-tight">
-                    {cat === 'primaire' ? 'Primaire' : cat === 'college' ? 'CEM / Collège' : cat === 'lycee' ? 'Lycée' : 'Autres'}
+                    {cat === 'primary' ? 'Primaire' : cat === 'middle' ? 'CEM / Collège' : cat === 'high_school' ? 'Lycée' : 'Autres'}
                   </h3>
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)`, color: 'var(--fg-muted)' }}>{items.length}</span>
                 </div>
@@ -616,7 +568,7 @@ export default function LandingPage() {
           <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.02]">{t('cta.title', lang)}</h2>
           <p className="mt-6 text-white/70 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">{t('cta.subtitle', lang)}</p>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
-            <Link to="/register" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-white px-10 text-sm font-bold shadow-2xl transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-1 active:scale-[0.97] text-base" style={{ color: 'var(--primary)' }}>
+            <Link to="/enroll" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-white px-10 text-sm font-bold shadow-2xl transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-1 active:scale-[0.97] text-base" style={{ color: 'var(--primary)' }}>
               {t('cta.button', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
             </Link>
             <a href="#courses" className="inline-flex h-14 items-center rounded-2xl border-2 px-10 text-sm font-semibold text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-white active:scale-[0.97] text-base" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
@@ -656,10 +608,7 @@ export default function LandingPage() {
                 ...NAV.map(x => ({ label: t(x.key, lang), href: x.href })),
                 { label: t('nav.leaderboard', lang), to: '/leaderboard' },
               ]},
-              { title: 'footer.account', col: 'lg:col-span-2', items: [
-                { label: t('nav.connexion', lang), to: '/login' },
-                { label: t('nav.inscription', lang), to: '/register' },
-              ]},
+
               { title: 'footer.contact', col: 'lg:col-span-4', items: [
                 { label: '+213 779 89 34 02', icon: Phone },
                 { label: 'contact@radiant.dz', icon: Mail },

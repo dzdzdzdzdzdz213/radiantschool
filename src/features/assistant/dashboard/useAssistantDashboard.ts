@@ -125,7 +125,7 @@ export function useAssistantDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from('course_enrollments')
-        .select('id, status, enrollment_date, student:users!student_id(first_name, last_name), course:courses(name)')
+        .select('id, status, enrollment_date, student:users(first_name, last_name), course:courses(name)')
         .eq('status', 'pending')
         .order('enrollment_date', { ascending: false })
         .limit(10);
@@ -146,7 +146,7 @@ export function useAssistantDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from('invoices')
-        .select('id, total_amount, paid_amount, due_date, student:users!student_id(first_name, last_name)')
+        .select('id, total_amount, paid_amount, due_date, student:users(first_name, last_name)')
         .in('status', ['unpaid', 'partially_paid'])
         .lt('due_date', today)
         .order('due_date', { ascending: true })
@@ -188,7 +188,7 @@ export function useAssistantDashboard() {
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const { data } = await supabase
         .from('course_schedules')
-        .select('id, start_time, end_time, course:courses!inner(name, room_id), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
+        .select('id, start_time, end_time, course:courses!inner(name, room_id), teacher:users(first_name, last_name), room:rooms(name)')
         .eq('day_of_week', dayName)
         .lte('start_time', currentTime)
         .gte('end_time', currentTime)
@@ -211,7 +211,7 @@ export function useAssistantDashboard() {
       const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
       const { data } = await supabase
         .from('course_schedules')
-        .select('id, start_time, end_time, course:courses!inner(name), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
+        .select('id, start_time, end_time, course:courses!inner(name), teacher:users(first_name, last_name), room:rooms(name)')
         .eq('day_of_week', dayName)
         .order('start_time')
         .limit(20);
@@ -233,7 +233,7 @@ export function useAssistantDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from('attendance')
-        .select('id, date, status, created_at, student:users!student_id(first_name, last_name)')
+        .select('id, date, status, created_at, student:users(first_name, last_name)')
         .eq('date', today)
         .eq('method', 'rfid')
         .order('created_at', { ascending: false })

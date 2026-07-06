@@ -19,7 +19,7 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
     queryFn: async () => {
       const { data, count } = await (supabase as any)
         .from('course_enrollments')
-        .select('id, status, enrollment_date, student:users!student_id(first_name, last_name, id), course:courses(id, name), campaign:campaigns(name)', { count: 'exact' })
+        .select('id, status, enrollment_date, student:users(first_name, last_name, id), course:courses(id, name), campaign:campaigns(name)', { count: 'exact' })
         .order('enrollment_date', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       const items = (data ?? []).map((r: any) => ({

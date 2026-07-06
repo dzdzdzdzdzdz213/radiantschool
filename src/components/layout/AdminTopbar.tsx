@@ -149,7 +149,7 @@ function UserMenu() {
           <Settings className="mr-2 h-4 w-4" />
           {t('nav.settings', lang)}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => toast(t('common.info', lang), 'info')}>
+        <DropdownMenuItem onClick={() => navigate(`/${profile?.role}/help`)}>
           <HelpCircle className="mr-2 h-4 w-4" />
           {t('nav.help', lang)}
         </DropdownMenuItem>

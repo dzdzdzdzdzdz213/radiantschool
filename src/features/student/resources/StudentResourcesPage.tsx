@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, FileText, Download, Video, Image, File, FolderOpen, Loader } from 'lucide-react';
+import { Search, FileText, Download, Video, Image, File, FolderOpen, Loader, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -51,8 +51,9 @@ export default function StudentResourcesPage() {
             : (resources ?? []).length === 0 ? (
               <div className="sm:col-span-2 lg:col-span-3 text-center py-12 text-muted-foreground"><FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p></div>
             ) : (resources ?? []).map((r: any) => {
-              const Icon = typeIcons[r.type] ?? FileText;
-              const color = typeColors[r.type] ?? 'text-primary bg-primary/10';
+              const isLink = r.type === 'link';
+              const Icon = isLink ? LinkIcon : (typeIcons[r.type] ?? FileText);
+              const color = isLink ? 'text-sky-500 bg-sky-500/10' : (typeColors[r.type] ?? 'text-primary bg-primary/10');
               return (
                 <div key={r.id} className="group rounded-xl border p-4 hover:bg-accent/30 transition-colors">
                   <div className={`h-10 w-10 rounded-xl ${color.split(' ')[1]} flex items-center justify-center mb-3`}>
@@ -64,9 +65,15 @@ export default function StudentResourcesPage() {
                     <span>{r.courseName}</span>
                     <span>{formatDate(r.created_at)}</span>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5" onClick={() => { if (r.file_url) downloadFile.mutate({ fileUrl: r.file_url, filename: r.title }); }} disabled={downloadFile.isPending}>
-                    {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{t('common.download', lang)}
-                  </Button>
+                  {isLink ? (
+                    <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5" asChild>
+                      <a href={r.file_url} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t('nav.online_classes', lang)}</a>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5" onClick={() => { if (r.file_url) downloadFile.mutate({ fileUrl: r.file_url, filename: r.title }); }} disabled={downloadFile.isPending}>
+                      {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{t('common.download', lang)}
+                    </Button>
+                  )}
                 </div>
               );
             })}

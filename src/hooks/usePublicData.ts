@@ -11,7 +11,7 @@ export function usePublicCourses() {
         .select(`
           id, name, type, capacity, current_enrollments, price, status, start_date, end_date,
           subject:subjects(name),
-          level:levels(name, category, stream),
+          level:levels(name, category, stream, year),
           teacher:users!teacher_id(first_name, last_name),
           room:rooms(name),
           schedules:course_schedules(id, day_of_week, start_time, end_time)

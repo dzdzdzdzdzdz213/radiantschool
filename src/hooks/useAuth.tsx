@@ -117,50 +117,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) return { error: error.message };
       if (!data.user) return { error: 'Création du compte échouée' };
 
-      const { error: insertError } = await supabase.from('users').insert({
-        id: data.user.id, email, first_name: firstName, last_name: lastName, role,
-        status: role === 'student' ? 'active' : 'pending',
-        email_verified: false, phone: options?.phone || null,
+      const { error: rpcErr } = await supabase.rpc('register_user', {
+        p_id: data.user.id,
+        p_email: email,
+        p_first_name: firstName,
+        p_last_name: lastName,
+        p_role: role,
+        p_status: role === 'student' ? 'active' : 'pending',
+        p_phone: options?.phone || null,
       });
-      if (insertError) {
+      if (rpcErr) {
         await supabase.auth.signOut();
-        return { error: insertError.message };
+        return { error: rpcErr.message };
       }
 
-      try {
-        if (role === 'student') {
-          await supabase.from('students').insert({
-            id: data.user.id, student_type: 'regular',
-            registration_number: `STU-${String(Date.now()).slice(-8)}`,
-          });
-        } else if (role === 'teacher') {
-          await supabase.from('teachers').insert({ id: data.user.id });
-        } else if (role === 'assistant') {
-          await supabase.from('assistants').insert({ id: data.user.id });
-        } else if (role === 'parent') {
-          await supabase.from('parents').insert({ id: data.user.id });
-          if (options?.childFirstName) {
-            const { data: childData, error: childErr } = await supabase.from('users').insert({
-              email: `child-${Date.now()}@radiant.dz`,
-              first_name: options.childFirstName,
-              last_name: options.childLastName || '',
-              role: 'student', status: 'active', email_verified: false,
-            }).select('id').single();
-            if (!childErr && childData) {
-              await supabase.from('students').insert({
-                id: childData.id, student_type: 'regular',
-                registration_number: `STU-${String(Date.now()).slice(-8)}`,
-              });
-              await supabase.from('student_parent').insert({
-                student_id: childData.id, parent_id: data.user.id, relationship: 'parent',
-              });
-            }
-          }
+      if (role === 'parent' && options?.childFirstName) {
+        const { error: childErr } = await supabase.rpc('register_child', {
+          p_parent_id: data.user.id,
+          p_first_name: options.childFirstName,
+          p_last_name: options.childLastName || '',
+          p_level_category: options.childLevelCategory || '',
+        });
+        if (childErr) {
+          try { await supabase.rpc('unregister_user', { p_id: data.user.id }); } catch { /* best-effort rollback */ }
+          await supabase.auth.signOut();
+          return { error: 'Échec de la création du profil enfant. Veuillez réessayer.' };
         }
-      } catch {
-        try { await supabase.from('users').delete().eq('id', data.user.id); } catch (e) { console.error('Failed to rollback user record after failed signup:', e); }
-        await supabase.auth.signOut();
-        return { error: 'Échec de la création du profil. Veuillez réessayer.' };
       }
 
       return {};

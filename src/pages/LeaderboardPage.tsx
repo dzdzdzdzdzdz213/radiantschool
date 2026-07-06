@@ -31,9 +31,9 @@ interface Subject {
 const MEDAL_COLORS = ['#f59e0b', '#94a3b8', '#cd7f32'];
 const CATEGORIES = [
   { value: '', label: 'Tous' },
-  { value: 'primaire', label: 'Primaire' },
-  { value: 'college', label: 'CEM' },
-  { value: 'lycee', label: 'Lycée' },
+  { value: 'primary', label: 'Primaire' },
+  { value: 'middle', label: 'CEM' },
+  { value: 'high_school', label: 'Lycée' },
 ];
 
 export default function LeaderboardPage() {

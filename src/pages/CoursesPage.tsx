@@ -1,25 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCourses, useSubjects, useLevels } from '@/hooks/useQueries';
+import { useCourses, useSubjects, useLevels, useRooms } from '@/hooks/useQueries';
 import { useUsers } from '@/hooks/useQueries';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Search, Plus, BookOpen, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, BookOpen, X, Pencil, Trash2, Filter, Camera, Loader, ImageOff, Trash } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getCourseImageUrl, uploadCourseImage } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function CoursesPage() {
-  const { data: courses, isLoading } = useCourses();
+  const { data: courses, isLoading, isError } = useCourses();
   const { data: subjects } = useSubjects();
   const { data: levels } = useLevels();
+  const { data: rooms } = useRooms();
   const { data: allUsers } = useUsers();
   const { lang } = useLang();
   const { toast } = useToast();
@@ -27,16 +30,34 @@ export default function CoursesPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [catFilter, setCatFilter] = useState('');
+  const [levelFilter, setLevelFilter] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState('');
+
+  const levelsByCat = useMemo(() => {
+    const grouped: Record<string, any[]> = {};
+    for (const l of levels ?? []) {
+      (grouped[l.category] ??= []).push(l);
+    }
+    return grouped;
+  }, [levels]);
+
+  const filteredLevels = catFilter ? (levelsByCat[catFilter] ?? []) : (levels ?? []);
 
   const teachers = allUsers?.filter((u: any) => u.role === 'teacher') ?? [];
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({ name: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '' });
+  const [form, setForm] = useState({ name: '', type: 'normal', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '', description: '', image_url: '' });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const openCreateModal = () => {
     setEditingId(null);
-    setForm({ name: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '' });
+    setForm({ name: '', type: 'normal', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '', description: '', image_url: '' });
+    setImageFile(null);
+    setImagePreview(null);
     setShowModal(true);
   };
 
@@ -44,6 +65,7 @@ export default function CoursesPage() {
     setEditingId(item.id);
     setForm({
       name: item.name ?? '',
+      type: item.type ?? 'normal',
       price: item.price?.toString() ?? '',
       capacity: item.capacity?.toString() ?? '',
       start_date: item.start_date ?? '',
@@ -51,18 +73,32 @@ export default function CoursesPage() {
       subject_id: item.subject_id?.toString() ?? '',
       level_id: item.level_id?.toString() ?? '',
       teacher_id: item.teacher_id ?? '',
+      room_id: item.room_id?.toString() ?? '',
+      description: item.description ?? '',
+      image_url: item.image_url ?? '',
     });
+    setImageFile(null);
+    setImagePreview(null);
     setShowModal(true);
   };
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      let image_url = form.image_url || null;
+      if (imageFile) {
+        const tempId = editingId ?? -Date.now();
+        image_url = await uploadCourseImage(tempId, imageFile);
+      }
       const base = {
         name: form.name.trim(),
+        type: form.type,
         price: form.price ? parseFloat(form.price) : 0,
         capacity: form.capacity ? parseInt(form.capacity, 10) : 1,
         start_date: form.start_date,
         end_date: form.end_date,
+        description: form.description.trim() || undefined,
+        image_url,
+        room_id: form.room_id ? parseInt(form.room_id, 10) : undefined,
       };
       if (editingId) {
         const { error } = await supabase.from('courses').update({
@@ -73,13 +109,17 @@ export default function CoursesPage() {
         }).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('courses').insert({
+        const { data: inserted } = await supabase.from('courses').insert({
           ...base,
           subject_id: parseInt(form.subject_id, 10),
           level_id: parseInt(form.level_id, 10),
           teacher_id: form.teacher_id,
-        });
-        if (error) throw error;
+        }).select('id').single();
+        if (inserted && imageFile) {
+          const newPath = await uploadCourseImage(inserted.id, imageFile);
+          await supabase.from('courses').update({ image_url: newPath }).eq('id', inserted.id);
+        }
+        if (!inserted) throw new Error('Creation failed');
       }
     },
     onSuccess: () => {
@@ -87,7 +127,9 @@ export default function CoursesPage() {
       toast(t(editingId ? 'success.updated' : 'success.created', lang, t('nav.courses', lang)), 'success');
       setShowModal(false);
       setEditingId(null);
-      setForm({ name: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '' });
+      setForm({ name: '', type: 'normal', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '', description: '', image_url: '' });
+      setImageFile(null);
+      setImagePreview(null);
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -106,10 +148,23 @@ export default function CoursesPage() {
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
+  useEffect(() => {
+    const channel = supabase.channel('courses_live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, () => {
+        qc.invalidateQueries({ queryKey: ['courses'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
   const filtered = (courses ?? []).filter((c: any) => {
-    const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q) || c.level?.stream?.toLowerCase().includes(q);
     const matchesType = !typeFilter || c.type === typeFilter;
-    return matchesSearch && matchesType;
+    const matchesCat = !catFilter || c.level?.category === catFilter;
+    const matchesLevel = !levelFilter || c.level_id === parseInt(levelFilter);
+    const matchesSubject = !subjectFilter || c.subject_id === parseInt(subjectFilter);
+    return matchesSearch && matchesType && matchesCat && matchesLevel && matchesSubject;
   });
 
   return (
@@ -128,7 +183,7 @@ export default function CoursesPage() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowModal(false)}>
-          <Card className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
+          <Card className="bg-card rounded-xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">{editingId ? t('common.edit', lang) : t('common.add', lang)}</h2>
               <button onClick={() => setShowModal(false)} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
@@ -137,6 +192,49 @@ export default function CoursesPage() {
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.name', lang)} *</Label>
                 <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="h-9" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.description', lang)}</Label>
+                <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="h-9" rows={2} />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Image du cours</Label>
+                <div className="flex items-center gap-3">
+                  <div className="relative w-20 h-20 rounded-lg border bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    {imagePreview || form.image_url ? (
+                      <img src={imagePreview || getCourseImageUrl(form.image_url) || ''} alt="preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageOff className="h-6 w-6 text-muted-foreground" />
+                    )}
+                    {uploadingImage && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <Loader className="h-5 w-5 animate-spin text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Button type="button" variant="outline" size="sm" className="h-8 gap-2" onClick={() => document.getElementById('course-image-input')?.click()}>
+                      <Camera className="h-4 w-4" />{form.image_url ? 'Changer' : 'Ajouter'}
+                    </Button>
+                    {(imagePreview || form.image_url) && (
+                      <Button type="button" variant="ghost" size="sm" className="h-8 gap-2 text-destructive" onClick={() => { setImageFile(null); setImagePreview(null); setForm(f => ({ ...f, image_url: '' })); }}>
+                        <Trash className="h-4 w-4" />Supprimer
+                      </Button>
+                    )}
+                    <input id="course-image-input" type="file" accept="image/*" className="hidden" onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) { setImageFile(file); setImagePreview(URL.createObjectURL(file)); }
+                    }} />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Type *</Label>
+                <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v }))} placeholder={t('common.select', lang)}>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="vip">VIP</SelectItem>
+                  <SelectItem value="private">Particulier</SelectItem>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -169,8 +267,24 @@ export default function CoursesPage() {
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.level', lang)} *</Label>
                 <Select value={form.level_id} onValueChange={v => setForm(f => ({ ...f, level_id: v }))} placeholder={t('common.select', lang)}>
-                  {(levels ?? []).map((l: any) => (
-                    <SelectItem key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</SelectItem>
+                  {(levels ?? [])
+                    .sort((a: any, b: any) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
+                    .map((l: any) => {
+                      const catLabel = l.category === 'primary' ? 'Primaire' : l.category === 'middle' ? 'CEM' : 'Lycée';
+                      return (
+                        <SelectItem key={l.id} value={String(l.id)}>
+                          [{catLabel}] {l.name}{l.stream ? ` - ${l.stream}` : ''}
+                        </SelectItem>
+                      );
+                    })}
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Salle</Label>
+                <Select value={form.room_id} onValueChange={v => setForm(f => ({ ...f, room_id: v }))} placeholder={t('common.select', lang)}>
+                  <SelectItem value="">—</SelectItem>
+                  {(rooms ?? []).map((r: any) => (
+                    <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
                   ))}
                 </Select>
               </div>
@@ -193,13 +307,36 @@ export default function CoursesPage() {
         </div>
       )}
 
-      <div className="flex gap-4">
-        <div className="relative flex-1">
+      {isError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          Erreur lors du chargement des cours. Vérifiez votre connexion et réessayez.
+        </div>
+      )}
+      <div className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search_course', lang)} className="w-full rounded-lg border py-2 pl-10 pr-3 text-sm" />
         </div>
+        <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setLevelFilter(''); }} className="rounded-lg border px-3 py-2 text-sm">
+          <option value="">Tous niveaux</option>
+          <option value="primary">Primaire</option>
+          <option value="middle">CEM</option>
+          <option value="high_school">Lycée</option>
+        </select>
+        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm min-w-[140px]">
+          <option value="">Toutes classes</option>
+          {filteredLevels.map((l: any) => (
+            <option key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</option>
+          ))}
+        </select>
+        <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm">
+          <option value="">Toutes matières</option>
+          {(subjects ?? []).map((s: any) => (
+            <option key={s.id} value={String(s.id)}>{s.name}</option>
+          ))}
+        </select>
         <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm">
-          <option value="">{t('common.all', lang)}</option>
+          <option value="">Tous types</option>
           <option value="normal">Normal</option>
           <option value="vip">VIP</option>
           <option value="private">Particulier</option>
@@ -208,6 +345,8 @@ export default function CoursesPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
           <div className="col-span-full p-8 text-center text-muted">{t('common.loading', lang)}</div>
+        ) : isError ? (
+          <div className="col-span-full p-8 text-center text-muted">Impossible de charger les cours</div>
         ) : filtered.length === 0 ? (
           <div className="col-span-full p-8 text-center text-muted">{t('common.no_results', lang)}</div>
         ) : (

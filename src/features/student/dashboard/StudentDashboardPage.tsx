@@ -26,7 +26,6 @@ const kpiConfig = [
 
   { key: 'privateLessons', labelKey: 'nav.private_lessons', icon: UserPlus, suffix: '', color: 'text-indigo-500' },
   { key: 'vipLessons', labelKey: 'nav.vip_classes', icon: Star, suffix: '', color: 'text-amber-500' },
-  { key: 'certificatesEarned', labelKey: 'nav.certificates', icon: Award, suffix: '', color: 'text-emerald-500' },
 ];
 
 const quickActions = [

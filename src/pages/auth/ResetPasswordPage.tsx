@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
             {error && <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
             <div className="mb-6">
               <label className="mb-1 block text-sm font-medium">{t('auth.new_password', lang)}</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border px-3 py-2 text-sm" minLength={6} required />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border px-3 py-2 text-sm" minLength={8} required />
             </div>
             <button type="submit" disabled={loading} className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">{loading ? 'Réinitialisation...' : t('auth.reset_password', lang)}</button>
           </form>

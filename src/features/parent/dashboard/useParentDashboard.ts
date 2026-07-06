@@ -227,7 +227,7 @@ export function useParentDashboard() {
 
       const { data: schedules } = await supabase
         .from('course_schedules')
-        .select('id, start_time, end_time, course_id, room:rooms(name), teacher:users!teacher_id(first_name, last_name)')
+        .select('id, start_time, end_time, course_id, room:rooms(name), teacher:users(first_name, last_name)')
         .in('course_id', courseIds)
         .eq('day_of_week', dayName)
         .order('start_time');

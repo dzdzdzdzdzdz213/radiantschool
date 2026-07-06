@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
@@ -45,6 +45,14 @@ function PageShell({ children }: { children: React.ReactNode }) {
 export default function AssistantLayout() {
   const { lang } = useLang();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+    return () => { if (meta.parentElement) meta.parentElement.removeChild(meta); };
+  }, []);
   const assistantNavItems: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/assistant/dashboard', icon: 'LayoutDashboard' },
     { label: t('nav.students', lang), path: '/assistant/students', icon: 'Users' },
@@ -95,9 +103,6 @@ export default function AssistantLayout() {
         <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-4">
-              <BackButton label={t('common.back_to_site', lang)} to="/" />
-            </div>
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
                 <PageShell>

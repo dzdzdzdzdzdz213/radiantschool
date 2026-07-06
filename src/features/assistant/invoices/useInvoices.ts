@@ -17,7 +17,7 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
     queryFn: async () => {
       let query = (supabase as any)
         .from('invoices')
-        .select('id, invoice_number, total_amount, paid_amount, status, due_date, student:users!student_id(first_name, last_name)', { count: 'exact' })
+        .select('id, invoice_number, total_amount, paid_amount, status, due_date, student:users(first_name, last_name)', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       if (statusFilter) query = query.eq('status', statusFilter);

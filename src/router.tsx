@@ -1,99 +1,116 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SafeRedirect from '@/components/SafeRedirect';
-import AdminRoute from '@/routes/AdminRoute';
-import AssistantRoute from '@/routes/AssistantRoute';
-import TeacherRoute from '@/routes/TeacherRoute';
 import StudentRoute from '@/routes/StudentRoute';
 import ParentRoute from '@/routes/ParentRoute';
-
-import SchedulePage from '@/pages/SchedulePage';
-
-
-import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/auth/LoginPage';
-import RegisterPage from '@/pages/auth/RegisterPage';
+import LandingPage from '@/pages/LandingPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
-import AdminDashboardPage from '@/features/dashboard/AdminDashboardPage';
-import AssistantDashboardPage from '@/features/assistant/dashboard/AssistantDashboardPage';
-import ParentDashboardPage from '@/features/parent/dashboard/ParentDashboardPage';
-import StudentsPage from '@/features/assistant/students/StudentsPage';
-import ParentsPage from '@/features/assistant/parents/ParentsPage';
-import RegistrationsPage from '@/features/assistant/registrations/RegistrationsPage';
-import AttendancePage from '@/features/assistant/attendance/AttendancePage';
-import RfidPage from '@/features/assistant/rfid/RfidPage';
-import GroupsPage from '@/features/assistant/groups/GroupsPage';
-import SchedulesPage from '@/features/assistant/schedules/SchedulesPage';
-import RoomsPage from '@/features/assistant/rooms/RoomsPage';
-import PaymentsPage from '@/features/assistant/payments/PaymentsPage';
-import InvoicesPage from '@/features/assistant/invoices/InvoicesPage';
-import NotificationsPage from '@/features/assistant/notifications/NotificationsPage';
-import EmailsPage from '@/features/assistant/emails/EmailsPage';
-import ResourcesPage from '@/features/assistant/resources/ResourcesPage';
-import CampaignsPage from '@/features/assistant/campaigns/CampaignsPage';
-import ReportsPage from '@/features/assistant/reports/ReportsPage';
-import CalendarPage from '@/features/assistant/calendar/CalendarPage';
-import SearchPage from '@/features/assistant/search/SearchPage';
-import AssistantSettingsPage from '@/features/assistant/settings/SettingsPage';
-import UsersPage from '@/pages/admin/UsersPage';
-import CoursesPage from '@/pages/CoursesPage';
-import CourseDetailPage from '@/pages/CourseDetailPage';
-import PaymentsPageOld from '@/pages/PaymentsPage';
-import InvoicesPageOld from '@/pages/InvoicesPage';
-import MessagesPage from '@/pages/MessagesPage';
-import ProfilePage from '@/pages/ProfilePage';
-import TeacherEvaluationsPage from '@/pages/TeacherEvaluationsPage';
-import SettingsPage from '@/pages/admin/SettingsPage';
-import StudentDetailPage from '@/pages/StudentDetailPage';
-import LeaderboardPage from '@/pages/LeaderboardPage';
-import EnrollPage from '@/pages/EnrollPage';
-import TeacherDashboardPage from '@/features/teacher/dashboard/TeacherDashboardPage';
-import TeacherStudentsPage from '@/features/teacher/students/TeacherStudentsPage';
-import TeacherSchedulePage from '@/features/teacher/schedule/SchedulePage';
-import TeacherCalendarPage from '@/features/teacher/calendar/CalendarPage';
-import TeacherAttendancePage from '@/features/teacher/attendance/TeacherAttendancePage';
-import TeacherAssignmentsPage from '@/features/teacher/assignments/AssignmentsPage';
-import TeacherHomeworkPage from '@/features/teacher/homework/HomeworkPage';
-import TeacherResourcesPage from '@/features/teacher/resources/ResourcesPage';
-import TeacherOnlineClassesPage from '@/features/teacher/online-classes/OnlineClassesPage';
-import TeacherPrivateLessonsPage from '@/features/teacher/private-lessons/PrivateLessonsPage';
-import TeacherVipClassesPage from '@/features/teacher/vip-classes/VipClassesPage';
-import TeacherAnnouncementsPage from '@/features/teacher/announcements/AnnouncementsPage';
-import TeacherMessagesPage from '@/features/teacher/messages/MessagesPage';
-import TeacherReportsPage from '@/features/teacher/reports/ReportsPage';
-import TeacherRevenuePage from '@/features/teacher/revenue/RevenuePage';
-import TeacherReviewsPage from '@/features/teacher/reviews/ReviewsPage';
-import TeacherProfilePage from '@/features/teacher/profile/TeacherProfilePage';
-import TeacherSettingsPage from '@/features/teacher/settings/TeacherSettingsPage';
-import StudentDashboardPage from '@/features/student/dashboard/StudentDashboardPage';
-import StudentCoursesPage from '@/features/student/courses/StudentCoursesPage';
-import StudentSchedulePage from '@/features/student/schedule/StudentSchedulePage';
-import StudentCalendarPage from '@/features/student/calendar/StudentCalendarPage';
-import StudentAttendancePage from '@/features/student/attendance/StudentAttendancePage';
-import StudentHomeworkPage from '@/features/student/homework/StudentHomeworkPage';
-import StudentResourcesPage from '@/features/student/resources/StudentResourcesPage';
-import StudentOnlineClassesPage from '@/features/student/online-classes/StudentOnlineClassesPage';
-import StudentPrivateLessonsPage from '@/features/student/private-lessons/StudentPrivateLessonsPage';
-import StudentVipClassesPage from '@/features/student/vip-classes/StudentVipClassesPage';
-import StudentPaymentsPage from '@/features/student/payments/StudentPaymentsPage';
-import StudentInvoicesPage from '@/features/student/invoices/StudentInvoicesPage';
-import StudentCertificatesPage from '@/features/student/certificates/StudentCertificatesPage';
-import StudentAnnouncementsPage from '@/features/student/announcements/StudentAnnouncementsPage';
-import StudentMessagesPage from '@/features/student/messages/StudentMessagesPage';
-import StudentNotificationsPage from '@/features/student/notifications/StudentNotificationsPage';
-import StudentReviewsPage from '@/features/student/reviews/StudentReviewsPage';
-import StudentProfilePage from '@/features/student/profile/StudentProfilePage';
-import StudentSettingsPage from '@/features/student/settings/StudentSettingsPage';
+import PublicEnrollPage from '@/pages/auth/PublicEnrollPage';
+
+const LazyPage = (imp: any) => {
+  const C = lazy(imp);
+  return () => (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+      <C />
+    </Suspense>
+  );
+};
+
+const AdminRoute = lazy(() => import('@/routes/AdminRoute'));
+const AssistantRoute = lazy(() => import('@/routes/AssistantRoute'));
+const TeacherRoute = lazy(() => import('@/routes/TeacherRoute'));
+
+const AdminDashboardPage = LazyPage(() => import('@/features/dashboard/AdminDashboardPage'));
+const AssistantDashboardPage = LazyPage(() => import('@/features/assistant/dashboard/AssistantDashboardPage'));
+const ParentDashboardPage = LazyPage(() => import('@/features/parent/dashboard/ParentDashboardPage'));
+const StudentsPage = LazyPage(() => import('@/features/assistant/students/StudentsPage'));
+const ParentsPage = LazyPage(() => import('@/features/assistant/parents/ParentsPage'));
+const RegistrationsPage = LazyPage(() => import('@/features/assistant/registrations/RegistrationsPage'));
+const AttendancePage = LazyPage(() => import('@/features/assistant/attendance/AttendancePage'));
+const AdminAttendanceOversightPage = LazyPage(() => import('@/features/admin/attendance/AdminAttendanceOversightPage'));
+const RfidPage = LazyPage(() => import('@/features/assistant/rfid/RfidPage'));
+const GroupsPage = LazyPage(() => import('@/features/assistant/groups/GroupsPage'));
+const SchedulesPage = LazyPage(() => import('@/features/assistant/schedules/SchedulesPage'));
+const RoomsPage = LazyPage(() => import('@/features/assistant/rooms/RoomsPage'));
+const PaymentsPage = LazyPage(() => import('@/features/assistant/payments/PaymentsPage'));
+const InvoicesPage = LazyPage(() => import('@/features/assistant/invoices/InvoicesPage'));
+const NotificationsPage = LazyPage(() => import('@/features/assistant/notifications/NotificationsPage'));
+const EmailsPage = LazyPage(() => import('@/features/assistant/emails/EmailsPage'));
+const ResourcesPage = LazyPage(() => import('@/features/assistant/resources/ResourcesPage'));
+const CampaignsPage = LazyPage(() => import('@/features/assistant/campaigns/CampaignsPage'));
+const ReportsPage = LazyPage(() => import('@/features/assistant/reports/ReportsPage'));
+const CalendarPage = LazyPage(() => import('@/features/assistant/calendar/CalendarPage'));
+const SearchPage = LazyPage(() => import('@/features/assistant/search/SearchPage'));
+const AssistantSettingsPage = LazyPage(() => import('@/features/assistant/settings/SettingsPage'));
+const UsersPage = LazyPage(() => import('@/pages/admin/UsersPage'));
+const CreateUserPage = LazyPage(() => import('@/pages/admin/CreateUserPage'));
+const CoursesPage = LazyPage(() => import('@/pages/CoursesPage'));
+const CourseDetailPage = LazyPage(() => import('@/pages/CourseDetailPage'));
+const PaymentsPageOld = LazyPage(() => import('@/pages/PaymentsPage'));
+const InvoicesPageOld = LazyPage(() => import('@/pages/InvoicesPage'));
+const MessagesPage = LazyPage(() => import('@/pages/MessagesPage'));
+const ProfilePage = LazyPage(() => import('@/pages/ProfilePage'));
+const HelpPage = LazyPage(() => import('@/pages/HelpPage'));
+const TeacherEvaluationsPage = LazyPage(() => import('@/pages/TeacherEvaluationsPage'));
+const SettingsPage = LazyPage(() => import('@/pages/admin/SettingsPage'));
+const StudentDetailPage = LazyPage(() => import('@/pages/StudentDetailPage'));
+const LeaderboardPage = LazyPage(() => import('@/pages/LeaderboardPage'));
+const EnrollPage = LazyPage(() => import('@/pages/EnrollPage'));
+const TeacherDashboardPage = LazyPage(() => import('@/features/teacher/dashboard/TeacherDashboardPage'));
+const TeacherStudentsPage = LazyPage(() => import('@/features/teacher/students/TeacherStudentsPage'));
+const TeacherSchedulePage = LazyPage(() => import('@/features/teacher/schedule/SchedulePage'));
+const TeacherCalendarPage = LazyPage(() => import('@/features/teacher/calendar/CalendarPage'));
+const TeacherAttendancePage = LazyPage(() => import('@/features/teacher/attendance/TeacherAttendancePage'));
+const TeacherAssignmentsPage = LazyPage(() => import('@/features/teacher/assignments/AssignmentsPage'));
+const TeacherHomeworkPage = LazyPage(() => import('@/features/teacher/homework/HomeworkPage'));
+const TeacherResourcesPage = LazyPage(() => import('@/features/teacher/resources/ResourcesPage'));
+const TeacherOnlineClassesPage = LazyPage(() => import('@/features/teacher/online-classes/OnlineClassesPage'));
+const TeacherPrivateLessonsPage = LazyPage(() => import('@/features/teacher/private-lessons/PrivateLessonsPage'));
+const TeacherVipClassesPage = LazyPage(() => import('@/features/teacher/vip-classes/VipClassesPage'));
+const TeacherAnnouncementsPage = LazyPage(() => import('@/features/teacher/announcements/AnnouncementsPage'));
+const TeacherMessagesPage = LazyPage(() => import('@/features/teacher/messages/MessagesPage'));
+const TeacherReportsPage = LazyPage(() => import('@/features/teacher/reports/ReportsPage'));
+const TeacherRevenuePage = LazyPage(() => import('@/features/teacher/revenue/RevenuePage'));
+const TeacherReviewsPage = LazyPage(() => import('@/features/teacher/reviews/ReviewsPage'));
+const TeacherProfilePage = LazyPage(() => import('@/features/teacher/profile/TeacherProfilePage'));
+const TeacherSettingsPage = LazyPage(() => import('@/features/teacher/settings/TeacherSettingsPage'));
+const StudentDashboardPage = LazyPage(() => import('@/features/student/dashboard/StudentDashboardPage'));
+const StudentCoursesPage = LazyPage(() => import('@/features/student/courses/StudentCoursesPage'));
+const StudentSchedulePage = LazyPage(() => import('@/features/student/schedule/StudentSchedulePage'));
+const StudentCalendarPage = LazyPage(() => import('@/features/student/calendar/StudentCalendarPage'));
+const StudentAttendancePage = LazyPage(() => import('@/features/student/attendance/StudentAttendancePage'));
+const StudentHomeworkPage = LazyPage(() => import('@/features/student/homework/StudentHomeworkPage'));
+const StudentResourcesPage = LazyPage(() => import('@/features/student/resources/StudentResourcesPage'));
+const StudentOnlineClassesPage = LazyPage(() => import('@/features/student/online-classes/StudentOnlineClassesPage'));
+const StudentPrivateLessonsPage = LazyPage(() => import('@/features/student/private-lessons/StudentPrivateLessonsPage'));
+const StudentVipClassesPage = LazyPage(() => import('@/features/student/vip-classes/StudentVipClassesPage'));
+const StudentPaymentsPage = LazyPage(() => import('@/features/student/payments/StudentPaymentsPage'));
+const StudentInvoicesPage = LazyPage(() => import('@/features/student/invoices/StudentInvoicesPage'));
+const StudentCertificatesPage = LazyPage(() => import('@/features/student/certificates/StudentCertificatesPage'));
+const StudentAnnouncementsPage = LazyPage(() => import('@/features/student/announcements/StudentAnnouncementsPage'));
+const StudentMessagesPage = LazyPage(() => import('@/features/student/messages/StudentMessagesPage'));
+const StudentNotificationsPage = LazyPage(() => import('@/features/student/notifications/StudentNotificationsPage'));
+const StudentReviewsPage = LazyPage(() => import('@/features/student/reviews/StudentReviewsPage'));
+const StudentProfilePage = LazyPage(() => import('@/features/student/profile/StudentProfilePage'));
+const StudentSettingsPage = LazyPage(() => import('@/features/student/settings/StudentSettingsPage'));
+const SchedulePage = LazyPage(() => import('@/pages/SchedulePage'));
+const StaffLoginPage = LazyPage(() => import('@/pages/auth/StaffLoginPage'));
 
 export const router = createBrowserRouter([
   {
-    path: '/login/:role?',
+    path: '/login',
     Component: LoginPage,
   },
   {
-    path: '/register',
-    Component: RegisterPage,
+    path: '/staff/login',
+    Component: StaffLoginPage,
+  },
+  {
+    path: '/enroll',
+    Component: PublicEnrollPage,
   },
   {
     path: '/forgot-password',
@@ -105,15 +122,20 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    Component: AdminRoute,
+    Component: () => (
+      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+        <AdminRoute />
+      </Suspense>
+    ),
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', Component: AdminDashboardPage },
       { path: 'users', Component: UsersPage },
+      { path: 'users/new', Component: CreateUserPage },
       { path: 'users/:id', Component: StudentDetailPage },
       { path: 'courses', Component: CoursesPage },
       { path: 'courses/:id', Component: CourseDetailPage },
-      { path: 'attendance', Component: AttendancePage },
+      { path: 'attendance', Component: AdminAttendanceOversightPage },
       { path: 'payments', Component: PaymentsPage },
       { path: 'invoices', Component: InvoicesPage },
       { path: 'reports', Component: ReportsPage },
@@ -121,11 +143,16 @@ export const router = createBrowserRouter([
       { path: 'schedule', Component: SchedulePage },
       { path: 'profile', Component: ProfilePage },
       { path: 'settings', Component: SettingsPage },
+      { path: 'help', Component: HelpPage },
     ],
   },
   {
     path: '/assistant',
-    Component: AssistantRoute,
+    Component: () => (
+      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+        <AssistantRoute />
+      </Suspense>
+    ),
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', Component: AssistantDashboardPage },
@@ -154,6 +181,7 @@ export const router = createBrowserRouter([
       { path: 'search', Component: SearchPage },
       { path: 'settings', Component: AssistantSettingsPage },
       { path: 'profile', Component: ProfilePage },
+      { path: 'help', Component: HelpPage },
       { path: 'courses', Component: CoursesPage },
       { path: 'courses/:id', Component: CourseDetailPage },
       { path: 'messages', Component: MessagesPage },
@@ -161,7 +189,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/teacher',
-    Component: TeacherRoute,
+    Component: () => (
+      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+        <TeacherRoute />
+      </Suspense>
+    ),
     children: [
       { index: true, element: <SafeRedirect to="dashboard" /> },
       { path: 'dashboard', Component: TeacherDashboardPage },
@@ -187,6 +219,7 @@ export const router = createBrowserRouter([
       { path: 'leaderboard', Component: LeaderboardPage },
       { path: 'profile', Component: TeacherProfilePage },
       { path: 'settings', Component: TeacherSettingsPage },
+      { path: 'help', Component: HelpPage },
     ],
   },
   {
@@ -216,6 +249,7 @@ export const router = createBrowserRouter([
       { path: 'leaderboard', Component: LeaderboardPage },
       { path: 'profile', Component: StudentProfilePage },
       { path: 'settings', Component: StudentSettingsPage },
+      { path: 'help', Component: HelpPage },
     ],
   },
   {
@@ -232,6 +266,7 @@ export const router = createBrowserRouter([
       { path: 'schedule', Component: SchedulePage },
       { path: 'messages', Component: MessagesPage },
       { path: 'profile', Component: ProfilePage },
+      { path: 'help', Component: HelpPage },
     ],
   },
   {

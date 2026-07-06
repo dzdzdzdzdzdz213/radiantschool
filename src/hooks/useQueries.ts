@@ -24,7 +24,7 @@ export function useStudents() {
 export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
-    queryFn: () => api.list('courses', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream)').then(r => r.data),
+    queryFn: () => api.list('courses', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream, year)').then(r => r.data),
     staleTime: 120_000,
   });
 }
@@ -223,7 +223,7 @@ export function useRecentActivity() {
     queryFn: async () => {
       const [enrRes, payRes, attRes] = await Promise.all([
         api.list('course_enrollments', { sort: [{ column: 'enrollment_date', direction: 'desc' }] }, 'enrollment_date, student:users(first_name,last_name), course:courses(name)'),
-        api.list('payments', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'amount, created_at, student:users!student_id(first_name,last_name)'),
+        api.list('payments', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'amount, created_at, student:users(first_name,last_name)'),
         api.list('attendance', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'date, status, student:users(first_name,last_name), schedule:course_schedules!inner(course:courses(name))'),
       ]);
       const items: { time: string; icon: string; title: string; description: string }[] = [

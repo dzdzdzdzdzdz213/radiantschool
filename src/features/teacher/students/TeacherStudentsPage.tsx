@@ -27,7 +27,7 @@ export default function TeacherStudentsPage() {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('course_enrollments')
-        .select('student:users!student_id(id, first_name, last_name, email, phone, status, photo_url), course:courses!inner(id, name, teacher_id)')
+        .select('student:users(id, first_name, last_name, email, phone, status, photo_url), course:courses!inner(id, name, teacher_id)')
         .eq('course.teacher_id', profile.id)
         .eq('status', 'active');
       const unique = new Map();

@@ -25,9 +25,9 @@ interface CourseResult {
 }
 
 const CATEGORIES = [
-  { value: 'primaire', label: 'Primaire', icon: '📚' },
-  { value: 'college', label: 'CEM', icon: '📖' },
-  { value: 'lycee', label: 'Lycée', icon: '🎓' },
+  { value: 'primary', label: 'Primaire', icon: '📚' },
+  { value: 'middle', label: 'CEM', icon: '📖' },
+  { value: 'high_school', label: 'Lycée', icon: '🎓' },
 ];
 
 const DAY_LABELS_FR: Record<string, string> = {
@@ -48,6 +48,7 @@ export default function EnrollPage() {
   // Data
   const [levels, setLevels] = useState<Level[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [levelSubjectIds, setLevelSubjectIds] = useState<number[]>([]);
 
   // Selections
   const [category, setCategory] = useState('');
@@ -91,6 +92,17 @@ export default function EnrollPage() {
       .in('id', studentIds);
     setChildren(data || []);
   };
+
+  // Load subject IDs available for the selected level
+  useEffect(() => {
+    if (!selectedLevel) { setLevelSubjectIds([]); return; }
+    (async () => {
+      const { data } = await supabase.from('level_subject').select('subject_id').eq('level_id', selectedLevel.id);
+      setLevelSubjectIds((data ?? []).map((r: any) => r.subject_id));
+    })();
+  }, [selectedLevel]);
+
+  const filteredSubjects = subjects.filter(s => levelSubjectIds.length === 0 || levelSubjectIds.includes(s.id));
 
   const categoryLevels = levels.filter(l => l.category === category);
   const filteredByStream = stream ? categoryLevels.filter(l => l.stream === stream) : categoryLevels;
@@ -275,7 +287,7 @@ export default function EnrollPage() {
       {(step === (isParent ? 2 : 1)) && category && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <h2 className="text-lg font-semibold mb-4">Choisis l'année</h2>
-          {category === 'lycee' && availableStreams.length > 0 && (
+          {category === 'high_school' && availableStreams.length > 0 && (
             <div className="mb-4">
               <p className="text-sm font-medium mb-2">Branche</p>
               <div className="flex gap-2">
@@ -289,7 +301,7 @@ export default function EnrollPage() {
                       color: stream === s ? 'white' : 'var(--primary)',
                     }}
                   >
-                    {s === 'sci' ? 'Scientifique' : s === 'lettres' ? 'Lettres' : s === 'gestion' ? 'Gestion & Économie' : s}
+                    {s}
                   </button>
                 ))}
               </div>
@@ -320,7 +332,7 @@ export default function EnrollPage() {
           <h2 className="text-lg font-semibold mb-1">Choisis la matière</h2>
           <p className="text-sm text-muted mb-4">{selectedLevel.name}</p>
           <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {subjects.map(s => (
+            {filteredSubjects.map(s => (
               <button
                 key={s.id}
                 onClick={() => { setSelectedSubject(s); setCourseType(''); setResults([]); goToStep(step + 1); }}

@@ -161,6 +161,8 @@ export interface Database {
           current_enrollments: number;
           price: number;
           status: string;
+          description: string | null;
+          image_url: string | null;
           subject_id: number;
           level_id: number;
           teacher_id: string;
@@ -174,6 +176,8 @@ export interface Database {
           type?: string;
           capacity: number;
           price: number;
+          description?: string | null;
+          image_url?: string | null;
           subject_id: number;
           level_id: number;
           teacher_id: string;
@@ -183,6 +187,7 @@ export interface Database {
         };
         Update: {
           name?: string;
+          type?: string;
           capacity?: number;
           price?: number;
           status?: string;
@@ -190,6 +195,7 @@ export interface Database {
           start_date?: string;
           end_date?: string;
           description?: string | null;
+          image_url?: string | null;
           current_enrollments?: number;
           subject_id?: number;
           level_id?: number;
@@ -401,7 +407,10 @@ export interface Database {
           date: string;
           status: string;
           check_in_time: string | null;
+          check_in_closed_at: string | null;
           method: string;
+          notes: string | null;
+          recorded_by: string | null;
           created_at: string;
         };
         Insert: {
@@ -409,11 +418,14 @@ export interface Database {
           course_schedule_id: number;
           date: string;
           status?: string;
+          check_in_time?: string;
           method?: string;
+          recorded_by?: string;
         };
         Update: {
           status?: string;
           check_in_time?: string;
+          check_in_closed_at?: string;
           method?: string;
         };
         Relationships: [
@@ -637,6 +649,74 @@ export interface Database {
         Relationships: [
           { foreignKeyName: 'fk_student_parent_student'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
           { foreignKeyName: 'fk_student_parent_parent'; columns: ['parent_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
+        ];
+      };
+      level_subject: {
+        Row: {
+          id: number;
+          level_id: number;
+          subject_id: number;
+        };
+        Insert: {
+          level_id: number;
+          subject_id: number;
+        };
+        Update: {};
+        Relationships: [
+          { foreignKeyName: 'fk_level_subject_level'; columns: ['level_id']; isOneToOne: false; referencedRelation: 'levels'; referencedColumns: ['id'] },
+          { foreignKeyName: 'fk_level_subject_subject'; columns: ['subject_id']; isOneToOne: false; referencedRelation: 'subjects'; referencedColumns: ['id'] },
+        ];
+      };
+      attendance_sessions: {
+        Row: {
+          id: number;
+          course_id: number;
+          date: string;
+          title: string | null;
+          check_in_opened_at: string | null;
+          check_in_closed_at: string | null;
+          price_calculated: number | null;
+          session_price_formula: string | null;
+          created_at: string;
+        };
+        Insert: {
+          course_id: number;
+          date: string;
+          title?: string;
+          check_in_opened_at?: string;
+          check_in_closed_at?: string;
+        };
+        Update: {
+          date?: string;
+          title?: string;
+          check_in_opened_at?: string;
+          check_in_closed_at?: string;
+          price_calculated?: number;
+          session_price_formula?: string;
+        };
+        Relationships: [
+          { foreignKeyName: 'attendance_sessions_course_id_fkey'; columns: ['course_id']; isOneToOne: false; referencedRelation: 'courses'; referencedColumns: ['id'] },
+        ];
+      };
+      attendance_records: {
+        Row: {
+          id: number;
+          session_id: number;
+          student_id: string;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          session_id: number;
+          student_id: string;
+          status?: string;
+        };
+        Update: {
+          status?: string;
+        };
+        Relationships: [
+          { foreignKeyName: 'attendance_records_session_id_fkey'; columns: ['session_id']; isOneToOne: false; referencedRelation: 'attendance_sessions'; referencedColumns: ['id'] },
+          { foreignKeyName: 'attendance_records_student_id_fkey'; columns: ['student_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] },
         ];
       };
       rooms: {
@@ -1271,6 +1351,34 @@ export interface Database {
       generate_monthly_invoices: {
         Args: Record<string, never>;
         Returns: number;
+      };
+      register_user: {
+        Args: {
+          p_id: string;
+          p_email: string;
+          p_first_name: string;
+          p_last_name: string;
+          p_role: string;
+          p_status: string;
+          p_phone: string | null;
+          p_student_type?: string;
+        };
+        Returns: Record<string, unknown>;
+      };
+      register_child: {
+        Args: {
+          p_parent_id: string;
+          p_first_name: string;
+          p_last_name: string;
+          p_level_category: string;
+        };
+        Returns: Record<string, unknown>;
+      };
+      unregister_user: {
+        Args: {
+          p_id: string;
+        };
+        Returns: void;
       };
     };
   };

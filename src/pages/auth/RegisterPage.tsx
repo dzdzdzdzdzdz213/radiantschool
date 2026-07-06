@@ -7,9 +7,9 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 
 const LEVELS = [
-  { value: 'primaire', label: 'Primaire' },
-  { value: 'college', label: 'CEM' },
-  { value: 'lycee', label: 'Lycée' },
+  { value: 'primary', label: 'Primaire' },
+  { value: 'middle', label: 'CEM' },
+  { value: 'high_school', label: 'Lycée' },
 ];
 
 const NAME_FIELDS = ['firstName', 'lastName', 'childFirstName', 'childLastName', 'guardianName'];
@@ -33,7 +33,7 @@ function validatePhone(v: string): string | null {
 
 function validatePassword(v: string): string | null {
   if (!v) return 'Mot de passe requis';
-  if (v.length < 6) return 'Minimum 6 caractères';
+  if (v.length < 8) return 'Minimum 8 caractères';
   return null;
 }
 
@@ -161,13 +161,9 @@ export default function RegisterPage() {
     if (field === 'email') setEmailBusy(false);
   }
 
-  async function checkEmail(email: string) {
-    if (validateEmail(email)) return;
-    const { data } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
-    if (data) {
-      setFieldErrors(p => ({ ...p, email: 'Cet email est déjà utilisé' }));
-      setEmailBusy(true);
-    }
+  async function checkEmail(_email: string) {
+    // Email uniqueness is enforced server-side. Do NOT reveal whether
+    // an email is registered (email enumeration vulnerability).
   }
 
   function validateAll(): boolean {
@@ -206,7 +202,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (emailBusy) { setError('Cet email est déjà utilisé'); return; }
+    if (emailBusy) { setError('Email invalide'); return; }
     if (!validateAll()) { setError('Vérifiez les champs en rouge'); return; }
 
     setIsLoading(true);
@@ -327,7 +323,7 @@ export default function RegisterPage() {
                       onChange={e => setField('password', e.target.value)}
                       className="w-full rounded-xl border px-4 py-2.5 pr-11 text-sm outline-none transition-all duration-200 focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--ring)]"
                       style={{ backgroundColor: 'var(--bg)', borderColor: fieldErrors.password ? '#ef4444' : 'var(--border)', color: 'var(--fg)' }}
-                      minLength={6} required
+                      minLength={8} required
                     />
                     <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--fg-muted)' }}>
                       {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -341,7 +337,7 @@ export default function RegisterPage() {
                         </div>
                         <span className="text-[10px] font-semibold" style={{ color: getPasswordStrength(form.password).color }}>{getPasswordStrength(form.password).label}</span>
                       </div>
-                      <p className="text-[10px] mt-1" style={{ color: 'var(--fg-muted)' }}>Min. 6 caractères, majuscule, chiffre et symbole recommandés</p>
+                      <p className="text-[10px] mt-1" style={{ color: 'var(--fg-muted)' }}>Min. 8 caractères, majuscule, chiffre et symbole recommandés</p>
                     </div>
                   )}
                   {fieldErrors.password && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{fieldErrors.password}</p>}
@@ -364,7 +360,7 @@ export default function RegisterPage() {
                     <label className="mb-1.5 block text-sm font-medium">Niveau scolaire <span style={{ color: '#ef4444' }}>*</span></label>
                     <select value={form.childLevel} onChange={e => setField('childLevel', e.target.value)} className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 focus:border-[var(--primary)]" style={{ backgroundColor: 'var(--bg)', borderColor: fieldErrors.childLevel ? '#ef4444' : 'var(--border)', color: 'var(--fg)' }} required>
                       <option value="">Sélectionner un niveau</option>
-                      {LEVELS.filter(l => l.value !== 'lycee').map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                      {LEVELS.filter(l => l.value !== 'high_school').map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
                     </select>
                     {fieldErrors.childLevel && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{fieldErrors.childLevel}</p>}
                     <p className="text-xs mt-2" style={{ color: 'var(--fg-muted)' }}>Votre enfant pourra suivre des cours adaptés à son niveau.</p>

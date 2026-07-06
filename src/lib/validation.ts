@@ -13,14 +13,14 @@ export const registerSchema = z.object({
   firstName: z.string({ message: 'validation.required' }).min(1, { message: 'validation.required' }),
   lastName: z.string({ message: 'validation.required' }).min(1, { message: 'validation.required' }),
   email: z.string({ message: 'validation.required' }).email({ message: 'validation.invalid_email' }),
-  password: z.string({ message: 'validation.required' }).min(6, { message: 'validation.min_length' }),
+  password: z.string({ message: 'validation.required' }).min(8, { message: 'validation.min_length' }),
   role: z.enum(['student', 'parent', 'teacher', 'assistant', 'admin'], { message: 'auth.select_role' }),
   phone: z.string().regex(algerianPhoneRegex, { message: 'validation.phone_start' }).optional().or(z.literal('')),
 });
 
-/** Validates a new password (min 6 chars). */
+/** Validates a new password (min 8 chars). */
 export const passwordResetSchema = z.object({
-  password: z.string({ message: 'validation.required' }).min(6, { message: 'validation.min_length' }),
+  password: z.string({ message: 'validation.required' }).min(8, { message: 'validation.min_length' }),
 });
 
 /** Validates email for the forgot-password flow. */
@@ -30,20 +30,20 @@ export const forgotPasswordSchema = z.object({
 
 /** Validates profile updates (names, email, optional phone). */
 export const profileSchema = z.object({
-  firstName: z.string({ message: 'validation.required' }).min(1, { message: 'validation.required' }),
-  lastName: z.string({ message: 'validation.required' }).min(1, { message: 'validation.required' }),
-  email: z.string({ message: 'validation.required' }).email({ message: 'validation.invalid_email' }),
-  phone: z.string().regex(algerianPhoneRegex).optional().or(z.literal('')),
+  firstName: z.string({ message: 'validation.required' }).min(2, { message: 'validation.min_length' }).max(50, { message: 'validation.max_length' }),
+  lastName: z.string({ message: 'validation.required' }).min(2, { message: 'validation.min_length' }).max(50, { message: 'validation.max_length' }),
+  email: z.string({ message: 'validation.required' }).email({ message: 'validation.invalid_email' }).max(100, { message: 'validation.max_length' }),
+  phone: z.string().regex(algerianPhoneRegex, 'validation.phone_start').optional().or(z.literal('')),
 });
 
 /** Validates student creation/edit with type, level, and registration number. */
 export const studentSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
+  firstName: z.string({ message: 'validation.required' }).min(1, { message: 'validation.required' }),
+  lastName: z.string({ message: 'validation.required' }).min(1, { message: 'validation.required' }),
+  email: z.string({ message: 'validation.required' }).email({ message: 'validation.invalid_email' }),
   levelId: z.number().int().positive().nullable().optional(),
   studentType: z.enum(['regular', 'vip']).default('regular'),
-  registrationNumber: z.string().min(1, { message: 'validation.required' }),
+  registrationNumber: z.string({ message: 'validation.required' }).min(1, { message: 'validation.required' }),
 });
 
 /** Validates course creation with type, capacity, price, and required relations. */
@@ -170,7 +170,7 @@ export const parentRegistrationSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(8),
   phone: z.string().regex(algerianPhoneRegex).optional().or(z.literal('')),
   childFirstName: z.string().min(1),
   childLastName: z.string().min(1),
@@ -182,11 +182,11 @@ export const parentRegistrationSchema = z.object({
 
 /** Validates teacher profile updates with bio and specializations. */
 export const teacherProfileSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().regex(algerianPhoneRegex).optional().or(z.literal('')),
-  bio: z.string().optional().or(z.literal('')),
+  firstName: z.string().min(2, { message: 'validation.min_length' }).max(50, { message: 'validation.max_length' }),
+  lastName: z.string().min(2, { message: 'validation.min_length' }).max(50, { message: 'validation.max_length' }),
+  email: z.string().email({ message: 'validation.invalid_email' }).max(100, { message: 'validation.max_length' }),
+  phone: z.string().regex(algerianPhoneRegex, 'validation.phone_start').optional().or(z.literal('')),
+  bio: z.string().max(500, { message: 'validation.max_length' }).optional().or(z.literal('')),
   specializations: z.array(z.string()).optional(),
 });
 

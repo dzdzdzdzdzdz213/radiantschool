@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Globe, Palette, User } from 'lucide-react';
+import { Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,16 +14,13 @@ import { useToast } from '@/components/ui/Toast';
 const settingsSections = [
   { id: 'profile', labelKey: 'nav.profile', icon: User },
   { id: 'notifications', labelKey: 'nav.notifications', icon: Bell },
-  { id: 'appearance', labelKey: 'settings.appearance', icon: Palette },
-  { id: 'language', labelKey: 'settings.language', icon: Globe },
 ] as const;
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { profile } = useAuth();
   const [section, setSection] = useState('profile');
-  const { theme, toggle: toggleTheme } = useTheme();
-  const { lang, setLang } = useLang();
+  const { lang } = useLang();
   const updateSettings = useUpdateUserSettings();
 
   const [firstName, setFirstName] = useState('');
@@ -141,42 +137,7 @@ export default function SettingsPage() {
             </Card>
           )}
 
-          {section === 'appearance' && (
-            <Card>
-              <CardHeader><CardTitle className="text-sm">{t('settings.appearance', lang)}</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between rounded-xl bg-accent/50 p-4">
-                  <div>
-                    <p className="text-sm font-medium">{t('common.dark_mode', lang)}</p>
-                    <p className="text-xs text-muted-foreground">{t('settings.theme_desc', lang)}</p>
-                  </div>
-                  <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
-          {section === 'language' && (
-            <Card>
-              <CardHeader><CardTitle className="text-sm">{t('settings.language', lang)}</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {[
-                  { code: 'fr', label: 'Français', flag: '🇫🇷' },
-                  { code: 'en', label: 'English', flag: '🇬🇧' },
-                  { code: 'ar', label: 'العربية', flag: '🇩🇿' },
-                ].map(l => (
-                  <button
-                    key={l.code}
-                    className={`w-full text-left rounded-xl p-3 transition-colors flex items-center gap-3 ${lang === l.code ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-accent'}`}
-                    onClick={() => setLang(l.code as any)}
-                  >
-                    <span className="text-lg">{l.flag}</span>
-                    <span className="text-sm">{l.label}</span>
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>
