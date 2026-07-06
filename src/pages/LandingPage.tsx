@@ -5,8 +5,39 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { t, LANGUAGES } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
-import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search, ChevronDown } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search, ChevronDown, Quote, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+
+/*
+  HUMANIZING PASS — summary of what changed vs. the original file
+  ------------------------------------------------------------------
+  1. New "Qui sommes-nous" section (id="about"), placed right after the
+     hero and before the course catalog — you meet the people before
+     the product list.
+  2. One signature element: a handwritten accent font (Google Font
+     "Caveat") used ONLY for signatures / sticky-note captions. It's
+     the one place the design breaks from the clean sans UI, so it
+     stays legible and doesn't turn into a gimmick everywhere.
+  3. Hero: added a small "real parents trust us" avatar strip and a
+     rotated Polaroid-style photo card next to the product shot, so
+     the hero isn't just an abstract gradient blob + logo.
+  4. Nav: added a "Qui sommes-nous" entry. Because the footer already
+     maps over NAV, the new link appears there automatically too.
+  5. Toned down the glass/blur + floating-orb decoration slightly
+     (still present, just less of the "everything is a blurred
+     gradient circle" template look).
+
+  TODO for you before shipping:
+  - Add a real i18n key for 'nav.apropos' in your i18n files (French/
+    Arabic/English). Until then it falls back to the hardcoded label
+    below so nothing breaks.
+  - Swap every placeholder photo path (/team/*.jpg, /images/*.jpg)
+    for real photos of your actual teachers/students. Placeholder
+    photos are the fastest way to make a "human" section feel fake —
+    real faces are what actually does the work here.
+  - The founder story copy is a starting draft — rewrite it in your
+    own voice/details (year founded, real name, real anecdote).
+*/
 
 function CountUp({ end = 0 }: { end?: number }) {
   const [c, setC] = useState(0);
@@ -33,9 +64,18 @@ function CountUp({ end = 0 }: { end?: number }) {
 }
 
 const NAV = [
-  { href: '#courses', key: 'nav.formations' },
-  { href: '#why', key: 'nav.pourquoi' },
-  { href: '#contact', key: 'nav.contact' },
+  { href: '#courses', key: 'nav.formations', label: undefined as string | undefined },
+  { href: '#about', key: 'nav.apropos', label: 'Qui sommes-nous' },
+  { href: '#why', key: 'nav.pourquoi', label: undefined as string | undefined },
+  { href: '#contact', key: 'nav.contact', label: undefined as string | undefined },
+];
+
+// Placeholder team data — replace photos + bios with your real team.
+const TEAM = [
+  { name: 'Amina B.', role: 'Fondatrice — Prof de Mathématiques', years: '12 ans d\'expérience', photo: '/team/amina.jpg' },
+  { name: 'Yacine K.', role: 'Prof de Physique', years: '8 ans d\'expérience', photo: '/team/yacine.jpg' },
+  { name: 'Sarah M.', role: 'Prof de Français', years: '6 ans d\'expérience', photo: '/team/sarah.jpg' },
+  { name: 'Riad T.', role: 'Coordinateur pédagogique', years: '10 ans d\'expérience', photo: '/team/riad.jpg' },
 ];
 
 export default function LandingPage() {
@@ -197,6 +237,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+      {/* Signature accent font — used ONLY for handwritten-style touches
+          (founder signature, sticky-note captions). Ideally move this
+          <link> into your index.html <head> instead of injecting it
+          here, for better font-loading performance. */}
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+        .font-handwritten { font-family: 'Caveat', cursive; }`}</style>
+
       {/* HEADER */}
       <header className="glass-header fixed top-0 left-0 right-0 z-50">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -207,9 +254,9 @@ export default function LandingPage() {
           <nav className="hidden items-center gap-10 md:flex" style={{ color: 'var(--fg-muted)' }}>
             {NAV.map((x) => (
               x.href.startsWith('/') ? (
-                <Link key={x.href} to={x.href} className="hover-underline text-sm font-medium">{t(x.key, lang)}</Link>
+                <Link key={x.href} to={x.href} className="hover-underline text-sm font-medium">{x.label ?? t(x.key, lang)}</Link>
               ) : (
-                <a key={x.href} href={x.href} className="hover-underline text-sm font-medium">{t(x.key, lang)}</a>
+                <a key={x.href} href={x.href} className="hover-underline text-sm font-medium">{x.label ?? t(x.key, lang)}</a>
               )
             ))}
           </nav>
@@ -237,8 +284,6 @@ export default function LandingPage() {
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
-
-
             <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-xl p-2.5 md:hidden transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -250,13 +295,12 @@ export default function LandingPage() {
             <nav className="mb-6 flex flex-col gap-4 text-sm font-medium" style={{ color: 'var(--fg-muted)' }}>
               {NAV.map((x) => (
                 x.href.startsWith('/') ? (
-                  <Link key={x.href} to={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{t(x.key, lang)}</Link>
+                  <Link key={x.href} to={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{x.label ?? t(x.key, lang)}</Link>
                 ) : (
-                  <a key={x.href} href={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{t(x.key, lang)}</a>
+                  <a key={x.href} href={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{x.label ?? t(x.key, lang)}</a>
                 )
               ))}
             </nav>
-
           </div>
         )}
       </header>
@@ -264,7 +308,7 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 70% 55% at 20% 45%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%), radial-gradient(ellipse 50% 45% at 80% 35%, color-mix(in srgb, #a78bfa 8%, transparent), transparent 70%), radial-gradient(ellipse 40% 40% at 50% 80%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 60%)` }} />
+          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 45% at 20% 45%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 70%), radial-gradient(ellipse 40% 35% at 80% 35%, color-mix(in srgb, #a78bfa 5%, transparent), transparent 70%)` }} />
         </div>
         <div className="mx-auto max-w-7xl px-6 py-16 w-full relative">
           <div className="flex flex-col lg:flex-row items-center gap-20">
@@ -292,7 +336,19 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              <div className="mt-16 animate-up" style={{ animationDelay: '0.2s' }}>
+              {/* Humanizing touch: real-parents trust strip, right under the CTAs */}
+              <div className="mt-8 flex items-center gap-3 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.18s' }}>
+                <div className="flex -space-x-3">
+                  {['/avatars/parent1.jpg', '/avatars/parent2.jpg', '/avatars/parent3.jpg', '/avatars/parent4.jpg'].map((src, i) => (
+                    <img key={i} src={src} alt="" className="h-9 w-9 rounded-full object-cover" style={{ border: '2px solid var(--bg)' }} />
+                  ))}
+                </div>
+                <p className="text-xs font-medium text-left" style={{ color: 'var(--fg-muted)' }}>
+                  Rejoint par <span style={{ color: 'var(--fg)', fontWeight: 700 }}>{stats?.studentCount ?? '200'}+</span> familles à Alger
+                </p>
+              </div>
+
+              <div className="mt-12 animate-up" style={{ animationDelay: '0.2s' }}>
                 <div className="inline-flex items-stretch rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
                   {[
                     { icon: BookOpen, value: courses?.length ?? 0, key: 'stat.formations' },
@@ -313,18 +369,116 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Humanizing touch: a real photo + a rotated Polaroid-style
+                card with a handwritten caption, instead of an abstract
+                logo-in-a-blob visual. */}
             <div className="flex-1 flex justify-center lg:justify-end animate-up" style={{ animationDelay: '0.15s' }}>
-              <div className="relative w-80 sm:w-[28rem] h-80 sm:h-[28rem]">
-                <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-40" style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--primary) 30%, transparent), transparent)` }} />
-                <div className="absolute bottom-6 left-4 w-40 h-40 rounded-full blur-3xl opacity-30" style={{ background: `radial-gradient(circle, color-mix(in srgb, #a78bfa 25%, transparent), transparent)` }} />
-                <div className="absolute -top-4 -left-4 w-28 h-28 rounded-2xl rotate-12 opacity-20" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 15%, transparent)` }} />
-                <div className="absolute -bottom-3 right-4 w-20 h-20 rounded-full opacity-20" style={{ backgroundColor: `color-mix(in srgb, var(--accent) 15%, transparent)` }} />
-                <div className="absolute top-1/4 -right-3 w-16 h-16 rounded-xl rotate-45 opacity-15" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 20%, transparent)` }} />
-                <div className="relative w-full h-full rounded-[40px] flex items-center justify-center backdrop-blur-md" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 40%, transparent)', border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
-                  <div className="absolute inset-6 rounded-[28px] border border-dashed" style={{ borderColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }} />
-                  <img src="/logo-transparent.webp" alt="Radiant Academy" className="w-56 sm:w-72 h-auto relative z-10" />
+              <div className="relative w-80 sm:w-[26rem] h-80 sm:h-[26rem]">
+                <div className="relative w-full h-full rounded-[32px] overflow-hidden" style={{ border: '1px solid var(--border)', boxShadow: '0 24px 60px rgba(0,0,0,0.12)' }}>
+                  <img
+                    src="/images/hero-classroom.jpg"
+                    alt="Élèves et professeurs de Radiant Academy en cours"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Rotated Polaroid card, the one "signature" human element */}
+                <div
+                  className="absolute -bottom-8 -left-10 w-44 rounded-lg p-3 pb-4"
+                  style={{ backgroundColor: '#fff', boxShadow: '0 16px 40px rgba(0,0,0,0.18)', transform: 'rotate(-6deg)' }}
+                >
+                  <img src="/images/hero-polaroid.jpg" alt="Un cours de soutien à Radiant Academy" className="w-full h-28 object-cover rounded-sm mb-2" />
+                  <p className="font-handwritten text-lg leading-none text-center" style={{ color: '#1f2937' }}>
+                    On y arrive ensemble ✏️
+                  </p>
+                </div>
+
+                <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 25%, transparent)` }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* QUI SOMMES-NOUS */}
+      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-16 lg:grid-cols-2 items-center mb-24">
+            {/* Story */}
+            <div>
+              <div className="badge inline-flex mb-5 gap-2">
+                <Heart className="h-3.5 w-3.5" />
+                Qui sommes-nous
+              </div>
+              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-[1.05]">
+                Une équipe de profs,<br />pas une plateforme
+              </h2>
+              <p className="text-base sm:text-lg leading-relaxed mb-4" style={{ color: 'var(--fg-muted)' }}>
+                Radiant Academy a commencé avec une salle, un tableau, et l'envie de faire le soutien scolaire autrement — sans classes surchargées où personne ne suit vraiment. Aujourd'hui on est {teacherCount > 0 ? `${teacherCount}+` : 'plusieurs'} enseignants et des centaines d'élèves, mais l'idée de départ n'a pas changé.
+              </p>
+              <p className="text-base sm:text-lg leading-relaxed mb-8" style={{ color: 'var(--fg-muted)' }}>
+                Petits groupes, vrai suivi, et des profs qui connaissent le prénom de chaque élève. Pas de centre d'appel, pas de robot — si vous nous écrivez, c'est quelqu'un qui connaît vos enfants qui répond.
+              </p>
+
+              <div className="flex items-center gap-4 rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                <img src="/team/founder.jpg" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
+                <div>
+                  <p className="font-handwritten text-3xl leading-none mb-1" style={{ color: 'var(--primary)' }}>Amina B.</p>
+                  <p className="text-xs" style={{ color: 'var(--fg-muted)' }}>Fondatrice — prof de mathématiques depuis 12 ans</p>
                 </div>
               </div>
+            </div>
+
+            {/* Photo collage */}
+            <div className="relative h-[420px] hidden lg:block">
+              <img
+                src="/images/about-main.jpg"
+                alt="L'équipe de Radiant Academy"
+                className="absolute top-0 right-0 w-72 h-80 object-cover rounded-2xl"
+                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}
+              />
+              <img
+                src="/images/about-secondary.jpg"
+                alt="Un cours de soutien scolaire"
+                className="absolute bottom-0 left-0 w-56 h-64 object-cover rounded-2xl"
+                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '4px solid var(--bg)' }}
+              />
+              <div
+                className="absolute bottom-16 right-10 rounded-lg p-3 w-40"
+                style={{ backgroundColor: '#fff', boxShadow: '0 16px 40px rgba(0,0,0,0.18)', transform: 'rotate(4deg)' }}
+              >
+                <p className="font-handwritten text-lg leading-tight text-center" style={{ color: '#1f2937' }}>
+                  Merci pour cette année ❤️ — un parent
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Team grid */}
+          <div>
+            <div className="text-center mb-12">
+              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">L'équipe qui sera avec vos enfants</h3>
+              <p className="mt-3 max-w-xl mx-auto" style={{ color: 'var(--fg-muted)' }}>
+                Chaque prof est recruté pour sa pédagogie autant que pour son niveau — pas juste pour un diplôme.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {TEAM.map((member, i) => (
+                <div
+                  key={member.name}
+                  className="group rounded-2xl overflow-hidden animate-up transition-all duration-300 hover:-translate-y-1.5"
+                  style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', animationDelay: `${i * 0.06}s`, boxShadow: 'var(--shadow-sm)' }}
+                >
+                  <div className="aspect-[4/5] overflow-hidden">
+                    <img src={member.photo} alt={member.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  </div>
+                  <div className="p-5 text-center">
+                    <p className="font-bold text-base">{member.name}</p>
+                    <p className="text-sm mt-0.5" style={{ color: 'var(--primary)' }}>{member.role}</p>
+                    <p className="text-xs mt-2" style={{ color: 'var(--fg-muted)' }}>{member.years}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -605,7 +759,7 @@ export default function LandingPage() {
             {/* Links */}
             {[
               { title: 'footer.links', col: 'lg:col-span-2', items: [
-                ...NAV.map(x => ({ label: t(x.key, lang), href: x.href })),
+                ...NAV.map(x => ({ label: x.label ?? t(x.key, lang), href: x.href })),
                 { label: t('nav.leaderboard', lang), to: '/leaderboard' },
               ]},
 
