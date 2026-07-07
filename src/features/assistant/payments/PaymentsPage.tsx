@@ -11,6 +11,7 @@ import { formatCurrency, formatDateTime } from '@/lib/utils';
 import { usePayments, useCreatePayment, useUpdatePayment, useDeletePayment } from './usePayments';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
+import { useAuth } from '@/hooks/useAuth';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -18,6 +19,7 @@ import ConfirmDialog from '@/components/ui/confirm-dialog';
 export default function PaymentsPage() {
   const { lang } = useLang();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
@@ -41,7 +43,7 @@ export default function PaymentsPage() {
   const openEditModal = (item: any) => {
     setEditingId(item.id);
     setForm({
-      student_id: item.student_id ?? item.studentName ?? '',
+      student_id: item.student_id ?? '',
       amount: item.amount?.toString() ?? '',
       payment_method: item.method ?? '',
       payment_type: item.type ?? '',
@@ -70,7 +72,7 @@ export default function PaymentsPage() {
     } else {
       const studentId = form.student_id || undefined;
       createPayment.mutate(
-        { student_id: studentId, amount: parseFloat(form.amount), payment_method: form.payment_method, payment_type: form.payment_type },
+        { student_id: studentId, amount: parseFloat(form.amount), payment_method: form.payment_method, payment_type: form.payment_type, recorded_by: profile?.id },
         {
           onSuccess: () => {
             toast(t('success.created', lang, t('nav.payments', lang)), 'success');
@@ -125,16 +127,16 @@ export default function PaymentsPage() {
                   <SelectItem value="cash">{t('payments.cash', lang)}</SelectItem>
                   <SelectItem value="card">{t('payments.card', lang)}</SelectItem>
                   <SelectItem value="check">{t('payments.check', lang)}</SelectItem>
-                  <SelectItem value="transfer">{t('payments.transfer', lang)}</SelectItem>
+                  <SelectItem value="bank_transfer">{t('payments.transfer', lang)}</SelectItem>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>{t('common.type', lang)}</Label>
                 <Select value={form.payment_type} onValueChange={v => setForm(f => ({ ...f, payment_type: v }))} placeholder={t('payments.select_type', lang)}>
-                  <SelectItem value="tuition">{t('payments.tuition', lang)}</SelectItem>
-                  <SelectItem value="registration">{t('nav.registrations', lang)}</SelectItem>
-                  <SelectItem value="material">{t('payments.material', lang)}</SelectItem>
-                  <SelectItem value="other">{t('common.other', lang)}</SelectItem>
+                  <SelectItem value="monthly">{t('payments.monthly', lang)}</SelectItem>
+                  <SelectItem value="per_session">{t('payments.per_session', lang)}</SelectItem>
+                  <SelectItem value="vip">{t('payments.vip', lang)}</SelectItem>
+                  <SelectItem value="private">{t('payments.private', lang)}</SelectItem>
                 </Select>
               </div>
               <div className="flex justify-end gap-2 pt-2">

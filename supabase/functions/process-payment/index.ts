@@ -88,24 +88,36 @@ serve(async (req) => {
 
     if (txError) throw txError;
 
-    // Allocate to invoices if specified
+    // NOTE: This multi-invoice allocation is NOT wrapped in a database transaction.
+    // If the process fails after creating the payment record but before updating
+    // all invoices, the payment record will exist without corresponding invoice
+    // updates (known limitation of current Supabase PostgREST setup).
     if (payload.invoice_ids && payload.invoice_ids.length > 0) {
-      for (const invoiceId of payload.invoice_ids) {
-        const { data: invoice } = await supabase
-          .from('invoices')
-          .select('paid_amount, total_amount')
-          .eq('id', invoiceId)
-          .single();
-
-        if (invoice) {
-          const newPaid = (invoice.paid_amount || 0) + (payload.amount / payload.invoice_ids.length);
-          const newStatus = newPaid >= invoice.total_amount ? 'paid' : 'partially_paid';
-
-          await supabase
+      try {
+        for (const invoiceId of payload.invoice_ids) {
+          const { data: invoice } = await supabase
             .from('invoices')
-            .update({ paid_amount: newPaid, status: newStatus })
-            .eq('id', invoiceId);
+            .select('paid_amount, total_amount')
+            .eq('id', invoiceId)
+            .single();
+
+          if (invoice) {
+            const newPaid = (invoice.paid_amount || 0) + (payload.amount / payload.invoice_ids.length);
+            const newStatus = newPaid >= invoice.total_amount ? 'paid' : 'partially_paid';
+
+            const { error: updateError } = await supabase
+              .from('invoices')
+              .update({ paid_amount: newPaid, status: newStatus })
+              .eq('id', invoiceId);
+
+            if (updateError) throw updateError;
+          }
         }
+      } catch (invoiceError) {
+        // Rollback: soft-delete the payment record if invoice updates fail
+        await supabase.from('payments').update({ deleted_at: new Date().toISOString() }).eq('id', payment.id);
+        await supabase.from('transactions').update({ deleted_at: new Date().toISOString() }).eq('reference', payment.receipt_number);
+        throw invoiceError;
       }
     }
 

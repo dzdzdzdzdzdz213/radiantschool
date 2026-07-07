@@ -28,7 +28,7 @@ export default function GroupsPage() {
         qc.invalidateQueries({ queryKey: ['assistant_groups'] });
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { channel.unsubscribe(); supabase.removeChannel(channel); };
   }, [qc]);
 
   const { data: groups, isLoading, isError } = useQuery({
@@ -36,7 +36,7 @@ export default function GroupsPage() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('courses')
-        .select('id, name, type, capacity, current_enrollments, status, level:levels(name), subject:subjects(name), teacher:users!courses_teacher_id_fkey(first_name, last_name)')
+        .select('id, name, type, capacity, current_enrollments, status, level:levels(name, category), subject:subjects(name), teacher:users!courses_teacher_id_fkey(first_name, last_name)')
         .order('name');
       return data ?? [];
     },

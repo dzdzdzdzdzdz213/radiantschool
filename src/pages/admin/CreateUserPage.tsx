@@ -40,12 +40,19 @@ export default function CreateUserPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!validate()) throw new Error('VALIDATION_FAILED');
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpResponse, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { first_name: firstName, last_name: lastName, role } },
       });
       if (signUpError) throw signUpError;
+      if (signUpResponse?.user) {
+        const { error: rpcError } = await supabase.rpc('register_user', {
+          p_id: signUpResponse.user.id, p_email: email, p_first_name: firstName, p_last_name: lastName,
+          p_role: role, p_status: 'pending', p_phone: null,
+        });
+        if (rpcError) throw rpcError;
+      }
     },
     onSuccess: () => {
       toast('Compte créé avec succès', 'success');

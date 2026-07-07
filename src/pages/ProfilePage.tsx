@@ -75,14 +75,23 @@ export default function ProfilePage() {
     return false;
   }, [firstName, lastName, email, phone, lang]);
 
+  const handleSave = useCallback(() => {
+    if (!validate()) return;
+    updateMutation.mutate();
+  }, [validate]);
+
   const updateMutation = useMutation({
     mutationFn: async () => {
-      if (!validate()) throw new Error('VALIDATION_FAILED');
+      if (email !== profile?.email) {
+        const { error: authErr } = await supabase.auth.updateUser({ email });
+        if (authErr) throw authErr;
+      }
+
       const { error } = await supabase.from('users').update({ first_name: firstName, last_name: lastName, email, phone: phone || null }).eq('id', profile!.id);
       if (error) throw error;
     },
     onSuccess: () => { toast(t('success.updated', lang, 'Profil'), 'success'); setEditing(false); refreshProfile(); },
-    onError: (err: any) => { if (err?.message !== 'VALIDATION_FAILED') toast(err?.message ?? t('errors.unknown', lang), 'error'); },
+    onError: (err: any) => { toast(err?.message ?? t('errors.unknown', lang), 'error'); },
   });
 
   if (!profile) return <div className="p-8 text-center text-muted">{t('common.loading', lang)}</div>;
@@ -91,7 +100,7 @@ export default function ProfilePage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('nav.profile', lang)}</h1>
-        <button onClick={() => editing ? updateMutation.mutate() : setEditing(true)}
+        <button onClick={() => editing ? handleSave() : setEditing(true)}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90">
           {editing ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
           {editing ? t('common.save', lang) : t('common.edit', lang)}

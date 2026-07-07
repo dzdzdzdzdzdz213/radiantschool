@@ -51,7 +51,7 @@ export default function AdminAttendanceOversightPage() {
     queryFn: async () => {
       let q = (supabase as any)
         .from('attendance_sessions')
-        .select('id, date, title, check_in_opened_at, check_in_closed_at, price_calculated, course:courses!inner(id, name, teacher_id, teacher:users!teacher_id(first_name, last_name))')
+        .select('id, date, title, check_in_opened_at, check_in_closed_at, price_calculated, course:courses!inner(id, name, type, teacher_id, teacher:users!teacher_id(first_name, last_name))')
         .order('date', { ascending: false })
         .limit(100);
       if (teacherFilter) q = q.eq('course.teacher_id', teacherFilter);
@@ -65,7 +65,7 @@ export default function AdminAttendanceOversightPage() {
     queryFn: async () => {
       let q = (supabase as any)
         .from('attendance')
-        .select('id, date, status, check_in_time, check_in_closed_at, method, course_schedule:course_schedules!inner(id, course_id, course:courses!inner(id, name, teacher_id, teacher:users!teacher_id(first_name, last_name)))')
+        .select('id, date, status, check_in_time, check_in_closed_at, method, course_schedule:course_schedules!inner(id, course_id, course:courses!inner(id, name, type, teacher_id, teacher:users!teacher_id(first_name, last_name)))')
         .order('date', { ascending: false })
         .limit(100);
       if (teacherFilter) q = q.eq('course_schedule.course.teacher_id', teacherFilter);
@@ -92,6 +92,7 @@ export default function AdminAttendanceOversightPage() {
   const pendingSessions = (groupSessions ?? []).filter((s: any) => !s.check_in_opened_at);
 
   const filteredPrivate = (privateRecords ?? []).filter((r: any) => {
+    if (typeFilter === 'group' && r.course_schedule?.course?.type !== 'group') return false;
     if (typeFilter === 'private' && r.course_schedule?.course?.type !== 'private') return false;
     if (typeFilter === 'vip' && r.course_schedule?.course?.type !== 'vip') return false;
     return true;

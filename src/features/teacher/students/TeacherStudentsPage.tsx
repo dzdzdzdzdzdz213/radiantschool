@@ -29,7 +29,8 @@ export default function TeacherStudentsPage() {
         .from('course_enrollments')
         .select('student:users(id, first_name, last_name, email, phone, status, photo_url), course:courses!inner(id, name, teacher_id)')
         .eq('course.teacher_id', profile.id)
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .eq('student.status', 'active');
       const unique = new Map();
       for (const r of data ?? []) {
         if (r.student && !unique.has(r.student.id)) {

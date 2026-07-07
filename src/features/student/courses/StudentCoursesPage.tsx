@@ -20,7 +20,7 @@ export default function StudentCoursesPage() {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('course_enrollments')
-        .select('id, status, enrollment_date, progress, course:courses!inner(id, name, description, type, price, duration, capacity, status, teacher:users!teacher_id(first_name, last_name))')
+        .select('id, status, enrollment_date, progress, course:courses!inner(id, name, description, type, price, capacity, status, teacher:users!teacher_id(first_name, last_name))')
         .eq('student_id', profile.id)
         .order('enrollment_date', { ascending: false });
       return (data ?? []).map((e: any) => ({
@@ -34,7 +34,6 @@ export default function StudentCoursesPage() {
           description: e.course?.description ?? '',
           type: e.course?.type ?? '',
           price: e.course?.price ?? 0,
-          duration: e.course?.duration ?? '',
           teacher: `${e.course?.teacher?.first_name ?? ''} ${e.course?.teacher?.last_name ?? ''}`,
           capacity: e.course?.capacity ?? 0,
           status: e.course?.status ?? '',
@@ -72,7 +71,7 @@ export default function StudentCoursesPage() {
               <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{e.course.description}</p>
               <div className="space-y-1.5 text-xs text-muted-foreground">
                 <p className="flex items-center gap-1.5"><Users className="h-3 w-3" />{e.course.teacher}</p>
-                <p className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{e.course.duration || t('common.pending', lang)}</p>
+                <p className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{t('common.pending', lang)}</p>
                 <p className="flex items-center gap-1.5"><DollarSign className="h-3 w-3" />{e.course.price} DA</p>
               </div>
               <div className="mt-3">

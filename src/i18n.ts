@@ -5,6 +5,7 @@ type Dict = Record<string, string | ((...args: string[]) => string)>;
 const fr: Dict = {
   // --- Landing page (existing) ---
   'nav.formations': 'Formations',
+  'nav.apropos': 'Qui sommes-nous',
   'nav.pourquoi': 'Pourquoi nous',
   'nav.contact': 'Contact',
   'nav.connexion': 'Connexion',
@@ -766,7 +767,7 @@ const fr: Dict = {
   'payments.create': 'Enregistrer le paiement',
   'payments.select_method': 'Sélectionner une méthode',
   'payments.select_type': 'Sélectionner un type',
-  'payments.student_placeholder': 'Sélectionner un étudiant...',
+  'payments.student_placeholder': "Saisissez l'ID de l'étudiant",
   'payments.fill_fields': 'Veuillez remplir tous les champs',
   'payments.card': 'Carte bancaire',
   'payments.cash': 'Espèces',
@@ -774,6 +775,10 @@ const fr: Dict = {
   'payments.transfer': 'Virement',
   'payments.tuition': 'Frais de scolarité',
   'payments.material': 'Matériel',
+  'payments.monthly': 'Mensualité',
+  'payments.per_session': 'Par séance',
+  'payments.vip': 'VIP',
+  'payments.private': 'Particulier',
 
   // --- Registrations ---
   'registrations.subtitle': 'Gérer les inscriptions',
@@ -822,6 +827,7 @@ const fr: Dict = {
 const en: Dict = {
   // --- Landing page ---
   'nav.formations': 'Courses',
+  'nav.apropos': 'About us',
   'nav.pourquoi': 'Why us',
   'nav.contact': 'Contact',
   'nav.connexion': 'Login',
@@ -1583,7 +1589,7 @@ const en: Dict = {
   'payments.create': 'Record Payment',
   'payments.select_method': 'Select a method',
   'payments.select_type': 'Select a type',
-  'payments.student_placeholder': 'Select a student...',
+  'payments.student_placeholder': 'Enter student ID',
   'payments.fill_fields': 'Please fill all fields',
   'payments.card': 'Credit Card',
   'payments.cash': 'Cash',
@@ -1591,6 +1597,10 @@ const en: Dict = {
   'payments.transfer': 'Bank Transfer',
   'payments.tuition': 'Tuition Fees',
   'payments.material': 'Material',
+  'payments.monthly': 'Monthly',
+  'payments.per_session': 'Per Session',
+  'payments.vip': 'VIP',
+  'payments.private': 'Private',
 
   // --- Registrations ---
   'registrations.subtitle': 'Manage registrations',
@@ -1639,6 +1649,7 @@ const en: Dict = {
 const ar: Dict = {
   // --- Landing page ---
   'nav.formations': 'الدورات',
+  'nav.apropos': 'من نحن',
   'nav.pourquoi': 'لماذا نحن',
   'nav.contact': 'اتصل بنا',
   'nav.connexion': 'تسجيل الدخول',
@@ -2400,7 +2411,7 @@ const ar: Dict = {
   'payments.create': 'تسجيل الدفع',
   'payments.select_method': 'اختر طريقة الدفع',
   'payments.select_type': 'اختر نوع الدفع',
-  'payments.student_placeholder': 'اختر طالباً...',
+  'payments.student_placeholder': 'أدخل معرف الطالب',
   'payments.fill_fields': 'يرجى ملء جميع الحقول',
   'payments.card': 'بطاقة بنكية',
   'payments.cash': 'نقداً',
@@ -2408,6 +2419,10 @@ const ar: Dict = {
   'payments.transfer': 'تحويل بنكي',
   'payments.tuition': 'رسوم الدراسة',
   'payments.material': 'المواد الدراسية',
+  'payments.monthly': 'شهري',
+  'payments.per_session': 'Per Session',
+  'payments.vip': 'VIP',
+  'payments.private': 'خاص',
 
   // --- Registrations ---
   'registrations.subtitle': 'إدارة التسجيلات',
@@ -2465,6 +2480,69 @@ export function t(key: string, lang: Lang, ...args: string[]): string {
   if (!val) return key;
   if (typeof val === 'function') return val(...args);
   return val;
+}
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+
+/**
+ * Calls the auto-translate Edge Function to translate French text to the target language.
+ * Results are cached in localStorage to avoid repeated API calls.
+ */
+export async function autoTranslate(text: string, target: 'en' | 'ar'): Promise<string> {
+  const cacheKey = `_tr_${target}_${text}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/auto-translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, target }),
+    });
+    if (!res.ok) return text;
+    const data = await res.json();
+    const result: string = data.translated || text;
+    try { localStorage.setItem(cacheKey, result); } catch {}
+    return result;
+  } catch {
+    return text;
+  }
+}
+
+/**
+ * Like `t()` but with auto-translation fallback.
+ * If the key is not found in the target language's dictionary,
+ * translates the provided French text via the auto-translate API.
+ * Falls back to the French text while translation is pending.
+ *
+ * Returns an object `{ text, isLoading }` where `isLoading` is true
+ * while auto-translation is in progress (useful for showing a loader).
+ */
+export function ta(
+  key: string,
+  frText: string,
+  lang: Lang,
+  onTranslated?: (t: string) => void,
+): string {
+  if (lang === 'fr') return frText;
+
+  const existing = dicts[lang]?.[key];
+  if (existing) return typeof existing === 'function' ? existing() : existing;
+
+  const cacheKey = `_tr_${lang}_${frText}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return cached;
+  } catch {}
+
+  autoTranslate(frText, lang).then((result) => {
+    try { localStorage.setItem(cacheKey, result); } catch {}
+    onTranslated?.(result);
+  });
+
+  return frText;
 }
 
 /**

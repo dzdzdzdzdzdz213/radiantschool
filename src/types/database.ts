@@ -325,6 +325,7 @@ export interface Database {
           notes: string | null;
           recorded_by: string;
           course_id: number | null;
+          deleted_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -345,6 +346,7 @@ export interface Database {
           payment_type?: string;
           teacher_id?: string;
           notes?: string;
+          deleted_at?: string | null;
         };
         Relationships: [
           {
@@ -373,6 +375,7 @@ export interface Database {
           status: string;
           pdf_url: string | null;
           notes: string | null;
+          deleted_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -389,6 +392,7 @@ export interface Database {
           status?: string;
           pdf_url?: string;
           notes?: string;
+          deleted_at?: string | null;
         };
         Relationships: [
           {
@@ -490,6 +494,7 @@ export interface Database {
           category: string;
           is_read: boolean;
           read_at: string | null;
+          deleted_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -503,6 +508,7 @@ export interface Database {
         Update: {
           is_read?: boolean;
           read_at?: string | null;
+          deleted_at?: string | null;
         };
         Relationships: [
           {
@@ -523,6 +529,7 @@ export interface Database {
           is_read: boolean;
           read_at: string | null;
           parent_message_id: number | null;
+          deleted_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -535,6 +542,7 @@ export interface Database {
         Update: {
           is_read?: boolean;
           read_at?: string;
+          deleted_at?: string | null;
         };
         Relationships: [
           {

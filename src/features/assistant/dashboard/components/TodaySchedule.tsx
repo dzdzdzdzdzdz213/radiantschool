@@ -1,4 +1,6 @@
 import { Calendar } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface ScheduleItem {
   id: string;
@@ -15,6 +17,7 @@ interface TodayScheduleProps {
 }
 
 export default function TodaySchedule({ data, loading }: TodayScheduleProps) {
+  const { lang } = useLang();
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
@@ -28,10 +31,10 @@ export default function TodaySchedule({ data, loading }: TodayScheduleProps) {
     <div className="rounded-2xl border border-border bg-card p-5">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <Calendar className="h-4 w-4 text-primary" />
-        Planning du jour
+        {t('dashboard.courses_today', lang)}
       </h3>
       {data.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">Aucun cours programmé aujourd'hui</p>
+        <p className="text-sm text-muted-foreground py-6 text-center">{t('dashboard.no_courses_today', lang)}</p>
       ) : (
         <div className="space-y-2">
           {data.slice(0, 6).map((item) => (

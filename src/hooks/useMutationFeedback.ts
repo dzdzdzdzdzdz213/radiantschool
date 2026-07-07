@@ -53,7 +53,7 @@ export function useUpdateUserSettings() {
     },
     onSuccess: () => {
       toast('Paramètres mis à jour', 'success');
-      qc.invalidateQueries({ queryKey: ['profile'] });
+      qc.invalidateQueries({ queryKey: ['profile_settings'] });
     },
     onError: (err: any) => {
       toast(err?.message ?? 'Erreur lors de la mise à jour', 'error');
@@ -89,13 +89,14 @@ export function useSendMessage() {
 
   return useMutation({
     mutationFn: async ({ receiverId, subject, body, senderId }: { receiverId: string; subject: string; body: string; senderId: string }) => {
-      const { error } = await supabase.from('messages').insert({
+      const { data: result, error } = await supabase.from('messages').insert({
         sender_id: senderId,
         receiver_id: receiverId,
         subject,
         body,
-      });
+      }).select().single();
       if (error) throw error;
+      return result;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['messages'] });
@@ -158,7 +159,7 @@ export function useDeleteNotification() {
 
   return useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from('notifications').delete().eq('id', id);
+      const { error } = await supabase.from('notifications').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -178,7 +179,7 @@ export function useSubmitReview() {
 
   return useMutation({
     mutationFn: async ({ studentId, teacherId, rating, comment }: { studentId: string; teacherId: string; rating: number; comment: string }) => {
-      const { error } = await supabase.from('evaluations').upsert({
+      const { data: result, error } = await supabase.from('evaluations').upsert({
         student_id: studentId,
         teacher_id: teacherId,
         teaching_quality: rating,
@@ -186,8 +187,9 @@ export function useSubmitReview() {
         punctuality: rating,
         organization: rating,
         comment,
-      }, { onConflict: 'student_id,teacher_id' });
+      }, { onConflict: 'student_id,teacher_id' }).select().single();
       if (error) throw error;
+      return result;
     },
     onSuccess: () => {
       toast('Avis envoyé avec succès', 'success');

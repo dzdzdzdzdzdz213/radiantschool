@@ -55,7 +55,7 @@ export default function AlertsWidget({ alerts, loading }: AlertsWidgetProps) {
               </div>
               {alert.action && (
                 <button
-                  onClick={() => navigate(alert.action!.path)}
+                  onClick={() => navigate(alert.action?.path ?? '')}
                   className="shrink-0 text-xs font-medium text-primary hover:underline whitespace-nowrap"
                 >
                   {alert.action.label}

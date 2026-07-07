@@ -57,7 +57,7 @@ export function useTeacherDashboard() {
       const safeArr = <T>(p: PromiseLike<{ data: T[] | null }>) => Promise.resolve(p).then((r) => r.data ?? []).catch(() => [] as T[]);
 
       const [teacherAssignmentIds] = await Promise.all([
-        safeArr(supabase.from('assignments').select('id').eq('teacher_id', teacherId)).then((a) => a.map((a) => a.id)),
+        safeArr(supabase.from('assignments').select('id').eq('teacher_id', teacherId)).then((arr) => arr.map((a) => a.id)),
       ]);
       const validAssignments = teacherAssignmentIds.length > 0 ? teacherAssignmentIds : [-1];
 
@@ -68,7 +68,10 @@ export function useTeacherDashboard() {
         safe(supabase.from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('day_of_week', dayName).gte('start_time', currentTime)),
         safe(supabase.from('assignment_submissions').select('id', { count: 'exact', head: true }).is('grade', null).neq('status', 'pending').in('assignment_id', validAssignments)),
         safe(supabase.from('resources').select('id', { count: 'exact', head: true }).eq('uploaded_by', teacherId)),
-        safe(supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('status', 'present').in('course_schedule_id', validAll)),
+        Promise.resolve().then(async () => {
+          const { data } = await supabase.from('attendance').select('course_schedule_id, date').eq('status', 'present').in('course_schedule_id', validAll);
+          return new Set((data ?? []).map((r: any) => `${r.course_schedule_id}|${r.date}`)).size;
+        }),
         safe(supabase.from('private_lessons').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('date', today)),
         safe(supabase.from('vip_classes').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).eq('date', today)),
         Promise.resolve().then(async () => {

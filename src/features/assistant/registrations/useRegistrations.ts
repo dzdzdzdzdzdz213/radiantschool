@@ -17,9 +17,13 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
   return useQuery({
     queryKey: ['assistant_registrations', search, page, statusFilter],
     queryFn: async () => {
-      const { data, count } = await (supabase as any)
+      let query = (supabase as any)
         .from('course_enrollments')
-        .select('id, status, enrollment_date, student:users(first_name, last_name, id), course:courses(id, name), campaign:campaigns(name)', { count: 'exact' })
+        .select('id, status, enrollment_date, student:users(first_name, last_name, id), course:courses(id, name), campaign:campaigns(name)', { count: 'exact' });
+      if (statusFilter && statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+      const { data, count } = await query
         .order('enrollment_date', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       const items = (data ?? []).map((r: any) => ({
@@ -29,7 +33,7 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
         courseId: r.course?.id ?? '',
         courseName: r.course?.name ?? 'Inconnu',
         status: r.status,
-        enrollmentDate: r.enrollment_date,
+        enrollmentDate: r.enrollment_date ?? '',
         campaignName: r.campaign?.name ?? null,
       })) as RegistrationItem[];
       return { data: items, meta: { page, pageSize: 20, total: count ?? 0, totalPages: Math.ceil((count ?? 0) / 20) } };

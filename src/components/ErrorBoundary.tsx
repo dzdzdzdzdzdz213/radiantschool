@@ -15,11 +15,7 @@ interface Props {
  * inner component for `componentDidCatch` support.
  */
 export function ErrorBoundary({ children, fallback, onError }: Props) {
-  try {
-    return <ErrorBoundaryInner fallback={fallback} onError={onError}>{children}</ErrorBoundaryInner>;
-  } catch {
-    return null;
-  }
+  return <ErrorBoundaryInner fallback={fallback} onError={onError}>{children}</ErrorBoundaryInner>;
 }
 
 interface InnerProps {

@@ -16,11 +16,11 @@ export default function TeacherSchedulePage() {
   const { profile } = useAuth();
   const { lang } = useLang();
   const today = new Date();
-  const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - ((today.getDay() + 1) % 7));
   const [startDate, setStartDate] = useState(weekStart);
 
   const { data: schedules, isLoading, isError } = useQuery({
-    queryKey: ['teacher_schedule', profile?.id, startDate.toISOString()],
+    queryKey: ['teacher_schedule', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return {};
       const { data, error } = await (supabase as any)
@@ -82,7 +82,7 @@ export default function TeacherSchedulePage() {
                 ))
               )}
               {(schedules?.[day]?.length ?? 0) > 5 && (
-                <p className="text-[10px] text-muted-foreground text-center">+{schedules![day].length - 5} {'autres'}</p>
+                <p className="text-[10px] text-muted-foreground text-center">+{(schedules?.[day]?.length ?? 0) - 5} {'autres'}</p>
               )}
             </CardContent>
           </Card>

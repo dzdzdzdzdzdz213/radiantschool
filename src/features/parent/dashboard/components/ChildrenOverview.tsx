@@ -52,7 +52,7 @@ export default function ChildrenOverview({ childList: children, loading }: Child
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate">{child.firstName} {child.lastName}</p>
                 <p className="text-xs text-muted-foreground">
-                  Présence: {child.attendanceRate}% · {child.pendingHomework} devoir{child.pendingHomework !== 1 ? 's' : ''}
+                  {child.firstName} {child.lastName}
                 </p>
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />

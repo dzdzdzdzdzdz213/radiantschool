@@ -16,11 +16,11 @@ export default function StudentSchedulePage() {
   const { lang } = useLang();
   const { profile } = useAuth();
   const today = new Date();
-  const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - ((today.getDay() + 1) % 7));
   const [startDate, setStartDate] = useState(weekStart);
 
   const { data: scheduleData, isLoading, isError } = useQuery({
-    queryKey: ['student_schedule', profile?.id, startDate.toISOString()],
+    queryKey: ['student_schedule', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return {};
       const { data: enrollments } = await (supabase as any)

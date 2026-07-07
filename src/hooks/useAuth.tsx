@@ -95,10 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return { error: error.message };
+      if (error) return { error: 'Identifiants invalides' };
       return {};
-    } catch (err: any) {
-      return { error: err?.message ?? 'Une erreur est survenue lors de la connexion' };
+    } catch {
+      return { error: 'Identifiants invalides' };
     }
   };
 
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const { data, error } = await supabase.auth.signUp({ email, password, options: { data: meta } });
-      if (error) return { error: error.message };
+      if (error) return { error: 'Une erreur est survenue lors de l\'inscription' };
       if (!data.user) return { error: 'Création du compte échouée' };
 
       const { error: rpcErr } = await supabase.rpc('register_user', {

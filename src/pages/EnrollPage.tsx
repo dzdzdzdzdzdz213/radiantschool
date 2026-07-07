@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
@@ -65,17 +65,7 @@ export default function EnrollPage() {
   const isParent = profile?.role === 'parent';
   const userId = selectedChild?.id || profile?.id;
 
-  useEffect(() => {
-    (async () => {
-      const { data: l } = await supabase.from('levels').select('*').order('sort_order');
-      setLevels(l || []);
-      const { data: s } = await supabase.from('subjects').select('*').order('name');
-      setSubjects(s || []);
-      if (isParent) loadChildren();
-    })().catch(() => setError(t('errors.load_error', lang, 'des données')));
-  }, [profile]);
-
-  const loadChildren = async () => {
+  const loadChildren = useCallback(async () => {
     if (!profile) return;
     const { data: relations } = await supabase
       .from('student_parent')
@@ -91,7 +81,17 @@ export default function EnrollPage() {
       .select('id, first_name, last_name, email')
       .in('id', studentIds);
     setChildren(data || []);
-  };
+  }, [profile]);
+
+  useEffect(() => {
+    (async () => {
+      const { data: l } = await supabase.from('levels').select('*').order('sort_order');
+      setLevels(l || []);
+      const { data: s } = await supabase.from('subjects').select('*').order('name');
+      setSubjects(s || []);
+      if (isParent) loadChildren();
+    })().catch(() => setError(t('errors.load_error', lang, 'des données')));
+  }, [profile, isParent, loadChildren, lang]);
 
   // Load subject IDs available for the selected level
   useEffect(() => {

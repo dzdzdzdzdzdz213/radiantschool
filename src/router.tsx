@@ -6,6 +6,7 @@ import StudentRoute from '@/routes/StudentRoute';
 import ParentRoute from '@/routes/ParentRoute';
 import LoginPage from '@/pages/auth/LoginPage';
 import LandingPage from '@/pages/LandingPage';
+import LegalPage from '@/pages/LegalPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import PublicEnrollPage from '@/pages/auth/PublicEnrollPage';
@@ -265,6 +266,7 @@ export const router = createBrowserRouter([
       { path: 'invoices', Component: InvoicesPageOld },
       { path: 'schedule', Component: SchedulePage },
       { path: 'messages', Component: MessagesPage },
+      { path: 'notifications', element: <SafeRedirect to="/parent/dashboard" /> },
       { path: 'profile', Component: ProfilePage },
       { path: 'help', Component: HelpPage },
     ],
@@ -276,6 +278,10 @@ export const router = createBrowserRouter([
   {
     path: '/',
     Component: LandingPage,
+  },
+  {
+    path: '/:page',
+    element: <LegalPage />,
   },
   {
     path: '*',

@@ -24,7 +24,7 @@ export function useStudents() {
 export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
-    queryFn: () => api.list('courses', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream, year)').then(r => r.data),
+    queryFn: () => api.list('courses', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream, year), schedules:course_schedules(id, day_of_week, start_time, end_time)').then(r => r.data),
     staleTime: 120_000,
   });
 }
@@ -53,14 +53,14 @@ export function useCourseEnrollments(courseId: number) {
  * Attendance records filtered by optional date and course.
  * When the current user is a teacher, filters to only their course schedules.
  */
-export function useAttendance(date?: string, courseId?: number) {
+export function useAttendance(date?: string, courseScheduleId?: number) {
   const { profile } = useAuth();
   return useQuery({
-    queryKey: ['attendance', date, courseId],
+    queryKey: ['attendance', date, courseScheduleId],
     queryFn: async () => {
       const filters: FilterParams[] = [];
       if (date) filters.push({ column: 'date', operator: 'eq', value: date });
-      if (courseId) filters.push({ column: 'course_schedule_id', operator: 'eq', value: courseId });
+      if (courseScheduleId) filters.push({ column: 'course_schedule_id', operator: 'eq', value: courseScheduleId });
       const r = await api.list('attendance', { filters, sort: [{ column: 'date', direction: 'desc' }] }, '*, student:users(first_name, last_name), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time, teacher_id)');
       if (profile?.role === 'teacher') {
         return (r.data ?? []).filter((a: any) => a.schedule?.teacher_id === profile.id);
@@ -156,7 +156,7 @@ export function useSubjects() {
 export function useRooms() {
   return useQuery({
     queryKey: ['rooms'],
-    queryFn: () => api.list('rooms', { filters: [{ column: 'status', operator: 'eq', value: 'active' }], sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
+    queryFn: () => api.list('rooms', { filters: [{ column: 'status', operator: 'eq', value: 'available' }], sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
     staleTime: 300_000,
   });
 }

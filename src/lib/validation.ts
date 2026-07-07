@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const algerianPhoneRegex = /^(\+213|0)(5|6|7)\d{8}$/;
 

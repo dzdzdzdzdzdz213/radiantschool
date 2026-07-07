@@ -17,13 +17,19 @@ export default function RevenuePage() {
   const { lang } = useLang();
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
 
+  const dateFrom = period === 'week'
+    ? new Date(Date.now() - 7 * 86400000).toISOString()
+    : period === 'month'
+      ? new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+      : new Date(new Date().getFullYear(), 0, 1).toISOString();
+
   const { data: revenue, isLoading, isError } = useQuery({
     queryKey: ['teacher_revenue', profile?.id, period],
     queryFn: async () => {
       if (!profile?.id) return null;
-      const { data: privateL, error: e1 } = await (supabase as any).from('private_lessons').select('price, date, status').eq('teacher_id', profile.id);
+      const { data: privateL, error: e1 } = await (supabase as any).from('private_lessons').select('price, date, status').eq('teacher_id', profile.id).gte('date', dateFrom);
       if (e1) throw e1;
-      const { data: vipL, error: e2 } = await (supabase as any).from('vip_classes').select('price, date, status').eq('teacher_id', profile.id);
+      const { data: vipL, error: e2 } = await (supabase as any).from('vip_classes').select('price, date, status').eq('teacher_id', profile.id).gte('date', dateFrom);
       if (e2) throw e2;
       const { data: sessions, error: e3 } = await (supabase as any).from('course_schedules').select('course_id').eq('teacher_id', profile.id);
       if (e3) throw e3;

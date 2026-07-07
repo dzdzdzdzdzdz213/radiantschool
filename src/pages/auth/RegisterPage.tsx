@@ -71,7 +71,7 @@ interface FieldProps {
   name: string;
   label: string;
   type?: string;
-  icon?: { type: React.ElementType; props: Record<string, unknown>; color?: string };
+  icon?: React.ReactNode;
   required?: boolean;
   placeholder?: string;
   className?: string;
@@ -90,7 +90,7 @@ function Field({ name, label, type = 'text', icon, required, placeholder, classN
   return (
     <div className={className || 'mb-3'}>
       <label className="mb-1.5 block text-sm font-medium flex items-center gap-1.5">
-        {icon && <icon.type className="h-3.5 w-3.5" style={{ color: icon.color || 'var(--primary)' }} />}
+        {icon && <span className="inline-flex [&>svg]:h-3.5 [&>svg]:w-3.5" style={{ color: 'var(--primary)' }}>{icon}</span>}
         {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
       </label>
       <input

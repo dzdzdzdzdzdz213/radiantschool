@@ -29,9 +29,7 @@ export default function AttendanceSummary({ childList: children, loading }: Atte
     );
   }
 
-  const avgRate = children.length > 0
-    ? Math.round(children.reduce((s, c) => s + c.attendanceRate, 0) / children.length)
-    : 0;
+  const avgRate = 0;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -57,8 +55,8 @@ export default function AttendanceSummary({ childList: children, loading }: Atte
         {children.map((child) => (
           <div key={child.id} className="flex items-center justify-between">
             <span className="text-sm">{child.firstName} {child.lastName}</span>
-            <span className={`text-xs font-medium ${child.attendanceRate >= 90 ? 'text-emerald-600' : child.attendanceRate >= 75 ? 'text-amber-600' : 'text-red-600'}`}>
-              {child.attendanceRate}%
+            <span className="text-xs font-medium text-muted-foreground">
+              —
             </span>
           </div>
         ))}

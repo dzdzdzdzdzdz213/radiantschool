@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -27,24 +27,28 @@ export default function SettingsPage() {
   const [smsNotif, setSmsNotif] = useState(false);
   const [autoInvoice, setAutoInvoice] = useState(true);
   const [currency, setCurrency] = useState('DZD');
+  const [settingsId, setSettingsId] = useState<number | null>(null);
 
-  const { isLoading: settingsLoading } = useQuery({
+  const { data: settingsData, isLoading: settingsLoading } = useQuery({
     queryKey: ['admin_settings'],
     queryFn: async () => {
-      const { data } = await (supabase as any).from('center_settings').select('*').single();
-      if (data) {
-        setCenterName(data.center_name ?? '');
-        setAddress(data.address ?? '');
-        setPhone(data.phone ?? '');
-        setWilaya(data.wilaya ?? 'Alger');
-        setEmailNotif(data.email_notifications ?? true);
-        setSmsNotif(data.sms_notifications ?? false);
-        setAutoInvoice(data.auto_invoice ?? true);
-        setCurrency(data.currency ?? 'DZD');
-      }
-      return data;
+      const { data } = await (supabase as any).from('center_settings').select('*').maybeSingle();
+      return data ?? null;
     },
   });
+
+  useEffect(() => {
+    if (!settingsData) return;
+    setSettingsId(settingsData.id);
+    setCenterName(settingsData.center_name ?? '');
+    setAddress(settingsData.address ?? '');
+    setPhone(settingsData.phone ?? '');
+    setWilaya(settingsData.wilaya ?? 'Alger');
+    setEmailNotif(settingsData.email_notifications ?? true);
+    setSmsNotif(settingsData.sms_notifications ?? false);
+    setAutoInvoice(settingsData.auto_invoice ?? true);
+    setCurrency(settingsData.currency ?? 'DZD');
+  }, [settingsData]);
 
   const validate = () => {
     let valid = true;
@@ -56,7 +60,7 @@ export default function SettingsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from('center_settings').upsert({
+      const payload: Record<string, any> = {
         center_name: centerName,
         address,
         phone,
@@ -65,7 +69,9 @@ export default function SettingsPage() {
         sms_notifications: smsNotif,
         auto_invoice: autoInvoice,
         currency,
-      });
+      };
+      if (settingsId) payload.id = settingsId;
+      const { error } = await (supabase as any).from('center_settings').upsert(payload);
       if (error) throw error;
     },
     onSuccess: () => { toast(t('success.saved', lang, t('nav.settings', lang)), 'success'); },

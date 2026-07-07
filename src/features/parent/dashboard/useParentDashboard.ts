@@ -7,10 +7,8 @@ export interface ChildInfo {
   firstName: string;
   lastName: string;
   email: string;
-  levelName: string | null;
   attendanceRate: number;
   pendingHomework: number;
-  upcomingClasses: number;
 }
 
 export interface UpcomingClass {
@@ -109,7 +107,8 @@ export function useParentDashboard() {
         .in('id', studentIds);
       return (users ?? []).map((u) => ({
         id: u.id, firstName: u.first_name ?? '', lastName: u.last_name ?? '', email: u.email ?? '',
-        levelName: null, attendanceRate: 0, pendingHomework: 0, upcomingClasses: 0,
+        attendanceRate: 0,
+        pendingHomework: 0,
       }));
     },
     enabled: !!parentId,

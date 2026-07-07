@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import type { UserRole, UserProfile } from '@/types/models';
@@ -46,7 +46,15 @@ function InactiveAccount({ profile }: { profile: UserProfile }) {
  * or redirects to the user's own role dashboard.
  */
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, profile, isLoading } = useAuth();
+  const { user, profile, isLoading, signOut } = useAuth();
+  const [profileTimeout, setProfileTimeout] = useState(false);
+
+  useEffect(() => {
+    if (!profile && !isLoading && user) {
+      const timer = setTimeout(() => setProfileTimeout(true), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [profile, isLoading, user]);
 
   if (isLoading) {
     return (
@@ -61,6 +69,19 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   }
 
   if (!profile) {
+    if (profileTimeout) {
+      return (
+        <div className="flex h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+          <h2 className="text-xl font-semibold">Erreur de chargement</h2>
+          <p className="text-sm text-muted-foreground">
+            Impossible de charger votre profil. Veuillez réessayer.
+          </p>
+          <button onClick={signOut} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white">
+            Retour à la connexion
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

@@ -16,12 +16,17 @@ export default function ForgotPasswordPage() {
     if (loading) return;
     setLoading(true);
     setError('');
-    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setLoading(false);
-    if (err) setError(err.message);
-    else setSent(true);
+    try {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (err) setError('Une erreur est survenue. Veuillez réessayer.');
+      else setSent(true);
+    } catch {
+      setError('Une erreur réseau est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

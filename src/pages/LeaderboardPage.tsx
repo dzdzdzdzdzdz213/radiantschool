@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { Star, Trophy, Medal, Award, Funnel } from 'lucide-react';
+import { Star, Trophy, Medal, Award } from 'lucide-react';
 
 interface TeacherRating {
   teacherId: string;
@@ -21,44 +20,10 @@ interface TeacherRating {
   photoUrl: string | null;
 }
 
-interface Level {
-  id: number; name: string; category: string; stream: string | null; sort_order: number;
-}
-interface Subject {
-  id: number; name: string;
-}
-
 const MEDAL_COLORS = ['#f59e0b', '#94a3b8', '#cd7f32'];
-const CATEGORIES = [
-  { value: '', label: 'Tous' },
-  { value: 'primary', label: 'Primaire' },
-  { value: 'middle', label: 'CEM' },
-  { value: 'high_school', label: 'Lycée' },
-];
 
 export default function LeaderboardPage() {
   const { lang } = useLang();
-  const [filterCategory, setFilterCategory] = useState('');
-  const [filterLevel, setFilterLevel] = useState<number | ''>('');
-  const [filterSubject, setFilterSubject] = useState<number | ''>('');
-
-  const [showFilters, setShowFilters] = useState(false);
-
-  const { data: levels = [] } = useQuery({
-    queryKey: ['levels'],
-    queryFn: async () => {
-      const { data } = await supabase.from('levels').select('*').order('sort_order');
-      return (data ?? []) as Level[];
-    },
-  });
-
-  const { data: subjects = [] } = useQuery({
-    queryKey: ['subjects'],
-    queryFn: async () => {
-      const { data } = await supabase.from('subjects').select('*').order('name');
-      return (data ?? []) as Subject[];
-    },
-  });
 
   const { data: teachers = [], isLoading, error } = useQuery({
     queryKey: ['leaderboard'],
@@ -114,13 +79,7 @@ export default function LeaderboardPage() {
 
   useErrorToast(!!error, lang, 'du classement');
 
-  const displayList = (() => {
-    if (!filterCategory && !filterLevel) return teachers;
-    let result = [...teachers];
-    return result;
-  })();
-
-  const filteredLevels = filterCategory ? levels.filter(l => l.category === filterCategory) : levels;
+  const displayList = teachers;
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-20">
@@ -138,68 +97,7 @@ export default function LeaderboardPage() {
             <p className="text-muted text-sm">Basé sur les évaluations des élèves</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all hover:shadow-sm"
-          style={{ backgroundColor: showFilters ? 'var(--primary)' : 'var(--primary-light)', color: showFilters ? 'white' : 'var(--primary)' }}
-        >
-          <Funnel className="h-4 w-4" />
-          {t('common.filter', lang)}
-        </button>
       </div>
-
-      {showFilters && (
-        <div className="rounded-2xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--fg-muted)' }}>Niveau</label>
-              <div className="flex gap-1.5">
-                {CATEGORIES.map(c => (
-                  <button
-                    key={c.value}
-                    onClick={() => { setFilterCategory(c.value); setFilterLevel(''); }}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
-                    style={{
-                      backgroundColor: filterCategory === c.value ? 'var(--primary)' : 'var(--primary-light)',
-                      color: filterCategory === c.value ? 'white' : 'var(--primary)',
-                    }}
-                  >
-                    {c.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--fg-muted)' }}>Année</label>
-              <select
-                value={filterLevel}
-                onChange={e => setFilterLevel(e.target.value ? Number(e.target.value) : '')}
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
-                style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--fg)' }}
-              >
-                <option value="">Toutes les années</option>
-                {filteredLevels.map(l => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--fg-muted)' }}>Matière</label>
-              <select
-                value={filterSubject}
-                onChange={e => setFilterSubject(e.target.value ? Number(e.target.value) : '')}
-                className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
-                style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--fg)' }}
-              >
-                <option value="">Toutes les matières</option>
-                {subjects.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
 
       {displayList.length === 0 ? (
         <div className="rounded-2xl border p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>

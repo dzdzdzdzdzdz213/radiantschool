@@ -9,22 +9,42 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [validSession, setValidSession] = useState(false);
   const navigate = useNavigate();
   const { lang } = useLang();
   const redirectTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => () => clearTimeout(redirectTimer.current), []);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email_confirmed_at) {
+        setValidSession(true);
+      } else {
+        navigate('/login', { replace: true });
+      }
+      setChecking(false);
+    });
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
     setError('');
-    const { error: err } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-    if (err) setError(err.message);
-    else { setDone(true); redirectTimer.current = setTimeout(() => navigate('/login'), 2000); }
+    try {
+      const { error: err } = await supabase.auth.updateUser({ password });
+      if (err) setError('Une erreur est survenue. Veuillez réessayer.');
+      else { setDone(true); redirectTimer.current = setTimeout(() => navigate('/login'), 2000); }
+    } catch {
+      setError('Une erreur réseau est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (checking) return null;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">

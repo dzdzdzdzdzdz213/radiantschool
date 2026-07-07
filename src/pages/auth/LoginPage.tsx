@@ -33,15 +33,15 @@ export default function LoginPage() {
     const result = await signIn(email, password);
     setIsLoading(false);
     if (result.error) {
-      setError(result.error);
+      setError('Identifiants invalides');
       return;
     }
-    const { data: userData } = await (supabase as any)
+    const { data: userData } = await supabase
       .from('users')
       .select('role, status')
       .eq('email', email)
       .single();
-    if (!userData || !['student', 'parent'].includes(userData.role)) {
+    if (!userData || !['student', 'parent'].includes(userData.role as string) || userData.status !== 'active') {
       setError('Identifiants invalides');
       await supabase.auth.signOut();
     }

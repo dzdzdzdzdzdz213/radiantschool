@@ -42,7 +42,9 @@ export default function NotificationsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_notifications'] });
       setTitle(''); setMessage(''); setShowForm(false);
+      toast(t('success.sent', lang, t('nav.notifications', lang)), 'success');
     },
+    onError: (err: any) => toast(err?.message ?? t('errors.send_error', lang, t('nav.notifications', lang)), 'error'),
   });
 
   const deleteMutation = useMutation({

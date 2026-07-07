@@ -21,16 +21,16 @@ export default function StudentInvoicesPage() {
   const downloadFile = useDownloadFile();
 
   const { data: invoices, isLoading, isError } = useQuery({
-    queryKey: ['student_invoices', profile?.id],
+    queryKey: ['student_invoices', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('invoices')
-        .select('id, reference, description, total_amount, paid_amount, status, due_date, created_at, invoice_url')
+        .select('id, invoice_number, total_amount, paid_amount, status, due_date, created_at, pdf_url')
         .eq('student_id', profile.id)
         .order('created_at', { ascending: false });
       let items = data ?? [];
-      if (search) items = items.filter((i: any) => i.reference?.toLowerCase().includes(search.toLowerCase()));
+      if (search) items = items.filter((i: any) => i.invoice_number?.toLowerCase().includes(search.toLowerCase()));
       return items;
     },
     enabled: !!profile?.id,
@@ -43,13 +43,15 @@ export default function StudentInvoicesPage() {
       if (!profile?.id) return;
       const { data: inv } = await (supabase as any).from('invoices').select('total_amount, paid_amount').eq('id', invoiceId).single();
       const remaining = (inv?.total_amount ?? 0) - (inv?.paid_amount ?? 0);
-      const { error } = await (supabase as any).from('payments').insert({
-        student_id: profile.id,
-        amount: remaining,
-        payment_method: 'online',
-        payment_type: 'invoice',
-        recorded_by: profile.id,
-        created_at: new Date().toISOString(),
+      const { error } = await supabase.functions.invoke('process-payment', {
+        body: {
+          student_id: profile.id,
+          amount: remaining,
+          payment_method: 'bank_transfer',
+          payment_type: 'monthly',
+          recorded_by: profile.id,
+          invoice_ids: [invoiceId],
+        },
       });
       if (error) throw error;
     },
@@ -76,15 +78,15 @@ export default function StudentInvoicesPage() {
               : (invoices ?? []).length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               : (invoices ?? []).map((inv: any) => (
                 <TableRow key={inv.id}>
-                  <TableCell className="text-sm font-mono">{inv.reference ?? '—'}</TableCell>
-                  <TableCell className="text-sm max-w-[200px] truncate">{inv.description ?? ''}</TableCell>
+                  <TableCell className="text-sm font-mono">{inv.invoice_number ?? '—'}</TableCell>
+                  <TableCell className="text-sm max-w-[200px] truncate">{t('common.type', lang)}</TableCell>
                   <TableCell className="text-sm">{inv.due_date ? formatDate(inv.due_date) : '—'}{inv.due_date && new Date(inv.due_date) < new Date() && inv.status !== 'paid' ? <AlertCircle className="h-3 w-3 text-red-500 inline ml-1" /> : null}</TableCell>
                   <TableCell className="text-sm">{inv.total_amount ?? 0} DA</TableCell>
                   <TableCell className="text-sm">{((inv.total_amount ?? 0) - (inv.paid_amount ?? 0))} DA</TableCell>
                   <TableCell><Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'cancelled' ? 'destructive' : 'warning'}>{inv.status === 'paid' ? t('status.paid', lang) : inv.status === 'unpaid' ? t('status.unpaid', lang) : inv.status === 'partially_paid' ? t('status.partial', lang) : inv.status}</Badge></TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (inv.invoice_url) downloadFile.mutate({ fileUrl: inv.invoice_url, filename: `facture_${inv.reference ?? inv.id}.pdf` }); }} disabled={downloadFile.isPending}>
+                      <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (inv.pdf_url) downloadFile.mutate({ fileUrl: inv.pdf_url, filename: `facture_${inv.invoice_number ?? inv.id}.pdf` }); }} disabled={downloadFile.isPending}>
                         {downloadFile.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       </Button>
                       {inv.status !== 'paid' && <Button size="sm" className="h-8 gap-1 text-xs" onClick={() => payMutation.mutate({ invoiceId: inv.id })} disabled={payMutation.isPending}>

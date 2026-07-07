@@ -21,7 +21,7 @@ export function useParents(search: string = '', page: number = 1, pageSize: numb
         filters: [{ column: 'role', operator: 'eq' as const, value: 'parent' }, { column: 'deleted_at', operator: 'is' as const, value: null }],
       };
       if (search) { params.search = search; params.searchColumns = ['first_name', 'last_name', 'email']; }
-      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, created_at');
+      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, created_at, children_count');
       const data = result.data.map((r: any) => ({
         id: r.id,
         firstName: r.first_name ?? '',

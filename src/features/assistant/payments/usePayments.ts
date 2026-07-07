@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { api } from '@/lib/api';
 
 export interface PaymentRecord {
   id: string;
+  student_id: string | null;
   studentName: string;
   amount: number;
   method: string;
@@ -17,13 +17,19 @@ export function usePayments(search: string = '', page: number = 1) {
   return useQuery({
     queryKey: ['assistant_payments', search, page],
     queryFn: async () => {
-      const { data, count } = await (supabase as any)
+      let query = (supabase as any)
         .from('payments')
-        .select('id, amount, payment_method, payment_type, receipt_number, payment_date, student:users(first_name, last_name), course:courses(name)', { count: 'exact' })
+        .select('id, student_id, amount, payment_method, payment_type, receipt_number, payment_date, student:users(first_name, last_name), course:courses(name)', { count: 'exact' })
         .order('payment_date', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
+      if (search) {
+        const like = `%${search}%`;
+        query = query.or(`student.first_name.ilike.${like},student.last_name.ilike.${like}`);
+      }
+      const { data, count } = await query;
       const items = (data ?? []).map((r: any) => ({
         id: r.id,
+        student_id: r.student_id ?? null,
         studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
         amount: r.amount ?? 0,
         method: r.payment_method ?? '',
@@ -42,7 +48,7 @@ export function useCreatePayment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: any) => {
-      return api.rpc('process_payment', data);
+      return supabase.functions.invoke('process-payment', { body: data });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_payments'] }); },
   });
@@ -63,7 +69,7 @@ export function useDeletePayment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('payments').delete().eq('id', id);
+      const { error } = await (supabase as any).from('payments').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_payments'] }); },

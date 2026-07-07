@@ -52,10 +52,11 @@ export default function RfidPage() {
   const scanMutation = useMutation({
     mutationFn: async (code: string) => {
       const { data: student } = await (supabase as any)
-        .from('students')
+        .from('users')
         .select('id')
         .eq('rfid_tag', code)
-        .single();
+        .eq('role', 'student')
+        .maybeSingle();
       const { error } = await (supabase as any).from('rfid_scans').insert({
         rfid_code: code,
         student_id: student?.id ?? null,
@@ -73,11 +74,15 @@ export default function RfidPage() {
     onError: (err: any) => toast(err?.message ?? t('rfid.scan_error', lang), 'error'),
   });
 
-  const handleScan = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setScanInput(val);
-    if (val.length >= 6) {
-      scanMutation.mutate(val);
+  const handleScan = (e: React.KeyboardEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
+    if ('key' in e) {
+      if (e.key !== 'Enter') return;
+      const val = (e.target as HTMLInputElement).value;
+      if (val.length >= 3) {
+        scanMutation.mutate(val);
+      }
+    } else {
+      setScanInput(e.target.value);
     }
   };
 
@@ -103,6 +108,7 @@ export default function RfidPage() {
                 placeholder={t('rfid.scan_placeholder', lang)}
                 value={scanInput}
                 onChange={handleScan}
+                onKeyDown={handleScan}
                 className="h-12 pl-9 text-lg font-mono"
                 autoFocus
               />

@@ -24,9 +24,8 @@ export default function StudentAnnouncementsPage() {
       const courseIds = (enrollments ?? []).map((e: any) => e.course_id);
       let q = (supabase as any)
         .from('announcements')
-        .select('id, title, content, is_pinned, created_at, course:courses(name)')
+        .select('id, title, content, created_at, course:courses(name)')
         .in('course_id', courseIds.length > 0 ? courseIds : [-1])
-        .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
       const { data } = await q;
       let items = (data ?? []).map((a: any) => ({ ...a, courseName: a.course?.name ?? '' }));
@@ -49,15 +48,14 @@ export default function StudentAnnouncementsPage() {
             : (announcements ?? []).length === 0 ? (
               <div className="text-center py-12 text-muted-foreground"><Megaphone className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p></div>
             ) : (announcements ?? []).map((a: any) => (
-              <div key={a.id} className={`rounded-xl border p-4 hover:bg-accent/30 transition-colors ${a.is_pinned ? 'border-primary/20 bg-primary/[0.02]' : ''}`}>
+              <div key={a.id} className="rounded-xl border p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-start gap-3">
-                  <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${a.is_pinned ? 'bg-primary/10' : 'bg-accent'}`}>
-                    {a.is_pinned ? <Pin className="h-4 w-4 text-primary" /> : <Bell className="h-4 w-4 text-muted-foreground" />}
+                  <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-accent">
+                    <Bell className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-semibold">{a.title}</h4>
-                      {a.is_pinned && <Badge variant="outline" className="text-[9px]">{t('status.active', lang)}</Badge>}
                       {a.courseName && <Badge variant="secondary" className="text-[9px]">{a.courseName}</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{a.content}</p>

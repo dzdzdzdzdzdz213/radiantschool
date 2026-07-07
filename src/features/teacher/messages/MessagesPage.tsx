@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/utils';
@@ -18,6 +18,7 @@ export default function MessagesPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { lang } = useLang();
+  const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
@@ -31,7 +32,7 @@ export default function MessagesPage() {
       if (!profile?.id) return [];
       const { data, error } = await (supabase as any)
         .from('conversations')
-        .select('id, participant:users!participant_id(first_name, last_name, photo_url), last_message, last_message_at, unread')
+        .select('id, participant:users!participant_id(id, first_name, last_name, photo_url), last_message, last_message_at, unread')
         .eq('teacher_id', profile.id)
         .order('last_message_at', { ascending: false });
       if (error) throw error;
@@ -42,8 +43,10 @@ export default function MessagesPage() {
     enabled: !!profile?.id,
   });
 
+  const selectedConv = (conversations ?? []).find((c: any) => c.id === selectedId);
+
   const { data: messages, isLoading: msgLoading } = useQuery({
-    queryKey: ['teacher_messages', selectedId],
+    queryKey: ['messages', selectedId],
     queryFn: async () => {
       if (!selectedId || !profile?.id) return [];
       const participantId = selectedConv?.participant?.id;
@@ -56,17 +59,18 @@ export default function MessagesPage() {
       if (error) throw error;
       return data ?? [];
     },
-    enabled: !!selectedId,
+    enabled: !!selectedId && !!selectedConv?.participant?.id,
   });
-
-  const selectedConv = (conversations ?? []).find((c: any) => c.id === selectedId);
 
   const handleSend = () => {
     if (!message.trim() || !selectedId || !profile?.id) return;
     const participantId = selectedConv?.participant?.id;
     if (!participantId) return;
-    sendMessage.mutate({ receiverId: participantId, subject: '', body: message.trim(), senderId: profile.id });
-    setMessage('');
+    const body = message.trim();
+    sendMessage.mutate(
+      { receiverId: participantId, subject: '', body, senderId: profile.id },
+      { onSuccess: () => setMessage('') },
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -90,6 +94,8 @@ export default function MessagesPage() {
       const participantId = selectedConv?.participant?.id;
       if (!participantId) return;
       await sendMessage.mutateAsync({ receiverId: participantId, subject: '', body: publicUrl ?? '', senderId: profile.id });
+      qc.invalidateQueries({ queryKey: ['messages'] });
+      qc.invalidateQueries({ queryKey: ['teacher_conversations'] });
       toast(t('success.sent', lang, 'Fichier'), 'success');
     } catch (err: any) {
       toast(err?.message ?? t('common.error', lang), 'error');
@@ -121,7 +127,7 @@ export default function MessagesPage() {
                       <p className="text-sm font-medium truncate">{c.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{c.last_message ?? t('common.send', lang)}</p>
                     </div>
-                    {c.unread > 0 && <span className="h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-medium flex items-center justify-center px-1">{c.unread}</span>}
+                    {c.unread === true && <span className="h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-medium flex items-center justify-center px-1">!</span>}
                   </div>
                 </button>
               ))}

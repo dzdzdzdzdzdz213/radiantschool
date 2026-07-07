@@ -32,7 +32,7 @@ export default function ReportsPage() {
         ? await supabase.from('attendance').select('status, course_schedule:course_schedules!inner(course_id)').in('course_schedule.course_id', courseIdList).gte('date', dateFrom)
         : { data: [], error: null };
       if (e1) throw e1;
-      const { data: r2, error: e2 } = await supabase.from('assignments').select('id, grade').eq('teacher_id', profile.id).gte('created_at', dateFrom);
+      const { data: r2, error: e2 } = await (supabase as any).from('assignment_submissions').select('grade, assignment:assignments!inner(teacher_id, created_at)').eq('assignment.teacher_id', profile.id).gte('assignment.created_at', dateFrom);
       if (e2) throw e2;
       const present = (r1 ?? []).filter((a: any) => a.status === 'present').length;
       const total = (r1 ?? []).length;
@@ -72,7 +72,7 @@ export default function ReportsPage() {
       <div className="flex gap-2">
         {(['month', 'trimester', 'year'] as const).map(p => (
           <Button key={p} variant={period === p ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => setPeriod(p)}>
-            {p === 'month' ? t('common.this_month', lang) : p === 'trimester' ? 'Trimestre' : t('common.date', lang)}
+            {p === 'month' ? t('common.this_month', lang) : p === 'trimester' ? 'Trimestre' : 'Année'}
           </Button>
         ))}
       </div>

@@ -76,9 +76,11 @@ export default function SchedulePage() {
   const { data: courses, isLoading, isError } = useCourses();
   const [weekOffset, setWeekOffset] = useState(0);
 
-  const refDate = new Date();
-  refDate.setDate(refDate.getDate() + weekOffset * 7);
-  const weekDates = useMemo(() => getWeekDates(refDate), [refDate]);
+  const weekDates = useMemo(() => {
+    const ref = new Date();
+    ref.setDate(ref.getDate() + weekOffset * 7);
+    return getWeekDates(ref);
+  }, [weekOffset]);
 
   const allSchedules = useMemo(() => {
     if (!courses) return [];
@@ -108,19 +110,19 @@ export default function SchedulePage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setWeekOffset(0)}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover-bg-page"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-page"
             style={{ color: 'var(--fg-muted)' }}
           >
             {t('common.today', lang)}
           </button>
           <div className="flex items-center rounded-lg border" style={{ borderColor: 'var(--border)' }}>
-            <button onClick={() => setWeekOffset(o => o - 1)} className="p-2 transition-colors hover-bg-page rounded-l-lg">
+            <button onClick={() => setWeekOffset(o => o - 1)} className="p-2 transition-colors hover:bg-page rounded-l-lg">
               <ChevronLeft className="h-4 w-4" style={{ color: 'var(--fg-muted)' }} />
             </button>
             <span className="px-3 text-sm font-medium" style={{ color: 'var(--fg)' }}>
               {formatWeekRange(weekDates, lang)}
             </span>
-            <button onClick={() => setWeekOffset(o => o + 1)} className="p-2 transition-colors hover-bg-page rounded-r-lg">
+            <button onClick={() => setWeekOffset(o => o + 1)} className="p-2 transition-colors hover:bg-page rounded-r-lg">
               <ChevronRight className="h-4 w-4" style={{ color: 'var(--fg-muted)' }} />
             </button>
           </div>

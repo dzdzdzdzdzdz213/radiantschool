@@ -30,7 +30,7 @@ export default function StudentMessagesPage() {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('conversations')
-        .select('id, participant:users!participant_id(first_name, last_name, photo_url, role), last_message, last_message_at, unread')
+        .select('id, participant:users!participant_id(id, first_name, last_name, photo_url, role), last_message, last_message_at, unread')
         .eq('student_id', profile.id)
         .order('last_message_at', { ascending: false });
       let items = (data ?? []).map((c: any) => ({ ...c, name: `${c.participant?.first_name ?? ''} ${c.participant?.last_name ?? ''}`, role: c.participant?.role ?? '' }));
@@ -40,11 +40,13 @@ export default function StudentMessagesPage() {
     enabled: !!profile?.id,
   });
 
+  const selectedConv = (conversations ?? []).find((c: any) => c.id === selectedId);
+
   const { data: messagesData, isLoading: messagesLoading, isError: messagesError } = useQuery({
     queryKey: ['messages', selectedId],
     queryFn: async () => {
       if (!selectedId || !profile?.id) return [];
-      const participantId = (conversations ?? []).find((c: any) => c.id === selectedId)?.participant?.id;
+      const participantId = selectedConv?.participant?.id;
       if (!participantId) return [];
       const { data } = await (supabase as any)
         .from('messages')
@@ -53,7 +55,7 @@ export default function StudentMessagesPage() {
         .order('created_at', { ascending: true });
       return (data ?? []).map((m: any) => ({ ...m, isMine: m.sender_id === profile?.id }));
     },
-    enabled: !!selectedId,
+    enabled: !!selectedId && !!selectedConv?.participant?.id,
   });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -80,15 +82,19 @@ export default function StudentMessagesPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedId || !profile?.id) return;
-    const filePath = `chat/${selectedId}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('uploads').upload(filePath, file);
-    if (uploadError) { toast(uploadError.message, 'error'); return; }
-    const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(filePath);
-    const participantId = (conversations ?? []).find((c: any) => c.id === selectedId)?.participant?.id;
-    if (!participantId) return;
-    await sendMessage.mutateAsync({ receiverId: participantId, subject: '', body: publicUrl ?? '', senderId: profile.id });
-    qc.invalidateQueries({ queryKey: ['messages'] });
-    qc.invalidateQueries({ queryKey: ['conversations'] });
+    try {
+      const filePath = `chat/${selectedId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('uploads').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(filePath);
+      const participantId = selectedConv?.participant?.id;
+      if (!participantId) return;
+      await sendMessage.mutateAsync({ receiverId: participantId, subject: '', body: publicUrl ?? '', senderId: profile.id });
+      qc.invalidateQueries({ queryKey: ['messages'] });
+      qc.invalidateQueries({ queryKey: ['student_conversations'] });
+    } catch (err: any) {
+      toast(err?.message ?? t('common.error', lang), 'error');
+    }
   };
 
   return (
@@ -106,7 +112,7 @@ export default function StudentMessagesPage() {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9"><AvatarFallback className="text-xs bg-primary/10 text-primary">{getInitials(c.participant?.first_name ?? '', c.participant?.last_name ?? '')}</AvatarFallback></Avatar>
                     <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{c.name}</p><p className="text-xs text-muted-foreground truncate">{c.last_message ?? t('common.select', lang)}</p></div>
-                    {c.unread > 0 && <span className="h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-medium flex items-center justify-center px-1">{c.unread}</span>}
+                    {c.unread === true && <span className="h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-medium flex items-center justify-center px-1">!</span>}
                   </div>
                 </button>
               ))}

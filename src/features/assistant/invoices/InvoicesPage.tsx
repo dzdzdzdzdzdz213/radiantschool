@@ -42,7 +42,7 @@ export default function InvoicesPage() {
   const openEditModal = (item: any) => {
     setEditingId(item.id);
     setForm({
-      student_id: item.student_id ?? item.studentName ?? '',
+      student_id: item.student_id ?? '',
       total_amount: item.totalAmount?.toString() ?? '',
       due_date: item.dueDate ?? '',
     });

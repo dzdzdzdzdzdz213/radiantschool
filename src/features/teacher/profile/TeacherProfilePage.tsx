@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Camera, Mail, Phone, MapPin, BookOpen, Calendar, Award, Save, Star, Users, Bell, Eye, Lock, Shield } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { Camera, Mail, Phone, MapPin, BookOpen, Calendar, Award, Save, Star, Users, Bell, Eye, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -74,11 +74,15 @@ export default function TeacherProfilePage() {
         : 0;
       const { data: reviews } = await supabase.from('evaluations').select('average_score').eq('teacher_id', profile.id);
       const avgRating = reviews?.length ? (reviews.reduce((s: number, r: any) => s + (r.average_score ?? 0), 0) / reviews.length) : 0;
-      const yearsActive = teacherProfile?.created_at ? Math.floor((Date.now() - new Date(teacherProfile.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 0;
-      return { courseCount: courseCount ?? 0, studentCount, avgRating, yearsActive };
+      return { courseCount: courseCount ?? 0, studentCount, avgRating };
     },
     enabled: !!profile?.id,
   });
+
+  const yearsActive = useMemo(() => {
+    if (!teacherProfile?.created_at) return 0;
+    return Math.floor((Date.now() - new Date(teacherProfile.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+  }, [teacherProfile?.created_at]);
 
   const { data: userSettings } = useQuery({
     queryKey: ['teacher_settings', profile?.id],
@@ -92,8 +96,9 @@ export default function TeacherProfilePage() {
 
   useEffect(() => {
     if (!userSettings) return;
-    setNotifications(prev => ({ ...prev, ...userSettings }));
-    setVisibility(prev => ({ ...prev, ...userSettings }));
+    const { email_notifications, push_notifications, sms_notifications, homework_reminders, message_alerts, grade_alerts, show_email, show_phone, show_schedule } = userSettings as any;
+    setNotifications(prev => ({ ...prev, email_notifications, push_notifications, sms_notifications, homework_reminders, message_alerts, grade_alerts }));
+    setVisibility(prev => ({ ...prev, show_email, show_phone, show_schedule }));
   }, [userSettings]);
 
   const handleNotifChange = (key: string, value: boolean) => {
@@ -191,7 +196,7 @@ export default function TeacherProfilePage() {
           <Card>
             <CardHeader><CardTitle className="text-sm">{t('common.details', lang)}</CardTitle></CardHeader>
             <CardContent><div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="text-center p-3 rounded-xl bg-accent/50"><Award className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{stats?.yearsActive ?? 0}</p><p className="text-xs text-muted-foreground">{'Années d\'expérience'}</p></div>
+              <div className="text-center p-3 rounded-xl bg-accent/50"><Award className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{yearsActive}</p><p className="text-xs text-muted-foreground">{'Années d\'expérience'}</p></div>
               <div className="text-center p-3 rounded-xl bg-accent/50"><BookOpen className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{stats?.courseCount ?? 0}</p><p className="text-xs text-muted-foreground">{t('dashboard.stat.courses', lang)}</p></div>
               <div className="text-center p-3 rounded-xl bg-accent/50"><Star className="h-5 w-5 mx-auto text-amber-500 mb-1" /><p className="text-lg font-bold">{stats?.avgRating?.toFixed(1) ?? '0.0'}</p><p className="text-xs text-muted-foreground">{t('dashboard.stat.avg_rating', lang)}</p></div>
               <div className="text-center p-3 rounded-xl bg-accent/50"><Users className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{stats?.studentCount ?? 0}</p><p className="text-xs text-muted-foreground">{t('dashboard.stat.active_students', lang)}</p></div>

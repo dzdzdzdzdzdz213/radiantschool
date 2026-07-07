@@ -57,7 +57,7 @@ export default function HomeworkStatus({ data, loading }: HomeworkStatusProps) {
         </div>
       )}
       {data.length > 8 && (
-        <button onClick={() => navigate('/student/homework')} className="mt-3 text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+        <button onClick={() => navigate('/parent/children')} className="mt-3 text-xs text-primary font-medium flex items-center gap-1 hover:underline">
           Voir tout <ArrowRight className="h-3 w-3" />
         </button>
       )}

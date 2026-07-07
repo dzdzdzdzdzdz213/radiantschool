@@ -48,10 +48,6 @@ export default function TeacherKpiCards({ kpi, loading }: TeacherKpiCardsProps) 
               <Icon className={cn('h-5 w-5', cfg.color)} />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1">
-            <span className={cn('text-xs font-medium', value > 0 ? 'text-emerald-600' : 'text-muted-foreground')}>{value > 0 ? `+${value}` : '0'}</span>
-            <span className="text-xs text-muted-foreground">{t('dashboard.vs_yesterday', lang)}</span>
-          </div>
         </motion.div>
       );
     })}

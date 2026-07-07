@@ -64,7 +64,7 @@ export default function TeacherAttendancePage() {
       if (!courseId) return [];
       const { data } = await (supabase as any)
         .from('attendance_sessions')
-        .select('id, date, title, check_in_opened_at, check_in_closed_at, price_calculated')
+        .select('id, date, title, check_in_opened_at, check_in_closed_at')
         .eq('course_id', courseId)
         .order('date');
       return data ?? [];
@@ -111,20 +111,16 @@ export default function TeacherAttendancePage() {
 
   const markAttendance = useMutation({
     mutationFn: async ({ session_id, student_id, status }: { session_id: number; student_id: string; status: string }) => {
-      const existing = recordsMap[session_id]?.[student_id];
       const session = (sessions ?? []).find((s: any) => s.id === session_id);
-      const now = new Date().toISOString();
+      if (!session) return;
 
-      if (existing) {
-        const { error } = await (supabase as any).from('attendance_records').update({ status }).eq('session_id', session_id).eq('student_id', student_id);
-        if (error) throw error;
-      } else {
-        const { error } = await (supabase as any).from('attendance_records').insert({ session_id, student_id, status });
-        if (error) throw error;
-      }
+      const { error } = await (supabase as any)
+        .from('attendance_records')
+        .upsert({ session_id, student_id, status }, { onConflict: 'session_id,student_id' });
+      if (error) throw error;
 
       if (!session?.check_in_opened_at && (status === 'present' || status === 'late')) {
-        await (supabase as any).from('attendance_sessions').update({ check_in_opened_at: now }).eq('id', session_id);
+        await (supabase as any).from('attendance_sessions').update({ check_in_opened_at: new Date().toISOString() }).eq('id', session_id);
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['attendance_records', courseId] }); qc.invalidateQueries({ queryKey: ['course_sessions', courseId] }); },
@@ -167,14 +163,10 @@ export default function TeacherAttendancePage() {
   });
 
   const privateAttendanceQuery = useQuery({
-    queryKey: ['private_attendance', courseId],
+    queryKey: ['private_attendance', courseId, privateScheduleQuery.data],
     queryFn: async () => {
       if (!courseId) return [];
-      const { data: schedules } = await (supabase as any)
-        .from('course_schedules')
-        .select('id')
-        .eq('course_id', courseId);
-      const ids = (schedules ?? []).map((s: any) => s.id);
+      const ids = (privateScheduleQuery.data ?? []).map((s: any) => s.id);
       if (ids.length === 0) return [];
       const { data } = await (supabase as any)
         .from('attendance')
@@ -197,9 +189,6 @@ export default function TeacherAttendancePage() {
       } else {
         const { error } = await (supabase as any).from('attendance').insert({ student_id, course_schedule_id, date, status, method: 'manual', recorded_by: profile?.id, check_in_time: now });
         if (error) throw error;
-      }
-      if (!hasAnyCheckIn && (status === 'present' || status === 'late')) {
-        await (supabase as any).from('attendance').update({ check_in_time: now }).eq('course_schedule_id', course_schedule_id).eq('date', date).is('check_in_time', null);
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['private_attendance', courseId] }); toast('Présence enregistrée', 'success'); },

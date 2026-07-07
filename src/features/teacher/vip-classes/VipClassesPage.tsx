@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Star, Calendar, Clock, Euro, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, Star, Calendar, Clock, DollarSign, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -167,8 +167,8 @@ export default function VipClassesPage() {
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-              <Button size="sm" className="h-9" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-                {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
+               <Button size="sm" className="h-9" disabled={saveMutation.isPending || !form.student_id || !form.date} onClick={() => saveMutation.mutate()}>
+                  {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
               </Button>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function VipClassesPage() {
                   <Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">
                     {l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}
                   </Badge>
-                  <span className="text-sm font-semibold flex items-center gap-1"><Euro className="h-3.5 w-3.5" />{formatCurrency(l.price ?? 0)}</span>
+                  <span className="text-sm font-semibold flex items-center gap-1"><DollarSign className="h-3.5 w-3.5" />{formatCurrency(l.price ?? 0)}</span>
                 </div>
                 <h4 className="text-sm font-medium">{l.studentName}</h4>
                 <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">

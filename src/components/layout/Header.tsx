@@ -71,7 +71,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         <button onClick={() => navigate('/notifications')} className="relative rounded-full p-2 hover-bg-page">
           <Bell className="h-5 w-5 text-muted" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+
         </button>
         <div className="flex items-center gap-3">
           <div className="hidden sm:block text-right">
@@ -82,7 +82,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             <img src={avatarUrl} alt={getFullName(profile?.firstName || '', profile?.lastName || '')} className="h-9 w-9 rounded-full object-cover" />
           ) : (
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white text-sm font-medium">
-              {profile ? profile.firstName.charAt(0).toUpperCase() + profile.lastName.charAt(0).toUpperCase() : '?'}
+              {profile ? (profile.firstName?.charAt(0)?.toUpperCase() ?? '') + (profile.lastName?.charAt(0)?.toUpperCase() ?? '') : '?'}
             </div>
           )}
         </div>

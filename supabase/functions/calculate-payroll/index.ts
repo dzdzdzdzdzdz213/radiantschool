@@ -87,15 +87,23 @@ serve(async (req) => {
         }
       }
 
-      const { data: payments } = await supabase
-        .from('payments')
-        .select('amount')
-        .eq('recorded_by', contract.teacher_id)
-        .gte('payment_date', monthStart)
-        .lte('payment_date', monthEnd);
+      const { data: courseIds } = await supabase
+        .from('course_schedules')
+        .select('course_id')
+        .eq('teacher_id', contract.teacher_id);
 
-      if (payments) {
-        revenueGenerated = payments.reduce((sum, p) => sum + p.amount, 0);
+      if (courseIds && courseIds.length > 0) {
+        const ids = [...new Set(courseIds.map(c => c.course_id))];
+        const { data: payments } = await supabase
+          .from('payments')
+          .select('amount')
+          .in('course_id', ids)
+          .gte('payment_date', monthStart)
+          .lte('payment_date', monthEnd);
+
+        if (payments) {
+          revenueGenerated = payments.reduce((sum, p) => sum + p.amount, 0);
+        }
       }
 
       let grossPay = 0;

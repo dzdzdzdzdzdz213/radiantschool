@@ -23,7 +23,7 @@ export default function StudentOnlineClassesPage() {
       if (courseIds.length === 0) return [];
       const { data } = await (supabase as any)
         .from('online_classes')
-        .select('id, title, description, platform, meeting_url, start_time, end_time, status, course:courses(name)')
+        .select('id, title, description, meeting_url, start_time, end_time, status, course:courses(name)')
         .in('course_id', courseIds)
         .order('start_time', { ascending: true });
       return (data ?? []).map((s: any) => ({ ...s, courseName: s.course?.name ?? '' }));
@@ -56,7 +56,7 @@ export default function StudentOnlineClassesPage() {
               <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(s.start_time)}</span>
                 <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(s.start_time)}</span>
-                <span className="flex items-center gap-1"><Monitor className="h-3 w-3" />{s.platform ?? 'Zoom'}</span>
+                <span className="flex items-center gap-1"><Monitor className="h-3 w-3" />{'Zoom'}</span>
               </div>
               <Button variant={s.status === 'live' ? 'default' : 'outline'} size="sm" className="w-full h-8 text-xs gap-1.5" asChild>
                 <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t('nav.registrations', lang)}</a>

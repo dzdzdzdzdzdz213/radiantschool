@@ -31,6 +31,7 @@ export default function ReportsPage() {
   const [selected, setSelected] = useState('revenue');
   const { data: revenue, isLoading, isError } = useQuery({
     queryKey: ['assistant_report_revenue'],
+    enabled: selected === 'revenue',
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('v_daily_revenue')

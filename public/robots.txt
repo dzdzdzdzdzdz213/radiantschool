@@ -3,5 +3,3 @@ Disallow: /staff/
 Disallow: /admin/
 Disallow: /assistant/
 Disallow: /teacher/
-
-Sitemap: https://erp-platform-seven.vercel.app/sitemap.xml

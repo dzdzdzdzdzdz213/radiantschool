@@ -53,7 +53,7 @@ function NotificationSheet() {
     enabled: !!profile?.id,
   });
 
-  const unreadCount = notifications.filter((n: any) => !n.read).length;
+  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
 
   return (
     <Sheet>
@@ -182,13 +182,8 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     const role = profile?.role ?? 'admin';
+    if (role !== 'assistant') return;
     navigate(`/${role}/search?q=${encodeURIComponent(searchQuery.trim())}`);
-  };
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch(e);
-    }
   };
 
   useEffect(() => {
@@ -220,7 +215,6 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
               placeholder={t('common.search', lang)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
               className="h-9 w-64 rounded-xl bg-muted/30 pl-9 text-sm border-0 focus-visible:ring-1"
             />
             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 rounded-md border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">

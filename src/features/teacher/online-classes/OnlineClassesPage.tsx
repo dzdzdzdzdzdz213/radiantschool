@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Video, Monitor, Calendar, Users, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, Video, Monitor, Calendar, Clock, Users, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -205,12 +205,14 @@ export default function OnlineClassesPage() {
                 <p className="text-xs text-muted-foreground mt-1">{s.course?.name ?? ''}</p>
                 <div className="flex items-center gap-3 mt-3 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(s.start_time)}</span>
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" />{formatTime(s.start_time)}</span>
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(s.start_time)}</span>
                 </div>
                 <div className="flex gap-1 mt-3">
-                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-2" asChild>
-                    <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />{'Rejoindre'}</a>
-                  </Button>
+                  {s.meeting_url && (
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-2" asChild>
+                      <a href={s.meeting_url} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />{'Rejoindre'}</a>
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(s)}><Pencil className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: s.id, name: s.title })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                 </div>

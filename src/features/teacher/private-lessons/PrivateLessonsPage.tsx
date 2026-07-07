@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Euro, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, DollarSign, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -168,8 +168,8 @@ export default function PrivateLessonsPage() {
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <Button variant="outline" size="sm" className="h-9" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
-              <Button size="sm" className="h-9" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-                {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
+               <Button size="sm" className="h-9" disabled={saveMutation.isPending || !form.student_id || !form.date} onClick={() => saveMutation.mutate()}>
+                  {saveMutation.isPending ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('common.create', lang))}
               </Button>
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function PrivateLessonsPage() {
                   <TableCell className="text-sm font-medium">{l.studentName}</TableCell>
                   <TableCell className="hidden sm:table-cell text-sm">{formatDate(l.date)}</TableCell>
                   <TableCell className="hidden md:table-cell text-sm">{formatTime(l.start_time)} - {formatTime(l.end_time)}</TableCell>
-                  <TableCell className="text-sm"><span className="flex items-center gap-1"><Euro className="h-3 w-3" />{formatCurrency(l.price ?? 0)}</span></TableCell>
+                  <TableCell className="text-sm"><span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />{formatCurrency(l.price ?? 0)}</span></TableCell>
                   <TableCell className="text-right">
                     <Badge variant={l.status === 'completed' ? 'success' : l.status === 'cancelled' ? 'destructive' : 'outline'}>
                       {l.status === 'completed' ? t('status.completed', lang) : l.status === 'cancelled' ? t('status.cancelled', lang) : t('status.upcoming', lang)}

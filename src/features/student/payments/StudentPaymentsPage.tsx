@@ -21,19 +21,17 @@ export default function StudentPaymentsPage() {
   const downloadFile = useDownloadFile();
 
   const { data: paymentData, isLoading } = useQuery({
-    queryKey: ['student_payments', profile?.id],
+    queryKey: ['student_payments', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return { payments: [], stats: { total: 0, paid: 0, pending: 0 } };
       const { data: payments } = await (supabase as any)
         .from('payments')
-        .select('id, amount, method, status, receipt_number, created_at, receipt_url, invoice:invoices(reference)')
+        .select('id, amount, payment_method, payment_type, receipt_number, payment_date')
         .eq('student_id', profile.id)
-        .order('created_at', { ascending: false });
-      const items = (payments ?? []).map((p: any) => ({ ...p, invoiceRef: p.invoice?.reference ?? '' }));
-      const filtered = search ? items.filter((i: any) => i.receipt_number?.toLowerCase().includes(search.toLowerCase()) || i.invoiceRef?.toLowerCase().includes(search.toLowerCase())) : items;
-      const paid = items.filter((i: any) => i.status === 'paid');
-      const pending = items.filter((i: any) => i.status === 'pending');
-      return { payments: filtered, stats: { total: items.reduce((s: number, i: any) => s + (i.amount ?? 0), 0), paid: paid.reduce((s: number, i: any) => s + (i.amount ?? 0), 0), pending: pending.reduce((s: number, i: any) => s + (i.amount ?? 0), 0) } };
+        .order('payment_date', { ascending: false });
+      const items = (payments ?? []).map((p: any) => ({ ...p, status: 'paid' }));
+      const filtered = search ? items.filter((i: any) => i.receipt_number?.toLowerCase().includes(search.toLowerCase())) : items;
+      return { payments: filtered, stats: { total: items.reduce((s: number, i: any) => s + (i.amount ?? 0), 0), paid: items.reduce((s: number, i: any) => s + (i.amount ?? 0), 0), pending: 0 } };
     },
     enabled: !!profile?.id,
   });
@@ -59,13 +57,11 @@ export default function StudentPaymentsPage() {
               : (paymentData?.payments ?? []).map((p: any) => (
                 <TableRow key={p.id}>
                   <TableCell className="text-sm font-mono">{p.receipt_number ?? '—'}</TableCell>
-                  <TableCell className="text-sm">{formatDate(p.created_at)}</TableCell>
-                  <TableCell className="text-sm capitalize">{p.method ?? '—'}</TableCell>
+                  <TableCell className="text-sm">{formatDate(p.payment_date)}</TableCell>
+                  <TableCell className="text-sm capitalize">{p.payment_method ?? '—'}</TableCell>
                   <TableCell className="text-sm font-medium">{p.amount ?? 0} DA</TableCell>
                   <TableCell><Badge variant={p.status === 'paid' ? 'success' : 'warning'}>{p.status === 'paid' ? t('status.paid', lang) : t('status.pending', lang)}</Badge></TableCell>
-                  <TableCell className="text-right"><Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (p.receipt_url) downloadFile.mutate({ fileUrl: p.receipt_url, filename: `recu_${p.receipt_number ?? p.id}.pdf` }); }} disabled={downloadFile.isPending}>
-                    {downloadFile.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                  </Button></TableCell>
+                  <TableCell className="text-right">—</TableCell>
                 </TableRow>
               ))}
             </TableBody>

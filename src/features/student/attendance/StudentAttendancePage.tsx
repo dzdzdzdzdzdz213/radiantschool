@@ -18,7 +18,7 @@ export default function StudentAttendancePage() {
   const [search, setSearch] = useState('');
 
   const { data: attendanceData, isLoading, isError } = useQuery({
-    queryKey: ['student_attendance', profile?.id],
+    queryKey: ['student_attendance', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return { records: [], stats: { present: 0, late: 0, absent: 0, total: 0 } };
       const { data: records } = await (supabase as any)

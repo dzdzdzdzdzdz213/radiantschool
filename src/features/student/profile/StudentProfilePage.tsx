@@ -63,7 +63,6 @@ export default function StudentProfilePage() {
     queryFn: async () => {
       if (!profile?.id) return null;
       const { data } = await (supabase as any).from('users').select('*, students!inner(*)').eq('id', profile.id).single();
-      if (data) setForm({ first_name: data.first_name ?? '', last_name: data.last_name ?? '', phone: data.phone ?? '', address: data.address ?? '', bio: data.bio ?? '' });
       return data;
     },
     enabled: !!profile?.id,
@@ -87,11 +86,16 @@ export default function StudentProfilePage() {
     setPrivacy(prev => ({ ...prev, ...userSettings }));
   }, [userSettings]);
 
+  useEffect(() => {
+    if (!studentProfile) return;
+    setForm({ first_name: studentProfile.first_name ?? '', last_name: studentProfile.last_name ?? '', phone: studentProfile.phone ?? '', address: studentProfile.address ?? '', bio: studentProfile.bio ?? '' });
+  }, [studentProfile]);
+
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!profile?.id) return;
       if (!validate()) throw new Error('VALIDATION_FAILED');
-      const { error } = await (supabase as any).from('users').update({ first_name: form.first_name, last_name: form.last_name, phone: form.phone, address: form.address, bio: form.bio }).eq('id', profile.id);
+      const { error } = await (supabase as any).from('users').update({ first_name: form.first_name, last_name: form.last_name, phone: form.phone, address: form.address }).eq('id', profile.id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['student_profile'] }); setEditing(false); toast(t('success.updated', lang, t('nav.profile', lang)), 'success'); },
@@ -181,9 +185,9 @@ export default function StudentProfilePage() {
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {[
-                  { labelKey: 'nav.my_courses', value: studentProfile?.students?.total_courses ?? 0, icon: BookOpen },
-                  { labelKey: 'nav.attendance', value: `${studentProfile?.students?.attendance_rate ?? 0}%`, icon: Shield },
-                  { labelKey: 'nav.certificates', value: studentProfile?.students?.certificates_count ?? 0, icon: Award },
+                  { labelKey: 'nav.my_courses', value: 0, icon: BookOpen },
+                  { labelKey: 'nav.attendance', value: '0%', icon: Shield },
+                  { labelKey: 'nav.certificates', value: 0, icon: Award },
                 ].map((stat, i) => (
                   <div key={i} className="text-center p-3 rounded-xl bg-accent/50">
                     <stat.icon className="h-5 w-5 mx-auto text-primary mb-1" />

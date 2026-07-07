@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
-import { t, LANGUAGES } from '@/i18n';
+import { t, ta, LANGUAGES } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
 import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search, ChevronDown, Quote, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
@@ -176,7 +176,7 @@ export default function LandingPage() {
     return groups;
   })();
 
-  const teacherCount = new Set((courses ?? []).map((c: any) => c.teacher?.id)).size;
+  const teacherCount = new Set((courses ?? []).map((c: any) => c.teacher?.id).filter(Boolean)).size;
   const levelCount = new Set((courses ?? []).map((c: any) => c.level?.name)).size;
 
   function CourseCard({ c, i }: { c: any; i: number }) {
@@ -832,9 +832,9 @@ export default function LandingPage() {
           <div className="mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--fg-muted)' }}>
             <p className="font-medium">Radiant Academy &copy; {new Date().getFullYear()} &mdash; {t('footer.rights', lang)}</p>
             <div className="flex gap-8">
-              <span className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4 cursor-default">Mentions légales</span>
-              <span className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4 cursor-default">CGV</span>
-              <span className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4 cursor-default">Confidentialité</span>
+              <a href="/mentions-legales" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Mentions légales</a>
+              <a href="/cgv" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">CGV</a>
+              <a href="/confidentialite" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Confidentialité</a>
             </div>
           </div>
         </div>

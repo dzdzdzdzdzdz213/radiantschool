@@ -84,13 +84,17 @@ export default function StudentDetailPage() {
             <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted" /><span>{user.email}</span></div>
             <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted" /><span>{user.phone || 'Non renseigné'}</span></div>
             <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted" /><span>Inscrit le {formatDate(user.created_at)}</span></div>
-            {user.students && (
-              <>
-                <p>Matricule: {user.students.registration_number}</p>
-                <p>Type: {user.students.student_type}</p>
-                <p>RFID: {user.students.rfid_tag || 'Non assigné'}</p>
-              </>
-            )}
+            {user.students && (() => {
+              const sr = Array.isArray(user.students) ? user.students[0] : user.students;
+              if (!sr) return null;
+              return (
+                <>
+                  <p>Matricule: {sr.registration_number}</p>
+                  <p>Type: {sr.student_type}</p>
+                  <p>RFID: {sr.rfid_tag || 'Non assigné'}</p>
+                </>
+              );
+            })()}
           </div>
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">

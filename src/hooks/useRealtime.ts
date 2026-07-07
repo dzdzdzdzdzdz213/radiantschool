@@ -91,6 +91,12 @@ export function useRealtimeDashboard() {
   });
 
   useRealtimeSubscription({
+    table: 'payments',
+    event: '*',
+    queryKey: ['assistant_payments'],
+  });
+
+  useRealtimeSubscription({
     table: 'attendance',
     event: '*',
     queryKey: ['attendance_summary_today'],
@@ -100,6 +106,12 @@ export function useRealtimeDashboard() {
     table: 'attendance',
     event: '*',
     queryKey: ['attendance'],
+  });
+
+  useRealtimeSubscription({
+    table: 'attendance',
+    event: '*',
+    queryKey: ['assistant_attendance'],
   });
 
   useRealtimeSubscription({
@@ -115,6 +127,12 @@ export function useRealtimeDashboard() {
   });
 
   useRealtimeSubscription({
+    table: 'course_enrollments',
+    event: '*',
+    queryKey: ['assistant_registrations'],
+  });
+
+  useRealtimeSubscription({
     table: 'users',
     event: '*',
     queryKey: ['admin_alerts'],
@@ -124,6 +142,12 @@ export function useRealtimeDashboard() {
     table: 'users',
     event: '*',
     queryKey: ['users'],
+  });
+
+  useRealtimeSubscription({
+    table: 'users',
+    event: '*',
+    queryKey: ['assistant_users'],
   });
 
   useRealtimeSubscription({
@@ -139,6 +163,12 @@ export function useRealtimeDashboard() {
   });
 
   useRealtimeSubscription({
+    table: 'invoices',
+    event: '*',
+    queryKey: ['assistant_invoices'],
+  });
+
+  useRealtimeSubscription({
     table: 'courses',
     event: '*',
     queryKey: ['courses'],
@@ -148,6 +178,12 @@ export function useRealtimeDashboard() {
     table: 'courses',
     event: '*',
     queryKey: ['occupancy'],
+  });
+
+  useRealtimeSubscription({
+    table: 'courses',
+    event: '*',
+    queryKey: ['assistant_courses'],
   });
 
   useRealtimeSubscription({

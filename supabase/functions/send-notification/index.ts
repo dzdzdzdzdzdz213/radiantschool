@@ -53,7 +53,6 @@ serve(async (req) => {
         title: payload.title,
         message: payload.message,
         type: payload.type || 'info',
-        category: payload.category || 'system',
       })
       .select()
       .single();

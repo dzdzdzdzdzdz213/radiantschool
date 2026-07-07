@@ -15,16 +15,21 @@ export default function SchedulesPage() {
   const { lang } = useLang();
   const today = new Date();
   const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 6 ? 0 : 1));
+  weekStart.setDate(today.getDate() - ((today.getDay() + 1) % 7));
   const [startDate, setStartDate] = useState(weekStart);
-  const [changingWeek, setChangingWeek] = useState(false);
 
   const { data: schedules, isLoading, isError } = useQuery({
     queryKey: ['assistant_schedules', startDate.toISOString()],
     queryFn: async () => {
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 6);
+      const startStr = startDate.toISOString().split('T')[0];
+      const endStr = endDate.toISOString().split('T')[0];
       const { data } = await (supabase as any)
         .from('course_schedules')
-        .select('id, day_of_week, start_time, end_time, course:courses(name), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
+        .select('id, day_of_week, start_time, end_time, course:courses!inner(name), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
+        .filter('courses.start_date', 'lte', endStr)
+        .or(`courses.end_date.gte.${startStr},courses.end_date.is.null`)
         .order('start_time');
       const grouped: Record<string, any[]> = {};
       for (const day of DAYS) grouped[day] = [];
@@ -38,11 +43,9 @@ export default function SchedulesPage() {
   useErrorToast(isError, lang, t('nav.schedule', lang));
 
   const changeWeek = (direction: number) => {
-    setChangingWeek(true);
     const d = new Date(startDate);
     d.setDate(d.getDate() + direction * 7);
     setStartDate(d);
-    setTimeout(() => setChangingWeek(false), 300);
   };
 
   return (
@@ -53,19 +56,19 @@ export default function SchedulesPage() {
           <p className="text-sm text-muted-foreground mt-1">{t('schedule.subtitle', lang)}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => changeWeek(-7)} disabled={changingWeek}>
+          <Button variant="outline" size="sm" onClick={() => changeWeek(-7)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium">
             {startDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
           </span>
-          <Button variant="outline" size="sm" onClick={() => changeWeek(7)} disabled={changingWeek}>
+          <Button variant="outline" size="sm" onClick={() => changeWeek(7)}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {isLoading || changingWeek ? (
+      {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-6">
           {DAYS.map(day => (
             <Card key={day}>

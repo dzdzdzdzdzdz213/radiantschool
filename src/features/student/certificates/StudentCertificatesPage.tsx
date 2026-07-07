@@ -22,9 +22,9 @@ export default function StudentCertificatesPage() {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('certificates')
-        .select('id, title, description, issued_date, expiry_date, certificate_url, course:courses(name)')
+        .select('id, certificate_url, issued_at, course:courses(name)')
         .eq('student_id', profile.id)
-        .order('issued_date', { ascending: false });
+        .order('issued_at', { ascending: false });
       return (data ?? []).map((c: any) => ({ ...c, courseName: c.course?.name ?? '' }));
     },
     enabled: !!profile?.id,
@@ -45,14 +45,12 @@ export default function StudentCertificatesPage() {
               <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 flex items-center justify-center">
                 <Award className="h-8 w-8 text-amber-600" />
               </div>
-              <h3 className="font-semibold text-sm">{c.title}</h3>
-              <Badge variant="outline" className="mt-2 text-[10px]">{c.courseName}</Badge>
-              <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{c.description ?? ''}</p>
+              <h3 className="font-semibold text-sm">{c.courseName}</h3>
+              <Badge variant="outline" className="mt-2 text-[10px]">{t('nav.certificates', lang)}</Badge>
               <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(c.issued_date)}</span>
-                {c.expiry_date && <span className="flex items-center gap-1">{t('common.date', lang)}: {formatDate(c.expiry_date)}</span>}
+                <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(c.issued_at)}</span>
               </div>
-              <Button variant="outline" size="sm" className="w-full mt-4 h-8 text-xs gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all" onClick={() => { if (c.certificate_url) downloadFile.mutate({ fileUrl: c.certificate_url, filename: `${c.title}.pdf` }); }} disabled={downloadFile.isPending}>
+              <Button variant="outline" size="sm" className="w-full mt-4 h-8 text-xs gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all" onClick={() => { if (c.certificate_url) downloadFile.mutate({ fileUrl: c.certificate_url, filename: `${c.courseName}.pdf` }); }} disabled={downloadFile.isPending}>
                 {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{t('common.download', lang)}
               </Button>
             </CardContent>

@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export interface InvoiceRecord {
   id: string;
+  student_id: string | null;
   invoiceNumber: string;
   studentName: string;
   totalAmount: number;
@@ -17,13 +18,18 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
     queryFn: async () => {
       let query = (supabase as any)
         .from('invoices')
-        .select('id, invoice_number, total_amount, paid_amount, status, due_date, student:users(first_name, last_name)', { count: 'exact' })
+        .select('id, student_id, invoice_number, total_amount, paid_amount, status, due_date, student:users(first_name, last_name)', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       if (statusFilter) query = query.eq('status', statusFilter);
+      if (search) {
+        const like = `%${search}%`;
+        query = query.or(`student.first_name.ilike.${like},student.last_name.ilike.${like}`);
+      }
       const { data, count } = await query;
       const items = (data ?? []).map((r: any) => ({
         id: r.id,
+        student_id: r.student_id ?? null,
         invoiceNumber: r.invoice_number ?? '',
         studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
         totalAmount: r.total_amount ?? 0,
@@ -41,8 +47,9 @@ export function useCreateInvoice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await (supabase as any).from('invoices').insert(data);
+      const { data: result, error } = await (supabase as any).from('invoices').insert(data).select().single();
       if (error) throw error;
+      return result;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_invoices'] }); },
   });
@@ -63,7 +70,7 @@ export function useDeleteInvoice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('invoices').delete().eq('id', id);
+      const { error } = await (supabase as any).from('invoices').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_invoices'] }); },

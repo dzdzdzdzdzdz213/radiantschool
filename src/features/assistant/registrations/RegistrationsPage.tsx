@@ -13,7 +13,7 @@ import { t } from '@/i18n';
 export default function RegistrationsPage() {
   const { lang } = useLang();
   const [tab, setTab] = useState('pending');
-  const { data, isLoading } = useRegistrations('', 1, tab === 'pending' ? 'pending' : '');
+  const { data, isLoading } = useRegistrations('', 1, tab === 'all' ? 'all' : tab);
   const approve = useApproveRegistration();
   const reject = useRejectRegistration();
 

@@ -35,10 +35,9 @@ export default function EmailsPage() {
     },
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (emailsError) toast(t('errors.load_error', lang, t('nav.emails', lang)), 'error');
-  }, [emailsError]);
+  }, [emailsError, lang, toast]);
 
   const templates = [
     { id: '1', name: t('emails.template_payment_reminder', lang), subject: t('emails.template_payment_subject', lang) },
