@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
-import { t, ta, LANGUAGES } from '@/i18n';
+import { t, LANGUAGES } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
-import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search, ChevronDown, Quote, Heart } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search, ChevronDown, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
 /*
@@ -64,10 +64,10 @@ function CountUp({ end = 0 }: { end?: number }) {
 }
 
 const NAV = [
-  { href: '#courses', key: 'nav.formations', label: undefined as string | undefined },
-  { href: '#about', key: 'nav.apropos', label: 'Qui sommes-nous' },
-  { href: '#why', key: 'nav.pourquoi', label: undefined as string | undefined },
-  { href: '#contact', key: 'nav.contact', label: undefined as string | undefined },
+  { href: '#courses', key: 'nav.formations' },
+  { href: '#about', key: 'nav.apropos' },
+  { href: '#why', key: 'nav.pourquoi' },
+  { href: '#contact', key: 'nav.contact' },
 ];
 
 // Placeholder team data — replace photos + bios with your real team.
@@ -84,11 +84,11 @@ export default function LandingPage() {
   const { data: stats, isError: statsError } = usePublicStats();
 
   useEffect(() => {
-    if (coursesError) toast('Erreur de chargement des formations', 'error');
+    if (coursesError) toast(t('errors.load_error', lang, t('nav.formations', lang)), 'error');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coursesError]);
   useEffect(() => {
-    if (statsError) toast('Erreur de chargement des statistiques', 'error');
+    if (statsError) toast(t('errors.load_error', lang, 'statistiques'), 'error');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsError]);
 
@@ -126,12 +126,12 @@ export default function LandingPage() {
   ],
   };
 
-  const CATEGORIES = [
-    { value: '', label: 'Tous' },
-    { value: 'primary', label: 'Primaire' },
-    { value: 'middle', label: 'CEM' },
-    { value: 'high_school', label: 'Lycée' },
-  ];
+  const CATEGORIES = useMemo(() => [
+    { value: '', label: t('common.all', lang) },
+    { value: 'primary', label: t('enroll.category_primaire', lang) },
+    { value: 'middle', label: t('enroll.category_cem', lang) },
+    { value: 'high_school', label: t('enroll.category_lycee', lang) },
+  ], [lang]);
 
   const YEAR_OPTIONS: Record<string, { value: number; label: string }[]> = {
     middle: [
@@ -237,6 +237,11 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+      {/* Skip to content */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white">
+        Aller au contenu
+      </a>
+
       {/* Signature accent font — used ONLY for handwritten-style touches
           (founder signature, sticky-note captions). Ideally move this
           <link> into your index.html <head> instead of injecting it
@@ -245,25 +250,25 @@ export default function LandingPage() {
         .font-handwritten { font-family: 'Caveat', cursive; }`}</style>
 
       {/* HEADER */}
-      <header className="glass-header fixed top-0 left-0 right-0 z-50">
+      <header className="glass-header fixed top-0 left-0 right-0 z-50" role="banner">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center">
             <img src="/logo-transparent.webp" alt="Radiant Academy" className="h-9 w-auto" />
           </Link>
 
-          <nav className="hidden items-center gap-10 md:flex" style={{ color: 'var(--fg-muted)' }}>
+          <nav className="hidden items-center gap-10 md:flex" style={{ color: 'var(--fg-muted)' }} role="navigation" aria-label="Navigation principale">
             {NAV.map((x) => (
               x.href.startsWith('/') ? (
-                <Link key={x.href} to={x.href} className="hover-underline text-sm font-medium">{x.label ?? t(x.key, lang)}</Link>
+                <Link key={x.href} to={x.href} className="hover-underline text-sm font-medium">{t(x.key, lang)}</Link>
               ) : (
-                <a key={x.href} href={x.href} className="hover-underline text-sm font-medium">{x.label ?? t(x.key, lang)}</a>
+                <a key={x.href} href={x.href} className="hover-underline text-sm font-medium">{t(x.key, lang)}</a>
               )
             ))}
           </nav>
 
           <div className="flex items-center gap-2">
-            <button onClick={() => setLangOpen(!langOpen)} className="relative hidden sm:flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
-              <Globe className="h-4 w-4" />
+            <button onClick={() => setLangOpen(!langOpen)} aria-label={t('common.language', lang)} className="relative hidden sm:flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
+              <Globe className="h-4 w-4" aria-hidden="true" />
               <span className="text-xs font-semibold">{lang.toUpperCase()}</span>
             </button>
             {langOpen && (
@@ -280,7 +285,7 @@ export default function LandingPage() {
               </>
             )}
 
-            <button onClick={toggle} className="rounded-xl p-2.5 transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
+            <button onClick={toggle} aria-label={t('common.theme', lang)} className="rounded-xl p-2.5 transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
@@ -292,12 +297,12 @@ export default function LandingPage() {
 
         {menuOpen && (
           <div className="border-t px-6 pb-8 pt-6" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}>
-            <nav className="mb-6 flex flex-col gap-4 text-sm font-medium" style={{ color: 'var(--fg-muted)' }}>
+            <nav className="mb-6 flex flex-col gap-4 text-sm font-medium" style={{ color: 'var(--fg-muted)' }} role="navigation" aria-label="Navigation mobile">
               {NAV.map((x) => (
                 x.href.startsWith('/') ? (
-                  <Link key={x.href} to={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{x.label ?? t(x.key, lang)}</Link>
+                  <Link key={x.href} to={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{t(x.key, lang)}</Link>
                 ) : (
-                  <a key={x.href} href={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{x.label ?? t(x.key, lang)}</a>
+                  <a key={x.href} href={x.href} onClick={() => setMenuOpen(false)} className="transition-colors duration-200 hover:text-[var(--fg)]">{t(x.key, lang)}</a>
                 )
               ))}
             </nav>
@@ -306,9 +311,10 @@ export default function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 45% at 20% 45%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 70%), radial-gradient(ellipse 40% 35% at 80% 35%, color-mix(in srgb, #a78bfa 5%, transparent), transparent 70%)` }} />
+      <section id="main-content" className="relative min-h-screen flex items-center pt-24 overflow-hidden">
+        <div className="gradient-mesh">
+          <div className="orb" />
+          <div className="orb" />
         </div>
         <div className="mx-auto max-w-7xl px-6 py-16 w-full relative">
           <div className="flex flex-col lg:flex-row items-center gap-20">
@@ -319,36 +325,28 @@ export default function LandingPage() {
               </div>
 
               <h1 className="animate-up" style={{ animationDelay: '0.05s' }}>
-                <span className="block text-base sm:text-lg font-medium tracking-wider mb-3 uppercase" style={{ color: 'var(--fg-muted)', letterSpacing: '0.15em' }}>{t('hero.title1', lang)}</span>
-                <span className="block text-6xl sm:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tighter text-gradient">{t('hero.title2', lang)}</span>
+                <span className="block text-sm sm:text-base font-medium tracking-[0.2em] mb-4 uppercase" style={{ color: 'var(--fg-muted)' }}>{t('hero.title1', lang)}</span>
+                <span className="block text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">{t('hero.title2', lang)}</span>
               </h1>
 
-              <p className="mt-6 text-base sm:text-lg leading-relaxed animate-up max-w-md mx-auto lg:mx-0" style={{ color: 'var(--fg-muted)', animationDelay: '0.1s' }}>
+              <p className="mt-6 text-lg sm:text-xl leading-relaxed animate-up max-w-lg mx-auto lg:mx-0" style={{ color: 'var(--fg-muted)', animationDelay: '0.1s' }}>
                 {t('hero.subtitle', lang)}
               </p>
 
-              <div className="mt-10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.15s' }}>
-                <a href="#courses" className="btn-primary h-14 px-10 text-base gap-2.5 w-full sm:w-auto shadow-2xl shadow-[var(--primary)]/30 hover:shadow-[var(--primary)]/40 transition-all duration-300 active:scale-[0.97]">
-                  {t('hero.cta1', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
+              <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.15s' }}>
+                <div className="divider-gradient" />
+              </div>
+
+              <div className="flex items-center gap-3 animate-up" style={{ animationDelay: '0.15s' }}>
+                <a href="#courses" className="btn-primary">
+                  {t('hero.cta1', lang)} <ArrowRight className="h-4 w-4" />
                 </a>
-                <Link to="/enroll" className="btn-ghost h-14 px-10 text-base w-full sm:w-auto">
+                <Link to="/enroll" className="btn-secondary">
                   {t('hero.cta2', lang)}
                 </Link>
               </div>
 
-              {/* Humanizing touch: real-parents trust strip, right under the CTAs */}
-              <div className="mt-8 flex items-center gap-3 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.18s' }}>
-                <div className="flex -space-x-3">
-                  {['/avatars/parent1.jpg', '/avatars/parent2.jpg', '/avatars/parent3.jpg', '/avatars/parent4.jpg'].map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-9 w-9 rounded-full object-cover" style={{ border: '2px solid var(--bg)' }} />
-                  ))}
-                </div>
-                <p className="text-xs font-medium text-left" style={{ color: 'var(--fg-muted)' }}>
-                  Rejoint par <span style={{ color: 'var(--fg)', fontWeight: 700 }}>{stats?.studentCount ?? '200'}+</span> familles à Alger
-                </p>
-              </div>
-
-              <div className="mt-12 animate-up" style={{ animationDelay: '0.2s' }}>
+              <div className="mt-10 animate-up" style={{ animationDelay: '0.2s' }}>
                 <div className="inline-flex items-stretch rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
                   {[
                     { icon: BookOpen, value: courses?.length ?? 0, key: 'stat.formations' },
@@ -408,7 +406,7 @@ export default function LandingPage() {
             <div>
               <div className="badge inline-flex mb-5 gap-2">
                 <Heart className="h-3.5 w-3.5" />
-                Qui sommes-nous
+                {t('nav.apropos', lang)}
               </div>
               <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-[1.05]">
                 Une équipe de profs,<br />pas une plateforme
@@ -507,11 +505,13 @@ export default function LandingPage() {
           </div>
 
           {/* Category filter chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10" role="radiogroup" aria-label={t('enroll.category_primaire', lang)}>
             {CATEGORIES.map((c) => (
               <button
                 key={c.value}
                 onClick={() => { setCatFilter(c.value); resetSubFilters(); }}
+                role="radio"
+                aria-checked={catFilter === c.value}
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
                 style={{
                   backgroundColor: catFilter === c.value ? 'var(--primary)' : 'var(--bg)',
@@ -528,7 +528,7 @@ export default function LandingPage() {
           {catFilter && YEAR_OPTIONS[catFilter] && (
             <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
               <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
-                <ChevronDown className="h-3 w-3 inline mr-1" />Année
+                <ChevronDown className="h-3 w-3 inline mr-1" />{t('enroll.step_year', lang)}
               </span>
               {YEAR_OPTIONS[catFilter].map((y) => (
                 <button
@@ -551,7 +551,7 @@ export default function LandingPage() {
           {activeStreams.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
               <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
-                <ChevronDown className="h-3 w-3 inline mr-1" />Filière
+                <ChevronDown className="h-3 w-3 inline mr-1" />{t('enroll.stream', lang)}
               </span>
               {activeStreams.map((s) => (
                 <button
@@ -589,7 +589,7 @@ export default function LandingPage() {
                 className="text-xs font-semibold underline underline-offset-4 transition-colors"
                 style={{ color: 'var(--fg-muted)' }}
               >
-                Réinitialiser
+                {t('landing.reset', lang)}
               </button>
             </div>
           )}
@@ -597,7 +597,7 @@ export default function LandingPage() {
           {isLoading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-64 rounded-xl" style={{ backgroundColor: 'var(--bg)', animation: 'shimmer 2s infinite linear', backgroundImage: 'linear-gradient(90deg, var(--bg) 25%, var(--bg-card) 50%, var(--bg) 75%)', backgroundSize: '200% 100%' }} />
+                <div key={i} className="h-64 animate-pulse rounded-xl bg-muted" />
               ))}
             </div>
           ) : filtered.length === 0 ? (
@@ -606,9 +606,9 @@ export default function LandingPage() {
                 <Search className="h-7 w-7" style={{ color: 'var(--primary)', opacity: 0.5 }} />
               </div>
               <p className="text-lg font-semibold mb-1">{t('section.formations.empty', lang)}</p>
-              <p className="text-sm" style={{ color: 'var(--fg-muted)' }}>Essaie un autre mot-clé</p>
+              <p className="text-sm" style={{ color: 'var(--fg-muted)' }}>{t('landing.try_another', lang)}</p>
               <button onClick={() => { setSearch(''); setCatFilter(''); resetSubFilters(); }} className="btn-ghost mt-6 px-5 py-2.5 text-sm">
-                Réinitialiser la recherche
+                {t('landing.reset_search', lang)}
               </button>
             </div>
           ) : grouped ? (
@@ -651,10 +651,10 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Users, key: 'feat.groups', desc: 'feat.groups.desc', getStat: () => `${stats?.minCapacity ?? '—'}`, statLabel: 'élèves max', gradient: 'from-indigo-500/20 to-purple-600/20', iconColor: 'var(--primary)' },
-              { icon: Star, key: 'feat.teachers', desc: 'feat.teachers.desc', getStat: () => `${stats?.teacherCount ?? '—'}+`, statLabel: 'profs', gradient: 'from-amber-500/20 to-orange-600/20', iconColor: '#f59e0b' },
-              { icon: BarChart3, key: 'feat.followup', desc: 'feat.followup.desc', getStat: () => `${stats?.totalEvaluations ?? '—'}`, statLabel: 'évaluations', gradient: 'from-teal-500/20 to-cyan-600/20', iconColor: 'var(--accent)' },
-              { icon: RefreshCw, key: 'feat.flexible', desc: 'feat.flexible.desc', getStat: () => `${stats?.typeCount ?? '—'}`, statLabel: 'formules', gradient: 'from-pink-500/20 to-rose-600/20', iconColor: '#ec4899' },
+              { icon: Users, key: 'feat.groups', desc: 'feat.groups.desc', getStat: () => `${stats?.minCapacity ?? '—'}`, statKey: 'landing.eleves_max', gradient: 'from-indigo-500/20 to-purple-600/20', iconColor: 'var(--primary)' },
+              { icon: Star, key: 'feat.teachers', desc: 'feat.teachers.desc', getStat: () => `${stats?.teacherCount ?? '—'}+`, statKey: 'landing.profs', gradient: 'from-amber-500/20 to-orange-600/20', iconColor: '#f59e0b' },
+              { icon: BarChart3, key: 'feat.followup', desc: 'feat.followup.desc', getStat: () => `${stats?.totalEvaluations ?? '—'}`, statKey: 'landing.evaluations', gradient: 'from-teal-500/20 to-cyan-600/20', iconColor: 'var(--accent)' },
+              { icon: RefreshCw, key: 'feat.flexible', desc: 'feat.flexible.desc', getStat: () => `${stats?.typeCount ?? '—'}`, statKey: 'landing.formules', gradient: 'from-pink-500/20 to-rose-600/20', iconColor: '#ec4899' },
             ].map((f, i) => {
               const stat = f.getStat();
               return (
@@ -669,7 +669,7 @@ export default function LandingPage() {
                     <f.icon className="h-7 w-7" style={{ color: f.iconColor }} />
                   </div>
                   <p className="text-2xl font-black tracking-tight mb-0.5" style={{ color: f.iconColor }}>{stat}</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--fg-muted)' }}>{f.statLabel}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--fg-muted)' }}>{t(f.statKey, lang)}</p>
                   <h3 className="font-bold text-lg mb-2">{t(f.key, lang)}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: 'var(--fg-muted)' }}>{t(f.desc, lang)}</p>
                 </div>
@@ -689,10 +689,10 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl relative">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Star, value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis clients', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
-              { icon: Users, value: `${stats?.studentCount ?? 0}+`, label: 'Étudiants', sub: 'Inscrits', color: 'var(--primary)' },
-              { icon: Award, value: `${stats?.successRate ?? 0}%`, label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
-              { icon: Shield, value: `${stats?.yearsActive ?? 0}+`, label: "Années d'expérience", sub: "Dans l'éducation", color: '#6366f1' },
+              { icon: Star, value: (stats?.avgRating ?? 0).toFixed(1), labelKey: 'landing.client_reviews', subKey: 'landing.evaluations', subVal: stats?.totalEvaluations ?? 0, color: '#f59e0b' },
+              { icon: Users, value: `${stats?.studentCount ?? 0}+`, labelKey: 'landing.students', subKey: 'landing.enrolled', subVal: null, color: 'var(--primary)' },
+              { icon: Award, value: `${stats?.successRate ?? 0}%`, labelKey: 'landing.success_rate', subKey: 'landing.exams', subVal: null, color: '#10b981' },
+              { icon: Shield, value: `${stats?.yearsActive ?? 0}+`, labelKey: 'landing.years_experience', subKey: 'landing.education', subVal: null, color: '#6366f1' },
             ].map((s, i) => (
               <div key={i} className="group relative rounded-2xl animate-up transition-all duration-300 hover:-translate-y-1.5" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', animationDelay: `${i * 0.06}s`, boxShadow: 'var(--shadow-md)' }}>
                 <div className="h-1.5 rounded-t-2xl bg-gradient-to-r" style={{ background: `linear-gradient(90deg, ${s.color}, color-mix(in srgb, ${s.color} 50%, #fff))` }} />
@@ -701,8 +701,8 @@ export default function LandingPage() {
                     <s.icon className="h-7 w-7" style={{ color: s.color }} />
                   </div>
                   <p className="text-5xl font-black tracking-tight mb-1" style={{ color: s.color }}>{s.value}</p>
-                  <p className="text-sm font-bold mt-2">{s.label}</p>
-                  <p className="text-xs mt-1" style={{ color: 'var(--fg-muted)' }}>{s.sub}</p>
+                  <p className="text-sm font-bold mt-2">{t(s.labelKey, lang)}</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--fg-muted)' }}>{s.subVal != null ? `${s.subVal} ${t(s.subKey, lang)}` : t(s.subKey, lang)}</p>
                 </div>
               </div>
             ))}
@@ -744,14 +744,14 @@ export default function LandingPage() {
               <img src="/logo-transparent.webp" alt="Radiant Academy" className="h-10 w-auto mb-5" />
               <p className="text-sm leading-relaxed max-w-xs font-medium" style={{ color: 'var(--fg)' }}>{t('footer.tagline', lang)}</p>
               <div className="mt-6 flex gap-3">
-                <a href="https://www.facebook.com/radiantacademy.dz" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--primary)' }}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <a href="https://www.facebook.com/radiantacademy.dz" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--primary)' }} aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 </a>
-                <a href="https://www.instagram.com/radiantacademy.dz" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--primary)' }}><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                <a href="https://www.instagram.com/radiantacademy.dz" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--primary)' }} aria-hidden="true"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
                 </a>
-                <a href="https://www.linkedin.com/company/radiantacademy-dz" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--primary)' }}><path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
+                <a href="https://www.linkedin.com/company/radiantacademy-dz" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--primary)' }} aria-hidden="true"><path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
                 </a>
               </div>
             </div>
@@ -759,7 +759,7 @@ export default function LandingPage() {
             {/* Links */}
             {[
               { title: 'footer.links', col: 'lg:col-span-2', items: [
-                ...NAV.map(x => ({ label: x.label ?? t(x.key, lang), href: x.href })),
+                ...NAV.map(x => ({ label: t(x.key, lang), href: x.href })),
                 { label: t('nav.leaderboard', lang), to: '/leaderboard' },
               ]},
 
@@ -818,7 +818,7 @@ export default function LandingPage() {
             </div>
             <div className="sm:w-3/5 h-56" style={{ borderTop: '1px solid var(--border)' }}>
               <iframe
-                src="https://www.google.com/maps?q=Radiant+Academy+Bordj+El+Bahri+Alger&output=embed&z=16"
+                src="https://www.google.com/maps?q=Radiant+Academy+Bordj+El+Bahri+Alger&output=embed&z=16&hl=fr"
                 width="100%"
                 height="100%"
                 style={{ border: 0, display: 'block' }}
@@ -832,9 +832,9 @@ export default function LandingPage() {
           <div className="mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--fg-muted)' }}>
             <p className="font-medium">Radiant Academy &copy; {new Date().getFullYear()} &mdash; {t('footer.rights', lang)}</p>
             <div className="flex gap-8">
-              <a href="/mentions-legales" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Mentions légales</a>
-              <a href="/cgv" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">CGV</a>
-              <a href="/confidentialite" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Confidentialité</a>
+              <a href="/mentions-legales" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">{t('landing.legal', lang)}</a>
+              <a href="/cgv" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">{t('landing.cgv', lang)}</a>
+              <a href="/confidentialite" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">{t('landing.privacy', lang)}</a>
             </div>
           </div>
         </div>

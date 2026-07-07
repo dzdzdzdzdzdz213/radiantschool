@@ -229,7 +229,7 @@ export default function CoursesPage() {
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Type *</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.type', lang)} *</Label>
                 <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v }))} placeholder={t('common.select', lang)}>
                   <SelectItem value="normal">Normal</SelectItem>
                   <SelectItem value="vip">VIP</SelectItem>
@@ -248,11 +248,11 @@ export default function CoursesPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">{'Début'}</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">{t('common.start', lang)}</Label>
                   <Input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} className="h-9" />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">{'Fin'}</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">{t('common.end', lang)}</Label>
                   <Input type="date" value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} className="h-9" />
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function CoursesPage() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Salle</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.room', lang)}</Label>
                 <Select value={form.room_id} onValueChange={v => setForm(f => ({ ...f, room_id: v }))} placeholder={t('common.select', lang)}>
                   <SelectItem value="">—</SelectItem>
                   {(rooms ?? []).map((r: any) => (
@@ -309,46 +309,46 @@ export default function CoursesPage() {
 
       {isError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Erreur lors du chargement des cours. Vérifiez votre connexion et réessayez.
+          {t('errors.load_error', lang, t('nav.courses', lang))}. {t('dashboard.load_error_retry', lang)}
         </div>
       )}
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search_course', lang)} className="w-full rounded-lg border py-2 pl-10 pr-3 text-sm" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search_course', lang)} className="h-10 pl-10" />
         </div>
-        <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setLevelFilter(''); }} className="rounded-lg border px-3 py-2 text-sm">
-          <option value="">Tous niveaux</option>
-          <option value="primary">Primaire</option>
-          <option value="middle">CEM</option>
-          <option value="high_school">Lycée</option>
+        <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setLevelFilter(''); }} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
+          <option value="">{t('common.all', lang)}</option>
+          <option value="primary">{t('enroll.category_primaire', lang)}</option>
+          <option value="middle">{t('enroll.category_cem', lang)}</option>
+          <option value="high_school">{t('enroll.category_lycee', lang)}</option>
         </select>
-        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm min-w-[140px]">
-          <option value="">Toutes classes</option>
+        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 min-w-[140px]">
+          <option value="">{t('common.all', lang)}</option>
           {filteredLevels.map((l: any) => (
             <option key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</option>
           ))}
         </select>
-        <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm">
-          <option value="">Toutes matières</option>
+        <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
+          <option value="">{t('common.all', lang)}</option>
           {(subjects ?? []).map((s: any) => (
             <option key={s.id} value={String(s.id)}>{s.name}</option>
           ))}
         </select>
-        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm">
-          <option value="">Tous types</option>
+        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
+          <option value="">{t('common.all', lang)}</option>
           <option value="normal">Normal</option>
-          <option value="vip">VIP</option>
-          <option value="private">Particulier</option>
+          <option value="vip">{t('type.vip', lang)}</option>
+          <option value="private">{t('type.private', lang)}</option>
         </select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
-          <div className="col-span-full p-8 text-center text-muted">{t('common.loading', lang)}</div>
+          <div className="col-span-full p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>
         ) : isError ? (
-          <div className="col-span-full p-8 text-center text-muted">Impossible de charger les cours</div>
+          <div className="col-span-full p-8 text-center text-muted-foreground">{t('errors.load_error', lang, t('nav.courses', lang))}</div>
         ) : filtered.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-muted">{t('common.no_results', lang)}</div>
+          <div className="col-span-full p-8 text-center text-muted-foreground">{t('common.no_results', lang)}</div>
         ) : (
           filtered.map((c: any) => (
             <div key={c.id} className="rounded-xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
@@ -363,10 +363,10 @@ export default function CoursesPage() {
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: c.id, name: c.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
-              <div className="space-y-1 text-sm text-muted">
-                <p>Enseignant: {c.teacher ? getFullName(c.teacher.first_name, c.teacher.last_name) : 'Non assigné'}</p>
-                <p>Niveau: {c.level?.name}{c.level?.stream ? ` - ${c.level.stream}` : ''}</p>
-                <p>Capacité: {c.current_enrollments}/{c.capacity}</p>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p><span className="text-foreground">{t('common.teacher', lang)}:</span> {c.teacher ? getFullName(c.teacher.first_name, c.teacher.last_name) : t('common.not_assigned', lang)}</p>
+                <p><span className="text-foreground">{t('common.level', lang)}:</span> {c.level?.name}{c.level?.stream ? ` - ${c.level.stream}` : ''}</p>
+                <p><span className="text-foreground">{t('groups.capacity', lang)}:</span> {c.current_enrollments}/{c.capacity}</p>
                 <p>{t('common.price', lang)}: {formatCurrency(c.price)}</p>
                 <p>{t('common.from', lang)} {formatDate(c.start_date)} {t('common.to', lang)} {formatDate(c.end_date)}</p>
               </div>

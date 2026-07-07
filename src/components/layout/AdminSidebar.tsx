@@ -47,7 +47,7 @@ function NavLink({ item, collapsed, isActive, onClick }: { item: NavItem; collap
           : 'text-sidebar-fg/60 hover:bg-sidebar-accent hover:text-sidebar-fg',
       )}
     >
-      {Icon && <Icon className={cn('h-5 w-5 shrink-0 transition-transform', isActive && 'scale-110')} />}
+      {Icon && <Icon className={cn('h-5 w-5 shrink-0 transition-all duration-300', isActive ? 'scale-110 drop-shadow-[0_0_8px_var(--primary)]' : '')} />}
       {!collapsed && (
         <motion.span
           initial={{ opacity: 0 }}

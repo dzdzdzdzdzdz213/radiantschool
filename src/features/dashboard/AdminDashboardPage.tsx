@@ -28,7 +28,7 @@ function PageHeader({ name }: { name: string }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <Card className="relative overflow-hidden">
+      <Card className="welcome-glow relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none">
           <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[140%] bg-gradient-radial from-primary/[0.06] to-transparent" />
         </div>
@@ -109,47 +109,47 @@ export default function AdminDashboardPage() {
 
       <AlertBanner items={alertItems} />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <KpiCard
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 stagger-visible">
+        <div className="stagger-item"><KpiCard
           title={t('common.revenue', lang)}
           value={formatCurrency(kpi.totalRevenue)}
           subtitle="30 derniers jours"
           icon={DollarSign}
           trend={{ up: true, pct: '+12%' }}
-        />
-        <KpiCard
+        /></div>
+        <div className="stagger-item"><KpiCard
           title={t('dashboard.stat.active_students', lang)}
           value={String(kpi.activeStudents)}
           subtitle={t('dashboard.stat.new_students', lang)}
           icon={Users}
           trend={kpi.newStudentsMonth > 0 ? { up: true, pct: `+${kpi.newStudentsMonth}` } : undefined}
-        />
-        <KpiCard
+        /></div>
+        <div className="stagger-item"><KpiCard
           title={t('dashboard.stat.attendance', lang)}
           value={kpi.attendanceRate != null ? `${kpi.attendanceRate}%` : '—'}
           subtitle={t('dashboard.stat.avg_grade', lang)}
           icon={CalendarCheck}
           trend={kpi.attendanceRate != null && kpi.attendanceRate >= 90 ? { up: true, pct: '+3%' } : { up: false, pct: '-2%' }}
-        />
-        <KpiCard
+        /></div>
+        <div className="stagger-item"><KpiCard
           title={t('dashboard.stat.occupancy', lang)}
           value={kpi.occupancyRate != null ? `${kpi.occupancyRate}%` : '—'}
           subtitle="Capacité utilisée"
           icon={Building2}
-        />
-        <KpiCard
+        /></div>
+        <div className="stagger-item"><KpiCard
           title={t('nav.registrations', lang)}
           value={String(kpi.newStudentsMonth)}
           subtitle={t('common.this_month', lang)}
           icon={TrendingUp}
           trend={kpi.newStudentsMonth > 5 ? { up: true, pct: '+18%' } : undefined}
-        />
-        <KpiCard
+        /></div>
+        <div className="stagger-item"><KpiCard
           title={t('status.alert', lang)}
           value={String(kpi.pendingApprovals + kpi.unpaidInvoices)}
           subtitle={`${kpi.pendingApprovals} en attente, ${kpi.unpaidInvoices} impayés`}
           icon={Bell}
-        />
+        /></div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

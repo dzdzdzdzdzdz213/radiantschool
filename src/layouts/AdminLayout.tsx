@@ -1,5 +1,6 @@
 import { useState, useEffect, Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -37,12 +38,16 @@ function DashboardFallback() {
   );
 }
 
-function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="animate-in fade-in duration-500">{children}</div>;
-}
+const pageTransition = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -16 },
+  transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+};
 
 export default function AdminLayout() {
   const { lang } = useLang();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -83,22 +88,31 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <AdminSidebar
-        items={adminNavItems}
-        open={sidebarOpen}
-        collapsed={sidebarCollapsed}
-        onClose={() => setSidebarOpen(false)}
-        onToggleCollapse={handleToggleCollapse}
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="gradient-mesh-fixed">
+        <div className="orb" />
+        <div className="orb" />
+        <div className="orb" />
+      </div>
+      <div className="relative z-10">
+        <AdminSidebar
+          items={adminNavItems}
+          open={sidebarOpen}
+          collapsed={sidebarCollapsed}
+          onClose={() => setSidebarOpen(false)}
+          onToggleCollapse={handleToggleCollapse}
+        />
+      </div>
+      <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
         <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
-                <PageShell>
-                  <Outlet />
-                </PageShell>
+                <AnimatePresence mode="wait">
+                  <motion.div key={location.pathname} {...pageTransition}>
+                    <Outlet />
+                  </motion.div>
+                </AnimatePresence>
               </Suspense>
             </ErrorBoundary>
           </div>

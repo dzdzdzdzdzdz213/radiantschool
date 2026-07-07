@@ -76,7 +76,7 @@ export default function StudentHomeworkPage() {
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{h.description ?? ''}</p>
                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      {h.due_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{t('homework.due_date', lang)}: {formatDate(h.due_date)}</span>}
+                      {h.due_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{t('common.submission_date', lang)}: {formatDate(h.due_date)}</span>}
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{t('common.date', lang)}: {formatDate(h.created_at)}</span>
                     </div>
                   </div>

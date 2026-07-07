@@ -35,7 +35,7 @@ export default function KpiCard({ title, value, subtitle, trend, icon: Icon, spa
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <Card className={cn('relative overflow-hidden p-5 transition-all duration-300 hover:shadow-md', className)}>
+      <Card className={cn('relative overflow-hidden p-5', className)}>
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1 min-w-0 z-10">
             <p className="text-xs font-medium tracking-wider uppercase text-muted-foreground">{title}</p>
