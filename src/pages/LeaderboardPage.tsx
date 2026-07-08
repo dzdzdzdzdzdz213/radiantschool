@@ -93,7 +93,7 @@ export default function LeaderboardPage() {
           <Trophy className="h-6 w-6" style={{ color: 'var(--primary)' }} />
           <div>
             <h1 className="text-2xl font-bold">Classement des enseignants</h1>
-            <p className="text-muted text-sm">Basé sur les évaluations des élèves</p>
+            <p className="text-muted-foreground text-sm">Basé sur les évaluations des élèves</p>
           </div>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function LeaderboardPage() {
         <div className="rounded-2xl border p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <Award className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--fg-muted)', opacity: 0.2 }} />
           <p className="font-medium">Aucun résultat</p>
-          <p className="text-sm text-muted mt-1">Essaie de modifier les filtres.</p>
+          <p className="text-sm text-muted-foreground mt-1">Essaie de modifier les filtres.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -141,7 +141,7 @@ export default function LeaderboardPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      {t.specialties.length > 0 && <span className="text-xs text-muted">{t.specialties.join(', ')}</span>}
+                      {t.specialties.length > 0 && <span className="text-xs text-muted-foreground">{t.specialties.join(', ')}</span>}
                       <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>
                         {t.reviewCount} avis
                       </span>

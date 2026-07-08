@@ -48,9 +48,9 @@ export default function MessagesPage() {
         </div>
         <div className="overflow-y-auto" style={{ height: 'calc(100% - 57px)' }}>
           {isLoading ? (
-            <div className="p-4 text-center text-sm text-muted">{t('common.loading', lang)}</div>
+            <div className="p-4 text-center text-sm text-muted-foreground">{t('common.loading', lang)}</div>
           ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-muted">
+            <div className="p-8 text-center text-muted-foreground">
               <MessageSquare className="mx-auto mb-2 h-8 w-8" />
               <p className="text-sm">{t('common.no_data', lang)}</p>
             </div>
@@ -65,8 +65,8 @@ export default function MessagesPage() {
                   onClick={() => { setSelectedMsg(m); setReply(''); }}
                 >
                   <p className="font-medium">{other ? getFullName(other.first_name, other.last_name) : t('common.not_found', lang)}</p>
-                  <p className="truncate text-muted">{m.subject || t('common.no_data', lang)}</p>
-                  <p className="text-xs text-muted">{formatDateTime(m.created_at)}</p>
+                  <p className="truncate text-muted-foreground">{m.subject || t('common.no_data', lang)}</p>
+                  <p className="text-xs text-muted-foreground">{formatDateTime(m.created_at)}</p>
                 </div>
               );
             })
@@ -78,7 +78,7 @@ export default function MessagesPage() {
           <div className="flex h-full flex-col">
             <div className="border-b p-4">
               <h3 className="font-semibold">{selectedMsg.subject || t('common.no_data', lang)}</h3>
-              <p className="text-sm text-muted">
+              <p className="text-sm text-muted-foreground">
                 {selectedMsg.sender_id === profile?.id ? 'Vous' : getFullName(selectedMsg.sender?.first_name || '', selectedMsg.sender?.last_name || '')}
                 {' · '}{formatDateTime(selectedMsg.created_at)}
               </p>
@@ -94,7 +94,7 @@ export default function MessagesPage() {
             </div>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-muted">
+          <div className="flex h-full items-center justify-center text-muted-foreground">
             <div className="text-center">
               <MessageSquare className="mx-auto mb-2 h-12 w-12" />
               <p>{t('common.select', lang)}</p>

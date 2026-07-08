@@ -38,22 +38,22 @@ export default function HelpPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t('nav.help', lang)}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Aide et support de la plateforme</p>
+        <p className="mt-1 text-sm text-muted-foreground-foreground">Aide et support de la plateforme</p>
       </div>
       <Card>
         <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Phone className="h-4 w-4" />Contact</CardTitle></CardHeader>
         <CardContent className="space-y-3 text-sm">
           <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
-            <Mail className="h-4 w-4 text-muted" />
-            <div><p className="font-medium">Email</p><p className="text-muted-foreground">support@radiantlearning.dz</p></div>
+            <Mail className="h-4 w-4 text-muted-foreground" />
+            <div><p className="font-medium">Email</p><p className="text-muted-foreground-foreground">support@radiantlearning.dz</p></div>
           </div>
           <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
-            <Phone className="h-4 w-4 text-muted" />
-            <div><p className="font-medium">{t('common.phone', lang)}</p><p className="text-muted-foreground">+213 5XX XX XX XX</p></div>
+            <Phone className="h-4 w-4 text-muted-foreground" />
+            <div><p className="font-medium">{t('common.phone', lang)}</p><p className="text-muted-foreground-foreground">+213 5XX XX XX XX</p></div>
           </div>
           <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
-            <MessageCircle className="h-4 w-4 text-muted" />
-            <div><p className="font-medium">WhatsApp</p><p className="text-muted-foreground">+213 5XX XX XX XX</p></div>
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+            <div><p className="font-medium">WhatsApp</p><p className="text-muted-foreground-foreground">+213 5XX XX XX XX</p></div>
           </div>
         </CardContent>
       </Card>
@@ -63,10 +63,10 @@ export default function HelpPage() {
           {faqs.map((faq, i) => (
             <details key={i} className="group rounded-lg border border-border">
               <summary className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-accent/50">
-                <faq.icon className="h-4 w-4 text-muted shrink-0" />
+                <faq.icon className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span>{faq.question}</span>
               </summary>
-              <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground">
+              <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground-foreground">
                 {faq.answer}
               </div>
             </details>

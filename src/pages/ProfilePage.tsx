@@ -94,7 +94,7 @@ export default function ProfilePage() {
     onError: (err: any) => { toast(err?.message ?? t('errors.unknown', lang), 'error'); },
   });
 
-  if (!profile) return <div className="p-8 text-center text-muted">{t('common.loading', lang)}</div>;
+  if (!profile) return <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -113,50 +113,50 @@ export default function ProfilePage() {
             onUpdate={(p) => { setPhotoPath(p); refreshProfile(); }} />
           <div>
             <h2 className="text-xl font-bold">{getFullName(profile.firstName, profile.lastName)}</h2>
-            <p className="text-muted">{getRoleLabel(profile.role)}</p>
+            <p className="text-muted-foreground">{getRoleLabel(profile.role)}</p>
           </div>
         </div>
         <div className="space-y-4">
           {editing ? (
             <>
               <div className="rounded-lg bg-page p-3">
-                <label className="mb-1 block text-xs text-muted">{t('common.first_name', lang)}</label>
+                <label className="mb-1 block text-xs text-muted-foreground">{t('common.first_name', lang)}</label>
                 <input className="w-full bg-transparent text-sm font-medium outline-none" value={firstName} onChange={e => { setFirstName(e.target.value); setTimeout(validate); }} />
                 {fieldErrors.firstName && <p className="mt-1 text-xs text-red-500">{fieldErrors.firstName}</p>}
               </div>
               <div className="rounded-lg bg-page p-3">
-                <label className="mb-1 block text-xs text-muted">{t('common.last_name', lang)}</label>
+                <label className="mb-1 block text-xs text-muted-foreground">{t('common.last_name', lang)}</label>
                 <input className="w-full bg-transparent text-sm font-medium outline-none" value={lastName} onChange={e => { setLastName(e.target.value); setTimeout(validate); }} />
                 {fieldErrors.lastName && <p className="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>}
               </div>
               <div className="rounded-lg bg-page p-3">
-                <label className="mb-1 block text-xs text-muted">{t('common.email', lang)}</label>
+                <label className="mb-1 block text-xs text-muted-foreground">{t('common.email', lang)}</label>
                 <input className="w-full bg-transparent text-sm font-medium outline-none" value={email} onChange={e => { setEmail(e.target.value); setTimeout(validate); }} />
                 {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
               </div>
               <div className="rounded-lg bg-page p-3">
-                <label className="mb-1 block text-xs text-muted">{t('common.phone', lang)}</label>
-                <input className="w-full bg-transparent text-sm font-medium outline-none" value={phone} onChange={e => { setPhone(e.target.value); setTimeout(validate); }} placeholder="Non renseigné" />
+                <label className="mb-1 block text-xs text-muted-foreground">{t('common.phone', lang)}</label>
+                <input className="w-full bg-transparent text-sm font-medium outline-none" value={phone} onChange={e => { setPhone(e.target.value); setTimeout(validate); }} placeholder={t('common.not_assigned', lang)} />
                 {fieldErrors.phone && <p className="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>}
               </div>
             </>
           ) : (
             <>
               <div className="flex items-center gap-3 rounded-lg bg-page p-3">
-                <Mail className="h-5 w-5 text-muted" />
-                <div><p className="text-sm text-muted">{t('common.email', lang)}</p><p className="font-medium">{profile.email}</p></div>
+                <Mail className="h-5 w-5 text-muted-foreground" />
+                <div><p className="text-sm text-muted-foreground">{t('common.email', lang)}</p><p className="font-medium">{profile.email}</p></div>
               </div>
               <div className="flex items-center gap-3 rounded-lg bg-page p-3">
-                <Phone className="h-5 w-5 text-muted" />
-                <div><p className="text-sm text-muted">{t('common.phone', lang)}</p><p className="font-medium">{profile.phone || 'Non renseigné'}</p></div>
+                <Phone className="h-5 w-5 text-muted-foreground" />
+                <div><p className="text-sm text-muted-foreground">{t('common.phone', lang)}</p><p className="font-medium">{profile.phone || t('common.not_assigned', lang)}</p></div>
               </div>
               <div className="flex items-center gap-3 rounded-lg bg-page p-3">
-                <Shield className="h-5 w-5 text-muted" />
-                <div><p className="text-sm text-muted">{t('common.type', lang)}</p><p className="font-medium">{getRoleLabel(profile.role)}</p></div>
+                <Shield className="h-5 w-5 text-muted-foreground" />
+                <div><p className="text-sm text-muted-foreground">{t('common.type', lang)}</p><p className="font-medium">{getRoleLabel(profile.role)}</p></div>
               </div>
               <div className="flex items-center gap-3 rounded-lg bg-page p-3">
-                <UserCircle className="h-5 w-5 text-muted" />
-                <div><p className="text-sm text-muted">{t('common.status', lang)}</p><p className="font-medium">{profile.status}</p></div>
+                <UserCircle className="h-5 w-5 text-muted-foreground" />
+                <div><p className="text-sm text-muted-foreground">{t('common.status', lang)}</p><p className="font-medium">{profile.status}</p></div>
               </div>
             </>
           )}
@@ -183,15 +183,15 @@ export default function ProfilePage() {
         <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />Sécurité</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">{t('auth.password', lang)}</Label>
+            <Label className="text-xs text-muted-foreground-foreground">{t('auth.password', lang)}</Label>
             <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="h-9" placeholder="Mot de passe actuel" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">{t('auth.new_password', lang)}</Label>
+            <Label className="text-xs text-muted-foreground-foreground">{t('auth.new_password', lang)}</Label>
             <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="h-9" placeholder="Nouveau mot de passe" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">{t('auth.confirm_password', lang)}</Label>
+            <Label className="text-xs text-muted-foreground-foreground">{t('auth.confirm_password', lang)}</Label>
             <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-9" placeholder="Confirmer" />
           </div>
           <Button size="sm" className="h-9" onClick={() => {

@@ -207,7 +207,7 @@ export default function EnrollPage() {
         <GraduationCap className="h-6 w-6" style={{ color: 'var(--primary)' }} />
         <div>
           <h1 className="text-2xl font-bold">{isParent ? "Inscrire mon enfant" : "S'inscrire à un cours"}</h1>
-          <p className="text-muted text-sm">Suis les étapes pour trouver le cours parfait</p>
+          <p className="text-muted-foreground text-sm">Suis les étapes pour trouver le cours parfait</p>
         </div>
       </div>
 
@@ -255,7 +255,7 @@ export default function EnrollPage() {
                 </div>
                 <div>
                   <p className="font-medium">{c.first_name} {c.last_name}</p>
-                  <p className="text-xs text-muted">{c.email}</p>
+                  <p className="text-xs text-muted-foreground">{c.email}</p>
                 </div>
               </button>
             ))}
@@ -319,7 +319,7 @@ export default function EnrollPage() {
                 }}
               >
                 <p className="font-semibold text-lg">{l.name}</p>
-                <p className="text-xs text-muted mt-1">{l.category}</p>
+                <p className="text-xs text-muted-foreground mt-1">{l.category}</p>
               </button>
             ))}
           </div>
@@ -330,7 +330,7 @@ export default function EnrollPage() {
       {(step === (isParent ? 3 : 2)) && selectedLevel && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <h2 className="text-lg font-semibold mb-1">Choisis la matière</h2>
-          <p className="text-sm text-muted mb-4">{selectedLevel.name}</p>
+          <p className="text-sm text-muted-foreground mb-4">{selectedLevel.name}</p>
           <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {filteredSubjects.map(s => (
               <button
@@ -354,7 +354,7 @@ export default function EnrollPage() {
       {(step === (isParent ? 4 : 3)) && selectedSubject && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <h2 className="text-lg font-semibold mb-1">Type de cours</h2>
-          <p className="text-sm text-muted mb-4">{selectedLevel?.name} — {selectedSubject?.name}</p>
+          <p className="text-sm text-muted-foreground mb-4">{selectedLevel?.name} — {selectedSubject?.name}</p>
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               { value: 'normal', label: 'Normal', desc: 'Cours en groupe', icon: '👥', price: 'À partir de 3000 DA' },
@@ -372,7 +372,7 @@ export default function EnrollPage() {
               >
                 <span className="text-3xl block mb-2">{t.icon}</span>
                 <p className="font-semibold">{t.label}</p>
-                <p className="text-xs text-muted mt-1">{t.desc}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t.desc}</p>
                 <p className="text-xs font-medium mt-2" style={{ color: 'var(--primary)' }}>{t.price}</p>
               </button>
             ))}
@@ -394,7 +394,7 @@ export default function EnrollPage() {
             <div className="rounded-2xl border p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
               <BookOpen className="mx-auto mb-3 h-10 w-10 opacity-20" style={{ color: 'var(--fg-muted)' }} />
               <p className="font-medium">Aucun cours disponible</p>
-              <p className="text-sm text-muted mt-1">Essaie de modifier tes critères de recherche.</p>
+              <p className="text-sm text-muted-foreground mt-1">Essaie de modifier tes critères de recherche.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -412,7 +412,7 @@ export default function EnrollPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-semibold text-lg">{c.name}</p>
-                          <p className="text-sm text-muted">{c.teacher.first_name} {c.teacher.last_name}</p>
+                          <p className="text-sm text-muted-foreground">{c.teacher.first_name} {c.teacher.last_name}</p>
                           {c.teacher.specialties.length > 0 && (
                             <p className="text-xs mt-0.5" style={{ color: 'var(--fg-muted)' }}>{c.teacher.specialties.join(', ')}</p>
                           )}
@@ -420,7 +420,7 @@ export default function EnrollPage() {
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-xl font-bold" style={{ color: 'var(--primary)' }}>{c.price.toLocaleString()} DA</p>
-                        <p className="text-xs text-muted">{c.current_enrollments}/{c.capacity} places</p>
+                        <p className="text-xs text-muted-foreground">{c.current_enrollments}/{c.capacity} places</p>
                       </div>
                     </div>
 

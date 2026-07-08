@@ -112,7 +112,7 @@ export default function SettingsPage() {
               </select>
             </div>
             {settingsLoading ? (
-              <div className="flex items-center justify-center py-4 text-sm text-muted">{t('common.loading', lang)}</div>
+              <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">{t('common.loading', lang)}</div>
             ) : (
               <Button onClick={handleSave} disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : null}

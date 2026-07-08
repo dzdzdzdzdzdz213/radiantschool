@@ -43,7 +43,7 @@ export default function UsersPage() {
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search', lang)} className="w-full rounded-lg border py-2 pl-10 pr-3 text-sm" />
         </div>
         <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm">
@@ -57,11 +57,11 @@ export default function UsersPage() {
       </div>
       <div className="rounded-xl border bg-card shadow-sm">
         {isLoading ? (
-          <div className="p-8 text-center text-muted">{t('common.loading', lang)}</div>
+          <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b text-left text-sm text-muted">
+              <tr className="border-b text-left text-sm text-muted-foreground">
                 <th className="px-4 py-3 font-medium">{t('common.name', lang)}</th>
                 <th className="px-4 py-3 font-medium">{t('common.email', lang)}</th>
                 <th className="px-4 py-3 font-medium">{t('common.type', lang)}</th>
@@ -74,10 +74,10 @@ export default function UsersPage() {
               {filtered.map((u) => (
                 <tr key={u.id} className="border-b text-sm last:border-0 hover:bg-page cursor-pointer" onClick={() => navigate(`./${u.id}`)}>
                   <td className="px-4 py-3 font-medium">{getFullName(u.first_name, u.last_name)}</td>
-                  <td className="px-4 py-3 text-muted">{u.email}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                   <td className="px-4 py-3">{getRoleLabel(u.role)}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(u.status)}`}>{u.status}</span></td>
-                  <td className="px-4 py-3 text-muted">{formatDate(u.created_at)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{formatDate(u.created_at)}</td>
                   <td className="px-4 py-3 relative">
                     <button className="rounded p-1 hover:bg-page" onClick={(e) => { e.stopPropagation(); setDropdownId(dropdownId === u.id ? null : u.id); }}><MoreHorizontal className="h-4 w-4" /></button>
                     {dropdownId === u.id && (
@@ -97,7 +97,7 @@ export default function UsersPage() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} className="p-8 text-center text-muted">{t('common.no_results', lang)}</td></tr>
+                <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">{t('common.no_results', lang)}</td></tr>
               )}
             </tbody>
           </table>

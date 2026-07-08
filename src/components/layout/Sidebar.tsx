@@ -63,7 +63,7 @@ export default function Sidebar({ items, open, onClose }: SidebarProps) {
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                   isActive
                     ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-muted hover-bg-page',
+                    : 'text-muted-foreground hover-bg-page',
                 )}
               >
                 {Icon && <Icon className="h-5 w-5" />}

@@ -38,7 +38,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           className="rounded-lg p-2 transition-colors hover-bg-page"
           title={theme === 'dark' ? t('common.light_mode', lang) : t('common.dark_mode', lang)}
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5 text-muted" /> : <Moon className="h-5 w-5 text-muted" />}
+          {theme === 'dark' ? <Sun className="h-5 w-5 text-muted-foreground" /> : <Moon className="h-5 w-5 text-muted-foreground" />}
         </button>
 
         <div className="relative">
@@ -70,13 +70,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         <button onClick={() => navigate('/notifications')} className="relative rounded-full p-2 hover-bg-page">
-          <Bell className="h-5 w-5 text-muted" />
+          <Bell className="h-5 w-5 text-muted-foreground" />
 
         </button>
         <div className="flex items-center gap-3">
           <div className="hidden sm:block text-right">
             <p className="text-sm font-medium">{profile?.firstName} {profile?.lastName}</p>
-            <p className="text-xs text-muted">{profile ? t('role.' + profile.role, lang) : ''}</p>
+            <p className="text-xs text-muted-foreground">{profile ? t('role.' + profile.role, lang) : ''}</p>
           </div>
           {avatarUrl ? (
             <img src={avatarUrl} alt={getFullName(profile?.firstName || '', profile?.lastName || '')} className="h-9 w-9 rounded-full object-cover" />
@@ -87,7 +87,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           )}
         </div>
         <button onClick={handleLogout} className="rounded-full p-2 hover-bg-page">
-          <LogOut className="h-5 w-5 text-muted" />
+          <LogOut className="h-5 w-5 text-muted-foreground" />
         </button>
       </div>
     </header>
