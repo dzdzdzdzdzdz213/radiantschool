@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { lang } = useLang();
+  const emailRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,37 +22,81 @@ export default function ForgotPasswordPage() {
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
-      if (err) setError('Une erreur est survenue. Veuillez réessayer.');
+      if (err) setError(t('errors.send_error', lang, t('auth.email', lang)));
       else setSent(true);
     } catch {
-      setError('Une erreur réseau est survenue. Veuillez réessayer.');
+      setError(t('errors.network', lang));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
-      <div className="w-full max-w-md">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
+      <div className="gradient-mesh-fixed">
+        <div className="orb" />
+        <div className="orb" />
+      </div>
+
+      <div className="animate-up w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold">{t('auth.forgot_password', lang)}</h1>
-          <p className="text-muted">{t('auth.forgot_password_desc', lang)}</p>
+          <div className="relative">
+            <Link to="/login" className="btn-ghost absolute left-0 top-1/2 h-9 w-9 -translate-y-1/2 p-0" aria-label={t('common.back', lang)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+              <Mail className="h-6 w-6 text-primary" />
+            </div>
+          </div>
+          <h1 className="text-h1 mt-4">{t('auth.forgot_password', lang)}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{t('auth.forgot_password_desc', lang)}</p>
         </div>
+
         {sent ? (
-          <div className="rounded-2xl border bg-card p-8 text-center shadow-sm">
-            <p className="text-green-600 font-medium">{t('auth.reset_sent', lang)}</p>
-            <p className="mt-2 text-sm text-muted">Vérifiez votre boîte de réception.</p>
+          <div className="card animate-scale p-8 text-center" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
+              <svg className="h-7 w-7 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <p className="text-sm font-semibold">{t('auth.reset_sent', lang)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('auth.check_inbox', lang)}</p>
+            <Link to="/login" className="mt-6 inline-flex text-sm font-medium text-primary hover:underline">
+              {t('auth.back_to_login', lang)}
+            </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="rounded-2xl border bg-card p-8 shadow-sm">
-            {error && <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-            <div className="mb-6">
-              <label className="mb-1 block text-sm font-medium">{t('auth.email', lang)}</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border px-3 py-2 text-sm" required />
+          <form onSubmit={handleSubmit} className="card animate-scale p-6" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
+            {error && (
+              <div className="mb-5 rounded-lg bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+                {error}
+              </div>
+            )}
+
+            <div className="mb-5">
+              <label htmlFor="reset-email" className="mb-1.5 block text-small font-medium text-foreground">
+                {t('auth.email', lang)}
+              </label>
+              <input
+                id="reset-email"
+                ref={emailRef}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                placeholder={t('login.email_placeholder', lang)}
+                autoFocus
+                required
+              />
             </div>
-            <button type="submit" disabled={loading} className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">{loading ? 'Envoi...' : t('common.send', lang)}</button>
-            <p className="mt-4 text-center text-sm text-muted">
-              <Link to="/login" className="text-primary hover:underline">Retour à la connexion</Link>
+
+            <button type="submit" disabled={loading || !email.trim()} className="btn-primary w-full">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {loading ? t('forgot.sending', lang) : t('common.send', lang)}
+            </button>
+
+            <p className="mt-5 text-center text-small text-muted-foreground">
+              <Link to="/login" className="font-medium text-primary hover:underline">
+                {t('auth.back_to_login', lang)}
+              </Link>
             </p>
           </form>
         )}

@@ -6,12 +6,6 @@ import { UserPlus, ArrowLeft, GraduationCap, UserCheck, Mail, Phone, Lock, Users
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 
-const LEVELS = [
-  { value: 'primary', label: 'Primaire' },
-  { value: 'middle', label: 'CEM' },
-  { value: 'high_school', label: 'Lycée' },
-];
-
 const NAME_FIELDS = ['firstName', 'lastName', 'childFirstName', 'childLastName', 'guardianName'];
 const PHONE_FIELDS = ['phone', 'guardianPhone'];
 const NAME_REGEX = /^[a-zA-Za-zÀ-ž\s\-']+$/;
@@ -360,7 +354,7 @@ export default function RegisterPage() {
                     <label className="mb-1.5 block text-sm font-medium">Niveau scolaire <span style={{ color: '#ef4444' }}>*</span></label>
                     <select value={form.childLevel} onChange={e => setField('childLevel', e.target.value)} className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 focus:border-[var(--primary)]" style={{ backgroundColor: 'var(--bg)', borderColor: fieldErrors.childLevel ? '#ef4444' : 'var(--border)', color: 'var(--fg)' }} required>
                       <option value="">Sélectionner un niveau</option>
-                      {LEVELS.filter(l => l.value !== 'high_school').map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                      {[{ value: 'primary', label: t('enroll.category_primaire', lang) }, { value: 'middle', label: t('enroll.category_cem', lang) }].map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
                     </select>
                     {fieldErrors.childLevel && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{fieldErrors.childLevel}</p>}
                     <p className="text-xs mt-2" style={{ color: 'var(--fg-muted)' }}>Votre enfant pourra suivre des cours adaptés à son niveau.</p>
