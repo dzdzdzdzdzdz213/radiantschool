@@ -20,7 +20,7 @@ import AnalyticsWidget from '@/features/dashboard/components/AnalyticsWidget';
 
 function PageHeader({ name }: { name: string }) {
   const { lang } = useLang();
-  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const today = new Date().toLocaleDateString(lang === 'ar' ? 'fr-FR' : lang, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
     <motion.div
@@ -134,7 +134,7 @@ export default function AdminDashboardPage() {
         <div className="stagger-item"><KpiCard
           title={t('dashboard.stat.occupancy', lang)}
           value={kpi.occupancyRate != null ? `${kpi.occupancyRate}%` : '—'}
-          subtitle="Capacité utilisée"
+          subtitle={t('dashboard.stat.occupancy', lang)}
           icon={Building2}
         /></div>
         <div className="stagger-item"><KpiCard
