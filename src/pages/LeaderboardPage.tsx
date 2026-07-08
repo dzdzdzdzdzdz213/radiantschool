@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
-import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { Star, Trophy, Medal, Award } from 'lucide-react';
 

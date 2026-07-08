@@ -1,5 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 const PAGES: Record<string, { title: string; sections: { h2: string; p: string }[] }> = {
   'mentions-legales': {
@@ -80,34 +82,34 @@ const PAGES: Record<string, { title: string; sections: { h2: string; p: string }
 };
 
 export default function LegalPage() {
+  const { lang } = useLang();
   const { page } = useParams<{ page: string }>();
   const content = page ? PAGES[page] : null;
-  const valid = Object.keys(PAGES);
 
   if (!content) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8" style={{ backgroundColor: 'var(--bg)' }}>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--fg)' }}>Page introuvable</h1>
-        <Link to="/" className="text-sm" style={{ color: 'var(--primary)' }}>Retour à l'accueil</Link>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 bg-background">
+        <h1 className="text-2xl font-bold text-foreground">{t('common.not_found', lang)}</h1>
+        <Link to="/" className="text-sm text-primary">{t('common.back_to_site', lang)}</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
+    <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-6 py-16">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm mb-8" style={{ color: 'var(--fg-muted)' }}>
+        <Link to="/" className="inline-flex items-center gap-2 text-sm mb-8 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
-          Retour à l'accueil
+          {t('common.back_to_site', lang)}
         </Link>
 
-        <h1 className="text-3xl font-bold tracking-tight mb-10" style={{ color: 'var(--fg)' }}>{content.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-10 text-foreground">{content.title}</h1>
 
         <div className="space-y-8">
           {content.sections.map((s, i) => (
             <div key={i}>
-              <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--fg)' }}>{s.h2}</h2>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--fg-muted)' }}>{s.p}</p>
+              <h2 className="text-lg font-semibold mb-2 text-foreground">{s.h2}</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">{s.p}</p>
             </div>
           ))}
         </div>

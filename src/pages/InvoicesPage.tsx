@@ -16,16 +16,16 @@ export default function InvoicesPage() {
       <h1 className="text-2xl font-bold">{t('nav.invoices', lang)}</h1>
       <div className="rounded-xl border bg-card shadow-sm">
         {isLoading ? (
-          <div className="p-8 text-center text-muted">{t('common.loading', lang)}</div>
+          <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>
         ) : invoices && invoices.length > 0 ? (
           <table className="w-full">
             <thead>
-              <tr className="border-b text-left text-sm text-muted">
-                <th className="px-4 py-3 font-medium">N° Facture</th>
-                <th className="px-4 py-3 font-medium">Élève</th>
+              <tr className="border-b text-left text-sm text-muted-foreground">
+                <th className="px-4 py-3 font-medium">{t('invoices.invoice_no', lang)}</th>
+                <th className="px-4 py-3 font-medium">{t('invoices.student_label', lang)}</th>
                 <th className="px-4 py-3 font-medium">{t('common.total', lang)}</th>
                 <th className="px-4 py-3 font-medium">{t('status.paid', lang)}</th>
-                <th className="px-4 py-3 font-medium">Solde</th>
+                <th className="px-4 py-3 font-medium">{t('invoices.balance', lang)}</th>
                 <th className="px-4 py-3 font-medium">{t('common.status', lang)}</th>
                 <th className="px-4 py-3 font-medium">{t('common.date', lang)}</th>
               </tr>
@@ -39,13 +39,13 @@ export default function InvoicesPage() {
                   <td className="px-4 py-3">{formatCurrency(inv.paid_amount)}</td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(inv.total_amount - inv.paid_amount)}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(inv.status)}`}>{inv.status}</span></td>
-                  <td className="px-4 py-3 text-muted">{formatDate(inv.due_date)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.due_date)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <div className="p-8 text-center text-muted">
+          <div className="p-8 text-center text-muted-foreground">
             <FileText className="mx-auto mb-2 h-8 w-8" />
             <p>{t('common.no_data', lang)}</p>
           </div>
