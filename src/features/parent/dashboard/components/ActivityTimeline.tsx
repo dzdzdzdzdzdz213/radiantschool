@@ -1,10 +1,14 @@
 import { Clock, CheckCircle2, XCircle, DollarSign, FileText } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { ActivityItem } from '../useParentDashboard';
 
 interface ActivityTimelineProps {
   data: ActivityItem[];
   loading?: boolean;
 }
+
+const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
 
 const typeConfig: Record<string, { icon: React.ElementType; bg: string; iconColor: string }> = {
   presence: { icon: CheckCircle2, bg: 'bg-emerald-500/10', iconColor: 'text-emerald-500' },
@@ -16,6 +20,7 @@ const typeConfig: Record<string, { icon: React.ElementType; bg: string; iconColo
 };
 
 export default function ActivityTimeline({ data, loading }: ActivityTimelineProps) {
+  const { lang } = useLang();
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
@@ -29,10 +34,10 @@ export default function ActivityTimeline({ data, loading }: ActivityTimelineProp
     <div className="rounded-2xl border border-border bg-card p-5">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
         <Clock className="h-4 w-4 text-primary" />
-        Activités récentes
+        {t('dashboard.recent_activity', lang)}
       </h3>
       {data.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">Aucune activité récente</p>
+        <p className="text-sm text-muted-foreground py-6 text-center">{t('dashboard.no_activity', lang)}</p>
       ) : (
         <div className="space-y-2">
           {data.slice(0, 8).map((item, idx) => {
@@ -46,7 +51,7 @@ export default function ActivityTimeline({ data, loading }: ActivityTimelineProp
                 <div className="min-w-0 flex-1">
                   <p className="text-sm leading-snug">{item.description}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(item.timestamp).toLocaleDateString('fr-FR')}
+                    {new Date(item.timestamp).toLocaleDateString(localeMap[lang])}
                   </p>
                 </div>
               </div>

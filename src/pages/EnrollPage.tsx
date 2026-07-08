@@ -3,8 +3,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
-import { t } from '@/i18n';
+import { t, type Lang } from '@/i18n';
 import { ChevronLeft, Check, Loader, GraduationCap, BookOpen, Clock, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Level {
   id: number; name: string; category: string; stream: string | null; year: number | null; sort_order: number;
@@ -24,14 +25,16 @@ interface CourseResult {
   schedules: ScheduleInfo[];
 }
 
-const CATEGORIES = [
-  { value: 'primary', label: 'Primaire', icon: '📚' },
-  { value: 'middle', label: 'CEM', icon: '📖' },
-  { value: 'high_school', label: 'Lycée', icon: '🎓' },
+const CATEGORIES = (lang: Lang) => [
+  { value: 'primary', label: t('enroll.category_primaire', lang), icon: '📚' },
+  { value: 'middle', label: t('enroll.category_cem', lang), icon: '📖' },
+  { value: 'high_school', label: t('enroll.category_lycee', lang), icon: '🎓' },
 ];
 
-const DAY_LABELS_FR: Record<string, string> = {
-  saturday: 'Sam', sunday: 'Dim', monday: 'Lun', tuesday: 'Mar', wednesday: 'Mer', thursday: 'Jeu',
+const DAY_LABELS: Record<string, Record<string, string>> = {
+  fr: { saturday: 'Sam', sunday: 'Dim', monday: 'Lun', tuesday: 'Mar', wednesday: 'Mer', thursday: 'Jeu' },
+  en: { saturday: 'Sat', sunday: 'Sun', monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu' },
+  ar: { saturday: 'سبت', sunday: 'أحد', monday: 'اثن', tuesday: 'ثلاث', wednesday: 'أرب', thursday: 'خميس' },
 };
 
 const MAX_COURSES_PER_STUDENT = 5;
@@ -193,12 +196,12 @@ export default function EnrollPage() {
   const goToStep = (s: number) => { setStep(s); setError(''); };
 
   const steps = [
-    { label: 'Niveau', done: !!category },
-    { label: 'Année', done: !!selectedLevel },
-    { label: stream ? 'Branche' : null, done: stream ? !!stream : true },
-    { label: 'Matière', done: !!selectedSubject },
-    { label: 'Type', done: !!courseType },
-    { label: 'Résultats', done: false },
+    { label: t('enroll.step_level', lang), done: !!category },
+    { label: t('enroll.step_year', lang), done: !!selectedLevel },
+    { label: stream ? t('enroll.step_stream', lang) : null, done: stream ? !!stream : true },
+    { label: t('enroll.step_subject', lang), done: !!selectedSubject },
+    { label: t('enroll.step_type', lang), done: !!courseType },
+    { label: t('enroll.step_results', lang), done: false },
   ].filter(s => s.label);
 
   return (
@@ -206,8 +209,8 @@ export default function EnrollPage() {
       <div className="flex items-center gap-3">
         <GraduationCap className="h-6 w-6" style={{ color: 'var(--primary)' }} />
         <div>
-          <h1 className="text-2xl font-bold">{isParent ? "Inscrire mon enfant" : "S'inscrire à un cours"}</h1>
-          <p className="text-muted-foreground text-sm">Suis les étapes pour trouver le cours parfait</p>
+          <h1 className="text-2xl font-bold">{isParent ? t('enroll.title_parent', lang) : t('enroll.title_student', lang)}</h1>
+          <p className="text-muted-foreground text-sm">{t('enroll.steps_description', lang)}</p>
         </div>
       </div>
 
@@ -241,7 +244,7 @@ export default function EnrollPage() {
       {/* Step 0: Parent child selection */}
       {isParent && step === 0 && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-          <h2 className="text-lg font-semibold mb-4">Choisir un enfant</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('enroll.select_child', lang)}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {children.map((c: any) => (
               <button
@@ -266,9 +269,9 @@ export default function EnrollPage() {
       {/* Step 1: Category */}
       {(step === (isParent ? 1 : 0)) && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-          <h2 className="text-lg font-semibold mb-4">Quel niveau ?</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('enroll.what_level', lang)}</h2>
           <div className="grid gap-3 sm:grid-cols-3">
-            {CATEGORIES.map(c => (
+            {CATEGORIES(lang).map(c => (
               <button
                 key={c.value}
                 onClick={() => { setCategory(c.value); setSelectedLevel(null); setStream(''); setSelectedSubject(null); setCourseType(''); setResults([]); goToStep(step + 1); }}
@@ -286,10 +289,10 @@ export default function EnrollPage() {
       {/* Step 2: Year / Level */}
       {(step === (isParent ? 2 : 1)) && category && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-          <h2 className="text-lg font-semibold mb-4">Choisis l'année</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('enroll.choose_year', lang)}</h2>
           {category === 'high_school' && availableStreams.length > 0 && (
             <div className="mb-4">
-              <p className="text-sm font-medium mb-2">Branche</p>
+              <p className="text-sm font-medium mb-2">{t('enroll.stream', lang)}</p>
               <div className="flex gap-2">
                 {availableStreams.map(s => (
                   <button
@@ -329,7 +332,7 @@ export default function EnrollPage() {
       {/* Step 3: Subject */}
       {(step === (isParent ? 3 : 2)) && selectedLevel && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-          <h2 className="text-lg font-semibold mb-1">Choisis la matière</h2>
+          <h2 className="text-lg font-semibold mb-1">{t('enroll.select_subject', lang)}</h2>
           <p className="text-sm text-muted-foreground mb-4">{selectedLevel.name}</p>
           <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {filteredSubjects.map(s => (
@@ -353,13 +356,13 @@ export default function EnrollPage() {
       {/* Step 4: Type */}
       {(step === (isParent ? 4 : 3)) && selectedSubject && (
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-          <h2 className="text-lg font-semibold mb-1">Type de cours</h2>
+          <h2 className="text-lg font-semibold mb-1">{t('enroll.course_type', lang)}</h2>
           <p className="text-sm text-muted-foreground mb-4">{selectedLevel?.name} — {selectedSubject?.name}</p>
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { value: 'normal', label: 'Normal', desc: 'Cours en groupe', icon: '👥', price: 'À partir de 3000 DA' },
-              { value: 'vip', label: 'VIP', desc: 'Groupe réduit', icon: '⭐', price: 'À partir de 5000 DA' },
-              { value: 'private', label: 'Particulier', desc: 'Cours individuel', icon: '👤', price: 'À partir de 8000 DA' },
+              { value: 'normal', label: t('enroll.normal', lang), desc: t('enroll.group_course', lang), icon: '👥', price: t('enroll.normal_price', lang) },
+              { value: 'vip', label: t('enroll.vip', lang), desc: t('enroll.reduced_group', lang), icon: '⭐', price: t('enroll.vip_price', lang) },
+              { value: 'private', label: t('enroll.private', lang), desc: t('enroll.individual_course', lang), icon: '👤', price: t('enroll.private_price', lang) },
             ].map(t => (
               <button
                 key={t.value}
@@ -384,7 +387,7 @@ export default function EnrollPage() {
       {(step === 6) && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">
-            {results.length} cours trouvé{results.length > 1 ? 's' : ''}
+            {t('enroll.results', lang, String(results.length))}
           </h2>
           {loading ? (
             <div className="flex justify-center py-12">
@@ -393,8 +396,8 @@ export default function EnrollPage() {
           ) : results.length === 0 ? (
             <div className="rounded-2xl border p-12 text-center" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
               <BookOpen className="mx-auto mb-3 h-10 w-10 opacity-20" style={{ color: 'var(--fg-muted)' }} />
-              <p className="font-medium">Aucun cours disponible</p>
-              <p className="text-sm text-muted-foreground mt-1">Essaie de modifier tes critères de recherche.</p>
+              <p className="font-medium">{t('enroll.no_courses', lang)}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('enroll.change_criteria', lang)}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -420,7 +423,7 @@ export default function EnrollPage() {
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-xl font-bold" style={{ color: 'var(--primary)' }}>{c.price.toLocaleString()} DA</p>
-                        <p className="text-xs text-muted-foreground">{c.current_enrollments}/{c.capacity} places</p>
+                        <p className="text-xs text-muted-foreground">{c.current_enrollments}/{c.capacity} {t('enroll.places', lang)}</p>
                       </div>
                     </div>
 
@@ -433,7 +436,7 @@ export default function EnrollPage() {
                             style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}
                           >
                             <Clock className="h-3 w-3" />
-                            <span className="font-medium">{DAY_LABELS_FR[s.day_of_week] || s.day_of_week}</span>
+                            <span className="font-medium">{DAY_LABELS[lang]?.[s.day_of_week] || s.day_of_week}</span>
                             <span>{s.start_time?.slice(0, 5)}-{s.end_time?.slice(0, 5)}</span>
                             {s.room?.name && (
                               <>
@@ -447,33 +450,29 @@ export default function EnrollPage() {
                       </div>
                     )}
 
-                    <button
+                    <Button
+                      variant="default"
                       onClick={() => handleEnroll(c.id)}
                       disabled={enrolling === c.id || c.current_enrollments >= c.capacity}
-                      className="mt-4 w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40"
-                      style={{ backgroundColor: c.current_enrollments >= c.capacity ? 'var(--fg-muted)' : 'var(--primary)' }}
+                      className="mt-4 w-full"
                     >
                       {enrolling === c.id ? (
-                        <Loader className="inline h-4 w-4 animate-spin" />
+                        <Loader className="h-4 w-4 animate-spin" />
                       ) : c.current_enrollments >= c.capacity ? (
-                        'Complet'
+                        t('enroll.full', lang)
                       ) : (
-                        "S'inscrire — " + c.price.toLocaleString() + ' DA'
+                        t('enroll.enroll_button', lang) + ' — ' + c.price.toLocaleString() + ' DA'
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          <button
-            onClick={() => goToStep(step - 1)}
-            className="flex items-center gap-2 text-sm font-medium transition-colors hover:opacity-70"
-            style={{ color: 'var(--fg-muted)' }}
-          >
-            <ChevronLeft className="h-4 w-4" /> Modifier les critères
-          </button>
+          <Button variant="ghost" onClick={() => goToStep(step - 1)} className="gap-2">
+            <ChevronLeft className="h-4 w-4" /> {t('enroll.modify_criteria', lang)}
+          </Button>
         </div>
       )}
     </div>

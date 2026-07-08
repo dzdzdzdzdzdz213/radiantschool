@@ -49,9 +49,9 @@ export default function GroupsPage() {
   const teachers = (allUsers ?? []).filter((u: any) => u.role === 'teacher');
 
   const [search, setSearch] = useState('');
-  const [catFilter, setCatFilter] = useState('');
-  const [levelFilter, setLevelFilter] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState('');
+  const [catFilter, setCatFilter] = useState('all');
+  const [levelFilter, setLevelFilter] = useState('all');
+  const [subjectFilter, setSubjectFilter] = useState('all');
 
   const levelsByCat = useMemo(() => {
     const grouped: Record<string, any[]> = {};
@@ -60,14 +60,14 @@ export default function GroupsPage() {
     }
     return grouped;
   }, [levels]);
-  const filteredLevels = catFilter ? (levelsByCat[catFilter] ?? []) : (levels ?? []);
+  const filteredLevels = catFilter !== 'all' ? (levelsByCat[catFilter] ?? []) : (levels ?? []);
 
   const filteredGroups = (groups ?? []).filter((c: any) => {
     const q = search.toLowerCase();
     const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q);
-    const matchesCat = !catFilter || c.level?.category === catFilter;
-    const matchesLevel = !levelFilter || c.level_id === parseInt(levelFilter);
-    const matchesSubject = !subjectFilter || c.subject_id === parseInt(subjectFilter);
+    const matchesCat = catFilter === 'all' || c.level?.category === catFilter;
+    const matchesLevel = levelFilter === 'all' || c.level_id === parseInt(levelFilter);
+    const matchesSubject = subjectFilter === 'all' || c.subject_id === parseInt(subjectFilter);
     return matchesSearch && matchesCat && matchesLevel && matchesSubject;
   });
 
@@ -92,13 +92,13 @@ export default function GroupsPage() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!form.name.trim()) throw new Error(t('groups.name_required', lang));
-      if (!form.level_id) throw new Error('Niveau requis');
-      if (!form.subject_id) throw new Error('Matière requise');
-      if (!form.teacher_id) throw new Error('Enseignant requis');
-      if (!form.start_date) throw new Error('Date de début requise');
-      if (!form.end_date) throw new Error('Date de fin requise');
+      if (!form.level_id) throw new Error(t('groups.level_required', lang));
+      if (!form.subject_id) throw new Error(t('groups.subject_required', lang));
+      if (!form.teacher_id) throw new Error(t('groups.teacher_required', lang));
+      if (!form.start_date) throw new Error(t('groups.start_date_required', lang));
+      if (!form.end_date) throw new Error(t('groups.end_date_required', lang));
       const price = parseFloat(form.price);
-      if (isNaN(price) || price <= 0) throw new Error('Prix invalide');
+      if (isNaN(price) || price <= 0) throw new Error(t('groups.price_invalid', lang));
       const capacity = parseInt(form.capacity, 10);
       if (isNaN(capacity) || capacity <= 0) throw new Error(t('groups.capacity_invalid', lang));
       const payload: Record<string, any> = {
@@ -169,24 +169,24 @@ export default function GroupsPage() {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('groups.search_placeholder', lang)} className="h-9 pl-9" />
         </div>
-        <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setLevelFilter(''); }} className="rounded-lg border px-3 py-2 text-sm">
-          <option value="">Tous niveaux</option>
-          <option value="primary">Primaire</option>
-          <option value="middle">CEM</option>
-          <option value="high_school">Lycée</option>
-        </select>
-        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm min-w-[140px]">
-          <option value="">Toutes classes</option>
+        <Select value={catFilter} onValueChange={v => { setCatFilter(v); setLevelFilter('all'); }} className="min-w-[130px]">
+          <SelectItem value="all">{t('groups.all_levels', lang)}</SelectItem>
+          <SelectItem value="primary">{t('landing.category_primaire', lang)}</SelectItem>
+          <SelectItem value="middle">{t('landing.category_cem', lang)}</SelectItem>
+          <SelectItem value="high_school">{t('landing.category_lycee', lang)}</SelectItem>
+        </Select>
+        <Select value={levelFilter} onValueChange={v => setLevelFilter(v)} className="min-w-[140px]">
+          <SelectItem value="all">{t('groups.all_classes', lang)}</SelectItem>
           {filteredLevels.map((l: any) => (
-            <option key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</option>
+            <SelectItem key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</SelectItem>
           ))}
-        </select>
-        <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm">
-          <option value="">Toutes matières</option>
+        </Select>
+        <Select value={subjectFilter} onValueChange={v => setSubjectFilter(v)} className="min-w-[130px]">
+          <SelectItem value="all">{t('groups.all_subjects', lang)}</SelectItem>
           {(subjects ?? []).map((s: any) => (
-            <option key={s.id} value={String(s.id)}>{s.name}</option>
+            <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
           ))}
-        </select>
+        </Select>
       </div>
 
       {showModal && (
@@ -203,11 +203,11 @@ export default function GroupsPage() {
                 <Input placeholder={t('common.name', lang)} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Type *</Label>
+                <Label>{t('common.type', lang)} *</Label>
                 <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v }))} placeholder={t('common.select', lang)}>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="vip">VIP</SelectItem>
-                  <SelectItem value="private">Particulier</SelectItem>
+                  <SelectItem value="normal">{t('type.normal', lang)}</SelectItem>
+                  <SelectItem value="vip">{t('type.vip', lang)}</SelectItem>
+                  <SelectItem value="private">{t('type.private', lang)}</SelectItem>
                 </Select>
               </div>
               <div className="space-y-2">
@@ -224,21 +224,21 @@ export default function GroupsPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Début *</Label>
+                  <Label>{t('common.start', lang)} *</Label>
                   <Input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Fin *</Label>
+                  <Label>{t('common.end', lang)} *</Label>
                   <Input type="date" value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Niveau *</Label>
+                <Label>{t('common.level', lang)} *</Label>
                 <Select value={form.level_id} onValueChange={v => setForm(f => ({ ...f, level_id: v }))} placeholder={t('common.select', lang)}>
                   {(levels ?? [])
                     .sort((a: any, b: any) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
                     .map((l: any) => {
-                      const catLabel = l.category === 'primary' ? 'Primaire' : l.category === 'middle' ? 'CEM' : 'Lycée';
+                      const catLabel = l.category === 'primary' ? t('landing.category_primaire', lang) : l.category === 'middle' ? t('landing.category_cem', lang) : t('landing.category_lycee', lang);
                       return (
                         <SelectItem key={l.id} value={String(l.id)}>
                           [{catLabel}] {l.name}{l.stream ? ` - ${l.stream}` : ''}
@@ -248,7 +248,7 @@ export default function GroupsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Matière *</Label>
+                <Label>{t('common.subject', lang)} *</Label>
                 <Select value={form.subject_id} onValueChange={v => setForm(f => ({ ...f, subject_id: v }))} placeholder={t('common.select', lang)}>
                   {(subjects ?? []).map((s: any) => (
                     <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
@@ -256,7 +256,7 @@ export default function GroupsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Enseignant *</Label>
+                <Label>{t('common.teacher', lang)} *</Label>
                 <Select value={form.teacher_id} onValueChange={v => setForm(f => ({ ...f, teacher_id: v }))} placeholder={t('common.select', lang)}>
                   {teachers.map((t: any) => (
                     <SelectItem key={t.id} value={t.id}>{getFullName(t.first_name, t.last_name)}</SelectItem>
@@ -264,7 +264,7 @@ export default function GroupsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Salle</Label>
+                <Label>{t('common.room', lang)}</Label>
                 <Select value={form.room_id} onValueChange={v => setForm(f => ({ ...f, room_id: v }))} placeholder={t('common.select', lang)}>
                   <SelectItem value="">—</SelectItem>
                   {(rooms ?? []).map((r: any) => (

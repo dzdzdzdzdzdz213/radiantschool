@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -23,7 +24,7 @@ export default function TeacherCalendarPage() {
   const startDay = (firstDay.getDay() + 6) % 7;
   const daysInMonth = lastDay.getDate();
 
-  const { data: events, isLoading } = useQuery({
+  const { data: events, isLoading, isError } = useQuery({
     queryKey: ['teacher_calendar', profile?.id, currentMonth, currentYear],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -35,6 +36,7 @@ export default function TeacherCalendarPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.calendar', lang));
 
   const prevMonth = () => { if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); } else setCurrentMonth(m => m - 1); };
   const nextMonth = () => { if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); } else setCurrentMonth(m => m + 1); };

@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Users, ArrowRight } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { ChildInfo } from '../useParentDashboard';
 
 interface ChildrenOverviewProps {
@@ -9,6 +11,7 @@ interface ChildrenOverviewProps {
 
 export default function ChildrenOverview({ childList: children, loading }: ChildrenOverviewProps) {
   const navigate = useNavigate();
+  const { lang } = useLang();
 
   if (loading) {
     return (
@@ -24,20 +27,20 @@ export default function ChildrenOverview({ childList: children, loading }: Child
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
-          Mes enfants
+          {t('parent.my_children', lang)}
         </h3>
         {children.length > 0 && (
           <button onClick={() => navigate('/parent/children')} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-            Voir tout <ArrowRight className="h-3 w-3" />
+            {t('common.view_all', lang)} <ArrowRight className="h-3 w-3" />
           </button>
         )}
       </div>
       {children.length === 0 ? (
         <div className="text-center py-6">
           <Users className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-20" />
-          <p className="text-sm text-muted-foreground">Aucun enfant inscrit</p>
+          <p className="text-sm text-muted-foreground">{t('dashboard.no_children', lang)}</p>
           <button onClick={() => navigate('/parent/enroll')} className="mt-2 text-xs text-primary font-medium hover:underline">
-            Inscrire un enfant
+            {t('parent.enroll_child', lang)}
           </button>
         </div>
       ) : (

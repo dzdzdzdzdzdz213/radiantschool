@@ -6,6 +6,8 @@ import { Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -91,13 +93,13 @@ export default function LoginPage() {
             <label htmlFor="login-email" className="mb-1.5 block text-small font-medium text-foreground">
               {t('auth.email', lang)}
             </label>
-            <input
+            <Input
               id="login-email"
               ref={emailRef}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full"
               placeholder={t('login.email_placeholder', lang)}
               autoFocus
               required
@@ -109,12 +111,12 @@ export default function LoginPage() {
               {t('auth.password', lang)}
             </label>
             <div className="relative">
-              <input
+              <Input
                 id="login-password"
                 type={showPw ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 pr-11 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full pr-11"
                 placeholder={t('login.password_placeholder', lang)}
                 required
               />
@@ -135,14 +137,14 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
-            className="btn-primary w-full"
+            className="w-full"
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {isLoading ? t('common.loading', lang) : t('auth.sign_in', lang)}
-          </button>
+          </Button>
 
           <p className="mt-5 text-center text-small text-muted-foreground">
             {t('auth.dont_have_account', lang)}{' '}

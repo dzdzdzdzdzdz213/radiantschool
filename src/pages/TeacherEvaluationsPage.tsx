@@ -23,6 +23,7 @@ interface Evaluation {
 export default function TeacherEvaluationsPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const { data: evaluations = [], isLoading, error } = useQuery({
@@ -53,10 +54,10 @@ export default function TeacherEvaluationsPage() {
   };
 
   const factors = [
-    { key: 'teaching_quality' as const, label: 'Qualité pédagogique', value: stats.teaching },
-    { key: 'communication' as const, label: 'Communication', value: stats.communication },
-    { key: 'punctuality' as const, label: 'Ponctualité', value: stats.punctuality },
-    { key: 'organization' as const, label: 'Organisation', value: stats.organization },
+    { key: 'teaching_quality' as const, label: t('evaluations.teaching_quality', lang), value: stats.teaching },
+    { key: 'communication' as const, label: t('evaluations.communication', lang), value: stats.communication },
+    { key: 'punctuality' as const, label: t('evaluations.punctuality', lang), value: stats.punctuality },
+    { key: 'organization' as const, label: t('evaluations.organization', lang), value: stats.organization },
   ];
 
   return (
@@ -73,7 +74,7 @@ export default function TeacherEvaluationsPage() {
           <div className="grid gap-4 sm:grid-cols-5">
             <div className="rounded-xl border bg-card p-4 text-center">
               <p className="text-2xl font-bold">{stats.avg}</p>
-              <p className="text-xs text-muted-foreground">Moyenne</p>
+                <p className="text-xs text-muted-foreground">{t('evaluations.avg', lang)}</p>
             </div>
             {factors.map(f => (
               <div key={f.key} className="rounded-xl border bg-card p-4 text-center">
@@ -98,10 +99,10 @@ export default function TeacherEvaluationsPage() {
                         <span className="font-semibold">{e.average_score.toFixed(1)}</span>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {e.student ? getFullName(e.student.first_name, e.student.last_name) : 'Anonyme'}
+                        {e.student ? getFullName(e.student.first_name, e.student.last_name) : t('evaluations.anonymous', lang)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(e.created_at).toLocaleDateString('fr-FR')}
+                        {new Date(e.created_at).toLocaleDateString(localeMap[lang])}
                       </span>
                     </div>
                     {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}

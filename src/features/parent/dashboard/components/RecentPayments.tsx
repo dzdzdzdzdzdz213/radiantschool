@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { DollarSign, ArrowRight } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { PaymentRecord } from '../useParentDashboard';
 
@@ -10,6 +12,7 @@ interface RecentPaymentsProps {
 
 export default function RecentPayments({ data, loading }: RecentPaymentsProps) {
   const navigate = useNavigate();
+  const { lang } = useLang();
 
   if (loading) {
     return (
@@ -25,16 +28,16 @@ export default function RecentPayments({ data, loading }: RecentPaymentsProps) {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-primary" />
-          Paiements récents
+          {t('dashboard.recent_payments', lang)}
         </h3>
         {data.length > 0 && (
           <button onClick={() => navigate('/parent/payments')} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-            Voir tout <ArrowRight className="h-3 w-3" />
+            {t('common.view_all', lang)} <ArrowRight className="h-3 w-3" />
           </button>
         )}
       </div>
       {data.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">Aucun paiement récent</p>
+        <p className="text-sm text-muted-foreground py-6 text-center">{t('dashboard.no_recent_payments', lang)}</p>
       ) : (
         <div className="space-y-2">
           {data.slice(0, 5).map((p) => (

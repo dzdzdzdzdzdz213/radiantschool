@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectItem } from '@/components/ui/select';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -145,10 +146,9 @@ export default function HomeworkPage() {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{'Matière'}</Label>
-                <select value={form.course_id} onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">{'Sélectionner une matière'}</option>
-                  {(courses ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <Select value={form.course_id} onValueChange={v => setForm(f => ({ ...f, course_id: v }))} placeholder={'Sélectionner une matière'}>
+                  {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </Select>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">

@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -83,13 +85,13 @@ export default function ResetPasswordPage() {
                 {t('auth.new_password', lang)}
               </label>
               <div className="relative">
-                <input
+                <Input
                   id="new-password"
                   ref={pwRef}
                   type={showPw ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-4 py-2.5 pr-11 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full pr-11"
                   placeholder="••••••••"
                   minLength={8}
                   autoFocus
@@ -106,10 +108,10 @@ export default function ResetPasswordPage() {
               </div>
             </div>
 
-            <button type="submit" disabled={loading || password.length < 8} className="btn-primary w-full">
+            <Button type="submit" disabled={loading || password.length < 8} className="w-full">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {loading ? t('common.loading', lang) : t('auth.reset_password', lang)}
-            </button>
+            </Button>
           </form>
         )}
       </div>

@@ -13,6 +13,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { getInitials } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function TeacherStudentsPage() {
   const { profile } = useAuth();
@@ -21,7 +22,7 @@ export default function TeacherStudentsPage() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data: students, isLoading } = useQuery({
+  const { data: students, isLoading, isError } = useQuery({
     queryKey: ['teacher_students', profile?.id, debouncedSearch],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -44,6 +45,7 @@ export default function TeacherStudentsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.students', lang));
 
   return (
     <div className="space-y-6">

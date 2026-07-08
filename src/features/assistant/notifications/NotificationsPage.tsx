@@ -13,6 +13,7 @@ import { formatDateTime } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useToast } from '@/components/ui/Toast';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function NotificationsPage() {
@@ -23,7 +24,7 @@ export default function NotificationsPage() {
   const [message, setMessage] = useState('');
   const qc = useQueryClient();
 
-  const { data: notifications, isLoading } = useQuery({
+  const { data: notifications, isLoading, isError } = useQuery({
     queryKey: ['assistant_notifications'],
     queryFn: async () => {
       const { data } = await (supabase as any)
@@ -34,6 +35,7 @@ export default function NotificationsPage() {
       return data ?? [];
     },
   });
+  useErrorToast(isError, lang, t('nav.notifications', lang));
 
   const sendMutation = useMutation({
     mutationFn: async () => {

@@ -49,7 +49,8 @@ function formatTimeAgo(dateStr: string, lang: 'fr' | 'en' | 'ar'): string {
   if (diffHours < 24) return `${diffHours}h`;
   const diffDays = Math.floor(diffHours / 24);
   if (diffDays < 7) return `${diffDays}j`;
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
+  return date.toLocaleDateString(localeMap[lang], { day: 'numeric', month: 'short' });
 }
 
 export default function ActivityTimeline({ items, loading }: ActivityTimelineProps) {

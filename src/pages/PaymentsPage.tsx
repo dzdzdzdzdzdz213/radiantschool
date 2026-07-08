@@ -8,6 +8,9 @@ import { useToast } from '@/components/ui/Toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectItem } from '@/components/ui/select';
 
 export default function PaymentsPage() {
   const { profile } = useAuth();
@@ -49,11 +52,11 @@ export default function PaymentsPage() {
     <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('nav.payments', lang)}</h1>
-        <button className="btn-primary h-9 gap-2" onClick={() => setShowModal(true)}><Plus className="h-4 w-4" /> {t('common.add', lang)}</button>
+        <Button variant="default" className="h-9 gap-2" onClick={() => setShowModal(true)}><Plus className="h-4 w-4" /> {t('common.add', lang)}</Button>
       </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search', lang)} className="w-full rounded-lg border border-border bg-background px-4 py-2.5 pl-10 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20" />
+        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search', lang)} className="w-full pl-10" />
       </div>
       <div className="rounded-xl border bg-card shadow-sm">
         {isLoading ? (
@@ -96,42 +99,43 @@ export default function PaymentsPage() {
           <div className="w-full max-w-md rounded-xl border bg-card p-6 shadow-lg my-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">{t('common.add', lang)}</h2>
-              <button onClick={() => setShowModal(false)} className="rounded p-1 hover:bg-page"><X className="h-5 w-5" /></button>
+              <Button variant="ghost" size="icon" onClick={() => setShowModal(false)}><X className="h-5 w-5" /></Button>
             </div>
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-sm font-medium">{t('common.name', lang)}</label>
-                <input className="w-full rounded-lg border px-3 py-2 text-sm" value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} placeholder={t('common.search_payment', lang)} />
+                <Input className="w-full" value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} placeholder={t('common.search_payment', lang)} />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">{t('common.amount', lang)} (DZD)</label>
-                <input type="number" className="w-full rounded-lg border px-3 py-2 text-sm" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0" />
+                <Input type="number" className="w-full" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder={t('payments.amount_placeholder', lang)} />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">{t('payments.method', lang)}</label>
-                <select className="w-full rounded-lg border px-3 py-2 text-sm" value={form.payment_method} onChange={e => setForm(f => ({ ...f, payment_method: e.target.value }))}>
-                  <option value="cash">{t('payments.method_cash', lang)}</option>
-                  <option value="card">{t('payments.method_card', lang)}</option>
-                  <option value="check">{t('payments.method_check', lang)}</option>
-                  <option value="transfer">{t('payments.method_transfer', lang)}</option>
-                </select>
+                <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))} placeholder={t('payments.select_method', lang)} className="w-full">
+                  <SelectItem value="cash">{t('payments.method_cash', lang)}</SelectItem>
+                  <SelectItem value="card">{t('payments.method_card', lang)}</SelectItem>
+                  <SelectItem value="check">{t('payments.method_check', lang)}</SelectItem>
+                  <SelectItem value="transfer">{t('payments.method_transfer', lang)}</SelectItem>
+                </Select>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">{t('common.type', lang)}</label>
-                <select className="w-full rounded-lg border px-3 py-2 text-sm" value={form.payment_type} onChange={e => setForm(f => ({ ...f, payment_type: e.target.value }))}>
-                  <option value="tuition">{t('payments.type_tuition', lang)}</option>
-                  <option value="registration">{t('payments.type_registration', lang)}</option>
-                  <option value="material">{t('payments.type_material', lang)}</option>
-                  <option value="other">{t('payments.type_other', lang)}</option>
-                </select>
+                <Select value={form.payment_type} onValueChange={v => setForm(f => ({ ...f, payment_type: v }))} placeholder={t('payments.select_type', lang)} className="w-full">
+                  <SelectItem value="tuition">{t('payments.type_tuition', lang)}</SelectItem>
+                  <SelectItem value="registration">{t('payments.type_registration', lang)}</SelectItem>
+                  <SelectItem value="material">{t('payments.type_material', lang)}</SelectItem>
+                  <SelectItem value="other">{t('payments.type_other', lang)}</SelectItem>
+                </Select>
               </div>
-              <button
+              <Button
+                variant="default"
                 onClick={() => createPayment.mutate()}
                 disabled={createPayment.isPending || !form.student_id || !form.amount}
-                className="btn-primary w-full"
+                className="w-full"
               >
                 {createPayment.isPending ? t('common.loading', lang) : t('common.save', lang)}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

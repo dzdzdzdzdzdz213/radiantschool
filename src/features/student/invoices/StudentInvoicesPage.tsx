@@ -86,7 +86,7 @@ export default function StudentInvoicesPage() {
                   <TableCell><Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'cancelled' ? 'destructive' : 'warning'}>{inv.status === 'paid' ? t('status.paid', lang) : inv.status === 'unpaid' ? t('status.unpaid', lang) : inv.status === 'partially_paid' ? t('status.partial', lang) : inv.status}</Badge></TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (inv.pdf_url) downloadFile.mutate({ fileUrl: inv.pdf_url, filename: `facture_${inv.invoice_number ?? inv.id}.pdf` }); }} disabled={downloadFile.isPending}>
+                      <Button variant="ghost" size="sm" className="h-8 w-8" onClick={() => { if (inv.pdf_url) downloadFile.mutate({ fileUrl: inv.pdf_url, filename: `${t('invoices.invoice_prefix', lang)}_${inv.invoice_number ?? inv.id}.pdf` }); }} disabled={downloadFile.isPending}>
                         {downloadFile.isPending ? <Loader className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       </Button>
                       {inv.status !== 'paid' && <Button size="sm" className="h-8 gap-1 text-xs" onClick={() => payMutation.mutate({ invoiceId: inv.id })} disabled={payMutation.isPending}>

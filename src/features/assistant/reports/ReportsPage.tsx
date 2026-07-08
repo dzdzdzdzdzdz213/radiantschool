@@ -20,6 +20,7 @@ const reportTypes = [
 
 export default function ReportsPage() {
   const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const { toast } = useToast();
   const reportLabels: Record<string, string> = {
     attendance: t('reports.attendance', lang),
@@ -53,7 +54,7 @@ export default function ReportsPage() {
     const total = rows.reduce((s: number, r: any) => s + r.revenue, 0);
     let html = `<html><head><meta charset="utf-8"><title>${filename}</title>
 <style>body{font-family:sans-serif;margin:40px}h1{font-size:18px;margin-bottom:8px}.meta{font-size:12px;color:#666;margin-bottom:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #ddd}th{background:#f5f5f5;font-size:12px;text-transform:uppercase}td{font-size:14px}.total{font-weight:bold;border-top:2px solid #333;padding-top:8px;margin-top:8px}@media print{body{margin:0}}</style></head><body>
-<h1>${filename}</h1><p class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+<h1>${filename}</h1><p class="meta">Généré le ${new Date().toLocaleDateString(localeMap[lang])}</p>
 <table><thead><tr><th>${t('common.date', lang)}</th><th>${t('common.revenue', lang)}</th></tr></thead><tbody>`;
     rows.forEach((r: any) => { html += `<tr><td>${r.date}</td><td>${r.revenue.toLocaleString()} DA</td></tr>`; });
     html += `</tbody></table><p class="total">Total: ${total.toLocaleString()} DA</p>`;

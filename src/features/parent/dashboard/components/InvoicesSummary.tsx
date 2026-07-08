@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FileText, ArrowRight } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { InvoiceSummary } from '../useParentDashboard';
 
@@ -10,6 +12,7 @@ interface InvoicesSummaryProps {
 
 export default function InvoicesSummary({ data, loading }: InvoicesSummaryProps) {
   const navigate = useNavigate();
+  const { lang } = useLang();
 
   if (loading) {
     return (
@@ -27,16 +30,16 @@ export default function InvoicesSummary({ data, loading }: InvoicesSummaryProps)
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />
-          Factures
+          {t('parent.invoices', lang)}
         </h3>
         {data.length > 0 && (
           <button onClick={() => navigate('/parent/invoices')} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-            Voir tout <ArrowRight className="h-3 w-3" />
+            {t('common.view_all', lang)} <ArrowRight className="h-3 w-3" />
           </button>
         )}
       </div>
       {data.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">Aucune facture</p>
+        <p className="text-sm text-muted-foreground py-6 text-center">{t('dashboard.no_invoices', lang)}</p>
       ) : (
         <div className="space-y-2">
           {(unpaid.length > 0 ? unpaid : data).slice(0, 5).map((inv) => {
@@ -56,7 +59,7 @@ export default function InvoicesSummary({ data, loading }: InvoicesSummaryProps)
                     inv.status === 'overdue' ? 'text-red-600' :
                     'text-amber-600'
                   }`}>
-                    {inv.status === 'paid' ? 'Payée' : inv.status === 'overdue' ? 'En retard' : 'En attente'}
+                    {inv.status === 'paid' ? t('status.paid', lang) : inv.status === 'overdue' ? t('status.late', lang) : t('status.pending', lang)}
                   </p>
                 </div>
               </div>

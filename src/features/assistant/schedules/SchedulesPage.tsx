@@ -13,6 +13,7 @@ const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'
 
 export default function SchedulesPage() {
   const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const today = new Date();
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - ((today.getDay() + 1) % 7));
@@ -60,7 +61,7 @@ export default function SchedulesPage() {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium">
-            {startDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+            {startDate.toLocaleDateString(localeMap[lang], { month: 'long', year: 'numeric' })}
           </span>
           <Button variant="outline" size="sm" onClick={() => changeWeek(7)}>
             <ChevronRight className="h-4 w-4" />

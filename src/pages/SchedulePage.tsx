@@ -46,8 +46,9 @@ function getWeekDates(ref: Date): Date[] {
   });
 }
 
-function formatDate(d: Date): string {
-  return d.toLocaleDateString('fr-FR', { day: 'numeric' });
+function formatDate(d: Date, lang: string): string {
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
+  return d.toLocaleDateString(localeMap[lang], { day: 'numeric' });
 }
 
 function isToday(d: Date): boolean {
@@ -58,7 +59,8 @@ function isToday(d: Date): boolean {
 function formatWeekRange(dates: Date[], lang: string): string {
   const start = dates[0];
   const end = dates[dates.length - 1];
-  const locale = lang === 'ar' ? 'fr-FR' : lang;
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
+  const locale = localeMap[lang] ?? lang;
   const opts: Intl.DateTimeFormatOptions = { month: 'long' };
   if (start.getMonth() === end.getMonth()) {
     return `${start.getDate()} - ${end.getDate()} ${start.toLocaleDateString(locale, opts)} ${start.getFullYear()}`;
@@ -166,7 +168,7 @@ export default function SchedulePage() {
                     }}
                   >
                     <span className="text-[11px] font-medium uppercase tracking-wide block leading-none opacity-70">{DAY_LABELS[lang]?.[day] ?? day}</span>
-                    <span className="text-lg font-bold block mt-0.5">{formatDate(date)}</span>
+                    <span className="text-lg font-bold block mt-0.5">{formatDate(date, lang)}</span>
                     {todayFlag && <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--primary)' }} />}
                   </div>
 

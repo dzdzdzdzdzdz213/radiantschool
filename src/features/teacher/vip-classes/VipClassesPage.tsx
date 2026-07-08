@@ -13,6 +13,7 @@ import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { Select, SelectItem } from '@/components/ui/select';
 
 export default function VipClassesPage() {
   const { profile } = useAuth();
@@ -98,7 +99,7 @@ export default function VipClassesPage() {
       setShowModal(false);
       setEditingId(null);
       setForm({ student_id: '', date: '', start_time: '', end_time: '', price: '' });
-      toast(t(editingId ? 'success.updated' : 'success.created', lang, 'Cours VIP'), 'success');
+      toast(t(editingId ? 'success.updated' : 'success.created', lang, t('common.vip_class', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -110,7 +111,7 @@ export default function VipClassesPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_vip_classes'] });
-      toast(t('success.deleted', lang, 'Cours VIP'), 'success');
+      toast(t('success.deleted', lang, t('common.vip_class', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -141,10 +142,9 @@ export default function VipClassesPage() {
             <div className="space-y-3">
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('nav.students', lang)}</Label>
-                <select value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">{'Sélectionner un élève'}</option>
-                  {(students ?? []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
+                <Select value={form.student_id} onValueChange={value => setForm(f => ({ ...f, student_id: value }))} placeholder={t('common.select_student', lang)}>
+                  {(students ?? []).map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                </Select>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.date', lang)}</Label>
@@ -156,7 +156,7 @@ export default function VipClassesPage() {
                   <Input type="time" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} className="h-9" />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">{'Fin'}</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">{t('common.end', lang)}</Label>
                   <Input type="time" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} className="h-9" />
                 </div>
               </div>

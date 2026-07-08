@@ -3,6 +3,7 @@ import { Camera, Mail, Phone, MapPin, Calendar, BookOpen, Award, Save, User, Shi
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -25,6 +26,7 @@ const studentFormSchema = profileSchema.pick({ firstName: true, lastName: true, 
 
 export default function StudentProfilePage() {
   const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const { profile } = useAuth();
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -158,7 +160,7 @@ export default function StudentProfilePage() {
               <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" />{studentProfile?.email ?? ''}</p>
               <p className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" />{studentProfile?.phone ?? t('common.not_found', lang)}</p>
               <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{studentProfile?.address ?? t('common.not_found', lang)}</p>
-              <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />{t('common.date', lang)}: {new Date(studentProfile?.created_at ?? Date.now()).toLocaleDateString('fr-FR')}</p>
+              <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />{t('common.date', lang)}: {new Date(studentProfile?.created_at ?? Date.now()).toLocaleDateString(localeMap[lang])}</p>
             </div>
           </CardContent>
         </Card>
@@ -176,7 +178,7 @@ export default function StudentProfilePage() {
                 <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.last_name', lang)}</label><Input value={form.last_name} onChange={e => { setForm(f => ({ ...f, last_name: e.target.value })); setTimeout(validate); }} disabled={!editing} className="h-9" />{fieldErrors.lastName && <p className="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>}</div>
                 <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.phone', lang)}</label><Input value={form.phone} onChange={e => { setForm(f => ({ ...f, phone: e.target.value })); setTimeout(validate); }} disabled={!editing} className="h-9" />{fieldErrors.phone && <p className="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>}</div>
                 <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.address', lang)}</label><Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} disabled={!editing} className="h-9" /></div>
-                <div className="sm:col-span-2"><label className="text-xs text-muted-foreground mb-1 block">{t('common.description', lang)}</label><textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} disabled={!editing} className="w-full min-h-[80px] rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none" /></div>
+                <div className="sm:col-span-2"><label className="text-xs text-muted-foreground mb-1 block">{t('common.description', lang)}</label><Textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} disabled={!editing} className="min-h-[80px]" /></div>
               </div>
             </CardContent>
           </Card>
@@ -226,7 +228,7 @@ export default function StudentProfilePage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Eye className="h-4 w-4" />Visibilité</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Eye className="h-4 w-4" />{t('settings.visibility', lang)}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               {[
                 { key: 'show_profile', label: t('nav.profile', lang) },
@@ -241,19 +243,19 @@ export default function StudentProfilePage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />Sécurité</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />{t('common.security', lang)}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t('auth.password', lang)}</Label>
-                <Input type="password" className="h-9" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Mot de passe actuel" />
+                <Input type="password" className="h-9" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder={t('common.current_password', lang)} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t('auth.new_password', lang)}</Label>
-                <Input type="password" className="h-9" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Nouveau mot de passe" />
+                <Input type="password" className="h-9" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder={t('auth.new_password', lang)} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t('auth.confirm_password', lang)}</Label>
-                <Input type="password" className="h-9" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirmer" />
+                <Input type="password" className="h-9" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder={t('common.confirm', lang)} />
               </div>
               <Button size="sm" className="h-9" onClick={() => {
                 if (newPassword !== confirmPassword) { toast(t('auth.confirm_password', lang), 'error'); return; }

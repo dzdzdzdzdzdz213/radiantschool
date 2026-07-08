@@ -10,13 +10,13 @@ export default function QuickActions() {
   const { lang } = useLang();
 
   const actions = [
-    { label: t('parent.my_children', lang), icon: Users, path: '/parent/children', color: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' },
-    { label: t('parent.schedule', lang), icon: Calendar, path: '/parent/schedule', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' },
-    { label: t('parent.payments', lang), icon: DollarSign, path: '/parent/payments', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },
-    { label: t('parent.invoices', lang), icon: FileText, path: '/parent/invoices', color: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400' },
-    { label: t('parent.messages', lang), icon: MessageSquare, path: '/parent/messages', color: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400' },
-    { label: t('parent.enroll_child', lang), icon: UserPlus, path: '/parent/enroll', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400' },
-    { label: t('parent.profile', lang), icon: School, path: '/parent/profile', color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400' },
+    { label: t('dashboard.quick_my_children', lang), icon: Users, path: '/parent/children', color: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' },
+    { label: t('dashboard.quick_schedule', lang), icon: Calendar, path: '/parent/schedule', color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' },
+    { label: t('dashboard.quick_payments', lang), icon: DollarSign, path: '/parent/payments', color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },
+    { label: t('dashboard.quick_invoices', lang), icon: FileText, path: '/parent/invoices', color: 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400' },
+    { label: t('dashboard.quick_messages', lang), icon: MessageSquare, path: '/parent/messages', color: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400' },
+    { label: t('dashboard.quick_enroll_child', lang), icon: UserPlus, path: '/parent/enroll', color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400' },
+    { label: t('dashboard.quick_profile', lang), icon: School, path: '/parent/profile', color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400' },
   ];
 
   return (

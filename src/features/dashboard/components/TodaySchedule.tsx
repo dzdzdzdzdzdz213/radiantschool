@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useLang } from '@/contexts/LangContext';
 
 interface ScheduleItem {
   id: number;
@@ -43,9 +44,11 @@ function ScheduleSkeleton() {
 }
 
 export default function TodaySchedule({ data, loading }: TodayScheduleProps) {
+  const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   if (loading) return <ScheduleSkeleton />;
 
-  const todayName = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const todayName = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
     <Card>

@@ -24,7 +24,12 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
       if (statusFilter) query = query.eq('status', statusFilter);
       if (search) {
         const like = `%${search}%`;
-        query = query.or(`student.first_name.ilike.${like},student.last_name.ilike.${like}`);
+        const { data: matchingUsers } = await (supabase as any)
+          .from('users')
+          .select('id')
+          .or(`first_name.ilike.${like},last_name.ilike.${like}`);
+        const ids = (matchingUsers ?? []).map((u: any) => u.id);
+        query = query.in('student_id', ids.length ? ids : [null]);
       }
       const { data, count } = await query;
       const items = (data ?? []).map((r: any) => ({

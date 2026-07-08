@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Video, Monitor, Calendar, Clock, Users, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, Video, Calendar, Clock, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ export default function OnlineClassesPage() {
       if (!profile?.id) return [];
       let q = (supabase as any)
         .from('online_classes')
-        .select('id, title, description, platform, meeting_url, start_time, end_time, status, created_at, course:courses(name)')
+        .select('id, title, description, meeting_url, start_time, end_time, status, created_at, course:courses(name)')
         .eq('teacher_id', profile.id)
         .order('start_time', { ascending: false });
       if (search) q = q.ilike('title', `%${search}%`);
@@ -139,9 +139,9 @@ export default function OnlineClassesPage() {
                 <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t('common.name', lang)} className="h-9" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">{'Matière'}</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.subject', lang)}</Label>
                 <select value={form.course_id} onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">{'Sélectionner une matière'}</option>
+                  <option value="">{t('common.select', lang)}</option>
                   {(courses ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
@@ -155,7 +155,7 @@ export default function OnlineClassesPage() {
                   <Input type="time" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} className="h-9" />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">{'Fin'}</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">{t('common.end', lang)}</Label>
                   <Input type="time" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} className="h-9" />
                 </div>
               </div>
@@ -197,9 +197,7 @@ export default function OnlineClassesPage() {
                   <Badge variant={s.status === 'completed' ? 'secondary' : s.status === 'live' ? 'success' : 'outline'}>
                     {s.status === 'completed' ? t('status.completed', lang) : s.status === 'live' ? t('status.live', lang) : t('status.upcoming', lang)}
                   </Badge>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Monitor className="h-3 w-3" />{s.platform ?? 'Zoom'}
-                  </div>
+
                 </div>
                 <h4 className="text-sm font-medium truncate">{s.title}</h4>
                 <p className="text-xs text-muted-foreground mt-1">{s.course?.name ?? ''}</p>
@@ -210,7 +208,7 @@ export default function OnlineClassesPage() {
                 <div className="flex gap-1 mt-3">
                   {s.meeting_url && (
                     <Button variant="outline" size="sm" className="flex-1 h-8 text-xs gap-2" asChild>
-                      <a href={s.meeting_url} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />{'Rejoindre'}</a>
+                      <a href={s.meeting_url} target="_blank" rel="noreferrer"><Video className="h-3.5 w-3.5" />{t('common.join', lang)}</a>
                     </Button>
                   )}
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(s)}><Pencil className="h-4 w-4" /></Button>

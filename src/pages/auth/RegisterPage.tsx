@@ -4,37 +4,40 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { UserPlus, ArrowLeft, GraduationCap, UserCheck, Mail, Phone, Lock, Users, Eye, EyeOff } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
-import { t } from '@/i18n';
+import { t, type Lang } from '@/i18n';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectItem } from '@/components/ui/select';
 
 const NAME_FIELDS = ['firstName', 'lastName', 'childFirstName', 'childLastName', 'guardianName'];
 const PHONE_FIELDS = ['phone', 'guardianPhone'];
 const NAME_REGEX = /^[a-zA-Za-zÀ-ž\s\-']+$/;
 
-function validateName(v: string): string | null {
-  if (!v.trim()) return 'Ce champ est requis';
-  if (/\d/.test(v)) return 'Les chiffres ne sont pas autorisés';
-  if (!NAME_REGEX.test(v)) return 'Caractères invalides';
+function validateName(v: string, lang: Lang): string | null {
+  if (!v.trim()) return t('validation.required', lang);
+  if (/\d/.test(v)) return t('validation.digits_not_allowed', lang);
+  if (!NAME_REGEX.test(v)) return t('validation.invalid_characters', lang);
   return null;
 }
 
-function validatePhone(v: string): string | null {
+function validatePhone(v: string, lang: Lang): string | null {
   const cleaned = v.replace(/\s/g, '');
   if (!cleaned) return null;
-  if (!/^(05|06|07)/.test(cleaned)) return 'Le numéro doit commencer par 05, 06 ou 07';
-  if (cleaned.length !== 10) return 'Le numéro doit faire exactement 10 chiffres';
+  if (!/^(05|06|07)/.test(cleaned)) return t('validation.phone_start', lang);
+  if (cleaned.length !== 10) return t('validation.phone_length', lang);
   return null;
 }
 
-function validatePassword(v: string): string | null {
-  if (!v) return 'Mot de passe requis';
-  if (v.length < 8) return 'Minimum 8 caractères';
+function validatePassword(v: string, lang: Lang): string | null {
+  if (!v) return t('validation.password_required', lang);
+  if (v.length < 8) return t('common.min_8_chars', lang);
   return null;
 }
 
-function validateEmail(v: string): string | null {
-  if (!v.trim()) return 'Email requis';
-  if (!v.includes('@')) return 'L\'email doit contenir un @';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Email invalide (ex: nom@domaine.com)';
+function validateEmail(v: string, lang: Lang): string | null {
+  if (!v.trim()) return t('validation.email_required', lang);
+  if (!v.includes('@')) return t('validation.email_contains_at', lang);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return t('validation.email_format', lang);
   return null;
 }
 
@@ -64,6 +67,7 @@ function handlePaste(field: string, e: ClipboardEvent) {
 interface FieldProps {
   name: string;
   label: string;
+  lang: Lang;
   type?: string;
   icon?: React.ReactNode;
   required?: boolean;
@@ -77,7 +81,7 @@ interface FieldProps {
   checkEmail?: (email: string) => void;
 }
 
-function Field({ name, label, type = 'text', icon, required, placeholder, className, inputMode, form, fieldErrors, setField, setFieldErrors, checkEmail }: FieldProps) {
+function Field({ name, label, lang, type = 'text', icon, required, placeholder, className, inputMode, form, fieldErrors, setField, setFieldErrors, checkEmail }: FieldProps) {
   const val = form[name];
   const err = fieldErrors[name];
   const isPhone = PHONE_FIELDS.includes(name);
@@ -87,26 +91,21 @@ function Field({ name, label, type = 'text', icon, required, placeholder, classN
         {icon && <span className="inline-flex [&>svg]:h-3.5 [&>svg]:w-3.5" style={{ color: 'var(--primary)' }}>{icon}</span>}
         {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
       </label>
-      <input
+      <Input
         type={type}
         value={val || ''}
         inputMode={inputMode || (isPhone ? 'numeric' : undefined)}
-          maxLength={isPhone ? 10 : undefined}
+        maxLength={isPhone ? 10 : undefined}
         onChange={e => setField(name, e.target.value)}
         onKeyDown={e => handleKeyDown(name, e)}
         onPaste={e => handlePaste(name, e)}
         onBlur={() => {
           if (name === 'email' && checkEmail) checkEmail(val);
-          else if (isPhone) setFieldErrors(p => { const n = { ...p }; const e = validatePhone(val); if (e) n[name] = e; else delete n[name]; return n; });
-          else if (NAME_FIELDS.includes(name)) setFieldErrors(p => { const n = { ...p }; const e = validateName(val); if (e) n[name] = e; else delete n[name]; return n; });
+          else if (isPhone) setFieldErrors(p => { const n = { ...p }; const e = validatePhone(val, lang); if (e) n[name] = e; else delete n[name]; return n; });
+          else if (NAME_FIELDS.includes(name)) setFieldErrors(p => { const n = { ...p }; const e = validateName(val, lang); if (e) n[name] = e; else delete n[name]; return n; });
         }}
         placeholder={placeholder}
-        className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--ring)]"
-        style={{
-          backgroundColor: 'var(--bg)',
-          borderColor: err ? '#ef4444' : 'var(--border)',
-          color: 'var(--fg)',
-        }}
+        className={err ? 'border-[#ef4444]' : ''}
         required={required}
       />
       {err && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{err}</p>}
@@ -114,18 +113,18 @@ function Field({ name, label, type = 'text', icon, required, placeholder, classN
   );
 }
 
-function getPasswordStrength(pw: string): { label: string; color: string; width: string } {
+function getPasswordStrength(pw: string, lang: Lang): { label: string; color: string; width: string } {
   let score = 0;
   if (pw.length >= 8) score++;
   if (pw.length >= 12) score++;
   if (/[A-Z]/.test(pw)) score++;
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
-  if (score <= 1) return { label: 'Faible', color: '#ef4444', width: 'w-1/5' };
-  if (score <= 2) return { label: 'Moyen', color: '#f59e0b', width: 'w-2/5' };
-  if (score <= 3) return { label: 'Bon', color: '#3b82f6', width: 'w-3/5' };
-  if (score <= 4) return { label: 'Fort', color: '#10b981', width: 'w-4/5' };
-  return { label: 'Très fort', color: '#10b981', width: 'w-full' };
+  if (score <= 1) return { label: t('validation.password_weak', lang), color: '#ef4444', width: 'w-1/5' };
+  if (score <= 2) return { label: t('validation.password_medium', lang), color: '#f59e0b', width: 'w-2/5' };
+  if (score <= 3) return { label: t('validation.password_good', lang), color: '#3b82f6', width: 'w-3/5' };
+  if (score <= 4) return { label: t('validation.password_strong', lang), color: '#10b981', width: 'w-4/5' };
+  return { label: t('validation.password_very_strong', lang), color: '#10b981', width: 'w-full' };
 }
 
 export default function RegisterPage() {
@@ -162,30 +161,30 @@ export default function RegisterPage() {
 
   function validateAll(): boolean {
     const errs: Record<string, string> = {};
-    const n1 = validateName(form.firstName);
+    const n1 = validateName(form.firstName, lang);
     if (n1) errs.firstName = n1;
-    const n2 = validateName(form.lastName);
+    const n2 = validateName(form.lastName, lang);
     if (n2) errs.lastName = n2;
-    const e = validateEmail(form.email);
+    const e = validateEmail(form.email, lang);
     if (e) errs.email = e;
-    const p = validatePhone(form.phone);
+    const p = validatePhone(form.phone, lang);
     if (p) errs.phone = p;
-    const pw = validatePassword(form.password);
+    const pw = validatePassword(form.password, lang);
     if (pw) errs.password = pw;
 
     if (type === 'parent') {
-      const cn1 = validateName(form.childFirstName);
+      const cn1 = validateName(form.childFirstName, lang);
       if (cn1) errs.childFirstName = cn1;
-      const cn2 = validateName(form.childLastName);
+      const cn2 = validateName(form.childLastName, lang);
       if (cn2) errs.childLastName = cn2;
-      if (!form.childLevel) errs.childLevel = 'Sélectionnez un niveau';
+      if (!form.childLevel) errs.childLevel = t('validation.select_level', lang);
     } else {
-      const gn = validateName(form.guardianName || '');
-      if (gn && !form.guardianName?.trim()) errs.guardianName = 'Nom du parent requis';
+      const gn = validateName(form.guardianName || '', lang);
+      if (gn && !form.guardianName?.trim()) errs.guardianName = t('validation.parent_name_required', lang);
       else if (gn) errs.guardianName = gn;
-      const ge = validateEmail(form.guardianEmail || '');
+      const ge = validateEmail(form.guardianEmail || '', lang);
       if (ge) errs.guardianEmail = ge;
-      const gp = validatePhone(form.guardianPhone || '');
+      const gp = validatePhone(form.guardianPhone || '', lang);
       if (gp) errs.guardianPhone = gp;
     }
 
@@ -196,8 +195,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (emailBusy) { setError('Email invalide'); return; }
-    if (!validateAll()) { setError('Vérifiez les champs en rouge'); return; }
+    if (emailBusy) { setError(t('validation.invalid_email', lang)); return; }
+    if (!validateAll()) { setError(t('validation.check_fields', lang)); return; }
 
     setIsLoading(true);
     const opts = type === 'parent'
@@ -213,7 +212,7 @@ export default function RegisterPage() {
     else { setSuccess(true); successTimer.current = setTimeout(() => navigate('/login'), 3000); }
   };
 
-  const fieldProps = { form, fieldErrors, setField, setFieldErrors, checkEmail };
+  const fieldProps = { form, fieldErrors, setField, setFieldErrors, checkEmail, lang };
 
   if (success) {
     return (
@@ -224,9 +223,7 @@ export default function RegisterPage() {
           </div>
               <h2 className="text-xl font-bold mb-2">{t('auth.register_success', lang)}</h2>
           <p className="text-sm" style={{ color: 'var(--fg-muted)' }}>
-            {type === 'parent'
-              ? 'Votre compte parent a été créé. Vous allez être redirigé vers la page de connexion.'
-              : 'Votre compte a été créé. Vous allez être redirigé vers la page de connexion.'}
+            {t(type === 'parent' ? 'register.success_parent' : 'register.success_student', lang)}
           </p>
         </div>
       </div>
@@ -257,8 +254,8 @@ export default function RegisterPage() {
                     <Users className="h-6 w-6" style={{ color: 'var(--primary)' }} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg mb-1">Parent / Tuteur</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--fg-muted)' }}>Pour inscrire un ou plusieurs enfants en Primaire ou au CEM.</p>
+                    <h3 className="font-bold text-lg mb-1">{t('register.parent_tutor', lang)}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--fg-muted)' }}>{t('register.parent_tutor_desc', lang)}</p>
                   </div>
                 </div>
               </button>
@@ -268,8 +265,8 @@ export default function RegisterPage() {
                     <GraduationCap className="h-6 w-6" style={{ color: '#f59e0b' }} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg mb-1">Élève (Lycée)</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--fg-muted)' }}>Pour les lycéens qui s'inscrivent par eux-mêmes. Les informations du parent/tuteur seront requises pour les notifications.</p>
+                    <h3 className="font-bold text-lg mb-1">{t('register.student_label', lang)}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--fg-muted)' }}>{t('register.student_desc', lang)}</p>
                   </div>
                 </div>
               </button>
@@ -285,9 +282,9 @@ export default function RegisterPage() {
               <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl shadow-lg" style={{ backgroundColor: 'var(--primary)' }}>
                 <UserPlus className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-2xl font-black">{type === 'parent' ? 'Inscription Parent' : 'Inscription Élève'}</h1>
+              <h1 className="text-2xl font-black">{type === 'parent' ? t('register.parent_registration', lang) : t('register.student_registration', lang)}</h1>
               <p className="text-sm mt-1" style={{ color: 'var(--fg-muted)' }}>
-                {type === 'parent' ? 'Créez votre compte pour inscrire votre enfant' : 'Créez votre compte et renseignez les informations de votre tuteur'}
+                {type === 'parent' ? t('register.create_parent_account', lang) : t('register.create_student_account', lang)}
               </p>
             </div>
 
@@ -297,11 +294,11 @@ export default function RegisterPage() {
               <div className="mb-6">
                 <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
                   <UserCheck className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-                  {type === 'parent' ? 'Vos informations' : 'Mes informations'}
+                  {type === 'parent' ? t('register.your_info', lang) : t('register.my_info', lang)}
                 </h3>
                 <div className="grid grid-cols-2 gap-4 mb-3">
-                  <Field name="firstName" label="Prénom" required icon={<UserCheck />} {...fieldProps} />
-                  <Field name="lastName" label="Nom" required icon={<UserCheck />} {...fieldProps} />
+                  <Field name="firstName" label={t('common.first_name', lang)} required icon={<UserCheck />} {...fieldProps} />
+                  <Field name="lastName" label={t('common.last_name', lang)} required icon={<UserCheck />} {...fieldProps} />
                 </div>
                 <Field name="email" label={t('auth.email', lang)} type="email" required icon={<Mail />} {...fieldProps} />
                 <Field name="phone" label={t('common.phone', lang)} type="tel" placeholder="05XX XX XX XX" icon={<Phone />} {...fieldProps} />
@@ -311,12 +308,12 @@ export default function RegisterPage() {
                     {t('auth.password', lang)} <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       type={showPw ? 'text' : 'password'}
                       value={form.password}
                       onChange={e => setField('password', e.target.value)}
-                      className="w-full rounded-xl border px-4 py-2.5 pr-11 text-sm outline-none transition-all duration-200 focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_var(--ring)]"
-                      style={{ backgroundColor: 'var(--bg)', borderColor: fieldErrors.password ? '#ef4444' : 'var(--border)', color: 'var(--fg)' }}
+                      className="w-full pr-11"
+                      style={{ borderColor: fieldErrors.password ? '#ef4444' : undefined }}
                       minLength={8} required
                     />
                     <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--fg-muted)' }}>
@@ -327,11 +324,11 @@ export default function RegisterPage() {
                     <div className="mt-2">
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
-                          <div className={`h-full rounded-full transition-all ${getPasswordStrength(form.password).width}`} style={{ backgroundColor: getPasswordStrength(form.password).color }} />
+                          <div className={`h-full rounded-full transition-all ${getPasswordStrength(form.password, lang).width}`} style={{ backgroundColor: getPasswordStrength(form.password, lang).color }} />
                         </div>
-                        <span className="text-[10px] font-semibold" style={{ color: getPasswordStrength(form.password).color }}>{getPasswordStrength(form.password).label}</span>
+                        <span className="text-[10px] font-semibold" style={{ color: getPasswordStrength(form.password, lang).color }}>{getPasswordStrength(form.password, lang).label}</span>
                       </div>
-                      <p className="text-[10px] mt-1" style={{ color: 'var(--fg-muted)' }}>Min. 8 caractères, majuscule, chiffre et symbole recommandés</p>
+                      <p className="text-[10px] mt-1" style={{ color: 'var(--fg-muted)' }}>{t('register.password_hint_text', lang)}</p>
                     </div>
                   )}
                   {fieldErrors.password && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{fieldErrors.password}</p>}
@@ -344,47 +341,47 @@ export default function RegisterPage() {
                 <div className="mb-6">
                   <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-                    Informations de l'enfant
+                    {t('register.child_info', lang)}
                   </h3>
                   <div className="grid grid-cols-2 gap-4 mb-3">
-                    <Field name="childFirstName" label="Prénom de l'enfant" required icon={<GraduationCap />} {...fieldProps} />
-                    <Field name="childLastName" label="Nom de l'enfant" required icon={<GraduationCap />} {...fieldProps} />
+                    <Field name="childFirstName" label={t('register.child_first_name', lang)} required icon={<GraduationCap />} {...fieldProps} />
+                    <Field name="childLastName" label={t('register.child_last_name', lang)} required icon={<GraduationCap />} {...fieldProps} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium">Niveau scolaire <span style={{ color: '#ef4444' }}>*</span></label>
-                    <select value={form.childLevel} onChange={e => setField('childLevel', e.target.value)} className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 focus:border-[var(--primary)]" style={{ backgroundColor: 'var(--bg)', borderColor: fieldErrors.childLevel ? '#ef4444' : 'var(--border)', color: 'var(--fg)' }} required>
-                      <option value="">Sélectionner un niveau</option>
-                      {[{ value: 'primary', label: t('enroll.category_primaire', lang) }, { value: 'middle', label: t('enroll.category_cem', lang) }].map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-                    </select>
+                    <label className="mb-1.5 block text-sm font-medium">{t('register.school_level', lang)} <span style={{ color: '#ef4444' }}>*</span></label>
+                    <Select value={form.childLevel} onValueChange={v => setField('childLevel', v)} placeholder={t('register.select_level_option', lang)} className="w-full">
+                      <SelectItem value="primary">{t('enroll.category_primaire', lang)}</SelectItem>
+                      <SelectItem value="middle">{t('enroll.category_cem', lang)}</SelectItem>
+                    </Select>
                     {fieldErrors.childLevel && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{fieldErrors.childLevel}</p>}
-                    <p className="text-xs mt-2" style={{ color: 'var(--fg-muted)' }}>Votre enfant pourra suivre des cours adaptés à son niveau.</p>
+                    <p className="text-xs mt-2" style={{ color: 'var(--fg-muted)' }}>{t('register.child_level_desc', lang)}</p>
                   </div>
                 </div>
               ) : (
                 <div className="mb-6">
                   <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
                     <Users className="h-4 w-4" style={{ color: '#f59e0b' }} />
-                    Parent / Tuteur (pour les notifications)
+                    {t('register.parent_section', lang)}
                   </h3>
-                  <p className="text-xs mb-4" style={{ color: 'var(--fg-muted)' }}>Votre parent recevra les notifications concernant votre scolarité par email.</p>
-                  <Field name="guardianName" label="Nom complet du parent" required icon={<Users />} {...fieldProps} />
-                  <Field name="guardianEmail" label="Email du parent" type="email" required icon={<Mail />} {...fieldProps} />
-                  <Field name="guardianPhone" label="Téléphone du parent (urgences)" type="tel" placeholder="05XX XX XX XX" icon={<Phone />} {...fieldProps} />
+                  <p className="text-xs mb-4" style={{ color: 'var(--fg-muted)' }}>{t('register.parent_section_desc', lang)}</p>
+                  <Field name="guardianName" label={t('register.parent_full_name', lang)} required icon={<Users />} {...fieldProps} />
+                  <Field name="guardianEmail" label={t('register.parent_email', lang)} type="email" required icon={<Mail />} {...fieldProps} />
+                  <Field name="guardianPhone" label={t('register.parent_phone_emergency', lang)} type="tel" placeholder="05XX XX XX XX" icon={<Phone />} {...fieldProps} />
                 </div>
               )}
 
-              <button type="submit" disabled={isLoading} className="w-full rounded-xl py-3 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md disabled:opacity-50" style={{ backgroundColor: 'var(--primary)' }}>
-                {isLoading ? 'Inscription...' : t('auth.register', lang)}
-              </button>
+              <Button type="submit" disabled={isLoading} variant="default" className="w-full">
+                {isLoading ? t('register.loading', lang) : t('auth.register', lang)}
+              </Button>
 
               <p className="mt-5 text-center text-sm" style={{ color: 'var(--fg-muted)' }}>
                 {t('auth.already_have_account', lang)} <Link to="/login" className="font-medium transition-all hover:opacity-80" style={{ color: 'var(--primary)' }}>{t('auth.sign_in', lang)}</Link>
               </p>
             </form>
 
-            <button onClick={() => setStep('choose')} className="mt-4 w-full rounded-xl py-3 text-sm font-medium transition-all" style={{ color: 'var(--fg-muted)', border: '1px solid var(--border)' }}>
-              Retour au choix
-            </button>
+            <Button variant="outline" onClick={() => setStep('choose')} className="mt-4 w-full">
+              {t('register.back_to_choice', lang)}
+            </Button>
           </>
         )}
       </div>

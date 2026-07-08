@@ -80,7 +80,8 @@ export interface RfidRecord {
   status: string;
 }
 
-export function useAssistantDashboard() {
+export function useAssistantDashboard(lang: string = 'fr') {
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const now = new Date();
   const today = now.toISOString().split('T')[0];
 
@@ -241,7 +242,7 @@ export function useAssistantDashboard() {
       return (data ?? []).map((r: any) => ({
         id: r.id,
         studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
-        scannedAt: r.created_at ? new Date(r.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '',
+        scannedAt: r.created_at ? new Date(r.created_at).toLocaleTimeString(localeMap[lang], { hour: '2-digit', minute: '2-digit' }) : '',
         status: r.status === 'present' ? 'success' : 'failed',
       })) as RfidRecord[];
     },

@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -75,23 +77,23 @@ export default function ForgotPasswordPage() {
               <label htmlFor="reset-email" className="mb-1.5 block text-small font-medium text-foreground">
                 {t('auth.email', lang)}
               </label>
-              <input
+              <Input
                 id="reset-email"
                 ref={emailRef}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full"
                 placeholder={t('login.email_placeholder', lang)}
                 autoFocus
                 required
               />
             </div>
 
-            <button type="submit" disabled={loading || !email.trim()} className="btn-primary w-full">
+            <Button type="submit" disabled={loading || !email.trim()} className="w-full">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {loading ? t('forgot.sending', lang) : t('common.send', lang)}
-            </button>
+            </Button>
 
             <p className="mt-5 text-center text-small text-muted-foreground">
               <Link to="/login" className="font-medium text-primary hover:underline">

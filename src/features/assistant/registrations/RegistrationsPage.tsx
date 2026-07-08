@@ -9,11 +9,13 @@ import { formatDateTime } from '@/lib/utils';
 import { useRegistrations, useApproveRegistration, useRejectRegistration } from './useRegistrations';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function RegistrationsPage() {
   const { lang } = useLang();
   const [tab, setTab] = useState('pending');
-  const { data, isLoading } = useRegistrations('', 1, tab === 'all' ? 'all' : tab);
+  const { data, isLoading, isError } = useRegistrations('', 1, tab === 'all' ? 'all' : tab);
+  useErrorToast(isError, lang, t('nav.registrations', lang));
   const approve = useApproveRegistration();
   const reject = useRejectRegistration();
 

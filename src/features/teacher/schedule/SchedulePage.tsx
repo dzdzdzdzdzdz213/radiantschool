@@ -15,6 +15,7 @@ const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'
 export default function TeacherSchedulePage() {
   const { profile } = useAuth();
   const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const today = new Date();
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - ((today.getDay() + 1) % 7));
   const [startDate, setStartDate] = useState(weekStart);
@@ -46,7 +47,7 @@ export default function TeacherSchedulePage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => { const d = new Date(startDate); d.setDate(d.getDate() - 7); setStartDate(d); }}><ChevronLeft className="h-4 w-4" /></Button>
-          <span className="text-sm font-medium">{startDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+          <span className="text-sm font-medium">{startDate.toLocaleDateString(localeMap[lang], { month: 'long', year: 'numeric' })}</span>
           <Button variant="outline" size="sm" onClick={() => { const d = new Date(startDate); d.setDate(d.getDate() + 7); setStartDate(d); }}><ChevronRight className="h-4 w-4" /></Button>
         </div>
       </div>
@@ -82,7 +83,7 @@ export default function TeacherSchedulePage() {
                 ))
               )}
               {(schedules?.[day]?.length ?? 0) > 5 && (
-                <p className="text-[10px] text-muted-foreground text-center">+{(schedules?.[day]?.length ?? 0) - 5} {'autres'}</p>
+                <p className="text-[10px] text-muted-foreground text-center">+{(schedules?.[day]?.length ?? 0) - 5} {t('schedule.more', lang)}</p>
               )}
             </CardContent>
           </Card>

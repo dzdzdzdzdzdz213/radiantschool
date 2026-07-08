@@ -8,10 +8,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function UsersPage() {
   const { lang } = useLang();
-  const { data: users, isLoading } = useUsers();
+  const { data: users, isLoading, isError } = useUsers();
+  useErrorToast(isError, lang, t('nav.users', lang));
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();

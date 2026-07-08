@@ -9,13 +9,15 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useAttendance, useCorrectAttendance } from './useAttendance';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function AttendancePage() {
   const { lang } = useLang();
   const [search, setSearch] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const debouncedSearch = useDebounce(search, 300);
-  const { data, isLoading } = useAttendance(date, debouncedSearch);
+  const { data, isLoading, isError } = useAttendance(date, debouncedSearch);
+  useErrorToast(isError, lang, t('nav.attendance', lang));
   const correct = useCorrectAttendance();
 
   return (

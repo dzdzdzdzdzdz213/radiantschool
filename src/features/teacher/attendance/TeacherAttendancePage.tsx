@@ -38,6 +38,7 @@ export default function TeacherAttendancePage() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const qc = useQueryClient();
   const [courseId, setCourseId] = useState('');
   const [courseType, setCourseType] = useState<'normal' | 'private' | 'vip'>('normal');
@@ -267,7 +268,7 @@ export default function TeacherAttendancePage() {
 
           {Object.entries(sessionsByMonth).map(([month, monthSessions]) => {
             const isOpen = expandedMonth === month;
-            const monthLabel = new Date(month + '-01').toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+            const monthLabel = new Date(month + '-01').toLocaleDateString(localeMap[lang], { year: 'numeric', month: 'long' });
             return (
               <Card key={month}>
                 <CardHeader className="pb-3 cursor-pointer" onClick={() => setExpandedMonth(isOpen ? '' : month)}>
@@ -289,7 +290,7 @@ export default function TeacherAttendancePage() {
                             return (
                               <th key={s.id} className="text-center py-2 px-3 min-w-[110px]">
                                 <div className="text-xs font-medium">{s.title ?? 'Séance'}</div>
-                                <div className="text-[10px] text-muted-foreground">{new Date(s.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
+                                <div className="text-[10px] text-muted-foreground">{new Date(s.date).toLocaleDateString(localeMap[lang], { day: 'numeric', month: 'short' })}</div>
                                 {isClosed && <Lock className="h-3 w-3 mx-auto mt-1 text-muted-foreground" />}
                                 {hasTimer && <div className="flex items-center justify-center gap-1 mt-1"><Timer className="h-3 w-3 text-amber-500" /><span className="text-[10px] text-amber-600"><TimerCountdown target={s.check_in_opened_at} /></span></div>}
                               </th>
@@ -425,7 +426,7 @@ export default function TeacherAttendancePage() {
                       const isPastDeadline = checkInTime && !isClosed && new Date(checkInTime).getTime() + 3600000 < Date.now();
                       return (
                         <tr key={r.id} className={`border-b last:border-0 ${isClosed || isPastDeadline ? 'opacity-70' : ''}`}>
-                          <td className="py-3 px-4">{new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                          <td className="py-3 px-4">{new Date(r.date).toLocaleDateString(localeMap[lang], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</td>
                           <td className="py-3 px-4 text-muted-foreground">
                             {schedule ? `${schedule.day_of_week} ${schedule.start_time?.substring(0, 5)}-${schedule.end_time?.substring(0, 5)}` : '—'}
                           </td>

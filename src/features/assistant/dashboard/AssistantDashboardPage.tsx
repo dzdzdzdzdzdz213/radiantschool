@@ -18,7 +18,8 @@ import RfidSummary from './components/RfidSummary';
 
 function PageHeader({ name }: { name: string }) {
   const { lang } = useLang();
-  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
+  const today = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
     <motion.div

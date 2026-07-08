@@ -33,6 +33,7 @@ function useCountdown(target: string | null): string {
 export default function AdminAttendanceOversightPage() {
   const { toast } = useToast();
   const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const qc = useQueryClient();
   const [teacherFilter, setTeacherFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -175,7 +176,7 @@ export default function AdminAttendanceOversightPage() {
                   <tr key={s.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{s.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{s.course?.teacher?.first_name} {s.course?.teacher?.last_name}</td>
-                    <td className="py-3 px-4 text-center">{new Date(s.date).toLocaleDateString('fr-FR')}</td>
+                    <td className="py-3 px-4 text-center">{new Date(s.date).toLocaleDateString(localeMap[lang])}</td>
                     <td className="py-3 px-4 text-center">
                       <span className="text-amber-600 font-mono font-bold"><TimerCountdown target={s.check_in_opened_at} /></span>
                     </td>
@@ -206,7 +207,7 @@ export default function AdminAttendanceOversightPage() {
                   <tr key={s.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{s.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{s.course?.teacher?.first_name} {s.course?.teacher?.last_name}</td>
-                    <td className="py-3 px-4 text-center">{new Date(s.date).toLocaleDateString('fr-FR')}</td>
+                    <td className="py-3 px-4 text-center">{new Date(s.date).toLocaleDateString(localeMap[lang])}</td>
                     <td className="py-3 px-4 text-center"><Badge variant="outline">Groupe</Badge></td>
                     <td className="py-3 px-4 text-center"><Badge variant="success">Fermé</Badge></td>
                     <td className="py-3 px-4 text-right font-mono">{s.price_calculated ? `${s.price_calculated} DA` : <span className="text-muted-foreground">—</span>}</td>
@@ -216,7 +217,7 @@ export default function AdminAttendanceOversightPage() {
                   <tr key={r.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{r.course_schedule?.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{r.course_schedule?.course?.teacher?.first_name} {r.course_schedule?.course?.teacher?.last_name}</td>
-                    <td className="py-3 px-4 text-center">{new Date(r.date).toLocaleDateString('fr-FR')}</td>
+                    <td className="py-3 px-4 text-center">{new Date(r.date).toLocaleDateString(localeMap[lang])}</td>
                     <td className="py-3 px-4 text-center"><Badge variant="outline">{r.course_schedule?.course?.type === 'private' ? 'Particulier' : 'VIP'}</Badge></td>
                     <td className="py-3 px-4 text-center">
                       <Badge variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'destructive'}>

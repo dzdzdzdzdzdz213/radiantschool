@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { Select, SelectItem } from '@/components/ui/select';
 
 export default function AnnouncementsPage() {
   const { profile } = useAuth();
@@ -84,7 +85,7 @@ export default function AnnouncementsPage() {
       setShowModal(false);
       setEditingId(null);
       setForm({ title: '', content: '', course_id: '' });
-      toast(t(editingId ? 'success.updated' : 'success.created', lang, 'Annonce'), 'success');
+      toast(t(editingId ? 'success.updated' : 'success.created', lang, t('common.announcement', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -96,7 +97,7 @@ export default function AnnouncementsPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_announcements'] });
-      toast(t('success.deleted', lang, 'Annonce'), 'success');
+      toast(t('success.deleted', lang, t('common.announcement', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -134,11 +135,10 @@ export default function AnnouncementsPage() {
                 <Textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder={t('common.description', lang)} />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">{'Matière (optionnelle)'}</Label>
-                <select value={form.course_id} onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">{t('common.all', lang)}</option>
-                  {(courses ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.subject', lang)} ({t('common.optional', lang)})</Label>
+                <Select value={form.course_id} onValueChange={value => setForm(f => ({ ...f, course_id: value }))} placeholder={t('common.all', lang)}>
+                  {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </Select>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
@@ -171,7 +171,7 @@ export default function AnnouncementsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-medium">{a.title}</h4>
-                      {a.is_pinned && <Badge variant="outline" className="text-[9px]">{'Épinglé'}</Badge>}
+                      {a.is_pinned && <Badge variant="outline" className="text-[9px]">{t('common.pinned', lang)}</Badge>}
                       {a.course?.name && <Badge variant="secondary" className="text-[9px]">{a.course.name}</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{a.content}</p>

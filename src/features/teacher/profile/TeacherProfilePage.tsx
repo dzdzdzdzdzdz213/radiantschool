@@ -169,7 +169,7 @@ export default function TeacherProfilePage() {
                   <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" />{teacherProfile?.email ?? ''}</p>
                   <p className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" />{teacherProfile?.phone ?? t('common.none', lang)}</p>
                   <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{teacherProfile?.address ?? t('common.none', lang)}</p>
-                  <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />Membre depuis {formatDate(teacherProfile?.created_at ?? new Date().toISOString())}</p>
+                  <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />Membre depuis {formatDate(teacherProfile?.created_at ?? new Date().toISOString(), lang)}</p>
                 </div>
               </>
             )}
@@ -269,4 +269,4 @@ export default function TeacherProfilePage() {
   );
 }
 
-function formatDate(d: string) { try { return new Date(d).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }); } catch { return d; } }
+function formatDate(d: string, lang: string) { const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' }; try { return new Date(d).toLocaleDateString(localeMap[lang], { year: 'numeric', month: 'long', day: 'numeric' }); } catch { return d; } }

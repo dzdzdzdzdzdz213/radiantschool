@@ -61,7 +61,7 @@ export default function ReportsPage() {
             ].join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `rapport-${period}.csv`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `${t('common.export', lang)}-${period}.csv`; a.click();
             URL.revokeObjectURL(url);
             toast(t('success.created', lang, 'Export CSV'), 'success');
           } catch (err: any) {
@@ -72,7 +72,7 @@ export default function ReportsPage() {
       <div className="flex gap-2">
         {(['month', 'trimester', 'year'] as const).map(p => (
           <Button key={p} variant={period === p ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => setPeriod(p)}>
-            {p === 'month' ? t('common.this_month', lang) : p === 'trimester' ? 'Trimestre' : 'Année'}
+            {p === 'month' ? t('common.this_month', lang) : p === 'trimester' ? t('common.trimester', lang) : t('common.year', lang)}
           </Button>
         ))}
       </div>

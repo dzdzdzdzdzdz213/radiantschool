@@ -8,6 +8,8 @@ import { MessageSquare, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function MessagesPage() {
   const { profile } = useAuth();
@@ -79,7 +81,7 @@ export default function MessagesPage() {
             <div className="border-b p-4">
               <h3 className="font-semibold">{selectedMsg.subject || t('common.no_data', lang)}</h3>
               <p className="text-sm text-muted-foreground">
-                {selectedMsg.sender_id === profile?.id ? 'Vous' : getFullName(selectedMsg.sender?.first_name || '', selectedMsg.sender?.last_name || '')}
+                {selectedMsg.sender_id === profile?.id ? t('messages.you', lang) : getFullName(selectedMsg.sender?.first_name || '', selectedMsg.sender?.last_name || '')}
                 {' · '}{formatDateTime(selectedMsg.created_at)}
               </p>
             </div>
@@ -88,8 +90,8 @@ export default function MessagesPage() {
             </div>
             <div className="border-t p-4">
               <div className="flex gap-2">
-                <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Écrire un message..." className="flex-1 rounded-lg border px-3 py-2 text-sm" />
-                <button className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90" onClick={() => sendMutation.mutate()} disabled={sendMutation.isPending || !reply.trim()}><Send className="h-4 w-4" /></button>
+                <Input value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t('messages.write_placeholder', lang)} className="flex-1" />
+                <Button variant="default" onClick={() => sendMutation.mutate()} disabled={sendMutation.isPending || !reply.trim()}><Send className="h-4 w-4" /></Button>
               </div>
             </div>
           </div>

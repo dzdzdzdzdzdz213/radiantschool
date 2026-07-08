@@ -1,4 +1,6 @@
 import { Bell } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface Notification {
   id: number;
@@ -15,6 +17,7 @@ interface NotificationsWidgetProps {
 }
 
 export default function NotificationsWidget({ data, loading }: NotificationsWidgetProps) {
+  const { lang } = useLang();
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
@@ -29,11 +32,11 @@ export default function NotificationsWidget({ data, loading }: NotificationsWidg
       <div className="rounded-2xl border border-border bg-card p-5">
         <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
           <Bell className="h-4 w-4 text-primary" />
-          Notifications
+          {t('dashboard.notifications', lang)}
         </h3>
         <div className="flex flex-col items-center py-6">
           <Bell className="h-8 w-8 text-muted-foreground opacity-20 mb-2" />
-          <p className="text-sm text-muted-foreground">Aucune notification</p>
+          <p className="text-sm text-muted-foreground">{t('dashboard.no_notifications', lang)}</p>
         </div>
       </div>
     );
@@ -43,10 +46,10 @@ export default function NotificationsWidget({ data, loading }: NotificationsWidg
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center gap-2 mb-3">
         <Bell className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-semibold">Notifications</h3>
+        <h3 className="text-sm font-semibold">{t('dashboard.notifications', lang)}</h3>
         {data.filter(n => !n.is_read).length > 0 && (
           <span className="ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-            {data.filter(n => !n.is_read).length} nouvelle{data.filter(n => !n.is_read).length > 1 ? 's' : ''}
+            {t('dashboard.new_notifications', lang, String(data.filter(n => !n.is_read).length))}
           </span>
         )}
       </div>

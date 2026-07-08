@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FileText, ArrowRight } from 'lucide-react';
+import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import type { HomeworkItem } from '../useParentDashboard';
 
 interface HomeworkStatusProps {
@@ -9,6 +11,7 @@ interface HomeworkStatusProps {
 
 export default function HomeworkStatus({ data, loading }: HomeworkStatusProps) {
   const navigate = useNavigate();
+  const { lang } = useLang();
 
   if (loading) {
     return (
@@ -27,16 +30,16 @@ export default function HomeworkStatus({ data, loading }: HomeworkStatusProps) {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />
-          Devoirs
+          {t('nav.homework', lang)}
         </h3>
         {pending.length > 0 && (
           <span className="text-[10px] font-medium px-2 py-1 rounded-full bg-amber-500/10 text-amber-600">
-            {pending.length} en attente
+            {pending.length} {t('homework.pending', lang)}
           </span>
         )}
       </div>
       {recent.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">Aucun devoir récent</p>
+        <p className="text-sm text-muted-foreground py-6 text-center">{t('dashboard.no_homework', lang)}</p>
       ) : (
         <div className="space-y-2">
           {recent.map((h) => (
@@ -50,7 +53,7 @@ export default function HomeworkStatus({ data, loading }: HomeworkStatusProps) {
                   ? 'bg-emerald-500/10 text-emerald-600'
                   : 'bg-amber-500/10 text-amber-600'
               }`}>
-                {h.status === 'completed' ? (h.grade != null ? `${h.grade}/20` : 'Rendu') : 'À rendre'}
+                {h.status === 'completed' ? (h.grade != null ? `${h.grade}/20` : t('homework.submitted', lang)) : t('dashboard.to_submit', lang)}
               </span>
             </div>
           ))}
@@ -58,7 +61,7 @@ export default function HomeworkStatus({ data, loading }: HomeworkStatusProps) {
       )}
       {data.length > 8 && (
         <button onClick={() => navigate('/parent/children')} className="mt-3 text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-          Voir tout <ArrowRight className="h-3 w-3" />
+          {t('common.view_all', lang)} <ArrowRight className="h-3 w-3" />
         </button>
       )}
     </div>

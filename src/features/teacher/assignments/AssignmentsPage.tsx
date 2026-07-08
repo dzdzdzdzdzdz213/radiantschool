@@ -16,6 +16,7 @@ import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { Select, SelectItem } from '@/components/ui/select';
 
 export default function AssignmentsPage() {
   const { profile } = useAuth();
@@ -151,11 +152,10 @@ export default function AssignmentsPage() {
                 <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="h-9" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">{'Matière'}</Label>
-                <select value={form.course_id} onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">{'Sélectionner une matière'}</option>
-                  {(courses ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.subject', lang)} *</Label>
+                <Select value={form.course_id} onValueChange={value => setForm(f => ({ ...f, course_id: value }))} placeholder={t('common.select_subject', lang)}>
+                  {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </Select>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
@@ -197,8 +197,8 @@ export default function AssignmentsPage() {
                   </div>
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{a.description ?? ''}</p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{'Créé le'} {formatDate(a.created_at)}</span>
-                    {a.due_date && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{'Remise: '}{formatDate(a.due_date)}</span>}
+                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{t('common.created_on', lang)} {formatDate(a.created_at)}</span>
+                    {a.due_date && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{t('common.submission_date', lang)} {formatDate(a.due_date)}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">

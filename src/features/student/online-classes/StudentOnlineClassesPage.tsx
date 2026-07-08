@@ -56,7 +56,7 @@ export default function StudentOnlineClassesPage() {
               <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(s.start_time)}</span>
                 <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(s.start_time)}</span>
-                <span className="flex items-center gap-1"><Monitor className="h-3 w-3" />{'Zoom'}</span>
+                <span className="flex items-center gap-1"><Monitor className="h-3 w-3" />{t('common.platform_zoom', lang)}</span>
               </div>
               <Button variant={s.status === 'live' ? 'default' : 'outline'} size="sm" className="w-full h-8 text-xs gap-1.5" asChild>
                 <a href={s.meeting_url ?? '#'} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t('nav.registrations', lang)}</a>

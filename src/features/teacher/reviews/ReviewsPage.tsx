@@ -9,13 +9,14 @@ import { supabase } from '@/lib/supabase';
 import { formatDate, getInitials } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function ReviewsPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
   const [search, setSearch] = useState('');
 
-  const { data: reviews, isLoading } = useQuery({
+  const { data: reviews, isLoading, isError } = useQuery({
     queryKey: ['teacher_reviews', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -31,6 +32,7 @@ export default function ReviewsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.reviews', lang));
 
   const avgRating = (reviews ?? []).length > 0 ? (reviews ?? []).reduce((s: number, r: any) => s + r.rating, 0) / (reviews ?? []).length : 0;
 

@@ -11,6 +11,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate } from '@/lib/utils';
 import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -25,22 +26,23 @@ export default function ResourcesPage() {
   const debouncedSearch = useDebounce(search, 300);
   const downloadFile = useDownloadFile();
 
-  const { data: resources, isLoading } = useQuery({
+  const { data: resources, isLoading, isError } = useQuery({
     queryKey: ['teacher_resources', profile?.id, debouncedSearch],
     queryFn: async () => {
       if (!profile?.id) return [];
       let q = (supabase as any)
         .from('resources')
-        .select('id, title, description, type, file_url, created_at')
-        .eq('teacher_id', profile.id)
+        .select('id, name, description, file_type, file_path, created_at')
+        .eq('uploaded_by', profile.id)
         .order('created_at', { ascending: false });
       const { data } = await q;
       let items = data ?? [];
-      if (debouncedSearch) items = items.filter((i: any) => i.title?.toLowerCase().includes(debouncedSearch.toLowerCase()));
+      if (debouncedSearch) items = items.filter((i: any) => i.name?.toLowerCase().includes(debouncedSearch.toLowerCase()));
       return items;
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.resources', lang));
 
   const ALLOWED_TYPES = ['application/pdf','image/jpeg','image/png','image/webp','image/gif','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','text/plain','text/csv','application/zip','application/x-rar-compressed','application/x-7z-compressed'];
 
@@ -55,10 +57,10 @@ export default function ResourcesPage() {
       if (uploadError) throw uploadError;
       const { data: urlData } = (supabase as any).storage.from('resources').getPublicUrl(filePath);
       const { error: dbError } = await (supabase as any).from('resources').insert({
-        teacher_id: profile.id,
-        title: file.name,
-        type: file.type,
-        file_url: urlData.publicUrl,
+        uploaded_by: profile.id,
+        name: file.name,
+        file_type: file.type,
+        file_path: urlData.publicUrl,
         created_at: new Date().toISOString(),
       });
       if (dbError) throw dbError;
@@ -100,11 +102,11 @@ export default function ResourcesPage() {
     mutationFn: async () => {
       if (!profile?.id) return;
       const { error } = await (supabase as any).from('resources').insert({
-        teacher_id: profile.id,
-        title: linkForm.title,
+        uploaded_by: profile.id,
+        name: linkForm.title,
         description: linkForm.description || null,
-        type: 'link',
-        file_url: linkForm.url,
+        file_type: 'link',
+        file_path: linkForm.url,
         course_id: linkForm.course_id || null,
         created_at: new Date().toISOString(),
       });
@@ -192,22 +194,22 @@ export default function ResourcesPage() {
             ) : (resources ?? []).map((r: any) => (
               <div key={r.id} className="group rounded-xl border p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-start justify-between">
-                  <div className={`h-9 w-9 rounded-lg ${r.type === 'link' ? 'bg-sky-500/10' : 'bg-primary/10'} flex items-center justify-center shrink-0`}>
-                    {r.type === 'link' ? <LinkIcon className="h-4 w-4 text-sky-500" /> : <FileText className="h-4 w-4 text-primary" />}
+                    <div className={`h-9 w-9 rounded-lg ${r.file_type === 'link' ? 'bg-sky-500/10' : 'bg-primary/10'} flex items-center justify-center shrink-0`}>
+                    {r.file_type === 'link' ? <LinkIcon className="h-4 w-4 text-sky-500" /> : <FileText className="h-4 w-4 text-primary" />}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {r.type === 'link' ? (
-                      <Button variant="ghost" size="sm" className="h-7 w-7" asChild><a href={r.file_url} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a></Button>
+                    {r.file_type === 'link' ? (
+                      <Button variant="ghost" size="sm" className="h-7 w-7" asChild><a href={r.file_path} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a></Button>
                     ) : (
-                      <Button variant="ghost" size="sm" className="h-7 w-7" onClick={() => downloadFile.mutate({ fileUrl: r.file_url, filename: r.title })} disabled={downloadFile.isPending}><Download className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7" onClick={() => downloadFile.mutate({ fileUrl: r.file_path, filename: r.name })} disabled={downloadFile.isPending}><Download className="h-3.5 w-3.5" /></Button>
                     )}
-                    <Button variant="ghost" size="sm" className="h-7 w-7 text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.title })} disabled={deleteMutation.isPending}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.name })} disabled={deleteMutation.isPending}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
-                <h4 className="text-sm font-medium mt-3 truncate">{r.title}</h4>
+                <h4 className="text-sm font-medium mt-3 truncate">{r.name}</h4>
                 {r.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>}
                 <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground">
-                  <span>{r.type === 'link' ? t('nav.online_classes', lang) : (r.type ?? t('common.type', lang))}</span>
+                  <span>{r.file_type === 'link' ? t('nav.online_classes', lang) : (r.file_type ?? t('common.type', lang))}</span>
                   <span>{formatDate(r.created_at)}</span>
                 </div>
               </div>

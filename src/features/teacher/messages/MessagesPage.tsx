@@ -13,6 +13,7 @@ import { useSendMessage } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function MessagesPage() {
   const { profile } = useAuth();
@@ -26,7 +27,7 @@ export default function MessagesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sendMessage = useSendMessage();
 
-  const { data: conversations, isLoading: convLoading } = useQuery({
+  const { data: conversations, isLoading: convLoading, isError: convError } = useQuery({
     queryKey: ['teacher_conversations', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -43,9 +44,10 @@ export default function MessagesPage() {
     enabled: !!profile?.id,
   });
 
+  useErrorToast(convError, lang, t('nav.messages', lang));
   const selectedConv = (conversations ?? []).find((c: any) => c.id === selectedId);
 
-  const { data: messages, isLoading: msgLoading } = useQuery({
+  const { data: messages, isLoading: msgLoading, isError: msgError } = useQuery({
     queryKey: ['messages', selectedId],
     queryFn: async () => {
       if (!selectedId || !profile?.id) return [];
@@ -61,6 +63,7 @@ export default function MessagesPage() {
     },
     enabled: !!selectedId && !!selectedConv?.participant?.id,
   });
+  useErrorToast(msgError, lang, t('nav.messages', lang));
 
   const handleSend = () => {
     if (!message.trim() || !selectedId || !profile?.id) return;

@@ -8,8 +8,8 @@ import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+const DAY_KEYS = ['calendar.mon_lun', 'calendar.mon_mar', 'calendar.mon_mer', 'calendar.mon_jeu', 'calendar.mon_ven', 'calendar.mon_sam', 'calendar.mon_dim'];
+const MONTH_KEYS = ['calendar.january', 'calendar.february', 'calendar.march', 'calendar.april', 'calendar.may', 'calendar.june', 'calendar.july', 'calendar.august', 'calendar.september', 'calendar.october', 'calendar.november', 'calendar.december'];
 
 export default function StudentCalendarPage() {
   const { lang } = useLang();
@@ -17,6 +17,8 @@ export default function StudentCalendarPage() {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const days = DAY_KEYS.map(k => t(k, lang));
+  const months = MONTH_KEYS.map(k => t(k, lang));
 
   const firstDay = new Date(currentYear, currentMonth, 1);
   const lastDay = new Date(currentYear, currentMonth + 1, 0);
@@ -61,7 +63,7 @@ export default function StudentCalendarPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <Button variant="outline" size="sm" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{MONTHS[currentMonth]} {currentYear}</CardTitle>
+            <CardTitle className="text-base">{months[currentMonth]} {currentYear}</CardTitle>
             <Button variant="outline" size="sm" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
           </div>
         </CardHeader>
@@ -72,7 +74,7 @@ export default function StudentCalendarPage() {
             </div>
           ) : (
           <div className="grid grid-cols-7 gap-px bg-accent rounded-xl overflow-hidden">
-            {DAYS.map(d => <div key={d} className="bg-card p-2 text-center text-xs font-medium text-muted-foreground">{d}</div>)}
+            {DAY_KEYS.map((key, i) => <div key={key} className="bg-card p-2 text-center text-xs font-medium text-muted-foreground">{days[i]}</div>)}
             {Array.from({ length: startDay }).map((_, i) => <div key={`empty-${i}`} className="bg-card p-2 min-h-[80px]" />)}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;

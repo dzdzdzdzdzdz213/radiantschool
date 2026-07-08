@@ -6,6 +6,8 @@ import { Eye, EyeOff, ArrowLeft, ShieldAlert, Loader2 } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function StaffLoginPage() {
   const [email, setEmail] = useState('');
@@ -119,13 +121,13 @@ export default function StaffLoginPage() {
             <label htmlFor="staff-email" className="mb-1.5 block text-small font-medium text-foreground">
               {t('auth.email', lang)}
             </label>
-            <input
+            <Input
               id="staff-email"
               ref={emailRef}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full"
               placeholder={t('login.email_placeholder', lang)}
               autoFocus
               required
@@ -137,12 +139,12 @@ export default function StaffLoginPage() {
               {t('auth.password', lang)}
             </label>
             <div className="relative">
-              <input
+              <Input
                 id="staff-password"
                 type={showPw ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 pr-11 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full pr-11"
                 placeholder={t('login.password_placeholder', lang)}
                 required
               />
@@ -163,14 +165,14 @@ export default function StaffLoginPage() {
             </Link>
           </div>
 
-          <button type="submit" disabled={isLoading} className="btn-primary w-full">
+          <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {isLoading ? t('common.loading', lang) : t('auth.sign_in', lang)}
-          </button>
+          </Button>
         </form>
 
           <p className="mt-6 text-center text-xs text-muted-foreground/40">
-            Accès réservé au personnel
+            {t('login.restricted_access', lang)}
           </p>
       </div>
     </div>

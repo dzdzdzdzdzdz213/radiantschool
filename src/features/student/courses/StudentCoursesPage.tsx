@@ -20,12 +20,11 @@ export default function StudentCoursesPage() {
       if (!profile?.id) return [];
       const { data } = await (supabase as any)
         .from('course_enrollments')
-        .select('id, status, enrollment_date, progress, course:courses!inner(id, name, description, type, price, capacity, status, teacher:users!teacher_id(first_name, last_name))')
+        .select('id, status, enrollment_date, course:courses!inner(id, name, description, type, price, capacity, status, teacher:users!teacher_id(first_name, last_name))')
         .eq('student_id', profile.id)
         .order('enrollment_date', { ascending: false });
       return (data ?? []).map((e: any) => ({
         id: e.id,
-        progress: e.progress ?? 0,
         status: e.status,
         enrolledAt: e.enrollment_date,
         course: {
@@ -43,7 +42,7 @@ export default function StudentCoursesPage() {
     enabled: !!profile?.id,
   });
 
-  useErrorToast(isError, lang, 'cours');
+  useErrorToast(isError, lang, t('nav.courses', lang));
 
   return (
     <div className="space-y-6">
@@ -74,10 +73,7 @@ export default function StudentCoursesPage() {
                 <p className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{t('common.pending', lang)}</p>
                 <p className="flex items-center gap-1.5"><DollarSign className="h-3 w-3" />{e.course.price} DA</p>
               </div>
-              <div className="mt-3">
-                <div className="flex justify-between text-[10px] mb-1"><span>{t('common.status', lang)}</span><span>{e.progress}%</span></div>
-                <div className="h-1.5 bg-accent rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all" style={{ width: `${e.progress}%` }} /></div>
-              </div>
+              
             </CardContent>
           </Card>
         ))}
