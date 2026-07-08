@@ -344,7 +344,7 @@ export default function TeacherAttendancePage() {
           })}
 
           {sessions?.length === 0 && (
-            <Card><CardContent className="p-12 text-center text-muted-foreground">Aucune séance pour ce cours. Créez-en une avec "Ajouter une séance".</CardContent></Card>
+            <Card><CardContent className="p-12 text-center text-muted-foreground">{t('common.no_data', lang)}</CardContent></Card>
           )}
         </>
       )}
