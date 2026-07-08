@@ -38,8 +38,13 @@ export default function ResourcesPage() {
 
   useErrorToast(isError, lang, t('nav.resources', lang));
 
+  const ALLOWED_TYPES = ['application/pdf','image/jpeg','image/png','image/webp','image/gif','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','text/plain','text/csv','application/zip','application/x-rar-compressed','application/x-7z-compressed'];
+
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        throw new Error(t('errors.mime_not_supported', lang, file.type));
+      }
       const filePath = `assistant-resources/${Date.now()}_${file.name}`;
       const { error: uploadError } = await (supabase as any).storage.from('resources').upload(filePath, file);
       if (uploadError) throw uploadError;
@@ -76,7 +81,7 @@ export default function ResourcesPage() {
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteMutation.isPending}
       />
-      <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => { if (e.target.files?.[0]) uploadMutation.mutate(e.target.files[0]); }} />
+      <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z" onChange={(e) => { if (e.target.files?.[0]) uploadMutation.mutate(e.target.files[0]); }} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.resources', lang)}</h1>
