@@ -103,9 +103,9 @@ export default function InvoicesPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8">
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowModal(false)} />
-          <Card className="relative w-full max-w-lg mx-4">
+          <Card className="relative w-full max-w-lg mx-4 my-auto">
             <CardHeader className="flex items-center justify-between">
               <CardTitle className="text-sm">{editingId ? t('common.edit', lang) : t('invoices.new', lang)}</CardTitle>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
