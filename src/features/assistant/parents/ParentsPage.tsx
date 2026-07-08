@@ -157,7 +157,7 @@ export default function ParentsPage() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-sm">{parent.email}</TableCell>
                     <TableCell className="hidden md:table-cell text-sm">{parent.phone ?? '—'}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm">{parent.childrenCount} {t('parents.children_label', lang)}</TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm">—</TableCell>
                     <TableCell className="text-right">
                       <Badge variant={parent.status === 'active' ? 'success' : 'outline'}>{parent.status === 'active' ? t('status.active', lang) : t('status.inactive', lang)}</Badge>
                     </TableCell>

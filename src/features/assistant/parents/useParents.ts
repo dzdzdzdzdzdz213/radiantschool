@@ -7,7 +7,6 @@ export interface ParentListItem {
   lastName: string;
   email: string;
   phone: string | null;
-  childrenCount: number;
   status: string;
 }
 
@@ -21,14 +20,13 @@ export function useParents(search: string = '', page: number = 1, pageSize: numb
         filters: [{ column: 'role', operator: 'eq' as const, value: 'parent' }, { column: 'deleted_at', operator: 'is' as const, value: null }],
       };
       if (search) { params.search = search; params.searchColumns = ['first_name', 'last_name', 'email']; }
-      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, created_at, children_count');
+      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, created_at');
       const data = result.data.map((r: any) => ({
         id: r.id,
         firstName: r.first_name ?? '',
         lastName: r.last_name ?? '',
         email: r.email ?? '',
         phone: r.phone ?? null,
-        childrenCount: r.children_count ?? 0,
         status: r.status ?? '',
       })) as ParentListItem[];
       return { data, meta: result.meta };
