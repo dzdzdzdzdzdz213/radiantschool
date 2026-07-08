@@ -37,7 +37,7 @@ export default function NotificationsPage() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      return api.rpc('dispatch_notification', { title, message, type: 'announcement', category: 'general' });
+      return api.rpc('dispatch_notification', { category: 'general', message, title, type: 'announcement' });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_notifications'] });

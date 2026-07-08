@@ -10,8 +10,6 @@ export interface StudentListItem {
   phone: string | null;
   status: string;
   studentType: string | null;
-  levelName: string | null;
-  courseCount: number;
   createdAt: string;
 }
 
@@ -26,7 +24,7 @@ export function useStudents(search: string = '', page: number = 1, pageSize: num
       };
       if (filters?.status) params.filters.push({ column: 'status', operator: 'eq', value: filters.status });
       if (search) { params.search = search; params.searchColumns = ['first_name', 'last_name', 'email']; }
-      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, created_at, level_name, course_count, students(student_type)');
+      const result = await api.list<any>('users', params, 'id, first_name, last_name, email, phone, status, created_at, students(student_type)');
       const data = result.data.map((r: any) => ({
         id: r.id,
         firstName: r.first_name ?? '',
@@ -35,8 +33,6 @@ export function useStudents(search: string = '', page: number = 1, pageSize: num
         phone: r.phone ?? null,
         status: r.status ?? '',
         studentType: r.students?.student_type ?? null,
-        levelName: r.level_name ?? null,
-        courseCount: r.course_count ?? 0,
         createdAt: r.created_at ?? '',
       })) as StudentListItem[];
       return { data, meta: result.meta };

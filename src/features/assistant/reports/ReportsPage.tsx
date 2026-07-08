@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BarChart3, Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { BarChart3, Download, FileText, FileSpreadsheet, File as FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -44,19 +44,25 @@ export default function ReportsPage() {
 
   useErrorToast(isError, lang, t('reports.data', lang));
 
-  const exportCSV = (filename: string) => {
+  const exportPDF = (filename: string) => {
     if (!revenue || revenue.length === 0) {
       toast(t('common.no_data', lang), 'error');
       return;
     }
-    const headers = ['Date', 'Revenu'];
-    const rows = revenue.map((r: any) => [r.date ?? '', r.total_revenue ?? 0]);
-    const csv = [headers.join(','), ...rows.map((row: string[]) => row.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const rows = revenue.map((r: any) => ({ date: r.date ?? '', revenue: r.total_revenue ?? 0 }));
+    const total = rows.reduce((s: number, r: any) => s + r.revenue, 0);
+    let html = `<html><head><meta charset="utf-8"><title>${filename}</title>
+<style>body{font-family:sans-serif;margin:40px}h1{font-size:18px;margin-bottom:8px}.meta{font-size:12px;color:#666;margin-bottom:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #ddd}th{background:#f5f5f5;font-size:12px;text-transform:uppercase}td{font-size:14px}.total{font-weight:bold;border-top:2px solid #333;padding-top:8px;margin-top:8px}@media print{body{margin:0}}</style></head><body>
+<h1>${filename}</h1><p class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+<table><thead><tr><th>${t('common.date', lang)}</th><th>${t('common.revenue', lang)}</th></tr></thead><tbody>`;
+    rows.forEach((r: any) => { html += `<tr><td>${r.date}</td><td>${r.revenue.toLocaleString()} DA</td></tr>`; });
+    html += `</tbody></table><p class="total">Total: ${total.toLocaleString()} DA</p>`;
+    html += `<script>window.print()<\/script></body></html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${filename}.csv`;
+    a.download = `${filename}.html`;
     a.click();
     URL.revokeObjectURL(url);
     toast(t('reports.export_success', lang), 'success');
@@ -70,8 +76,7 @@ export default function ReportsPage() {
           <p className="text-sm text-muted-foreground mt-1">{t('reports.subtitle', lang)}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileSpreadsheet className="h-4 w-4" />{t('reports.export_excel', lang)}</Button>
-          <Button variant="outline" className="gap-2" onClick={() => exportCSV('rapport-financier')}><FileText className="h-4 w-4" />CSV</Button>
+          <Button variant="outline" className="gap-2" onClick={() => exportPDF('rapport-financier')}><FileIcon className="h-4 w-4" />PDF</Button>
         </div>
       </div>
 
@@ -95,7 +100,7 @@ export default function ReportsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">{t('reports.preview', lang)}</CardTitle>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportCSV('rapport-financier')}><Download className="h-4 w-4" />{t('common.export', lang)}</Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportPDF('rapport-financier')}><Download className="h-4 w-4" />{t('common.export', lang)}</Button>
             </div>
           </CardHeader>
           <CardContent>

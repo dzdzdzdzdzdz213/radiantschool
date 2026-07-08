@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { useUsers } from '@/hooks/useQueries';
 
 export default function PaymentsPage() {
   const { lang } = useLang();
@@ -27,6 +28,8 @@ export default function PaymentsPage() {
   const createPayment = useCreatePayment();
   const updatePayment = useUpdatePayment();
   const deletePayment = useDeletePayment();
+  const { data: allUsers } = useUsers();
+  const students = (allUsers ?? []).filter((u: any) => u.role === 'student');
 
   useErrorToast(isError, lang, t('nav.payments', lang));
 
@@ -115,7 +118,11 @@ export default function PaymentsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('nav.students', lang)}</Label>
-                <Input placeholder={t('payments.student_placeholder', lang)} value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} />
+                <Select value={form.student_id} onValueChange={v => setForm(f => ({ ...f, student_id: v }))} placeholder={t('payments.student_placeholder', lang)}>
+                  {students.map((s: any) => (
+                    <SelectItem key={s.id} value={s.id}>{s.first_name} {s.last_name}</SelectItem>
+                  ))}
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>{t('common.amount', lang)}</Label>

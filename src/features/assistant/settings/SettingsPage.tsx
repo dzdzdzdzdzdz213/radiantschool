@@ -10,6 +10,7 @@ import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateUserSettings } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const settingsSections = [
   { id: 'profile', labelKey: 'nav.profile', icon: User },
@@ -18,9 +19,10 @@ const settingsSections = [
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const [section, setSection] = useState('profile');
   const { lang } = useLang();
+  const qc = useQueryClient();
   const updateSettings = useUpdateUserSettings();
 
   const [firstName, setFirstName] = useState('');
@@ -46,6 +48,7 @@ export default function SettingsPage() {
     updateSettings.mutate(
       { userId: profile.id, settings: { first_name: firstName, last_name: lastName, email, phone } },
       {
+        onSuccess: () => { refreshProfile(); },
         onError: (err: any) => toast(err?.message ?? t('errors.update_error', lang, t('settings.profile', lang)), 'error'),
       },
     );

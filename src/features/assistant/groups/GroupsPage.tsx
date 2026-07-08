@@ -159,7 +159,7 @@ export default function GroupsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.groups', lang)}</h1>
-          <p className="text-sm text-muted-foreground-foreground mt-1">{t('groups.subtitle', lang)}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t('groups.subtitle', lang)}</p>
         </div>
         <Button className="gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('groups.new', lang)}</Button>
       </div>
@@ -167,7 +167,7 @@ export default function GroupsPage() {
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un cours..." className="w-full rounded-lg border py-2 pl-10 pr-3 text-sm" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('groups.search_placeholder', lang)} className="h-9 pl-9" />
         </div>
         <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setLevelFilter(''); }} className="rounded-lg border px-3 py-2 text-sm">
           <option value="">Tous niveaux</option>
@@ -195,7 +195,7 @@ export default function GroupsPage() {
           <Card className="relative w-full max-w-lg mx-4">
             <CardHeader className="flex items-center justify-between">
               <CardTitle className="text-sm">{editingId ? t('common.edit', lang) : t('groups.new', lang)}</CardTitle>
-              <button onClick={() => setShowModal(false)} className="text-muted-foreground-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -287,7 +287,7 @@ export default function GroupsPage() {
         {isLoading ? Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}><CardHeader className="pb-3"><div className="h-24 bg-muted rounded-xl animate-pulse" /></CardHeader></Card>
         )) : filteredGroups.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-muted-foreground-foreground">
+          <div className="col-span-full text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
           </div>
         ) : filteredGroups.map((g: any) => (
@@ -296,8 +296,8 @@ export default function GroupsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-base">{g.name}</CardTitle>
-                  <p className="text-xs text-muted-foreground-foreground mt-0.5">{g.level?.name ?? '—'} · {g.subject?.name ?? '—'}</p>
-                  <p className="text-xs text-muted-foreground-foreground">{g.teacher ? getFullName(g.teacher.first_name, g.teacher.last_name) : '—'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{g.level?.name ?? '—'} · {g.subject?.name ?? '—'}</p>
+                  <p className="text-xs text-muted-foreground">{g.teacher ? getFullName(g.teacher.first_name, g.teacher.last_name) : '—'}</p>
                 </div>
                 <div className="flex items-center gap-1">
                   <Badge variant={g.status === 'active' ? 'success' : 'outline'}>
@@ -310,11 +310,11 @@ export default function GroupsPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground-foreground">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users className="h-4 w-4" />
                   <span>{g.current_enrollments ?? 0}/{g.capacity}</span>
                 </div>
-                <span className="text-xs text-muted-foreground-foreground">{g.type}</span>
+                <span className="text-xs text-muted-foreground">{g.type}</span>
               </div>
               <div className="mt-3 h-2 rounded-full bg-accent overflow-hidden">
                 <div
