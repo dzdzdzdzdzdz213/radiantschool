@@ -52,20 +52,23 @@ export default function StudentDetailPage() {
   });
 
   useEffect(() => {
-    if (userError) toast(t('errors.load_error', lang, "de l'élève"), 'error');
+    if (userError) toast(t('errors.load_error', lang, t('common.student', lang)), 'error');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userError]);
   useEffect(() => {
-    if (enrollError) toast(t('errors.load_error', lang, 'des inscriptions'), 'error');
+    if (enrollError) toast(t('errors.load_error', lang, t('nav.registrations', lang)), 'error');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enrollError]);
   useEffect(() => {
-    if (payError) toast(t('errors.load_error', lang, 'des paiements'), 'error');
+    if (payError) toast(t('errors.load_error', lang, t('nav.payments', lang)), 'error');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payError]);
 
-  if (userLoading || !user) return <div className="p-8 text-center text-muted">{t('common.loading', lang)}</div>;
+  if (userLoading || !user) return <div className="p-8 text-center text-muted-foreground-foreground">{t('common.loading', lang)}</div>;
 
   return (
     <div className="space-y-6">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted hover:text-muted"><ArrowLeft className="h-4 w-4" /> {t('common.back', lang)}</button>
+      <button onClick={() => navigate(-1)} className="btn-ghost h-8 gap-1.5 text-sm"><ArrowLeft className="h-4 w-4" /> {t('common.back', lang)}</button>
       <div className="rounded-xl border bg-card p-6 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white">
@@ -73,7 +76,7 @@ export default function StudentDetailPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">{getFullName(user.first_name, user.last_name)}</h1>
-            <p className="text-muted">{getRoleLabel(user.role)} · <span className={getStatusColor(user.status)}>{user.status}</span></p>
+            <p className="text-muted-foreground">{getRoleLabel(user.role)} · <span className={getStatusColor(user.status)}>{user.status}</span></p>
           </div>
         </div>
       </div>
@@ -81,9 +84,9 @@ export default function StudentDetailPage() {
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <h2 className="mb-3 font-semibold">{t('common.info', lang)}</h2>
           <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted" /><span>{user.email}</span></div>
-            <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted" /><span>{user.phone || 'Non renseigné'}</span></div>
-            <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted" /><span>Inscrit le {formatDate(user.created_at)}</span></div>
+            <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><span>{user.email}</span></div>
+            <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /><span>{user.phone || t('common.not_assigned', lang)}</span></div>
+            <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /><span>{t('common.registered_on', lang)} {formatDate(user.created_at)}</span></div>
             {user.students && (() => {
               const sr = Array.isArray(user.students) ? user.students[0] : user.students;
               if (!sr) return null;
@@ -100,30 +103,30 @@ export default function StudentDetailPage() {
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <h2 className="mb-3 font-semibold">{t('nav.courses', lang)} ({enrollments?.length || 0})</h2>
           {enrollmentsLoading ? (
-            <div className="text-sm text-muted">{t('common.loading', lang)}</div>
+            <div className="text-sm text-muted-foreground">{t('common.loading', lang)}</div>
           ) : (
             <div className="space-y-2">
               {enrollments?.length > 0 ? enrollments.map((e: any) => (
                 <div key={e.id} className="rounded-lg bg-page p-3 text-sm">
                   <p className="font-medium">{e.course?.name}</p>
-                  <p className="text-muted">{e.course?.type} · {formatCurrency(e.course?.price)}</p>
+                  <p className="text-muted-foreground">{e.course?.type} · {formatCurrency(e.course?.price)}</p>
                 </div>
-              )) : <p className="text-sm text-muted">{t('common.no_data', lang)}</p>}
+              )) : <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>}
             </div>
           )}
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <h2 className="mb-3 font-semibold">{t('nav.payments', lang)} ({payments?.length || 0})</h2>
           {paymentsLoading ? (
-            <div className="text-sm text-muted">{t('common.loading', lang)}</div>
+            <div className="text-sm text-muted-foreground">{t('common.loading', lang)}</div>
           ) : (
             <div className="space-y-2">
               {payments?.length > 0 ? payments.map((p: any) => (
                 <div key={p.id} className="rounded-lg bg-page p-3 text-sm">
                   <p className="font-medium">{formatCurrency(p.amount)}</p>
-                  <p className="text-muted">{p.payment_method} · {formatDate(p.created_at)}</p>
+                  <p className="text-muted-foreground">{p.payment_method} · {formatDate(p.created_at)}</p>
                 </div>
-              )) : <p className="text-sm text-muted">{t('common.no_data', lang)}</p>}
+              )) : <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>}
             </div>
           )}
         </div>
