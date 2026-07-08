@@ -31,17 +31,29 @@ export default function ParentsPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const openCreateModal = () => {
     setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+    setErrors({});
     setShowModal(true);
   };
 
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!form.firstName || form.firstName.length < 2) e.firstName = t('errors.min_length', lang, '2');
+    else if (!/^[a-zA-ZÀ-ÿ\s-]+$/.test(form.firstName)) e.firstName = t('errors.letters_only', lang);
+    if (!form.lastName || form.lastName.length < 2) e.lastName = t('errors.min_length', lang, '2');
+    else if (!/^[a-zA-ZÀ-ÿ\s-]+$/.test(form.lastName)) e.lastName = t('errors.letters_only', lang);
+    if (!form.email) e.email = t('errors.required', lang);
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = t('errors.invalid_email', lang);
+    if (form.phone && !/^(05|06|07|03)[0-9]{8}$/.test(form.phone.replace(/\s/g, ''))) e.phone = t('errors.invalid_phone', lang);
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
   const handleSave = () => {
-    if (!form.firstName || !form.lastName || !form.email) {
-      toast(t('parents.fill_fields', lang), 'error');
-      return;
-    }
+    if (!validate()) return;
     createParent.mutate(
       {
         first_name: form.firstName,
@@ -76,20 +88,24 @@ export default function ParentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t('common.first_name', lang)} <span className="text-red-500">*</span></Label>
-                  <Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} />
+                  <Input value={form.firstName} onChange={e => { setForm(f => ({ ...f, firstName: e.target.value })); setErrors(e => ({ ...e, firstName: '' })); }} maxLength={50} />
+                  {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>{t('common.last_name', lang)} <span className="text-red-500">*</span></Label>
-                  <Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} />
+                  <Input value={form.lastName} onChange={e => { setForm(f => ({ ...f, lastName: e.target.value })); setErrors(e => ({ ...e, lastName: '' })); }} maxLength={50} />
+                  {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>{t('common.email', lang)} <span className="text-red-500">*</span></Label>
-                <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                <Input type="email" value={form.email} onChange={e => { setForm(f => ({ ...f, email: e.target.value })); setErrors(e => ({ ...e, email: '' })); }} maxLength={100} />
+                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
               </div>
               <div className="space-y-2">
                 <Label>{t('common.phone', lang)}</Label>
-                <Input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                <Input type="tel" value={form.phone} onChange={e => { setForm(f => ({ ...f, phone: e.target.value })); setErrors(e => ({ ...e, phone: '' })); }} maxLength={15} placeholder="05XX-XX-XX-XX" />
+                {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
