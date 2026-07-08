@@ -801,24 +801,24 @@ export default function LandingPage() {
           </div>
 
           {/* Map */}
-          <div className="mt-16 rounded-2xl overflow-hidden sm:flex" style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
-            <div className="sm:w-2/5 p-7 flex flex-col justify-center gap-4" style={{ backgroundColor: 'var(--bg-card)' }}>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ backgroundColor: `color-mix(in srgb, var(--accent) 10%, transparent)` }}>
-                <MapPin className="h-6 w-6" style={{ color: 'var(--accent)' }} />
+          <div className="mt-16 rounded-2xl overflow-hidden sm:flex border border-border shadow-lg">
+            <div className="sm:w-2/5 p-7 flex flex-col justify-center gap-4 bg-card">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10">
+                <MapPin className="h-6 w-6 text-accent" />
               </div>
               <div>
                 <p className="text-lg font-bold">{t('dashboard.location', lang)}</p>
-                <p className="text-sm mt-1.5 leading-relaxed" style={{ color: 'var(--fg-muted)' }}>
+                <p className="text-sm mt-1.5 leading-relaxed text-muted-foreground">
                   Radiant Academy<br />Bordj El Bahri, Alger<br />Algérie
                 </p>
               </div>
               <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="btn-primary self-start mt-1 h-10 px-5 text-xs gap-2 rounded-xl">
-                Ouvrir dans Maps <ArrowRight className="h-3.5 w-3.5 rtl-flip" />
+                {t('landing.open_maps', lang)} <ArrowRight className="h-3.5 w-3.5 rtl-flip" />
               </a>
             </div>
-            <div className="sm:w-3/5 h-56" style={{ borderTop: '1px solid var(--border)' }}>
+            <div className="sm:w-3/5 h-56 border-t sm:border-t-0 sm:border-l border-border">
               <iframe
-                src="https://www.google.com/maps?q=Radiant+Academy+Bordj+El+Bahri+Alger&output=embed&z=16&hl=fr"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=3.234%2C36.780%2C3.265%2C36.801&layer=mapnik&marker=36.7907%2C3.2495"
                 width="100%"
                 height="100%"
                 style={{ border: 0, display: 'block' }}
@@ -829,12 +829,12 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom */}
-          <div className="mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--fg-muted)' }}>
+          <div className="mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs border-t border-border text-muted-foreground">
             <p className="font-medium">Radiant Academy &copy; {new Date().getFullYear()} &mdash; {t('footer.rights', lang)}</p>
             <div className="flex gap-8">
-              <a href="/mentions-legales" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">{t('landing.legal', lang)}</a>
-              <a href="/cgv" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">{t('landing.cgv', lang)}</a>
-              <a href="/confidentialite" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">{t('landing.privacy', lang)}</a>
+              <a href="/mentions-legales" className="transition-all duration-200 hover:text-foreground hover:underline underline-offset-4">{t('landing.legal', lang)}</a>
+              <a href="/cgv" className="transition-all duration-200 hover:text-foreground hover:underline underline-offset-4">{t('landing.cgv', lang)}</a>
+              <a href="/confidentialite" className="transition-all duration-200 hover:text-foreground hover:underline underline-offset-4">{t('landing.privacy', lang)}</a>
             </div>
           </div>
         </div>
