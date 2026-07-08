@@ -33,17 +33,33 @@ export default function StudentsPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const stripDigits = (v: string) => v.replace(/\d/g, '');
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    const fn = form.firstName.trim();
+    const ln = form.lastName.trim();
+    if (!fn || fn.length < 2) e.firstName = t('errors.min_length', lang, '2');
+    else if (/\d/.test(fn)) e.firstName = t('errors.letters_only', lang);
+    if (!ln || ln.length < 2) e.lastName = t('errors.min_length', lang, '2');
+    else if (/\d/.test(ln)) e.lastName = t('errors.letters_only', lang);
+    if (!form.email.trim()) e.email = t('errors.required', lang);
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = t('errors.invalid_email', lang);
+    if (form.phone && !/^(05|06|07|03)[0-9]{8}$/.test(form.phone.replace(/[\s-]/g, ''))) e.phone = t('errors.invalid_phone', lang);
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const openCreateModal = () => {
     setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+    setErrors({});
     setShowModal(true);
   };
 
   const handleSave = () => {
-    if (!form.firstName || !form.lastName || !form.email) {
-      toast(t('students.fill_fields', lang), 'error');
-      return;
-    }
+    if (!validate()) return;
     createStudent.mutate(
       {
         first_name: form.firstName,
@@ -78,20 +94,24 @@ export default function StudentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t('common.first_name', lang)} <span className="text-red-500">*</span></Label>
-                  <Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} />
+                  <Input value={form.firstName} onInput={e => { const v = stripDigits((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value = v; setForm(f => ({ ...f, firstName: v })); setErrors(e => ({ ...e, firstName: '' })); }} maxLength={50} />
+                  {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>{t('common.last_name', lang)} <span className="text-red-500">*</span></Label>
-                  <Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} />
+                  <Input value={form.lastName} onInput={e => { const v = stripDigits((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value = v; setForm(f => ({ ...f, lastName: v })); setErrors(e => ({ ...e, lastName: '' })); }} maxLength={50} />
+                  {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>{t('common.email', lang)} <span className="text-red-500">*</span></Label>
-                <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                <Input type="email" value={form.email} onInput={e => { const v = (e.target as HTMLInputElement).value.replace(/\s/g, ''); (e.target as HTMLInputElement).value = v; setForm(f => ({ ...f, email: v })); setErrors(e => ({ ...e, email: '' })); }} maxLength={100} />
+                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
               </div>
               <div className="space-y-2">
                 <Label>{t('common.phone', lang)}</Label>
-                <Input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                <Input type="tel" value={form.phone} onInput={e => { const v = (e.target as HTMLInputElement).value.replace(/[^0-9\s-]/g, '').slice(0, 14); (e.target as HTMLInputElement).value = v; setForm(f => ({ ...f, phone: v })); setErrors(e => ({ ...e, phone: '' })); }} maxLength={14} placeholder="05XX-XX-XX-XX" />
+                {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
               </div>
               <div className="space-y-2">
                 <Label>{t('common.status', lang)}</Label>

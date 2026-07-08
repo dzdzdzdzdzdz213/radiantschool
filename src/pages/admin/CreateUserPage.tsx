@@ -31,6 +31,7 @@ export default function CreateUserPage() {
     if (/[0-9]/.test(firstName)) errs.firstName = 'Le prénom ne peut pas contenir de chiffres';
     if (/[0-9]/.test(lastName)) errs.lastName = 'Le nom ne peut pas contenir de chiffres';
     if (!email.trim()) errs.email = "L'email est requis";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = "Email invalide";
     if (!password || password.length < 8) errs.password = 'Le mot de passe doit contenir au moins 8 caractères';
     if (!role) errs.role = 'Le rôle est requis';
     setErrors(errs);
