@@ -58,7 +58,7 @@ export default function LegalPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 bg-background">
         <h1 className="text-2xl font-bold text-foreground">{t('common.not_found', lang)}</h1>
-        <Link to="/" className="text-sm text-primary">{t('common.back_to_site', lang)}</Link>
+        <Link to="/" className="text-sm text-primary">Accueil</Link>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function LegalPage() {
       <div className="mx-auto max-w-3xl px-6 py-16">
         <Link to="/" className="inline-flex items-center gap-2 text-sm mb-8 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
-          {t('common.back_to_site', lang)}
+          Accueil
         </Link>
 
         <h1 className="text-3xl font-bold tracking-tight mb-10 text-foreground">{content.title}</h1>
