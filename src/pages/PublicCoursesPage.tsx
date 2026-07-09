@@ -17,19 +17,32 @@ export default function PublicCoursesPage() {
   const { lang } = useLang();
   const { data: courses, isLoading } = usePublicCourses();
   const [cat, setCat] = useState<'all' | 'primary' | 'middle' | 'high_school'>('all');
-  const [streamFilter, setStreamFilter] = useState<string | null>(null);
+  const [selStream, setSelStream] = useState<{ year: string; stream: string } | null>(null);
   const [search, setSearch] = useState('');
 
   const allCourses = courses ?? [];
   const filteredByCat = cat === 'all' ? allCourses : allCourses.filter((c: any) => c.level?.category === cat);
-  const availableStreams = [...new Set(filteredByCat.map((c: any) => c.level?.stream).filter(Boolean))] as string[];
-  const streamFiltered = streamFilter ? filteredByCat.filter((c: any) => c.level?.stream === streamFilter) : filteredByCat;
+  const streamFiltered = selStream
+    ? filteredByCat.filter((c: any) => c.level?.name === selStream.year && c.level?.stream === selStream.stream)
+    : filteredByCat;
   const filteredCourses = search
     ? streamFiltered.filter((c: any) =>
         [c.name, c.subject?.name, c.level?.name, c.level?.stream, c.teacher?.first_name, c.teacher?.last_name]
           .filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase())
       )
     : streamFiltered;
+
+  const streamsByYear: { year: string; streams: string[] }[] = [];
+  for (const c of filteredByCat) {
+    const year = c.level?.name;
+    const stream = c.level?.stream;
+    if (!year || !stream) continue;
+    let group = streamsByYear.find(g => g.year === year);
+    if (!group) { group = { year, streams: [] }; streamsByYear.push(group); }
+    if (!group.streams.includes(stream)) group.streams.push(stream);
+  }
+  streamsByYear.sort((a, b) => a.year.localeCompare(b.year));
+  for (const g of streamsByYear) g.streams.sort();
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
@@ -48,7 +61,7 @@ export default function PublicCoursesPage() {
         <div className="flex flex-col items-center gap-6 mb-10">
           <div className="flex justify-center gap-3">
             {categories.map(c => (
-              <button key={c.key} onClick={() => { setCat(c.key); setStreamFilter(null); }}
+              <button key={c.key} onClick={() => { setCat(c.key); setSelStream(null); }}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${cat === c.key ? 'text-white shadow-lg scale-105' : 'hover:scale-105'}`}
                 style={cat === c.key ? { background: c.btnGradient } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
               >
@@ -58,17 +71,27 @@ export default function PublicCoursesPage() {
             ))}
           </div>
 
-          {availableStreams.length > 0 && (
-            <div className="flex justify-center gap-2 flex-wrap">
-              <button onClick={() => setStreamFilter(null)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${!streamFilter ? 'text-white' : 'hover:scale-105'}`}
-                style={!streamFilter ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
+          {streamsByYear.length > 0 && (
+            <div className="flex flex-col items-center gap-5 w-full max-w-3xl">
+              <button onClick={() => setSelStream(null)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${!selStream ? 'text-white' : 'hover:scale-105'}`}
+                style={!selStream ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
               >Toutes les filières</button>
-              {availableStreams.map(s => (
-                <button key={s} onClick={() => setStreamFilter(s)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${streamFilter === s ? 'text-white' : 'hover:scale-105'}`}
-                  style={streamFilter === s ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
-                >{s}</button>
+              {streamsByYear.map(g => (
+                <div key={g.year} className="w-full">
+                  <p className="text-xs font-bold uppercase tracking-widest mb-2.5 text-center" style={{ color: 'var(--fg-muted)' }}>{g.year}</p>
+                  <div className="flex justify-center gap-2 flex-wrap">
+                    {g.streams.map(s => {
+                      const active = selStream?.year === g.year && selStream?.stream === s;
+                      return (
+                        <button key={s} onClick={() => setSelStream(active ? null : { year: g.year, stream: s })}
+                          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${active ? 'text-white' : 'hover:scale-105'}`}
+                          style={active ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
+                        >{s}</button>
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
             </div>
           )}
