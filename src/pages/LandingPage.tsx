@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { t, LANGUAGES } from '@/i18n';
-import { formatCurrency } from '@/lib/utils';
-import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Search, ChevronDown, Quote, Heart } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart, BookText, Building2 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import EducationLevelCard from '@/components/formations/EducationLevelCard';
 
 /*
   HUMANIZING PASS — summary of what changed vs. the original file
@@ -94,146 +95,11 @@ export default function LandingPage() {
 
   const { theme, toggle } = useTheme();
   const { lang, setLang } = useLang();
-  const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
 
-  // Hierarchical filter state
-  const [catFilter, setCatFilter] = useState('');
-  const [yearFilter, setYearFilter] = useState(0);
-  const [streamFilter, setStreamFilter] = useState('');
-
-  type StreamOpt = { value: string; label: string };
-
-  const STREAMS_BY_YEAR: Record<number, StreamOpt[]> = {
-    1: [
-      { value: 'Scientifique', label: 'Scientifique' },
-      { value: 'Lettres', label: 'Lettres' },
-    ],
-    2: [
-      { value: 'Scientifique', label: 'Scientifique' },
-      { value: 'Mathématiques', label: 'Mathématiques' },
-    { value: 'Maths Techniques', label: 'Maths Techniques' },
-    { value: 'Lettres', label: 'Lettres' },
-    { value: 'Gestion et Économie', label: 'Gestion et Économie' },
-  ],
-  3: [
-    { value: 'Scientifique', label: 'Scientifique' },
-    { value: 'Mathématiques', label: 'Mathématiques' },
-    { value: 'Lettres', label: 'Lettres' },
-    { value: 'Gestion et Économie', label: 'Gestion et Économie' },
-    { value: 'Baccalauréat', label: 'BAC Toutes Sections' },
-  ],
-  };
-
-  const CATEGORIES = [
-    { value: '', label: 'Tous' },
-    { value: 'primary', label: 'Primaire' },
-    { value: 'middle', label: 'CEM' },
-    { value: 'high_school', label: 'Lycée' },
-  ];
-
-  const YEAR_OPTIONS: Record<string, { value: number; label: string }[]> = {
-    middle: [
-      { value: 0, label: 'Tous' },
-      { value: 1, label: '1ère AM' },
-      { value: 2, label: '2ème AM' },
-      { value: 3, label: '3ème AM' },
-      { value: 4, label: '4ème AM' },
-      { value: -1, label: 'BEM' },
-    ],
-    high_school: [
-      { value: 0, label: 'Tous' },
-      { value: 1, label: '1ère AS' },
-      { value: 2, label: '2ème AS' },
-      { value: 3, label: '3ème AS' },
-    ],
-  };
-
-  const activeStreams = catFilter === 'high_school' && yearFilter > 0 ? STREAMS_BY_YEAR[yearFilter] ?? [] : [];
-  function resetSubFilters() {
-    setYearFilter(0);
-    setStreamFilter('');
-  }
-
-  const filtered = (courses ?? []).filter((c: any) => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q);
-    const matchCat = !catFilter || c.level?.category === catFilter;
-    const matchYear = !yearFilter
-      || (yearFilter === -1 ? c.level?.name?.includes('4AM') || c.level?.name?.includes('BEM') : c.level?.year === yearFilter);
-  const matchStream = !streamFilter || c.level?.stream === streamFilter;
-  return matchSearch && matchCat && matchYear && matchStream;
-  });
-
-  const grouped = catFilter ? null : (() => {
-    const groups: Record<string, any[]> = {};
-    for (const c of filtered) {
-      const cat = c.level?.category || 'autres';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(c);
-    }
-    return groups;
-  })();
-
   const teacherCount = new Set((courses ?? []).map((c: any) => c.teacher?.id)).size;
   const levelCount = new Set((courses ?? []).map((c: any) => c.level?.name)).size;
-
-  function CourseCard({ c, i }: { c: any; i: number }) {
-    return (
-      <div
-        className="group relative rounded-xl overflow-hidden animate-up"
-        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', animationDelay: `${i * 0.04}s`, boxShadow: 'var(--shadow-sm)' }}
-      >
-        <div className="h-1" style={{ background: c.type === 'vip' ? 'linear-gradient(90deg,#f59e0b,#d97706)' : c.type === 'private' ? 'linear-gradient(90deg,#7c3aed,#a78bfa)' : 'linear-gradient(90deg,var(--primary),color-mix(in srgb,var(--primary) 60%,#fff))' }} />
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-lg leading-snug group-hover:text-[var(--primary)] transition-colors duration-200">{c.name}</h3>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--fg-muted)' }}>{c.subject?.name}</p>
-            </div>
-            <span className="shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-lg ml-3 uppercase tracking-wider" style={{
-              backgroundColor: c.type === 'vip' ? 'rgba(245,158,11,0.1)' : c.type === 'private' ? 'rgba(139,92,246,0.1)' : 'color-mix(in srgb, var(--primary) 10%, transparent)',
-              color: c.type === 'vip' ? '#d97706' : c.type === 'private' ? '#7c3aed' : 'var(--primary)',
-            }}>
-              {c.type === 'vip' ? t('type.vip', lang) : c.type === 'private' ? t('type.private', lang) : t('type.group', lang)}
-            </span>
-          </div>
-          <div className="space-y-2.5 text-sm mb-5" style={{ color: 'var(--fg-muted)' }}>
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
-                <GraduationCap className="h-3.5 w-3.5" style={{ color: 'var(--primary)' }} />
-              </div>
-              <span className="truncate">{c.level?.name}{c.level?.stream ? ` — ${c.level.stream}` : ''}</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
-                <Users className="h-3.5 w-3.5" style={{ color: 'var(--primary)' }} />
-              </div>
-              <span className="truncate">{c.teacher?.first_name} {c.teacher?.last_name}</span>
-            </div>
-            {c.schedules?.[0] && (
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--primary)' }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <span className="truncate">{['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][c.schedules[0].day_of_week]} {c.schedules[0].start_time?.slice(0,5)}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-            <div>
-              <p className="text-xl font-bold" style={{ color: 'var(--primary)' }}>{formatCurrency(c.price)}</p>
-              {c.capacity && <p className="text-[10px]" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{c.capacity} places</p>}
-            </div>
-            <Link to="/enroll" className="btn-primary px-4 py-2 text-xs gap-1.5 transition-all duration-200 hover:shadow-md hover:shadow-[var(--primary)]/20">
-              {t('section.formations.jeveux', lang)} <ChevronRight className="h-3.5 w-3.5 rtl-flip" />
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
@@ -501,159 +367,57 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* COURSES */}
-      <section id="courses" className="scroll-mt-20 py-28 px-6" style={{ backgroundColor: 'var(--bg-card)' }}>
+      {/* FORMATIONS — Premium Educational Experience */}
+      <section id="courses" className="scroll-mt-20 overflow-hidden px-6 py-28" style={{ backgroundColor: 'var(--bg)' }}>
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <div className="badge inline-flex mb-5">{t('section.formations.badge', lang)}</div>
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">{t('section.formations.title', lang)}</h2>
-            <div className="divider-gradient mt-5" />
-            <p className="mt-5 max-w-xl mx-auto" style={{ color: 'var(--fg-muted)' }}>{t('section.formations.subtitle', lang)}</p>
-            <div className="max-w-md mx-auto mt-8 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--fg-muted)', opacity: 0.5 }} />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('section.formations.search', lang)}
-                className="w-full rounded-xl border pl-11 pr-5 py-3.5 text-sm outline-none transition-all duration-200"
-                style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--fg)' }}
-                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
-              />
-            </div>
+          <div className="mb-16 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="badge inline-flex mb-5">{t('section.formations.badge', lang)}</div>
+              <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">{t('section.formations.title', lang)}</h2>
+              <div className="divider-gradient mt-5 mx-auto" />
+              <p className="mx-auto mt-5 max-w-xl" style={{ color: 'var(--fg-muted)' }}>{t('section.formations.subtitle', lang)}</p>
+            </motion.div>
           </div>
 
-          {/* Category filter chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.value}
-                onClick={() => { setCatFilter(c.value); resetSubFilters(); }}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
-                style={{
-                  backgroundColor: catFilter === c.value ? 'var(--primary)' : 'var(--bg)',
-                  color: catFilter === c.value ? '#fff' : 'var(--fg-muted)',
-                  border: catFilter === c.value ? 'none' : '1px solid var(--border)',
-                }}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+            className="grid gap-8 lg:grid-cols-3"
+          >
+            <EducationLevelCard
+              title="Primaire"
+              subtitle="Du CP à la 5ème année"
+              hoverDescription="Développez les bases solides en mathématiques, français, arabe et anglais."
+              icon={<BookText className="h-7 w-7" />}
+              gradient="from-emerald-500 via-teal-500 to-cyan-600"
+              onClick={() => window.location.href = '/formations/primaire'}
+            />
 
-          {/* Year filter chips (CEM / Lycée) */}
-          {catFilter && YEAR_OPTIONS[catFilter] && (
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-              <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
-                <ChevronDown className="h-3 w-3 inline mr-1" />Année
-              </span>
-              {YEAR_OPTIONS[catFilter].map((y) => (
-                <button
-                  key={y.value}
-                  onClick={() => { setYearFilter(y.value); setStreamFilter(''); }}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
-                  style={{
-                    backgroundColor: yearFilter === y.value ? 'var(--primary)' : 'var(--bg)',
-                    color: yearFilter === y.value ? '#fff' : 'var(--fg-muted)',
-                    border: yearFilter === y.value ? 'none' : '1px solid var(--border)',
-                  }}
-                >
-                  {y.label}
-                </button>
-              ))}
-            </div>
-          )}
+            <EducationLevelCard
+              title="CEM"
+              subtitle="De la 1ère à la 4ème AM"
+              hoverDescription="Maîtrisez les matières fondamentales et préparez-vous pour l'examen du BEM."
+              icon={<Building2 className="h-7 w-7" />}
+              gradient="from-orange-500 via-rose-500 to-pink-600"
+              onClick={() => window.location.href = '/formations/cem'}
+            />
 
-          {/* Stream filter chips (Lycée only) */}
-          {activeStreams.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider mr-2" style={{ color: 'var(--fg-muted)' }}>
-                <ChevronDown className="h-3 w-3 inline mr-1" />Filière
-              </span>
-              {activeStreams.map((s) => (
-                <button
-                  key={s.label}
-                  onClick={() => { setStreamFilter(streamFilter === s.value ? '' : s.value); }}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
-                  style={{
-                    backgroundColor: streamFilter === s.value ? 'var(--primary)' : 'var(--bg)',
-                    color: streamFilter === s.value ? '#fff' : 'var(--fg-muted)',
-                    border: streamFilter === s.value ? 'none' : '1px solid var(--border)',
-                  }}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Active filter summary + reset */}
-          {catFilter && (
-            <div className="flex items-center justify-center gap-3 mb-10">
-              {[catFilter && CATEGORIES.find(c => c.value === catFilter)?.label,
-                yearFilter > 0 && YEAR_OPTIONS[catFilter]?.find(y => y.value === yearFilter)?.label,
-                streamFilter,
-              ].filter(Boolean).join(' › ') && (
-                <span className="text-xs font-medium" style={{ color: 'var(--fg-muted)' }}>
-                  {[catFilter && CATEGORIES.find(c => c.value === catFilter)?.label,
-                    yearFilter > 0 && YEAR_OPTIONS[catFilter]?.find(y => y.value === yearFilter)?.label,
-                    streamFilter,
-                  ].filter(Boolean).join(' › ')}
-                </span>
-              )}
-              <button
-                onClick={() => { setCatFilter(''); resetSubFilters(); }}
-                className="text-xs font-semibold underline underline-offset-4 transition-colors"
-                style={{ color: 'var(--fg-muted)' }}
-              >
-                Réinitialiser
-              </button>
-            </div>
-          )}
-
-          {isLoading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-64 rounded-xl" style={{ backgroundColor: 'var(--bg)', animation: 'shimmer 2s infinite linear', backgroundImage: 'linear-gradient(90deg, var(--bg) 25%, var(--bg-card) 50%, var(--bg) 75%)', backgroundSize: '200% 100%' }} />
-              ))}
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center py-24">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl mx-auto mb-5" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>
-                <Search className="h-7 w-7" style={{ color: 'var(--primary)', opacity: 0.5 }} />
-              </div>
-              <p className="text-lg font-semibold mb-1">{t('section.formations.empty', lang)}</p>
-              <p className="text-sm" style={{ color: 'var(--fg-muted)' }}>Essaie un autre mot-clé</p>
-              <button onClick={() => { setSearch(''); setCatFilter(''); resetSubFilters(); }} className="btn-ghost mt-6 px-5 py-2.5 text-sm">
-                Réinitialiser la recherche
-              </button>
-            </div>
-          ) : grouped ? (
-            Object.entries(grouped).map(([cat, items]) => (
-              <div key={cat} className="mb-14 last:mb-0">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
-                    <GraduationCap className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight">
-                    {cat === 'primary' ? 'Primaire' : cat === 'middle' ? 'CEM / Collège' : cat === 'high_school' ? 'Lycée' : 'Autres'}
-                  </h3>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)`, color: 'var(--fg-muted)' }}>{items.length}</span>
-                </div>
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {items.map((c: any, i: number) => (
-                    <CourseCard key={c.id} c={c} i={i} />
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((c: any, i: number) => (
-                <CourseCard key={c.id} c={c} i={i} />
-              ))}
-            </div>
-          )}
+            <EducationLevelCard
+              title="Lycée"
+              subtitle="De la 1ère à la 3ème AS"
+              hoverDescription="Préparez votre baccalauréat avec des professeurs spécialisés par filière."
+              icon={<GraduationCap className="h-7 w-7" />}
+              gradient="from-blue-600 via-indigo-600 to-violet-700"
+              onClick={() => window.location.href = '/formations/lycee'}
+            />
+          </motion.div>
         </div>
       </section>
 
