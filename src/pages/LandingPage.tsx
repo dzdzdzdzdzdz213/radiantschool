@@ -99,14 +99,18 @@ export default function LandingPage() {
 
   const teacherCount = new Set((courses ?? []).map((c: any) => c.teacher?.id)).size;
   const levelCount = new Set((courses ?? []).map((c: any) => c.level?.name)).size;
-  const [cat, setCat] = useState<'primary' | 'middle' | 'secondary'>('primary');
+  const [cat, setCat] = useState<'all' | 'primary' | 'middle' | 'high_school'>('all');
+  const [streamFilter, setStreamFilter] = useState<string | null>(null);
+  const allCourses = courses ?? [];
+  const filteredByCat = cat === 'all' ? allCourses : allCourses.filter((c: any) => c.level?.category === cat);
+  const availableStreams = [...new Set(filteredByCat.map((c: any) => c.level?.stream).filter(Boolean))] as string[];
+  const filteredCourses = streamFilter ? filteredByCat.filter((c: any) => c.level?.stream === streamFilter) : filteredByCat;
   const categories = [
-    { key: 'primary', label: 'Primaire', icon: BookText, gradient: 'from-emerald-500/10 via-teal-500/10 to-cyan-600/10', border: 'border-emerald-500/20', btnGradient: 'linear-gradient(135deg, #059669, #0d9488)' },
-    { key: 'middle', label: 'CEM', icon: Building2, gradient: 'from-orange-500/10 via-rose-500/10 to-pink-600/10', border: 'border-orange-500/20', btnGradient: 'linear-gradient(135deg, #ea580c, #e11d48)' },
-    { key: 'secondary', label: 'Lycée', icon: GraduationCap, gradient: 'from-blue-600/10 via-indigo-600/10 to-violet-700/10', border: 'border-blue-600/20', btnGradient: 'linear-gradient(135deg, #2563eb, #7c3aed)' },
+    { key: 'all', label: 'Tous', icon: BookOpen, gradient: 'from-primary/10 to-accent/10', btnGradient: 'linear-gradient(135deg, var(--primary), var(--accent))' },
+    { key: 'primary', label: 'Primaire', icon: BookText, gradient: 'from-emerald-500/10 via-teal-500/10 to-cyan-600/10', btnGradient: 'linear-gradient(135deg, #059669, #0d9488)' },
+    { key: 'middle', label: 'CEM', icon: Building2, gradient: 'from-orange-500/10 via-rose-500/10 to-pink-600/10', btnGradient: 'linear-gradient(135deg, #ea580c, #e11d48)' },
+    { key: 'high_school', label: 'Lycée', icon: GraduationCap, gradient: 'from-blue-600/10 via-indigo-600/10 to-violet-700/10', btnGradient: 'linear-gradient(135deg, #2563eb, #7c3aed)' },
   ] as const;
-  const activeCat = categories.find(c => c.key === cat)!;
-  const filteredCourses = (courses ?? []).filter((c: any) => c.level?.category === cat).slice(0, 9);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
@@ -385,9 +389,9 @@ export default function LandingPage() {
             </motion.div>
           </div>
 
-          <div className="flex justify-center gap-3 mb-12">
+          <div className="flex justify-center gap-3 mb-10">
             {categories.map(c => (
-              <button key={c.key} onClick={() => setCat(c.key)}
+              <button key={c.key} onClick={() => { setCat(c.key); setStreamFilter(null); }}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${cat === c.key ? 'text-white shadow-lg scale-105' : 'text-muted-foreground hover:scale-105'}`}
                 style={cat === c.key ? { background: c.btnGradient } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
               >
@@ -396,11 +400,26 @@ export default function LandingPage() {
               </button>
             ))}
           </div>
+          {availableStreams.length > 0 && (
+            <div className="flex justify-center gap-2 mb-10 flex-wrap">
+              <button onClick={() => setStreamFilter(null)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${!streamFilter ? 'text-white' : 'text-muted-foreground hover:scale-105'}`}
+                style={!streamFilter ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+              >Toutes les filières</button>
+              {availableStreams.map(s => (
+                <button key={s} onClick={() => setStreamFilter(s)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${streamFilter === s ? 'text-white' : 'text-muted-foreground hover:scale-105'}`}
+                  style={streamFilter === s ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+                >{s}</button>
+              ))}
+            </div>
+          )}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {isLoading && Array.from({ length: 3 }).map((_, i) => (
+            {isLoading && Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="rounded-2xl p-6 animate-pulse" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                <div className="h-5 w-24 rounded-md mb-4" style={{ backgroundColor: 'var(--border)' }} />
-                <div className="h-4 w-full rounded-md mb-3" style={{ backgroundColor: 'var(--border)' }} />
+                <div className="h-4 w-20 rounded-md mb-3" style={{ backgroundColor: 'var(--border)' }} />
+                <div className="h-5 w-40 rounded-md mb-3" style={{ backgroundColor: 'var(--border)' }} />
+                <div className="h-4 w-full rounded-md mb-2" style={{ backgroundColor: 'var(--border)' }} />
                 <div className="h-4 w-3/4 rounded-md mb-6" style={{ backgroundColor: 'var(--border)' }} />
                 <div className="h-10 w-full rounded-xl" style={{ backgroundColor: 'var(--border)' }} />
               </div>
@@ -408,11 +427,12 @@ export default function LandingPage() {
             {!isLoading && filteredCourses.length === 0 && (
               <div className="col-span-full text-center py-16" style={{ color: 'var(--fg-muted)' }}>
                 <GraduationCap className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Aucune formation disponible dans cette catégorie pour le moment</p>
+                <p className="text-lg font-medium">Aucune formation trouvée</p>
               </div>
             )}
             {filteredCourses.map((c: any) => {
-              const CIcon = activeCat.icon;
+              const catInfo = categories.find(x => x.key === (c.level?.category ?? 'all')) ?? categories[0];
+              const CIcon = catInfo.icon;
               return (
               <motion.div
                 key={c.id}
@@ -421,28 +441,32 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4 }}
                 className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1.5"
-                style={{ backgroundColor: 'var(--bg-card)', border: `1px solid var(--border)` }}
+                style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
               >
-                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${activeCat.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
+                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${catInfo.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
                 <div className="relative">
                   <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>{c.subject?.name ?? ''}</p>
-                      <h3 className="text-lg font-bold mt-0.5">{c.name}</h3>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-widest truncate" style={{ color: 'var(--fg-muted)' }}>{c.subject?.name ?? ''}</p>
+                      <h3 className="text-lg font-bold mt-0.5 truncate">{c.name}</h3>
                     </div>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ml-3" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
                       <CIcon className="h-5 w-5" style={{ color: 'var(--primary)' }} />
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-5" style={{ color: 'var(--fg-muted)' }}>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm mb-4" style={{ color: 'var(--fg-muted)' }}>
+                    {c.level?.name && <span className="font-medium">{c.level.name}</span>}
+                    {c.level?.stream && <span>{c.level.stream}</span>}
                     {c.teacher && <span>{c.teacher.first_name} {c.teacher.last_name}</span>}
-                    {c.price && <span>{Number(c.price).toLocaleString()} DA</span>}
-                    {c.capacity && <span>{c.current_enrollments ?? 0}/{c.capacity} places</span>}
+                  </div>
+                  <div className="flex items-center justify-between mb-4">
+                    {c.price && <span className="text-lg font-bold">{Number(c.price).toLocaleString()} DA</span>}
+                    {c.capacity && <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{c.capacity} places</span>}
                   </div>
                   <Link
                     to="/enroll"
                     className="inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
-                    style={{ background: activeCat.btnGradient }}
+                    style={{ background: catInfo.btnGradient }}
                   >
                     S'inscrire
                   </Link>
@@ -648,9 +672,9 @@ export default function LandingPage() {
           <div className="mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--fg-muted)' }}>
             <p className="font-medium">Radiant Academy &copy; {new Date().getFullYear()} &mdash; {t('footer.rights', lang)}</p>
             <div className="flex gap-8">
-              <span className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4 cursor-default">Mentions légales</span>
-              <span className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4 cursor-default">CGV</span>
-              <span className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4 cursor-default">Confidentialité</span>
+              <Link to="/mentions-legales" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Mentions légales</Link>
+              <Link to="/cgv" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">CGV</Link>
+              <Link to="/confidentialite" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Confidentialité</Link>
             </div>
           </div>
         </div>
