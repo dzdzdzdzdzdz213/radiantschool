@@ -47,6 +47,7 @@ const CampaignsPage = LazyPage(() => import('@/features/assistant/campaigns/Camp
 const ReportsPage = LazyPage(() => import('@/features/assistant/reports/ReportsPage'));
 const CalendarPage = LazyPage(() => import('@/features/assistant/calendar/CalendarPage'));
 const SearchPage = LazyPage(() => import('@/features/assistant/search/SearchPage'));
+const AssistantPrivateLessonsPage = LazyPage(() => import('@/features/assistant/private-lessons/AssistantPrivateLessonsPage'));
 const AssistantSettingsPage = LazyPage(() => import('@/features/assistant/settings/SettingsPage'));
 const UsersPage = LazyPage(() => import('@/pages/admin/UsersPage'));
 const CreateUserPage = LazyPage(() => import('@/pages/admin/CreateUserPage'));
@@ -187,6 +188,7 @@ export const router = createBrowserRouter([
       { path: 'help', Component: HelpPage },
       { path: 'courses', Component: CoursesPage },
       { path: 'courses/:id', Component: CourseDetailPage },
+      { path: 'private-lessons', Component: AssistantPrivateLessonsPage },
       { path: 'messages', Component: MessagesPage },
     ],
   },
@@ -275,7 +277,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/leaderboard',
-    element: <ProtectedRoute allowedRoles={['admin','teacher','student','parent','assistant']}><LeaderboardPage /></ProtectedRoute>,
+    Component: LeaderboardPage,
   },
   {
     path: '/formations',
