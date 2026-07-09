@@ -64,7 +64,7 @@ function CountUp({ end = 0 }: { end?: number }) {
 }
 
 const NAV = [
-  { href: '#courses', key: 'nav.formations', label: undefined as string | undefined },
+  { href: '/formations', key: 'nav.formations', label: undefined as string | undefined },
   { href: '#about', key: 'nav.apropos', label: 'Qui sommes-nous' },
   { href: '#why', key: 'nav.pourquoi', label: undefined as string | undefined },
   { href: '#contact', key: 'nav.contact', label: undefined as string | undefined },

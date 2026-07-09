@@ -6,6 +6,7 @@ import StudentRoute from '@/routes/StudentRoute';
 import ParentRoute from '@/routes/ParentRoute';
 import LoginPage from '@/pages/auth/LoginPage';
 import LandingPage from '@/pages/LandingPage';
+import PublicCoursesPage from '@/pages/PublicCoursesPage';
 import LegalPage from '@/pages/LegalPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
@@ -274,6 +275,10 @@ export const router = createBrowserRouter([
   {
     path: '/leaderboard',
     element: <ProtectedRoute allowedRoles={['admin','teacher','student','parent','assistant']}><LeaderboardPage /></ProtectedRoute>,
+  },
+  {
+    path: '/formations',
+    Component: PublicCoursesPage,
   },
   {
     path: '/',
