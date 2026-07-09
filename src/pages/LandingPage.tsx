@@ -591,13 +591,16 @@ export default function LandingPage() {
                 {t('landing.open_maps', lang)} <ArrowRight className="h-3.5 w-3.5 rtl-flip" />
               </a>
             </div>
-            <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="sm:w-3/5 h-56 block group" style={{ borderTop: '1px solid var(--border)', textDecoration: 'none' }}>
-              <div className="w-full h-full flex items-center justify-center bg-muted transition-colors group-hover:bg-muted/80">
-                <div className="text-center p-6">
-                  <MapPin className="h-10 w-10 mx-auto mb-3 text-primary" />
-                  <p className="text-sm font-medium text-foreground">{t('landing.open_maps', lang)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Bordj El Bahri, Alger</p>
-                </div>
+            <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="sm:w-3/5 h-56 block group overflow-hidden relative" style={{ borderTop: '1px solid var(--border)', textDecoration: 'none' }}>
+              <img
+                src="https://staticmap.openstreetmap.de/staticmap.php?center=36.75,3.12&zoom=15&size=600x400&maptype=mapnik"
+                alt="Radiant Academy - Bordj El Bahri, Alger"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30">
+                <span className="text-white text-sm font-medium flex items-center gap-2"><MapPin className="h-4 w-4" />{t('landing.open_maps', lang)}</span>
               </div>
             </a>
           </div>
