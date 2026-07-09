@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { t, LANGUAGES } from '@/i18n';
-import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart, BookText, Building2 } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
 /*
@@ -80,7 +79,7 @@ const TEAM = [
 
 export default function LandingPage() {
   const { toast } = useToast();
-  const { data: courses, isLoading, isError: coursesError } = usePublicCourses();
+  const { data: courses, isError: coursesError } = usePublicCourses();
   const { data: stats, isError: statsError } = usePublicStats();
 
   useEffect(() => {
@@ -99,30 +98,6 @@ export default function LandingPage() {
 
   const teacherCount = new Set((courses ?? []).map((c: any) => c.teacher?.id)).size;
   const levelCount = new Set((courses ?? []).map((c: any) => c.level?.name)).size;
-  const [cat, setCat] = useState<'all' | 'primary' | 'middle' | 'high_school'>('all');
-  const [selStream, setSelStream] = useState<{ year: string; stream: string } | null>(null);
-  const allCourses = courses ?? [];
-  const filteredByCat = cat === 'all' ? allCourses : allCourses.filter((c: any) => c.level?.category === cat);
-  const filteredCourses = selStream
-    ? filteredByCat.filter((c: any) => c.level?.name === selStream.year && c.level?.stream === selStream.stream)
-    : filteredByCat;
-  const streamsByYear: { year: string; streams: string[] }[] = [];
-  for (const c of filteredByCat) {
-    const year = c.level?.name;
-    const stream = c.level?.stream;
-    if (!year || !stream) continue;
-    let group = streamsByYear.find(g => g.year === year);
-    if (!group) { group = { year, streams: [] }; streamsByYear.push(group); }
-    if (!group.streams.includes(stream)) group.streams.push(stream);
-  }
-  streamsByYear.sort((a, b) => a.year.localeCompare(b.year));
-  for (const g of streamsByYear) g.streams.sort();
-  const categories = [
-    { key: 'all', label: 'Tous', icon: BookOpen, gradient: 'from-primary/10 to-accent/10', btnGradient: 'linear-gradient(135deg, var(--primary), var(--accent))' },
-    { key: 'primary', label: 'Primaire', icon: BookText, gradient: 'from-emerald-500/10 via-teal-500/10 to-cyan-600/10', btnGradient: 'linear-gradient(135deg, #059669, #0d9488)' },
-    { key: 'middle', label: 'CEM', icon: Building2, gradient: 'from-orange-500/10 via-rose-500/10 to-pink-600/10', btnGradient: 'linear-gradient(135deg, #ea580c, #e11d48)' },
-    { key: 'high_school', label: 'Lycée', icon: GraduationCap, gradient: 'from-blue-600/10 via-indigo-600/10 to-violet-700/10', btnGradient: 'linear-gradient(135deg, #2563eb, #7c3aed)' },
-  ] as const;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
@@ -385,120 +360,7 @@ export default function LandingPage() {
       </section>
 
       {/* FORMATIONS — Premium Educational Experience */}
-      <section id="courses" className="scroll-mt-20 overflow-hidden px-6 py-28" style={{ backgroundColor: 'var(--bg)' }}>
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-16 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="badge inline-flex mb-5">{t('section.formations.badge', lang)}</div>
-              <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">{t('section.formations.title', lang)}</h2>
-              <div className="divider-gradient mt-5 mx-auto" />
-              <p className="mx-auto mt-5 max-w-xl" style={{ color: 'var(--fg-muted)' }}>{t('section.formations.subtitle', lang)}</p>
-            </motion.div>
-          </div>
 
-          <div className="flex justify-center gap-3 mb-10">
-            {categories.map(c => (
-              <button key={c.key} onClick={() => { setCat(c.key); setSelStream(null); }}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${cat === c.key ? 'text-white shadow-lg scale-105' : 'text-muted-foreground hover:scale-105'}`}
-                style={cat === c.key ? { background: c.btnGradient } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
-              >
-                <c.icon className="h-4 w-4" />
-                {c.label}
-              </button>
-            ))}
-          </div>
-          {streamsByYear.length > 0 && (
-            <div className="flex flex-col items-center gap-4 mb-10 w-full max-w-3xl mx-auto">
-              <button onClick={() => setSelStream(null)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${!selStream ? 'text-white' : 'hover:scale-105'}`}
-                style={!selStream ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
-              >Toutes les filières</button>
-              {streamsByYear.map(g => (
-                <div key={g.year} className="w-full">
-                  <p className="text-xs font-bold uppercase tracking-widest mb-2 text-center" style={{ color: 'var(--fg-muted)' }}>{g.year}</p>
-                  <div className="flex justify-center gap-2 flex-wrap">
-                    {g.streams.map(s => {
-                      const active = selStream?.year === g.year && selStream?.stream === s;
-                      return (
-                        <button key={s} onClick={() => setSelStream(active ? null : { year: g.year, stream: s })}
-                          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${active ? 'text-white' : 'hover:scale-105'}`}
-                          style={active ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
-                        >{s}</button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {isLoading && Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-2xl p-6 animate-pulse" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                <div className="h-4 w-20 rounded-md mb-3" style={{ backgroundColor: 'var(--border)' }} />
-                <div className="h-5 w-40 rounded-md mb-3" style={{ backgroundColor: 'var(--border)' }} />
-                <div className="h-4 w-full rounded-md mb-2" style={{ backgroundColor: 'var(--border)' }} />
-                <div className="h-4 w-3/4 rounded-md mb-6" style={{ backgroundColor: 'var(--border)' }} />
-                <div className="h-10 w-full rounded-xl" style={{ backgroundColor: 'var(--border)' }} />
-              </div>
-            ))}
-            {!isLoading && filteredCourses.length === 0 && (
-              <div className="col-span-full text-center py-16" style={{ color: 'var(--fg-muted)' }}>
-                <GraduationCap className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Aucune formation trouvée</p>
-              </div>
-            )}
-            {filteredCourses.map((c: any) => {
-              const catInfo = categories.find(x => x.key === (c.level?.category ?? 'all')) ?? categories[0];
-              const CIcon = catInfo.icon;
-              return (
-              <motion.div
-                key={c.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4 }}
-                className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1.5"
-                style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
-              >
-                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${catInfo.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
-                <div className="relative">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-widest truncate" style={{ color: 'var(--fg-muted)' }}>{c.subject?.name ?? ''}</p>
-                      <h3 className="text-lg font-bold mt-0.5 truncate">{c.name}</h3>
-                    </div>
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ml-3" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
-                      <CIcon className="h-5 w-5" style={{ color: 'var(--primary)' }} />
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm mb-4" style={{ color: 'var(--fg-muted)' }}>
-                    {c.level?.name && <span className="font-medium">{c.level.name}</span>}
-                    {c.level?.stream && <span>{c.level.stream}</span>}
-                    {c.teacher && <span>{c.teacher.first_name} {c.teacher.last_name}</span>}
-                  </div>
-                  <div className="flex items-center justify-between mb-4">
-                    {c.price && <span className="text-lg font-bold">{Number(c.price).toLocaleString()} DA</span>}
-                    {c.capacity && <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{c.capacity} places</span>}
-                  </div>
-                  <Link
-                    to="/enroll"
-                    className="inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
-                    style={{ background: catInfo.btnGradient }}
-                  >
-                    S'inscrire
-                  </Link>
-                </div>
-              </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* WHY US */}
       <section id="why" className="scroll-mt-20 py-28 px-6 relative overflow-hidden">
