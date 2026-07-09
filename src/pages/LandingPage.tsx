@@ -587,13 +587,13 @@ export default function LandingPage() {
                   Radiant Academy<br />Bordj El Bahri, Alger<br />Algérie
                 </p>
               </div>
-              <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="btn-primary self-start mt-1 h-10 px-5 text-xs gap-2 rounded-xl">
-                Ouvrir dans Maps <ArrowRight className="h-3.5 w-3.5 rtl-flip" />
+              <a href="https://www.openstreetmap.org/search?query=Radiant+Academy+Bordj+El+Bahri+Alger" target="_blank" rel="noopener noreferrer" className="btn-primary self-start mt-1 h-10 px-5 text-xs gap-2 rounded-xl">
+                {t('landing.open_maps', lang)} <ArrowRight className="h-3.5 w-3.5 rtl-flip" />
               </a>
             </div>
             <div className="sm:w-3/5 h-56" style={{ borderTop: '1px solid var(--border)' }}>
               <iframe
-                src="https://www.google.com/maps?q=Radiant+Academy+Bordj+El+Bahri+Alger&output=embed&z=16"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=3.1122%2C36.7439%2C3.1332%2C36.7545&amp;layer=mapnik"
                 width="100%"
                 height="100%"
                 style={{ border: 0, display: 'block' }}
