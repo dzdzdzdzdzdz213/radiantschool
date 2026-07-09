@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -93,7 +93,6 @@ export default function LandingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statsError]);
 
-  const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const { lang, setLang } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -398,7 +397,7 @@ export default function LandingPage() {
               hoverDescription="Développez les bases solides en mathématiques, français, arabe et anglais."
               icon={<BookText className="h-7 w-7" />}
               gradient="from-emerald-500 via-teal-500 to-cyan-600"
-              onClick={() => navigate('/formations/primaire')}
+              to="/formations/primaire"
             />
 
             <EducationLevelCard
@@ -407,7 +406,7 @@ export default function LandingPage() {
               hoverDescription="Maîtrisez les matières fondamentales et préparez-vous pour l'examen du BEM."
               icon={<Building2 className="h-7 w-7" />}
               gradient="from-orange-500 via-rose-500 to-pink-600"
-              onClick={() => navigate('/formations/cem')}
+              to="/formations/cem"
             />
 
             <EducationLevelCard
@@ -416,7 +415,7 @@ export default function LandingPage() {
               hoverDescription="Préparez votre baccalauréat avec des professeurs spécialisés par filière."
               icon={<GraduationCap className="h-7 w-7" />}
               gradient="from-blue-600 via-indigo-600 to-violet-700"
-              onClick={() => navigate('/formations/lycee')}
+              to="/formations/lycee"
             />
           </motion.div>
         </div>

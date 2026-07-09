@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 interface EducationLevelCardProps {
@@ -8,7 +9,7 @@ interface EducationLevelCardProps {
   icon: ReactNode;
   gradient: string;
   image?: string;
-  onClick?: () => void;
+  to: string;
 }
 
 export default function EducationLevelCard({
@@ -18,16 +19,16 @@ export default function EducationLevelCard({
   icon,
   gradient,
   image,
-  onClick,
+  to,
 }: EducationLevelCardProps) {
   return (
-    <motion.div
-      whileHover={{ y: -8, scale: 1.01 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      onClick={onClick}
-      className="group relative h-[360px] w-full cursor-pointer overflow-hidden rounded-3xl"
-      style={{ boxShadow: '0 4px 30px rgba(0,0,0,0.1)' }}
-    >
+    <Link to={to}>
+      <motion.div
+        whileHover={{ y: -8, scale: 1.01 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="group relative h-[360px] w-full cursor-pointer overflow-hidden rounded-3xl"
+        style={{ boxShadow: '0 4px 30px rgba(0,0,0,0.1)' }}
+      >
       <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`}>
         {image && (
           <img
@@ -79,5 +80,6 @@ export default function EducationLevelCard({
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 }
