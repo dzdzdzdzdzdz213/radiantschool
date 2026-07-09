@@ -203,9 +203,9 @@ export default function LandingPage() {
               </p>
 
               <div className="mt-10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.15s' }}>
-                <a href="#courses" className="btn-primary h-14 px-10 text-base gap-2.5 w-full sm:w-auto shadow-2xl shadow-[var(--primary)]/30 hover:shadow-[var(--primary)]/40 transition-all duration-300 active:scale-[0.97]">
+                <Link to="/formations" className="btn-primary h-14 px-10 text-base gap-2.5 w-full sm:w-auto shadow-2xl shadow-[var(--primary)]/30 hover:shadow-[var(--primary)]/40 transition-all duration-300 active:scale-[0.97]">
                   {t('hero.cta1', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
-                </a>
+                </Link>
                 <Link to="/enroll" className="btn-ghost h-14 px-10 text-base w-full sm:w-auto">
                   {t('hero.cta2', lang)}
                 </Link>
@@ -447,9 +447,9 @@ export default function LandingPage() {
             <Link to="/enroll" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-white px-10 text-sm font-bold shadow-2xl transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-1 active:scale-[0.97] text-base" style={{ color: 'var(--primary)' }}>
               {t('cta.button', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
             </Link>
-            <a href="#courses" className="inline-flex h-14 items-center rounded-2xl border-2 px-10 text-sm font-semibold text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-white active:scale-[0.97] text-base" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
+            <Link to="/formations" className="inline-flex h-14 items-center rounded-2xl border-2 px-10 text-sm font-semibold text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-white active:scale-[0.97] text-base" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
               {t('cta.secondary', lang)}
-            </a>
+            </Link>
           </div>
         </div>
       </section>
