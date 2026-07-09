@@ -153,9 +153,6 @@ export default function LandingPage() {
             <Link to="/login" className="hidden sm:inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
               {t('auth.sign_in', lang)}
             </Link>
-            <Link to="/enroll" className="btn-primary hidden sm:inline-flex h-10 px-5 text-sm">
-              {t('auth.register', lang)}
-            </Link>
 
             <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-xl p-2.5 md:hidden transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -179,9 +176,6 @@ export default function LandingPage() {
             <div className="flex flex-col gap-3 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
               <Link to="/login" onClick={() => setMenuOpen(false)} className="btn-ghost h-11 text-sm">
                 {t('auth.sign_in', lang)}
-              </Link>
-              <Link to="/enroll" onClick={() => setMenuOpen(false)} className="btn-primary h-11 text-sm">
-                {t('auth.register', lang)}
               </Link>
             </div>
           </div>
