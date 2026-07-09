@@ -591,17 +591,15 @@ export default function LandingPage() {
                 {t('landing.open_maps', lang)} <ArrowRight className="h-3.5 w-3.5 rtl-flip" />
               </a>
             </div>
-            <div className="sm:w-3/5 h-56" style={{ borderTop: '1px solid var(--border)' }}>
-              <iframe
-                src="https://www.google.com/maps?q=Radiant+Academy+Bordj+El+Bahri+Alger&output=embed&z=16"
-                width="100%"
-                height="100%"
-                style={{ border: 0, display: 'block' }}
-                loading="lazy"
-                title="Radiant Academy Location"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
+            <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="sm:w-3/5 h-56 block group" style={{ borderTop: '1px solid var(--border)', textDecoration: 'none' }}>
+              <div className="w-full h-full flex items-center justify-center bg-muted transition-colors group-hover:bg-muted/80">
+                <div className="text-center p-6">
+                  <MapPin className="h-10 w-10 mx-auto mb-3 text-primary" />
+                  <p className="text-sm font-medium text-foreground">{t('landing.open_maps', lang)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Bordj El Bahri, Alger</p>
+                </div>
+              </div>
+            </a>
           </div>
 
           {/* Bottom */}
