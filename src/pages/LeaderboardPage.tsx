@@ -3,7 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { Star, Trophy, Medal, Award } from 'lucide-react';
+import { Star, Trophy, Medal, Award, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface TeacherRating {
   teacherId: string;
@@ -88,6 +89,9 @@ export default function LeaderboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm" style={{ color: 'var(--primary)' }}>
+        <ArrowLeft className="h-4 w-4" /> Retour à l'accueil
+      </Link>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Trophy className="h-6 w-6" style={{ color: 'var(--primary)' }} />
