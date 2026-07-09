@@ -153,7 +153,7 @@ export default function LandingPage() {
             <Link to="/login" className="hidden sm:inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
               {t('auth.sign_in', lang)}
             </Link>
-            <Link to="/register" className="btn-primary hidden sm:inline-flex h-10 px-5 text-sm">
+            <Link to="/enroll" className="btn-primary hidden sm:inline-flex h-10 px-5 text-sm">
               {t('auth.register', lang)}
             </Link>
 
@@ -180,7 +180,7 @@ export default function LandingPage() {
               <Link to="/login" onClick={() => setMenuOpen(false)} className="btn-ghost h-11 text-sm">
                 {t('auth.sign_in', lang)}
               </Link>
-              <Link to="/register" onClick={() => setMenuOpen(false)} className="btn-primary h-11 text-sm">
+              <Link to="/enroll" onClick={() => setMenuOpen(false)} className="btn-primary h-11 text-sm">
                 {t('auth.register', lang)}
               </Link>
             </div>
