@@ -7,7 +7,6 @@ import { useLang } from '@/contexts/LangContext';
 import { t, LANGUAGES } from '@/i18n';
 import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart, BookText, Building2 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
-import EducationLevelCard from '@/components/formations/EducationLevelCard';
 
 /*
   HUMANIZING PASS — summary of what changed vs. the original file
@@ -100,6 +99,14 @@ export default function LandingPage() {
 
   const teacherCount = new Set((courses ?? []).map((c: any) => c.teacher?.id)).size;
   const levelCount = new Set((courses ?? []).map((c: any) => c.level?.name)).size;
+  const [cat, setCat] = useState<'primary' | 'middle' | 'secondary'>('primary');
+  const categories = [
+    { key: 'primary', label: 'Primaire', icon: BookText, gradient: 'from-emerald-500/10 via-teal-500/10 to-cyan-600/10', border: 'border-emerald-500/20', btnGradient: 'linear-gradient(135deg, #059669, #0d9488)' },
+    { key: 'middle', label: 'CEM', icon: Building2, gradient: 'from-orange-500/10 via-rose-500/10 to-pink-600/10', border: 'border-orange-500/20', btnGradient: 'linear-gradient(135deg, #ea580c, #e11d48)' },
+    { key: 'secondary', label: 'Lycée', icon: GraduationCap, gradient: 'from-blue-600/10 via-indigo-600/10 to-violet-700/10', border: 'border-blue-600/20', btnGradient: 'linear-gradient(135deg, #2563eb, #7c3aed)' },
+  ] as const;
+  const activeCat = categories.find(c => c.key === cat)!;
+  const filteredCourses = (courses ?? []).filter((c: any) => c.level?.category === cat).slice(0, 9);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
@@ -378,40 +385,72 @@ export default function LandingPage() {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            className="grid gap-8 lg:grid-cols-3"
-          >
-            <EducationLevelCard
-              title="Primaire"
-              subtitle="Du CP à la 5ème année"
-              hoverDescription="Développez les bases solides en mathématiques, français, arabe et anglais."
-              icon={<BookText className="h-7 w-7" />}
-              gradient="from-emerald-500 via-teal-500 to-cyan-600"
-              onClick={() => window.location.href = '/formations/primaire'}
-            />
-
-            <EducationLevelCard
-              title="CEM"
-              subtitle="De la 1ère à la 4ème AM"
-              hoverDescription="Maîtrisez les matières fondamentales et préparez-vous pour l'examen du BEM."
-              icon={<Building2 className="h-7 w-7" />}
-              gradient="from-orange-500 via-rose-500 to-pink-600"
-              onClick={() => window.location.href = '/formations/cem'}
-            />
-
-            <EducationLevelCard
-              title="Lycée"
-              subtitle="De la 1ère à la 3ème AS"
-              hoverDescription="Préparez votre baccalauréat avec des professeurs spécialisés par filière."
-              icon={<GraduationCap className="h-7 w-7" />}
-              gradient="from-blue-600 via-indigo-600 to-violet-700"
-              onClick={() => window.location.href = '/formations/lycee'}
-            />
-          </motion.div>
+          <div className="flex justify-center gap-3 mb-12">
+            {categories.map(c => (
+              <button key={c.key} onClick={() => setCat(c.key)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${cat === c.key ? 'text-white shadow-lg scale-105' : 'text-muted-foreground hover:scale-105'}`}
+                style={cat === c.key ? { background: c.btnGradient } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+              >
+                <c.icon className="h-4 w-4" />
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {isLoading && Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-2xl p-6 animate-pulse" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                <div className="h-5 w-24 rounded-md mb-4" style={{ backgroundColor: 'var(--border)' }} />
+                <div className="h-4 w-full rounded-md mb-3" style={{ backgroundColor: 'var(--border)' }} />
+                <div className="h-4 w-3/4 rounded-md mb-6" style={{ backgroundColor: 'var(--border)' }} />
+                <div className="h-10 w-full rounded-xl" style={{ backgroundColor: 'var(--border)' }} />
+              </div>
+            ))}
+            {!isLoading && filteredCourses.length === 0 && (
+              <div className="col-span-full text-center py-16" style={{ color: 'var(--fg-muted)' }}>
+                <GraduationCap className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium">Aucune formation disponible dans cette catégorie pour le moment</p>
+              </div>
+            )}
+            {filteredCourses.map((c: any) => {
+              const CIcon = activeCat.icon;
+              return (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4 }}
+                className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1.5"
+                style={{ backgroundColor: 'var(--bg-card)', border: `1px solid var(--border)` }}
+              >
+                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${activeCat.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
+                <div className="relative">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>{c.subject?.name ?? ''}</p>
+                      <h3 className="text-lg font-bold mt-0.5">{c.name}</h3>
+                    </div>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
+                      <CIcon className="h-5 w-5" style={{ color: 'var(--primary)' }} />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-5" style={{ color: 'var(--fg-muted)' }}>
+                    {c.teacher && <span>{c.teacher.first_name} {c.teacher.last_name}</span>}
+                    {c.price && <span>{Number(c.price).toLocaleString()} DA</span>}
+                    {c.capacity && <span>{c.current_enrollments ?? 0}/{c.capacity} places</span>}
+                  </div>
+                  <Link
+                    to="/enroll"
+                    className="inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
+                    style={{ background: activeCat.btnGradient }}
+                  >
+                    S'inscrire
+                  </Link>
+                </div>
+              </motion.div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
