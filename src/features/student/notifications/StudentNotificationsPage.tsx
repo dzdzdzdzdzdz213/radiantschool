@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useMarkNotificationsRead, useDeleteNotification } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 const typeIcons: Record<string, any> = { alert: AlertCircle, info: Info, announcement: Megaphone, payment: DollarSign, message: MessageSquare };
 const typeColors: Record<string, string> = { alert: 'text-red-500 bg-red-500/10', info: 'text-blue-500 bg-blue-500/10', announcement: 'text-violet-500 bg-violet-500/10', payment: 'text-emerald-500 bg-emerald-500/10', message: 'text-sky-500 bg-sky-500/10' };
@@ -21,7 +22,7 @@ export default function StudentNotificationsPage() {
   const { profile } = useAuth();
   const [tab, setTab] = useState('all');
 
-  const { data: notifications, isLoading } = useQuery({
+  const { data: notifications, isLoading, isError } = useQuery({
     queryKey: ['student_notifications', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -34,6 +35,7 @@ export default function StudentNotificationsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.notifications', lang));
 
   const markRead = useMarkNotificationsRead();
   const deleteNotif = useDeleteNotification();

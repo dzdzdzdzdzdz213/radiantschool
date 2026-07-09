@@ -47,7 +47,7 @@ export function useStudentDetail(id: string) {
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('users')
-        .select('*, students!inner(*), levels(name)')
+        .select('*, students!inner(*, level:levels(name))')
         .eq('id', id)
         .single();
       if (error) throw error;

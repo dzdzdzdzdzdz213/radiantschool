@@ -30,7 +30,7 @@ export default function SchedulesPage() {
         .from('course_schedules')
         .select('id, day_of_week, start_time, end_time, course:courses!inner(name), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
         .filter('courses.start_date', 'lte', endStr)
-        .or(`courses.end_date.gte.${startStr},courses.end_date.is.null`)
+        .filter('courses.end_date', 'gte', startStr)
         .order('start_time');
       const grouped: Record<string, any[]> = {};
       for (const day of DAYS) grouped[day] = [];

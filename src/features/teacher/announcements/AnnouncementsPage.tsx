@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, Megaphone, Pin, Calendar, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, Megaphone, Calendar, X, Pencil, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { Select, SelectItem } from '@/components/ui/select';
 
 export default function AnnouncementsPage() {
@@ -29,9 +30,8 @@ export default function AnnouncementsPage() {
       if (!profile?.id) return [];
       let q = (supabase as any)
         .from('announcements')
-        .select('id, title, content, is_pinned, created_at, course:courses(name)')
+        .select('id, course_id, title, content, created_at, course:courses(name)')
         .eq('teacher_id', profile.id)
-        .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
       const { data, error } = await q;
       if (error) throw error;
@@ -46,7 +46,7 @@ export default function AnnouncementsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', content: '', course_id: '' });
 
-  const { data: courses } = useQuery({
+  const { data: courses, isError: coursesError } = useQuery({
     queryKey: ['teacher_courses_select', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -55,6 +55,7 @@ export default function AnnouncementsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(coursesError, lang, t('nav.courses', lang));
 
   const openCreateModal = () => {
     setEditingId(null);
@@ -167,11 +168,9 @@ export default function AnnouncementsPage() {
             ) : (announcements ?? []).map((a: any) => (
               <div key={a.id} className="rounded-xl border p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-start gap-3">
-                  {a.is_pinned && <Pin className="h-4 w-4 text-primary shrink-0 mt-1" />}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-medium">{a.title}</h4>
-                      {a.is_pinned && <Badge variant="outline" className="text-[9px]">{t('common.pinned', lang)}</Badge>}
                       {a.course?.name && <Badge variant="secondary" className="text-[9px]">{a.course.name}</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{a.content}</p>

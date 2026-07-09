@@ -15,6 +15,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { profileSchema } from '@/lib/validation';
 import { useUpdateUserSettings, useUpdatePassword } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function ProfilePage() {
   const { profile, refreshProfile } = useAuth();
@@ -36,7 +37,7 @@ export default function ProfilePage() {
   const updateSettings = useUpdateUserSettings();
   const updatePasswordMutation = useUpdatePassword();
 
-  const { data: userSettings } = useQuery({
+  const { data: userSettings, isError } = useQuery({
     queryKey: ['profile_settings', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return {};
@@ -45,6 +46,7 @@ export default function ProfilePage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.profile', lang));
 
   useEffect(() => {
     if (!userSettings) return;
@@ -121,22 +123,22 @@ export default function ProfilePage() {
             <>
               <div className="rounded-lg bg-page p-3">
                 <label className="mb-1 block text-xs text-muted-foreground">{t('common.first_name', lang)}</label>
-                <input className="w-full bg-transparent text-sm font-medium outline-none" value={firstName} onChange={e => { setFirstName(e.target.value); setTimeout(validate); }} />
+                <Input value={firstName} onChange={e => { setFirstName(e.target.value.replace(/\d/g, '')); setTimeout(validate); }} className="h-9 bg-transparent border-0 p-0 shadow-none focus-visible:ring-0" />
                 {fieldErrors.firstName && <p className="mt-1 text-xs text-red-500">{fieldErrors.firstName}</p>}
               </div>
               <div className="rounded-lg bg-page p-3">
                 <label className="mb-1 block text-xs text-muted-foreground">{t('common.last_name', lang)}</label>
-                <input className="w-full bg-transparent text-sm font-medium outline-none" value={lastName} onChange={e => { setLastName(e.target.value); setTimeout(validate); }} />
+                <Input value={lastName} onChange={e => { setLastName(e.target.value.replace(/\d/g, '')); setTimeout(validate); }} className="h-9 bg-transparent border-0 p-0 shadow-none focus-visible:ring-0" />
                 {fieldErrors.lastName && <p className="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>}
               </div>
               <div className="rounded-lg bg-page p-3">
                 <label className="mb-1 block text-xs text-muted-foreground">{t('common.email', lang)}</label>
-                <input className="w-full bg-transparent text-sm font-medium outline-none" value={email} onChange={e => { setEmail(e.target.value); setTimeout(validate); }} />
+                <Input value={email} onChange={e => { setEmail(e.target.value); setTimeout(validate); }} className="h-9 bg-transparent border-0 p-0 shadow-none focus-visible:ring-0" />
                 {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
               </div>
               <div className="rounded-lg bg-page p-3">
                 <label className="mb-1 block text-xs text-muted-foreground">{t('common.phone', lang)}</label>
-                <input className="w-full bg-transparent text-sm font-medium outline-none" value={phone} onChange={e => { setPhone(e.target.value); setTimeout(validate); }} placeholder={t('common.not_assigned', lang)} />
+                <Input value={phone} onChange={e => { setPhone(e.target.value); setTimeout(validate); }} placeholder={t('common.not_assigned', lang)} className="h-9 bg-transparent border-0 p-0 shadow-none focus-visible:ring-0" />
                 {fieldErrors.phone && <p className="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>}
               </div>
             </>
@@ -180,19 +182,19 @@ export default function ProfilePage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />Sécurité</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />{t('common.security', lang)}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground-foreground">{t('auth.password', lang)}</Label>
-            <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="h-9" placeholder="Mot de passe actuel" />
+            <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="h-9" placeholder={t('common.current_password', lang)} />
           </div>
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground-foreground">{t('auth.new_password', lang)}</Label>
-            <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="h-9" placeholder="Nouveau mot de passe" />
+            <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="h-9" placeholder={t('auth.new_password', lang)} />
           </div>
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground-foreground">{t('auth.confirm_password', lang)}</Label>
-            <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-9" placeholder="Confirmer" />
+            <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-9" placeholder={t('common.confirm', lang)} />
           </div>
           <Button size="sm" className="h-9" onClick={() => {
             if (!currentPassword || !newPassword) { toast(t('common.required', lang), 'error'); return; }

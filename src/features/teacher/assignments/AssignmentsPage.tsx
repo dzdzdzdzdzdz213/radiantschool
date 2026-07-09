@@ -16,6 +16,7 @@ import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { Select, SelectItem } from '@/components/ui/select';
 
 export default function AssignmentsPage() {
@@ -33,7 +34,7 @@ export default function AssignmentsPage() {
       if (!profile?.id) return [];
       let q = (supabase as any)
         .from('assignments')
-        .select('id, title, description, due_date, created_at, file_url, course:courses(name)')
+        .select('id, course_id, title, description, due_date, created_at, file_url, course:courses(name)')
         .eq('teacher_id', profile.id)
         .order('created_at', { ascending: false });
       if (debouncedSearch) q = q.ilike('title', `%${debouncedSearch}%`);
@@ -48,7 +49,7 @@ export default function AssignmentsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', description: '', due_date: '', course_id: '' });
 
-  const { data: courses } = useQuery({
+  const { data: courses, isError: coursesError } = useQuery({
     queryKey: ['teacher_courses_select', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -57,6 +58,7 @@ export default function AssignmentsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(coursesError, lang, t('nav.courses', lang));
 
   const openCreateModal = () => {
     setEditingId(null);

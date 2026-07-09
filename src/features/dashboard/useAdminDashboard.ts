@@ -67,7 +67,7 @@ export function useAdminDashboard() {
       {
         pagination: { page: 1, pageSize: 10 },
         sort: [{ column: 'created_at', direction: 'desc' }],
-        filters: [{ column: 'deleted_at', operator: 'is', value: null }],
+        filters: [{ column: 'deleted_at', operator: 'is', value: null }, { column: 'role', operator: 'eq', value: 'student' }],
       },
       'id, first_name, last_name, email, phone, status, created_at',
     ),

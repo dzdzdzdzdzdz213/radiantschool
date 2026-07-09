@@ -158,8 +158,8 @@ export function useDeleteNotification() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
-      const { error } = await supabase.from('notifications').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('notifications').update({ deleted_at: new Date().toISOString() }).eq('id', id as any);
       if (error) throw error;
     },
     onSuccess: () => {

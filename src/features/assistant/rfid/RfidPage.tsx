@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activity, AlertCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,6 +9,7 @@ import { formatDateTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function RfidPage() {
   const { lang } = useLang();
@@ -41,13 +41,8 @@ export default function RfidPage() {
     },
   });
 
-  useEffect(() => {
-    if (recentError) toast(t('errors.load_error', lang, t('rfid.recent_scans', lang)), 'error');
-  }, [recentError]);
-
-  useEffect(() => {
-    if (historyError) toast(t('errors.load_error', lang, t('rfid.history', lang)), 'error');
-  }, [historyError]);
+  useErrorToast(recentError, lang, t('rfid.recent_scans', lang));
+  useErrorToast(historyError, lang, t('rfid.history', lang));
 
   const scanMutation = useMutation({
     mutationFn: async (code: string) => {
@@ -58,9 +53,8 @@ export default function RfidPage() {
         .eq('role', 'student')
         .maybeSingle();
       const { error } = await (supabase as any).from('rfid_scans').insert({
-        rfid_code: code,
+        rfid_tag: code,
         student_id: student?.id ?? null,
-        status: student?.id ? 'success' : 'unknown',
         scanned_at: new Date().toISOString(),
       });
       if (error) throw error;
@@ -141,12 +135,9 @@ export default function RfidPage() {
               ) : (recentScans ?? []).map((s: any) => (
                 <div key={s.id} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
                   <div>
-                    <p className="text-sm font-medium">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_code}</p>
+                    <p className="text-sm font-medium">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_tag}</p>
                     <p className="text-xs text-muted-foreground">{formatDateTime(s.scanned_at)}</p>
                   </div>
-                  <Badge variant={s.status === 'success' ? 'success' : 'destructive'}>
-                    {s.status === 'success' ? t('common.success', lang) : t('common.error', lang)}
-                  </Badge>
                 </div>
               ))}
             </div>
@@ -164,23 +155,17 @@ export default function RfidPage() {
               <TableRow>
                 <TableHead>{t('nav.students', lang)}</TableHead>
                 <TableHead>{t('common.time', lang)}</TableHead>
-                <TableHead>{t('common.status', lang)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {historyLoading ? Array.from({ length: 4 }).map((_, i) => (
                 <TableRow key={i}>{[1, 2, 3].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
               )) : (allScans ?? []).length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={2} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               ) : (allScans ?? []).map((s: any) => (
                 <TableRow key={s.id}>
-                  <TableCell className="text-sm">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_code}</TableCell>
+                  <TableCell className="text-sm">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_tag}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{formatDateTime(s.scanned_at)}</TableCell>
-                  <TableCell>
-                    <Badge variant={s.status === 'success' ? 'success' : 'destructive'}>
-                      {s.status === 'success' ? t('common.success', lang) : t('common.error', lang)}
-                    </Badge>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

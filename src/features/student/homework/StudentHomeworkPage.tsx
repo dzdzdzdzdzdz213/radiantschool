@@ -12,14 +12,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function StudentHomeworkPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
 
-  const { data: homework, isLoading } = useQuery({
-    queryKey: ['student_homework', profile?.id, search],
+  const { data: homework, isLoading, isError } = useQuery({
+    queryKey: ['student_homework', profile?.id, debouncedSearch],
     queryFn: async () => {
       if (!profile?.id) return [];
       const { data: enrollments } = await (supabase as any).from('course_enrollments').select('course_id').eq('student_id', profile.id).eq('status', 'active');
@@ -36,10 +39,20 @@ export default function StudentHomeworkPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.homework', lang));
 
   const submitMutation = useMutationWithFeedback(
     async (assignmentId: string) => {
       if (!profile?.id) return;
+      const { data: existing } = await (supabase as any)
+        .from('assignment_submissions')
+        .select('id')
+        .eq('assignment_id', assignmentId)
+        .eq('student_id', profile.id)
+        .maybeSingle();
+      if (existing) {
+        throw new Error('Vous avez déjà soumis ce devoir.');
+      }
       const { error } = await (supabase as any).from('assignment_submissions').insert({
         assignment_id: assignmentId,
         student_id: profile.id,

@@ -214,11 +214,11 @@ export default function CoursesPage() {
                   </div>
                   <div className="space-y-2">
                     <Button type="button" variant="outline" size="sm" className="h-8 gap-2" onClick={() => document.getElementById('course-image-input')?.click()}>
-                      <Camera className="h-4 w-4" />{form.image_url ? 'Changer' : 'Ajouter'}
+                      <Camera className="h-4 w-4" />{form.image_url ? t('common.change', lang) : t('common.add', lang)}
                     </Button>
                     {(imagePreview || form.image_url) && (
                       <Button type="button" variant="ghost" size="sm" className="h-8 gap-2 text-destructive" onClick={() => { setImageFile(null); setImagePreview(null); setForm(f => ({ ...f, image_url: '' })); }}>
-                        <Trash className="h-4 w-4" />Supprimer
+                        <Trash className="h-4 w-4" />{t('common.delete', lang)}
                       </Button>
                     )}
                     <input id="course-image-input" type="file" accept="image/*" className="hidden" onChange={e => {
@@ -317,30 +317,30 @@ export default function CoursesPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search_course', lang)} className="h-10 pl-10" />
         </div>
-        <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setLevelFilter(''); }} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
-          <option value="">{t('common.all', lang)}</option>
-          <option value="primary">{t('enroll.category_primaire', lang)}</option>
-          <option value="middle">{t('enroll.category_cem', lang)}</option>
-          <option value="high_school">{t('enroll.category_lycee', lang)}</option>
-        </select>
-        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 min-w-[140px]">
-          <option value="">{t('common.all', lang)}</option>
+        <Select value={catFilter} onValueChange={v => { setCatFilter(v); setLevelFilter(''); }} placeholder={t('common.all', lang)}>
+          <SelectItem value="">{t('common.all', lang)}</SelectItem>
+          <SelectItem value="primary">{t('enroll.category_primaire', lang)}</SelectItem>
+          <SelectItem value="middle">{t('enroll.category_cem', lang)}</SelectItem>
+          <SelectItem value="high_school">{t('enroll.category_lycee', lang)}</SelectItem>
+        </Select>
+        <Select value={levelFilter} onValueChange={setLevelFilter} placeholder={t('common.all', lang)}>
+          <SelectItem value="">{t('common.all', lang)}</SelectItem>
           {filteredLevels.map((l: any) => (
-            <option key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</option>
+            <SelectItem key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</SelectItem>
           ))}
-        </select>
-        <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
-          <option value="">{t('common.all', lang)}</option>
+        </Select>
+        <Select value={subjectFilter} onValueChange={setSubjectFilter} placeholder={t('common.all', lang)}>
+          <SelectItem value="">{t('common.all', lang)}</SelectItem>
           {(subjects ?? []).map((s: any) => (
-            <option key={s.id} value={String(s.id)}>{s.name}</option>
+            <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
           ))}
-        </select>
-        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
-          <option value="">{t('common.all', lang)}</option>
-          <option value="normal">Normal</option>
-          <option value="vip">{t('type.vip', lang)}</option>
-          <option value="private">{t('type.private', lang)}</option>
-        </select>
+        </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter} placeholder={t('common.all', lang)}>
+          <SelectItem value="">{t('common.all', lang)}</SelectItem>
+          <SelectItem value="normal">Normal</SelectItem>
+          <SelectItem value="vip">{t('type.vip', lang)}</SelectItem>
+          <SelectItem value="private">{t('type.private', lang)}</SelectItem>
+        </Select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (

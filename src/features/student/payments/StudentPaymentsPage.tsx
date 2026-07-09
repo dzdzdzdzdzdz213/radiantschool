@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useDownloadFile } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function StudentPaymentsPage() {
   const { lang } = useLang();
@@ -20,21 +21,22 @@ export default function StudentPaymentsPage() {
   const [search, setSearch] = useState('');
   const downloadFile = useDownloadFile();
 
-  const { data: paymentData, isLoading } = useQuery({
+  const { data: paymentData, isLoading, isError } = useQuery({
     queryKey: ['student_payments', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return { payments: [], stats: { total: 0, paid: 0, pending: 0 } };
       const { data: payments } = await (supabase as any)
         .from('payments')
-        .select('id, amount, payment_method, payment_type, receipt_number, payment_date')
+        .select('id, amount, payment_method, payment_type, receipt_number, payment_date, status')
         .eq('student_id', profile.id)
         .order('payment_date', { ascending: false });
-      const items = (payments ?? []).map((p: any) => ({ ...p, status: 'paid' }));
+      const items = (payments ?? []).map((p: any) => p);
       const filtered = search ? items.filter((i: any) => i.receipt_number?.toLowerCase().includes(search.toLowerCase())) : items;
       return { payments: filtered, stats: { total: items.reduce((s: number, i: any) => s + (i.amount ?? 0), 0), paid: items.reduce((s: number, i: any) => s + (i.amount ?? 0), 0), pending: 0 } };
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.payments', lang));
 
   return (
     <div className="space-y-6">

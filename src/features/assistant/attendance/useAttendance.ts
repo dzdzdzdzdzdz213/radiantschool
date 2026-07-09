@@ -25,13 +25,9 @@ export function useAttendance(date?: string, search: string = '') {
         .from('attendance')
         .select('id, date, status, method, created_at, student:users(first_name, last_name, id), course_schedule:course_schedules!inner(course:courses(name))')
         .eq('date', today);
-      if (search) {
-        const like = `%${search}%`;
-        query = query.or('student.first_name.ilike.' + like + ',student.last_name.ilike.' + like);
-      }
       const { data } = await query
         .order('created_at', { ascending: false });
-      const items = (data ?? []).map((r: any) => ({
+      let items = (data ?? []).map((r: any) => ({
         id: r.id,
         studentId: r.student?.id ?? '',
         studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
@@ -41,6 +37,10 @@ export function useAttendance(date?: string, search: string = '') {
         method: r.method ?? 'manual',
         checkIn: r.created_at,
       })) as AttendanceRecord[];
+      if (search) {
+        const q = search.toLowerCase();
+        items = items.filter(i => i.studentName.toLowerCase().includes(q));
+      }
       return items;
     },
     staleTime: 10_000,

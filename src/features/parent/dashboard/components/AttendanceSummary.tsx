@@ -59,7 +59,7 @@ export default function AttendanceSummary({ childList: children, loading }: Atte
           <div key={child.id} className="flex items-center justify-between">
             <span className="text-sm">{child.firstName} {child.lastName}</span>
             <span className="text-xs font-medium text-muted-foreground">
-              —
+              {child.attendanceRate ?? 0}%
             </span>
           </div>
         ))}

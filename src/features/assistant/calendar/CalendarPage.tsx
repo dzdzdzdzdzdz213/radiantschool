@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -39,7 +40,7 @@ export default function CalendarPage() {
     },
   });
 
-  useErrorToast(isError, lang, 'Erreur lors du chargement du calendrier');
+  useErrorToast(isError, lang, t('calendar.load_error', lang));
 
   const prevMonth = () => { if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); } else setCurrentMonth(m => m - 1); };
   const nextMonth = () => { if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); } else setCurrentMonth(m => m + 1); };

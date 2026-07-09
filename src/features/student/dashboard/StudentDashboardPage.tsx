@@ -170,7 +170,7 @@ export default function StudentDashboardPage() {
                 <div className="flex items-center gap-4 rounded-xl bg-accent/50 p-4">
                   <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center"><Clock className="h-4 w-4 text-primary" /></div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{kpi.nextClassCourse ?? 'Cours'}</p>
+                    <p className="text-sm font-medium">{kpi.nextClassCourse ?? t('nav.courses', lang)}</p>
                     <p className="text-xs text-muted-foreground">{kpi.nextClassTime ?? ''} · {kpi.nextClassRoom ?? ''}</p>
                   </div>
                   <Badge variant="outline">{kpi.todayClasses} {t('nav.courses', lang)}</Badge>

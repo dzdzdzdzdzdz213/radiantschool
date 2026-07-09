@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, getInitials } from '@/lib/utils';
 import { useSubmitReview } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function StudentReviewsPage() {
   const { lang } = useLang();
@@ -22,7 +23,7 @@ export default function StudentReviewsPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null);
   const submitReview = useSubmitReview();
 
-  const { data: teachers, isLoading: teachersLoading } = useQuery({
+  const { data: teachers, isLoading: teachersLoading, isError: teachersError } = useQuery({
     queryKey: ['student_teachers', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -40,8 +41,9 @@ export default function StudentReviewsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(teachersError, lang, t('nav.reviews', lang));
 
-  const { data: reviews } = useQuery({
+  const { data: reviews, isError: reviewsError } = useQuery({
     queryKey: ['student_my_reviews', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -54,6 +56,7 @@ export default function StudentReviewsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(reviewsError, lang, t('nav.reviews', lang));
 
   return (
     <div className="space-y-6">

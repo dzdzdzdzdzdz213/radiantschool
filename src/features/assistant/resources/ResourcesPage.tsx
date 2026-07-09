@@ -28,7 +28,7 @@ export default function ResourcesPage() {
     queryFn: async () => {
       let query = (supabase as any)
         .from('resources')
-        .select('*')
+        .select('id, name, file_path, file_type, created_at')
         .order('created_at', { ascending: false });
       if (search) query = query.ilike('name', `%${search}%`);
       const { data } = await query;
@@ -51,8 +51,8 @@ export default function ResourcesPage() {
       const { data: urlData } = (supabase as any).storage.from('resources').getPublicUrl(filePath);
       const { error: dbError } = await (supabase as any).from('resources').insert({
         name: file.name,
-        type: file.type,
-        file_url: urlData.publicUrl,
+        file_type: file.type,
+        file_path: urlData.publicUrl,
         created_at: new Date().toISOString(),
       });
       if (dbError) throw dbError;
@@ -102,7 +102,6 @@ export default function ResourcesPage() {
               <TableRow>
                 <TableHead>{t('common.name', lang)}</TableHead>
                 <TableHead className="hidden sm:table-cell">{t('common.type', lang)}</TableHead>
-                <TableHead className="hidden md:table-cell">{t('resources.category', lang)}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t('common.date', lang)}</TableHead>
                 <TableHead className="text-right">{t('common.actions', lang)}</TableHead>
               </TableRow>
@@ -111,7 +110,7 @@ export default function ResourcesPage() {
               {isLoading ? Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>{[1, 2, 3, 4, 5].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
               )) : (resources ?? []).length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               ) : (
                 (resources ?? []).map((r: any) => (
                   <TableRow key={r.id}>
@@ -121,12 +120,11 @@ export default function ResourcesPage() {
                         <span className="text-sm font-medium">{r.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell"><Badge variant="outline">{r.type ?? '—'}</Badge></TableCell>
-                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{r.category ?? '—'}</TableCell>
+                    <TableCell className="hidden sm:table-cell"><Badge variant="outline">{r.file_type ?? '—'}</Badge></TableCell>
                     <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">{formatDateTime(r.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_url, filename: r.name })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_path, filename: r.name })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>

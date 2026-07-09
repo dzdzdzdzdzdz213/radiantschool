@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { FileText, ArrowRight } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -10,7 +9,6 @@ interface HomeworkStatusProps {
 }
 
 export default function HomeworkStatus({ data, loading }: HomeworkStatusProps) {
-  const navigate = useNavigate();
   const { lang } = useLang();
 
   if (loading) {
@@ -60,7 +58,7 @@ export default function HomeworkStatus({ data, loading }: HomeworkStatusProps) {
         </div>
       )}
       {data.length > 8 && (
-        <button onClick={() => navigate('/parent/children')} className="mt-3 text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+        <button className="mt-3 text-xs text-primary font-medium flex items-center gap-1 cursor-default opacity-70">
           {t('common.view_all', lang)} <ArrowRight className="h-3 w-3" />
         </button>
       )}

@@ -7,6 +7,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectItem } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,12 +41,12 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!settingsData) return;
     setSettingsId(settingsData.id);
-    setCenterName(settingsData.center_name ?? '');
+    setCenterName(settingsData.name ?? '');
     setAddress(settingsData.address ?? '');
     setPhone(settingsData.phone ?? '');
     setWilaya(settingsData.wilaya ?? 'Alger');
-    setEmailNotif(settingsData.email_notifications ?? true);
-    setSmsNotif(settingsData.sms_notifications ?? false);
+    setEmailNotif(settingsData.notifications_enabled ?? true);
+    setSmsNotif(settingsData.sms_enabled ?? false);
     setAutoInvoice(settingsData.auto_invoice ?? true);
     setCurrency(settingsData.currency ?? 'DZD');
   }, [settingsData]);
@@ -61,12 +62,12 @@ export default function SettingsPage() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload: Record<string, any> = {
-        center_name: centerName,
+        name: centerName,
         address,
         phone,
         wilaya,
-        email_notifications: emailNotif,
-        sms_notifications: smsNotif,
+        notifications_enabled: emailNotif,
+        sms_enabled: smsNotif,
         auto_invoice: autoInvoice,
         currency,
       };
@@ -107,9 +108,9 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label>{t('settings.wilaya', lang)}</Label>
-              <select className="flex h-9 w-full rounded-lg border border-border bg-background px-3 py-1 text-sm" value={wilaya} onChange={e => setWilaya(e.target.value)}>
-                {WILAYAS.map(w => <option key={w}>{w}</option>)}
-              </select>
+              <Select value={wilaya} onValueChange={setWilaya} placeholder="Alger">
+                {WILAYAS.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+              </Select>
             </div>
             {settingsLoading ? (
               <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">{t('common.loading', lang)}</div>
@@ -138,9 +139,11 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div><p className="text-sm font-medium">{t('common.type', lang)}</p></div>
-              <select className="flex h-9 rounded-lg border border-border bg-background px-3 py-1 text-sm" value={currency} onChange={e => setCurrency(e.target.value)}>
-                <option>DZD</option><option>EUR</option><option>USD</option>
-              </select>
+              <Select value={currency} onValueChange={setCurrency} placeholder="DZD">
+                <SelectItem value="DZD">DZD</SelectItem>
+                <SelectItem value="EUR">EUR</SelectItem>
+                <SelectItem value="USD">USD</SelectItem>
+              </Select>
             </div>
           </CardContent>
         </Card>

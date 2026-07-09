@@ -49,7 +49,6 @@ export default function EmailsPage() {
     mutationFn: async () => {
       const { error } = await (supabase as any).from('notifications').insert({
         user_id: null,
-        recipient: to,
         title: subject,
         message: body,
         type: 'email',
@@ -131,7 +130,7 @@ export default function EmailsPage() {
                   <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
                 ) : (sentEmails ?? []).map((e: any) => (
                   <TableRow key={e.id}>
-                    <TableCell className="text-sm">{e.recipient ?? '—'}</TableCell>
+                    <TableCell className="text-sm">{e.user_id ?? '—'}</TableCell>
                     <TableCell className="text-sm">{e.title ?? '—'}</TableCell>
                     <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{formatDateTime(e.created_at)}</TableCell>
                     <TableCell className="text-right"><Badge variant="outline">{t('common.success', lang)}</Badge></TableCell>

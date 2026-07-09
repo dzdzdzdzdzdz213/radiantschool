@@ -39,7 +39,8 @@ export default function NotificationsPage() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      return api.rpc('dispatch_notification', { category: 'general', message, title, type: 'announcement' });
+      const { error } = await (supabase as any).from('notifications').insert({ user_id: null, title, message, type: 'announcement', is_read: false, created_at: new Date().toISOString() });
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_notifications'] });

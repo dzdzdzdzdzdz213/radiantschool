@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { getDayLabel, formatTime } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 const DAYS = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday'];
 
@@ -37,6 +38,7 @@ export default function TeacherSchedulePage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.my_schedule', lang));
 
   return (
     <div className="space-y-6">

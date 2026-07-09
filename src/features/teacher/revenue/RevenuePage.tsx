@@ -10,6 +10,7 @@ import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function RevenuePage() {
   const { profile } = useAuth();
@@ -44,6 +45,7 @@ export default function RevenuePage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('common.revenue', lang));
 
   if (isError) {
     return (

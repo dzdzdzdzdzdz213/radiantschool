@@ -10,13 +10,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useDownloadFile } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function StudentCertificatesPage() {
   const { lang } = useLang();
   const { profile } = useAuth();
   const downloadFile = useDownloadFile();
 
-  const { data: certificates, isLoading } = useQuery({
+  const { data: certificates, isLoading, isError } = useQuery({
     queryKey: ['student_certificates', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -29,6 +30,7 @@ export default function StudentCertificatesPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.certificates', lang));
 
   return (
     <div className="space-y-6">

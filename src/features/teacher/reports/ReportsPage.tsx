@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function ReportsPage() {
   const { profile } = useAuth();
@@ -42,6 +43,7 @@ export default function ReportsPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.reports', lang));
 
   return (
     <div className="space-y-6">
@@ -51,7 +53,7 @@ export default function ReportsPage() {
           try {
             if (!stats) { toast(t('common.error', lang), 'error'); return; }
             const csv = [
-              'Statistique,Valeur',
+              t('reports.csv_header', lang),
               `${t('dashboard.stat.active_students', lang)},${stats.totalStudents}`,
               `${t('dashboard.stat.attendance_rate', lang)},${stats.attendanceRate}%`,
               `${t('dashboard.stat.avg_grade', lang)},${stats.avgGrade}/20`,

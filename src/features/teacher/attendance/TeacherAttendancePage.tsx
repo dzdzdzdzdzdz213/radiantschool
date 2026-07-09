@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 function useCountdown(target: string | null): string {
   const [display, setDisplay] = useState('');
@@ -47,7 +48,7 @@ export default function TeacherAttendancePage() {
   const [newSessionTitle, setNewSessionTitle] = useState('');
   const [expandedMonth, setExpandedMonth] = useState<string>('');
 
-  const { data: courses } = useQuery({
+  const { data: courses, isError: coursesError } = useQuery({
     queryKey: ['teacher_courses_attendance', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -56,10 +57,11 @@ export default function TeacherAttendancePage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(coursesError, lang, t('nav.courses', lang));
 
   const selectedCourse = (courses ?? []).find((c: any) => String(c.id) === courseId);
 
-  const { data: sessions } = useQuery({
+  const { data: sessions, isError: sessionsError } = useQuery({
     queryKey: ['course_sessions', courseId],
     queryFn: async () => {
       if (!courseId) return [];
@@ -72,8 +74,9 @@ export default function TeacherAttendancePage() {
     },
     enabled: !!courseId && selectedCourse?.type === 'normal',
   });
+  useErrorToast(sessionsError, lang, t('nav.attendance', lang));
 
-  const { data: enrolled } = useQuery({
+  const { data: enrolled, isError: enrolledError } = useQuery({
     queryKey: ['enrolled_students', courseId],
     queryFn: async () => {
       if (!courseId) return [];
@@ -89,8 +92,9 @@ export default function TeacherAttendancePage() {
     },
     enabled: !!courseId,
   });
+  useErrorToast(enrolledError, lang, t('nav.students', lang));
 
-  const { data: records } = useQuery({
+  const { data: records, isError: recordsError } = useQuery({
     queryKey: ['attendance_records', courseId],
     queryFn: async () => {
       if (!courseId || !sessions?.length) return [];
@@ -103,6 +107,7 @@ export default function TeacherAttendancePage() {
     },
     enabled: !!courseId && !!sessions?.length && selectedCourse?.type === 'normal',
   });
+  useErrorToast(recordsError, lang, t('nav.attendance', lang));
 
   const recordsMap: Record<string, Record<string, string>> = {};
   for (const r of records ?? []) {
@@ -125,7 +130,7 @@ export default function TeacherAttendancePage() {
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['attendance_records', courseId] }); qc.invalidateQueries({ queryKey: ['course_sessions', courseId] }); },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const addSession = useMutation({
@@ -141,7 +146,7 @@ export default function TeacherAttendancePage() {
       setNewSessionTitle('');
       toast('Séance ajoutée', 'success');
     },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const sessionsByMonth: Record<string, any[]> = {};
@@ -162,6 +167,7 @@ export default function TeacherAttendancePage() {
     },
     enabled: !!courseId && (selectedCourse?.type === 'private' || selectedCourse?.type === 'vip'),
   });
+  useErrorToast(privateScheduleQuery.isError, lang, t('nav.attendance', lang));
 
   const privateAttendanceQuery = useQuery({
     queryKey: ['private_attendance', courseId, privateScheduleQuery.data],
@@ -178,6 +184,7 @@ export default function TeacherAttendancePage() {
     },
     enabled: !!courseId && (selectedCourse?.type === 'private' || selectedCourse?.type === 'vip'),
   });
+  useErrorToast(privateAttendanceQuery.isError, lang, t('nav.attendance', lang));
 
   const markPrivateAttendance = useMutation({
     mutationFn: async ({ student_id, course_schedule_id, date, status }: { student_id: string; course_schedule_id: number; date: string; status: string }) => {
@@ -192,8 +199,8 @@ export default function TeacherAttendancePage() {
         if (error) throw error;
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['private_attendance', courseId] }); toast('Présence enregistrée', 'success'); },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['private_attendance', courseId] }); toast(t('attendance.recorded', lang), 'success'); },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const [newAppointmentDate, setNewAppointmentDate] = useState('');
@@ -228,7 +235,7 @@ export default function TeacherAttendancePage() {
           {(courses ?? []).map((c: any) => (
             <SelectItem key={c.id} value={String(c.id)}>
               {c.name}
-              <Badge variant="outline" className="ml-2 text-[10px]">{c.type === 'normal' ? 'Groupe' : c.type === 'private' ? 'Particulier' : 'VIP'}</Badge>
+              <Badge variant="outline" className="ml-2 text-[10px]">{c.type === 'normal' ? t('type.group', lang) : c.type === 'private' ? t('courses.type_private', lang) : t('type.vip', lang)}</Badge>
             </SelectItem>
           ))}
         </Select>
@@ -310,22 +317,22 @@ export default function TeacherAttendancePage() {
                                 <td key={s.id} className="text-center py-2 px-3">
                                   {isClosed || isPastDeadline ? (
                                     <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                      {status === 'present' && <><Check className="h-4 w-4 text-emerald-600" /><span className="text-xs">Présent</span></>}
-                                      {status === 'late' && <><Clock className="h-4 w-4 text-amber-600" /><span className="text-xs">Retard</span></>}
-                                      {status === 'absent' && <><X className="h-4 w-4 text-red-600" /><span className="text-xs">Absent</span></>}
+                                      {status === 'present' && <><Check className="h-4 w-4 text-emerald-600" /><span className="text-xs">{t('status.present', lang)}</span></>}
+                                      {status === 'late' && <><Clock className="h-4 w-4 text-amber-600" /><span className="text-xs">{t('status.late', lang)}</span></>}
+                                      {status === 'absent' && <><X className="h-4 w-4 text-red-600" /><span className="text-xs">{t('status.absent', lang)}</span></>}
                                       {!status && <span className="text-xs text-muted-foreground">—</span>}
                                     </span>
                                   ) : (
                                     <div className="flex items-center justify-center gap-1">
                                       <button onClick={() => markAttendance.mutate({ session_id: s.id, student_id: student.id, status: 'present' })}
                                         className={`p-1.5 rounded transition-colors ${status === 'present' ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-400' : 'hover:bg-emerald-50 text-muted-foreground'}`}
-                                        title="Présent"><Check className="h-4 w-4" /></button>
+                                        title={t('status.present', lang)}><Check className="h-4 w-4" /></button>
                                       <button onClick={() => markAttendance.mutate({ session_id: s.id, student_id: student.id, status: 'late' })}
                                         className={`p-1.5 rounded transition-colors ${status === 'late' ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-400' : 'hover:bg-amber-50 text-muted-foreground'}`}
-                                        title="Retard"><Clock className="h-4 w-4" /></button>
+                                        title={t('status.late', lang)}><Clock className="h-4 w-4" /></button>
                                       <button onClick={() => markAttendance.mutate({ session_id: s.id, student_id: student.id, status: 'absent' })}
                                         className={`p-1.5 rounded transition-colors ${status === 'absent' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'hover:bg-red-50 text-muted-foreground'}`}
-                                        title="Absent"><X className="h-4 w-4" /></button>
+                                        title={t('status.absent', lang)}><X className="h-4 w-4" /></button>
                                     </div>
                                   )}
                                 </td>
@@ -432,7 +439,7 @@ export default function TeacherAttendancePage() {
                           </td>
                           <td className="py-3 px-4 text-center">
                             <Badge variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'destructive'}>
-                              {r.status === 'present' ? 'Présent' : r.status === 'late' ? 'Retard' : 'Absent'}
+                              {r.status === 'present' ? t('status.present', lang) : r.status === 'late' ? t('status.late', lang) : t('status.absent', lang)}
                             </Badge>
                           </td>
                           <td className="py-3 px-4 text-center">

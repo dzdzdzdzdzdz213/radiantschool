@@ -50,7 +50,7 @@ export default function ReportsPage() {
       toast(t('common.no_data', lang), 'error');
       return;
     }
-    const rows = revenue.map((r: any) => ({ date: r.date ?? '', revenue: r.total_revenue ?? 0 }));
+    const rows = revenue.map((r: any) => ({ date: r.date ?? '', revenue: r.amount ?? 0 }));
     const total = rows.reduce((s: number, r: any) => s + r.revenue, 0);
     let html = `<html><head><meta charset="utf-8"><title>${filename}</title>
 <style>body{font-family:sans-serif;margin:40px}h1{font-size:18px;margin-bottom:8px}.meta{font-size:12px;color:#666;margin-bottom:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #ddd}th{background:#f5f5f5;font-size:12px;text-transform:uppercase}td{font-size:14px}.total{font-weight:bold;border-top:2px solid #333;padding-top:8px;margin-top:8px}@media print{body{margin:0}}</style></head><body>
@@ -115,7 +115,7 @@ export default function ReportsPage() {
                   (revenue ?? []).slice(0, 10).map((r: any) => (
                     <div key={r.date} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
                       <span className="text-sm">{formatDate(r.date)}</span>
-                      <span className="text-sm font-semibold">{formatCurrency(r.total_revenue ?? 0)}</span>
+                      <span className="text-sm font-semibold">{formatCurrency(r.amount ?? 0)}</span>
                     </div>
                   ))
                 )}

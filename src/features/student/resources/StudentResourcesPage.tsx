@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate } from '@/lib/utils';
 import { useDownloadFile } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 const typeIcons: Record<string, any> = { pdf: FileText, video: Video, image: Image, document: File };
 const typeColors: Record<string, string> = { pdf: 'text-red-500 bg-red-500/10', video: 'text-violet-500 bg-violet-500/10', image: 'text-sky-500 bg-sky-500/10', document: 'text-blue-500 bg-blue-500/10' };
@@ -21,7 +22,7 @@ export default function StudentResourcesPage() {
   const [search, setSearch] = useState('');
   const downloadFile = useDownloadFile();
 
-  const { data: resources, isLoading } = useQuery({
+  const { data: resources, isLoading, isError } = useQuery({
     queryKey: ['student_resources', profile?.id, search],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -30,15 +31,17 @@ export default function StudentResourcesPage() {
       if (courseIds.length === 0) return [];
       const { data } = await (supabase as any)
         .from('resources')
-        .select('id, title, description, type, file_url, created_at, course:courses(name)')
+        .select('id, name, description, file_type, file_path, created_at, course:courses(name)')
         .in('course_id', courseIds)
         .order('created_at', { ascending: false });
       let items = (data ?? []).map((r: any) => ({ ...r, courseName: r.course?.name ?? '' }));
-      if (search) items = items.filter((i: any) => i.title?.toLowerCase().includes(search.toLowerCase()) || i.courseName?.toLowerCase().includes(search.toLowerCase()));
+      if (search) items = items.filter((i: any) => i.name?.toLowerCase().includes(search.toLowerCase()) || i.courseName?.toLowerCase().includes(search.toLowerCase()));
       return items;
     },
     enabled: !!profile?.id,
   });
+
+  useErrorToast(isError, lang, t('nav.resources', lang));
 
   return (
     <div className="space-y-6">
@@ -51,15 +54,15 @@ export default function StudentResourcesPage() {
             : (resources ?? []).length === 0 ? (
               <div className="sm:col-span-2 lg:col-span-3 text-center py-12 text-muted-foreground"><FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p></div>
             ) : (resources ?? []).map((r: any) => {
-              const isLink = r.type === 'link';
-              const Icon = isLink ? LinkIcon : (typeIcons[r.type] ?? FileText);
-              const color = isLink ? 'text-sky-500 bg-sky-500/10' : (typeColors[r.type] ?? 'text-primary bg-primary/10');
+              const isLink = r.file_type === 'link';
+              const Icon = isLink ? LinkIcon : (typeIcons[r.file_type] ?? FileText);
+              const color = isLink ? 'text-sky-500 bg-sky-500/10' : (typeColors[r.file_type] ?? 'text-primary bg-primary/10');
               return (
                 <div key={r.id} className="group rounded-xl border p-4 hover:bg-accent/30 transition-colors">
                   <div className={`h-10 w-10 rounded-xl ${color.split(' ')[1]} flex items-center justify-center mb-3`}>
                     <Icon className={`h-5 w-5 ${color.split(' ')[0]}`} />
                   </div>
-                  <h4 className="text-sm font-semibold truncate">{r.title}</h4>
+                  <h4 className="text-sm font-semibold truncate">{r.name}</h4>
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description ?? ''}</p>
                   <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
                     <span>{r.courseName}</span>
@@ -67,10 +70,10 @@ export default function StudentResourcesPage() {
                   </div>
                   {isLink ? (
                     <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5" asChild>
-                      <a href={r.file_url} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t('nav.online_classes', lang)}</a>
+                      <a href={r.file_path} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5" />{t('nav.online_classes', lang)}</a>
                     </Button>
                   ) : (
-                    <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5" onClick={() => { if (r.file_url) downloadFile.mutate({ fileUrl: r.file_url, filename: r.title }); }} disabled={downloadFile.isPending}>
+                    <Button variant="outline" size="sm" className="w-full mt-3 h-8 text-xs gap-1.5" onClick={() => { if (r.file_path) downloadFile.mutate({ fileUrl: r.file_path, filename: r.name }); }} disabled={downloadFile.isPending}>
                       {downloadFile.isPending ? <Loader className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{t('common.download', lang)}
                     </Button>
                   )}

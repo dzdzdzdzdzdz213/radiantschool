@@ -15,6 +15,8 @@ import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function InvoicesPage() {
   const { lang } = useLang();
   const { toast } = useToast();
@@ -31,6 +33,7 @@ export default function InvoicesPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [studentIdError, setStudentIdError] = useState('');
   const [form, setForm] = useState({ student_id: '', total_amount: '', due_date: '' });
 
   const openCreateModal = () => {
@@ -54,6 +57,11 @@ export default function InvoicesPage() {
       toast(t('invoices.fill_fields', lang), 'error');
       return;
     }
+    if (!editingId && form.student_id && !UUID_REGEX.test(form.student_id)) {
+      setStudentIdError(t('errors.invalid_uuid', lang));
+      return;
+    }
+    setStudentIdError('');
     if (editingId) {
       updateInvoice.mutate(
         { id: editingId, data: { total_amount: parseFloat(form.total_amount), due_date: form.due_date } },
@@ -113,7 +121,8 @@ export default function InvoicesPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('nav.students', lang)}</Label>
-                <Input placeholder={t('invoices.student_placeholder', lang)} value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} />
+                <Input placeholder={t('invoices.student_placeholder', lang)} value={form.student_id} onChange={e => { setForm(f => ({ ...f, student_id: e.target.value })); setStudentIdError(''); }} />
+                {studentIdError && <p className="text-xs text-destructive mt-1">{studentIdError}</p>}
               </div>
               <div className="space-y-2">
                 <Label>{t('common.amount', lang)}</Label>

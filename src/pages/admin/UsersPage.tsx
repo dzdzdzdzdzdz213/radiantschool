@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useUsers } from '@/hooks/useQueries';
 import { getFullName, getRoleLabel, getStatusColor, formatDate } from '@/lib/utils';
 import { Search, Plus, MoreHorizontal } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectItem } from '@/components/ui/select';
 import { useToast } from '@/components/ui/Toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -46,16 +48,16 @@ export default function UsersPage() {
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search', lang)} className="w-full rounded-lg border py-2 pl-10 pr-3 text-sm" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search', lang)} className="h-10 pl-10" />
         </div>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-lg border px-3 py-2 text-sm">
-          <option value="">{t('common.all', lang)}</option>
-          <option value="admin">{t('role.admin', lang)}</option>
-          <option value="assistant">{t('role.assistant', lang)}</option>
-          <option value="teacher">{t('role.teacher', lang)}</option>
-          <option value="student">{t('role.student', lang)}</option>
-          <option value="parent">{t('role.parent', lang)}</option>
-        </select>
+        <Select value={roleFilter} onValueChange={setRoleFilter} placeholder={t('common.all', lang)}>
+          <SelectItem value="">{t('common.all', lang)}</SelectItem>
+          <SelectItem value="admin">{t('role.admin', lang)}</SelectItem>
+          <SelectItem value="assistant">{t('role.assistant', lang)}</SelectItem>
+          <SelectItem value="teacher">{t('role.teacher', lang)}</SelectItem>
+          <SelectItem value="student">{t('role.student', lang)}</SelectItem>
+          <SelectItem value="parent">{t('role.parent', lang)}</SelectItem>
+        </Select>
       </div>
       <div className="rounded-xl border bg-card shadow-sm">
         {isLoading ? (

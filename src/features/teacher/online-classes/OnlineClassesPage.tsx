@@ -11,8 +11,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { Select, SelectItem } from '@/components/ui/select';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function OnlineClassesPage() {
   const { profile } = useAuth();
@@ -20,9 +23,10 @@ export default function OnlineClassesPage() {
   const { lang } = useLang();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data: sessions, isLoading, isError } = useQuery({
-    queryKey: ['teacher_online_sessions', profile?.id],
+    queryKey: ['teacher_online_sessions', profile?.id, debouncedSearch],
     queryFn: async () => {
       if (!profile?.id) return [];
       let q = (supabase as any)
@@ -30,7 +34,7 @@ export default function OnlineClassesPage() {
         .select('id, title, description, meeting_url, start_time, end_time, status, created_at, course:courses(name)')
         .eq('teacher_id', profile.id)
         .order('start_time', { ascending: false });
-      if (search) q = q.ilike('title', `%${search}%`);
+      if (debouncedSearch) q = q.ilike('title', `%${debouncedSearch}%`);
       const { data, error } = await q;
       if (error) throw error;
       return data ?? [];
@@ -42,7 +46,7 @@ export default function OnlineClassesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', course_id: '', date: '', start_time: '', end_time: '', meeting_link: '' });
 
-  const { data: courses } = useQuery({
+  const { data: courses, isError: coursesError } = useQuery({
     queryKey: ['teacher_courses_select', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -51,6 +55,7 @@ export default function OnlineClassesPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(coursesError, lang, t('nav.online_classes', lang));
 
   const openCreateModal = () => {
     setEditingId(null);
@@ -140,10 +145,10 @@ export default function OnlineClassesPage() {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.subject', lang)}</Label>
-                <select value={form.course_id} onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">{t('common.select', lang)}</option>
-                  {(courses ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <Select value={form.course_id} onValueChange={v => setForm(f => ({ ...f, course_id: v }))} placeholder={t('common.select', lang)}>
+                  <SelectItem value="">{t('common.none', lang)}</SelectItem>
+                  {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </Select>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.date', lang)}</Label>

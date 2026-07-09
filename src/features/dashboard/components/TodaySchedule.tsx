@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLang } from '@/contexts/LangContext';
+import { t } from '@/i18n';
 
 interface ScheduleItem {
   id: number;
@@ -57,12 +58,12 @@ export default function TodaySchedule({ data, loading }: TodayScheduleProps) {
           <Calendar className="h-4 w-4 text-accent" />
         </div>
         <div className="flex-1">
-          <CardTitle className="text-sm font-semibold">Aujourd'hui</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t('common.today', lang)}</CardTitle>
           <p className="text-[10px] text-muted-foreground capitalize">{todayName}</p>
         </div>
         {data && data.length > 0 && (
           <Badge variant="secondary" className="text-xs">
-            {data.length} cours
+            {data.length} {t('nav.courses', lang)}
           </Badge>
         )}
       </CardHeader>
@@ -70,7 +71,7 @@ export default function TodaySchedule({ data, loading }: TodayScheduleProps) {
         {!data || data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10">
             <Calendar className="mb-2 h-6 w-6 text-muted-foreground/15" />
-            <p className="text-sm text-muted-foreground">Aucun cours aujourd'hui</p>
+            <p className="text-sm text-muted-foreground">{t('common.no_class_today', lang)}</p>
           </div>
         ) : (
           <ScrollArea className="max-h-[320px] pr-2">
@@ -85,7 +86,7 @@ export default function TodaySchedule({ data, loading }: TodayScheduleProps) {
                     <span className="text-[10px] font-medium text-muted-foreground">{item.end_time?.slice(0, 5)}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold truncate">{item.course?.name ?? 'Cours'}</p>
+                    <p className="text-sm font-semibold truncate">{item.course?.name ?? t('nav.courses', lang)}</p>
                     <div className="flex items-center gap-3 mt-1 flex-wrap">
                       {item.teacher && (
                         <div className="flex items-center gap-1 text-[11px] text-muted-foreground">

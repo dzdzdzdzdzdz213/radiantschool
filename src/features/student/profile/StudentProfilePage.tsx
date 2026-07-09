@@ -70,7 +70,7 @@ export default function StudentProfilePage() {
     enabled: !!profile?.id,
   });
 
-  const { data: userSettings } = useQuery({
+  const { data: userSettings, isError: settingsError } = useQuery({
     queryKey: ['student_settings', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return {};
@@ -79,6 +79,7 @@ export default function StudentProfilePage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(settingsError, lang, t('nav.profile', lang));
 
   useErrorToast(isError, lang, t('nav.profile', lang));
 
@@ -121,14 +122,24 @@ export default function StudentProfilePage() {
   const updateSetting = (key: string, value: unknown) => {
     setNotifications(s => ({ ...s, [key]: value }));
     if (notifDebounce.current) clearTimeout(notifDebounce.current);
-    notifDebounce.current = setTimeout(() => { updateSettings.mutate({ userId: profile?.id ?? '', settings: { [key]: value } }); }, 500);
+    notifDebounce.current = setTimeout(() => {
+      updateSettings.mutate(
+        { userId: profile?.id ?? '', settings: { [key]: value } },
+        { onSuccess: () => qc.invalidateQueries({ queryKey: ['student_settings', profile?.id] }) },
+      );
+    }, 500);
   };
 
   const privacyDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updatePrivacySetting = (key: string, value: unknown) => {
     setPrivacy(s => ({ ...s, [key]: value }));
     if (privacyDebounce.current) clearTimeout(privacyDebounce.current);
-    privacyDebounce.current = setTimeout(() => { updateSettings.mutate({ userId: profile?.id ?? '', settings: { [key]: value } }); }, 500);
+    privacyDebounce.current = setTimeout(() => {
+      updateSettings.mutate(
+        { userId: profile?.id ?? '', settings: { [key]: value } },
+        { onSuccess: () => qc.invalidateQueries({ queryKey: ['student_settings', profile?.id] }) },
+      );
+    }, 500);
   };
 
   useEffect(() => { return () => { if (notifDebounce.current) clearTimeout(notifDebounce.current); if (privacyDebounce.current) clearTimeout(privacyDebounce.current); }; }, []);

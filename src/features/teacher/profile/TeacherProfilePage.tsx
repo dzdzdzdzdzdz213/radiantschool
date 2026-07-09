@@ -3,6 +3,7 @@ import { Camera, Mail, Phone, MapPin, BookOpen, Calendar, Award, Save, Star, Use
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,6 +15,7 @@ import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useUpdateUserSettings, useUpdatePassword } from '@/hooks/useMutationFeedback';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { teacherProfileSchema } from '@/lib/validation';
@@ -52,18 +54,31 @@ export default function TeacherProfilePage() {
     return false;
   }, [form, lang]);
 
-  const { data: teacherProfile, isLoading: profileLoading } = useQuery({
+  const { data: teacherProfile, isLoading: profileLoading, isError: profileError } = useQuery({
     queryKey: ['teacher_profile', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return null;
       const { data } = await (supabase as any).from('users').select('*').eq('id', profile.id).single();
-      if (data) setForm({ first_name: data.first_name ?? '', last_name: data.last_name ?? '', email: data.email ?? '', phone: data.phone ?? '', address: data.address ?? '', bio: data.bio ?? '' });
       return data;
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(profileError, lang, t('nav.my_profile', lang));
 
-  const { data: stats } = useQuery({
+  useEffect(() => {
+    if (teacherProfile) {
+      setForm({
+        first_name: teacherProfile.first_name ?? '',
+        last_name: teacherProfile.last_name ?? '',
+        email: teacherProfile.email ?? '',
+        phone: teacherProfile.phone ?? '',
+        address: teacherProfile.address ?? '',
+        bio: teacherProfile.bio ?? '',
+      });
+    }
+  }, [teacherProfile]);
+
+  const { data: stats, isError: statsError } = useQuery({
     queryKey: ['teacher_profile_stats', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return null;
@@ -78,13 +93,14 @@ export default function TeacherProfilePage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(statsError, lang, t('nav.my_profile', lang));
 
   const yearsActive = useMemo(() => {
     if (!teacherProfile?.created_at) return 0;
     return Math.floor((Date.now() - new Date(teacherProfile.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
   }, [teacherProfile?.created_at]);
 
-  const { data: userSettings } = useQuery({
+  const { data: userSettings, isError: settingsError } = useQuery({
     queryKey: ['teacher_settings', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return {};
@@ -93,6 +109,7 @@ export default function TeacherProfilePage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(settingsError, lang, t('nav.my_profile', lang));
 
   useEffect(() => {
     if (!userSettings) return;
@@ -102,11 +119,11 @@ export default function TeacherProfilePage() {
   }, [userSettings]);
 
   const handleNotifChange = (key: string, value: boolean) => {
-    setNotifications(s => { const next = { ...s, [key]: value }; if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [key]: value } }); return next; });
+    setNotifications(s => { const next = { ...s, [key]: value }; if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [key]: value } }, { onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher_settings', profile.id] }); } }); return next; });
   };
 
   const handleVisChange = (key: string, value: boolean) => {
-    setVisibility(s => { const next = { ...s, [key]: value }; if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [key]: value } }); return next; });
+    setVisibility(s => { const next = { ...s, [key]: value }; if (profile?.id) updateSettings.mutate({ userId: profile.id, settings: { [key]: value } }, { onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher_settings', profile.id] }); } }); return next; });
   };
 
   const handlePasswordUpdate = () => {
@@ -169,7 +186,7 @@ export default function TeacherProfilePage() {
                   <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" />{teacherProfile?.email ?? ''}</p>
                   <p className="flex items-center gap-2 text-muted-foreground"><Phone className="h-3.5 w-3.5" />{teacherProfile?.phone ?? t('common.none', lang)}</p>
                   <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{teacherProfile?.address ?? t('common.none', lang)}</p>
-                  <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />Membre depuis {formatDate(teacherProfile?.created_at ?? new Date().toISOString(), lang)}</p>
+                  <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" />{t('profile.member_since', lang)} {formatDate(teacherProfile?.created_at ?? new Date().toISOString(), lang)}</p>
                 </div>
               </>
             )}
@@ -189,14 +206,14 @@ export default function TeacherProfilePage() {
                 <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.last_name', lang)}</label><Input value={form.last_name} onChange={e => { setForm(f => ({ ...f, last_name: e.target.value })); setTimeout(validate); }} disabled={!editing} className="h-9" />{fieldErrors.lastName && <p className="mt-1 text-xs text-red-500">{fieldErrors.lastName}</p>}</div>
                 <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.phone', lang)}</label><Input value={form.phone} onChange={e => { setForm(f => ({ ...f, phone: e.target.value })); setTimeout(validate); }} disabled={!editing} className="h-9" />{fieldErrors.phone && <p className="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>}</div>
                 <div><label className="text-xs text-muted-foreground mb-1 block">{t('common.address', lang)}</label><Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} disabled={!editing} className="h-9" /></div>
-                <div className="sm:col-span-2"><label className="text-xs text-muted-foreground mb-1 block">{t('common.notes', lang)}</label><textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} disabled={!editing} className="w-full min-h-[80px] rounded-xl border border-border bg-background px-3 py-2 text-sm" /></div>
+                <div className="sm:col-span-2"><label className="text-xs text-muted-foreground mb-1 block">{t('common.notes', lang)}</label><Textarea value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} disabled={!editing} className="min-h-[80px]" /></div>
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle className="text-sm">{t('common.details', lang)}</CardTitle></CardHeader>
             <CardContent><div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="text-center p-3 rounded-xl bg-accent/50"><Award className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{yearsActive}</p><p className="text-xs text-muted-foreground">{'Années d\'expérience'}</p></div>
+              <div className="text-center p-3 rounded-xl bg-accent/50"><Award className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{yearsActive}</p><p className="text-xs text-muted-foreground">{t('profile.years_experience', lang)}</p></div>
               <div className="text-center p-3 rounded-xl bg-accent/50"><BookOpen className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{stats?.courseCount ?? 0}</p><p className="text-xs text-muted-foreground">{t('dashboard.stat.courses', lang)}</p></div>
               <div className="text-center p-3 rounded-xl bg-accent/50"><Star className="h-5 w-5 mx-auto text-amber-500 mb-1" /><p className="text-lg font-bold">{stats?.avgRating?.toFixed(1) ?? '0.0'}</p><p className="text-xs text-muted-foreground">{t('dashboard.stat.avg_rating', lang)}</p></div>
               <div className="text-center p-3 rounded-xl bg-accent/50"><Users className="h-5 w-5 mx-auto text-primary mb-1" /><p className="text-lg font-bold">{stats?.studentCount ?? 0}</p><p className="text-xs text-muted-foreground">{t('dashboard.stat.active_students', lang)}</p></div>
@@ -220,7 +237,7 @@ export default function TeacherProfilePage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Eye className="h-4 w-4" />Visibilité</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Eye className="h-4 w-4" />{t('settings.visibility', lang)}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               {[
                 { key: 'show_email', label: t('common.email', lang) },
@@ -235,7 +252,7 @@ export default function TeacherProfilePage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />Sécurité</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />{t('common.security', lang)}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between rounded-lg bg-accent/50 p-3">
                 <span className="text-sm font-medium">{t('settings.language', lang)}</span>
@@ -248,15 +265,15 @@ export default function TeacherProfilePage() {
               <div className="h-px bg-border" />
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t('auth.password', lang)}</Label>
-                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="h-9" placeholder="Mot de passe actuel" />
+                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="h-9" placeholder={t('common.current_password', lang)} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t('auth.new_password', lang)}</Label>
-                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="h-9" placeholder="Nouveau mot de passe" />
+                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="h-9" placeholder={t('auth.new_password', lang)} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">{t('auth.confirm_password', lang)}</Label>
-                <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-9" placeholder="Confirmer" />
+                <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-9" placeholder={t('common.confirm', lang)} />
               </div>
               <Button size="sm" className="h-9" onClick={handlePasswordUpdate} disabled={updatePasswordMutation.isPending || !currentPassword || !newPassword || newPassword !== confirmPassword}>
                 {updatePasswordMutation.isPending ? t('common.loading', lang) : t('common.update', lang)}

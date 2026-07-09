@@ -7,6 +7,7 @@ import { Star, MessageSquare, ChevronDown, ChevronUp, AlertCircle } from 'lucide
 import { cn } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 interface Evaluation {
   id: number;
@@ -26,10 +27,10 @@ export default function TeacherEvaluationsPage() {
   const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  const { data: evaluations = [], isLoading, error } = useQuery({
+  const { data: evaluations = [], isLoading, error, isError } = useQuery({
     queryKey: ['teacher_evaluations', profile?.id],
     queryFn: async () => {
-      if (!profile) return [];
+      if (!profile?.id) return [];
       const { data, error } = await supabase
         .from('evaluations')
         .select('*, student:student_id(first_name, last_name)')
@@ -38,8 +39,9 @@ export default function TeacherEvaluationsPage() {
       if (error) throw error;
       return (data ?? []) as unknown as Evaluation[];
     },
-    enabled: !!profile,
+    enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.evaluations', lang));
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>;
   if (error) return <div className="flex items-center justify-center gap-2 p-8 text-center text-destructive"><AlertCircle className="h-5 w-5" />{t('common.error', lang)}</div>;

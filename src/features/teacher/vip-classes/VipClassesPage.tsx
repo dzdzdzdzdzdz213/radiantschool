@@ -13,6 +13,7 @@ import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { Select, SelectItem } from '@/components/ui/select';
 
 export default function VipClassesPage() {
@@ -39,12 +40,13 @@ export default function VipClassesPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.vip_classes', lang));
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ student_id: '', date: '', start_time: '', end_time: '', price: '' });
 
-  const { data: students } = useQuery({
+  const { data: students, isError: studentsError } = useQuery({
     queryKey: ['teacher_students_select', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -62,6 +64,7 @@ export default function VipClassesPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(studentsError, lang, t('nav.students', lang));
 
   const openCreateModal = () => {
     setEditingId(null);

@@ -75,7 +75,7 @@ export default function StudentMessagesPage() {
     if (!participantId) return;
     sendMessage.mutate(
       { receiverId: participantId, subject: '', body: messageText, senderId: profile.id },
-      { onSuccess: () => setMessageText('') },
+      { onSuccess: () => { setMessageText(''); qc.invalidateQueries({ queryKey: ['student_conversations'] }); } },
     );
   };
 

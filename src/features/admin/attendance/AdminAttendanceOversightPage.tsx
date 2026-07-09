@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 function useCountdown(target: string | null): string {
   const [display, setDisplay] = useState('');
@@ -39,15 +40,16 @@ export default function AdminAttendanceOversightPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  const { data: teachers } = useQuery({
+  const { data: teachers, isError: teachersError } = useQuery({
     queryKey: ['teachers_list'],
     queryFn: async () => {
       const { data } = await (supabase as any).from('users').select('id, first_name, last_name').eq('role', 'teacher').order('first_name');
       return data ?? [];
     },
   });
+  useErrorToast(teachersError, lang, t('nav.users', lang));
 
-  const { data: groupSessions, isLoading: groupLoading } = useQuery({
+  const { data: groupSessions, isLoading: groupLoading, isError: groupError } = useQuery({
     queryKey: ['admin_oversight_group', teacherFilter],
     queryFn: async () => {
       let q = (supabase as any)
@@ -60,8 +62,9 @@ export default function AdminAttendanceOversightPage() {
       return data ?? [];
     },
   });
+  useErrorToast(groupError, lang, t('nav.attendance', lang));
 
-  const { data: privateRecords, isLoading: privateLoading } = useQuery({
+  const { data: privateRecords, isLoading: privateLoading, isError: privateError } = useQuery({
     queryKey: ['admin_oversight_private', teacherFilter],
     queryFn: async () => {
       let q = (supabase as any)
@@ -74,19 +77,7 @@ export default function AdminAttendanceOversightPage() {
       return data ?? [];
     },
   });
-
-  const closeAllExpired = useMutation({
-    mutationFn: async () => {
-      const { error } = await (supabase as any).rpc('auto_close_expired_sessions');
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin_oversight_group'] });
-      qc.invalidateQueries({ queryKey: ['admin_oversight_private'] });
-      toast('Sessions expirées fermées', 'success');
-    },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
-  });
+  useErrorToast(privateError, lang, t('nav.attendance', lang));
 
   const openSessions = (groupSessions ?? []).filter((s: any) => s.check_in_opened_at && !s.check_in_closed_at);
   const closedSessions = (groupSessions ?? []).filter((s: any) => s.check_in_closed_at);
@@ -106,9 +97,7 @@ export default function AdminAttendanceOversightPage() {
           <h1 className="text-2xl font-bold tracking-tight">Supervision des présences</h1>
           <p className="text-sm text-muted-foreground mt-1">Surveiller les séances et tarifs enseignants</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => closeAllExpired.mutate()} disabled={closeAllExpired.isPending}>
-          <Timer className="h-4 w-4" />Fermer sessions expirées
-        </Button>
+        <div />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -144,7 +133,7 @@ export default function AdminAttendanceOversightPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher un cours..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
+          <Input placeholder={t('common.search_course', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
         </div>
         <Select value={teacherFilter} onValueChange={setTeacherFilter} placeholder="Tous les enseignants">
           {(teachers ?? []).map((t: any) => (
@@ -218,10 +207,10 @@ export default function AdminAttendanceOversightPage() {
                     <td className="py-3 px-4 font-medium">{r.course_schedule?.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{r.course_schedule?.course?.teacher?.first_name} {r.course_schedule?.course?.teacher?.last_name}</td>
                     <td className="py-3 px-4 text-center">{new Date(r.date).toLocaleDateString(localeMap[lang])}</td>
-                    <td className="py-3 px-4 text-center"><Badge variant="outline">{r.course_schedule?.course?.type === 'private' ? 'Particulier' : 'VIP'}</Badge></td>
+                    <td className="py-3 px-4 text-center"><Badge variant="outline">{r.course_schedule?.course?.type === 'private' ? t('courses.type_private', lang) : t('type.vip', lang)}</Badge></td>
                     <td className="py-3 px-4 text-center">
                       <Badge variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'destructive'}>
-                        {r.status === 'present' ? 'Présent' : r.status === 'late' ? 'Retard' : 'Absent'}
+                        {r.status === 'present' ? t('status.present', lang) : r.status === 'late' ? t('status.late', lang) : t('status.absent', lang)}
                       </Badge>
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-muted-foreground">—</td>

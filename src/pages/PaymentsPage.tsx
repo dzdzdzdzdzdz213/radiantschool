@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function PaymentsPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
@@ -20,10 +22,12 @@ export default function PaymentsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [studentIdError, setStudentIdError] = useState('');
   const [form, setForm] = useState({ student_id: '', amount: '', payment_method: 'cash', payment_type: 'tuition', receipt_number: '' });
 
   const createPayment = useMutation({
     mutationFn: async () => {
+      if (!UUID_REGEX.test(form.student_id)) throw new Error(t('errors.invalid_uuid', lang));
       const { error } = await supabase.from('payments').insert({
         student_id: form.student_id,
         amount: Number(form.amount),
@@ -38,9 +42,13 @@ export default function PaymentsPage() {
       qc.invalidateQueries({ queryKey: ['payments'] });
       toast(t('success.created', lang, 'Paiement'), 'success');
       setShowModal(false);
+      setStudentIdError('');
       setForm({ student_id: '', amount: '', payment_method: 'cash', payment_type: 'tuition', receipt_number: '' });
     },
-    onError: (err: any) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
+    onError: (err: any) => {
+      if (err?.message === t('errors.invalid_uuid', lang)) { setStudentIdError(err.message); return; }
+      toast(err?.message ?? t('errors.unknown', lang), 'error');
+    },
   });
 
   const filtered = (payments ?? []).filter((p: any) =>
@@ -104,7 +112,8 @@ export default function PaymentsPage() {
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-sm font-medium">{t('common.name', lang)}</label>
-                <Input className="w-full" value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))} placeholder={t('common.search_payment', lang)} />
+                <Input className="w-full" value={form.student_id} onChange={e => { setForm(f => ({ ...f, student_id: e.target.value })); setStudentIdError(''); }} placeholder={t('common.search_payment', lang)} />
+                {studentIdError && <p className="text-xs text-destructive mt-1">{studentIdError}</p>}
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">{t('common.amount', lang)} (DZD)</label>

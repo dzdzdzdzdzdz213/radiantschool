@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Select, SelectItem } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
@@ -67,7 +68,7 @@ export default function ResourcesPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_resources'] });
-      toast(t('success.created', lang, 'Fichier'), 'success');
+      toast(t('success.created', lang, t('resources.file', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -79,7 +80,7 @@ export default function ResourcesPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teacher_resources'] });
-      toast(t('success.deleted', lang, 'Ressource'), 'success');
+      toast(t('success.deleted', lang, t('resources.resource', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -88,7 +89,7 @@ export default function ResourcesPage() {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkForm, setLinkForm] = useState({ title: '', description: '', url: '', course_id: '' });
 
-  const { data: courses } = useQuery({
+  const { data: courses, isError: coursesError } = useQuery({
     queryKey: ['teacher_courses_resources', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -97,6 +98,7 @@ export default function ResourcesPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(coursesError, lang, t('nav.courses', lang));
 
   const addLinkMutation = useMutation({
     mutationFn: async () => {
@@ -116,7 +118,7 @@ export default function ResourcesPage() {
       qc.invalidateQueries({ queryKey: ['teacher_resources'] });
       setShowLinkModal(false);
       setLinkForm({ title: '', description: '', url: '', course_id: '' });
-      toast(t('success.created', lang, 'Lien'), 'success');
+      toast(t('success.created', lang, t('common.link', lang)), 'success');
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -157,15 +159,15 @@ export default function ResourcesPage() {
                 <Input value={linkForm.description} onChange={e => setLinkForm(f => ({ ...f, description: e.target.value }))} placeholder={t('common.description', lang)} className="h-9" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">{'URL'}</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.url', lang)}</Label>
                 <Input value={linkForm.url} onChange={e => setLinkForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="h-9" />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('nav.courses', lang)}</Label>
-                <select value={linkForm.course_id} onChange={e => setLinkForm(f => ({ ...f, course_id: e.target.value }))} className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm">
-                  <option value="">{t('common.select', lang)}</option>
-                  {(courses ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <Select value={linkForm.course_id} onValueChange={v => setLinkForm(f => ({ ...f, course_id: v }))} placeholder={t('common.select', lang)}>
+                  <SelectItem value="">{t('common.none', lang)}</SelectItem>
+                  {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </Select>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">

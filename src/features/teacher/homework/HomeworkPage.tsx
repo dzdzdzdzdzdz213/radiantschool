@@ -15,15 +15,16 @@ import { formatDate } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 const STATUS_COLORS: Record<string, string> = { completed: 'text-emerald-600', pending: 'text-amber-600', overdue: 'text-red-600' };
 const STATUS_ICONS: Record<string, any> = { completed: CheckCircle, pending: Clock, overdue: AlertCircle };
-const STATUS_LABELS: Record<string, string> = { completed: 'Rendu', pending: 'En attente', overdue: 'En retard' };
 
 export default function HomeworkPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const { lang } = useLang();
+  const statusLabel = (st: string) => ({ completed: t('homework.submitted', lang), pending: t('homework.pending', lang), overdue: t('homework.overdue', lang) })[st] ?? st;
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
 
@@ -44,12 +45,13 @@ export default function HomeworkPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(isError, lang, t('nav.homework', lang));
 
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', due_date: '', course_id: '' });
 
-  const { data: courses } = useQuery({
+  const { data: courses, isError: coursesError } = useQuery({
     queryKey: ['teacher_courses_select', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
@@ -58,6 +60,7 @@ export default function HomeworkPage() {
     },
     enabled: !!profile?.id,
   });
+  useErrorToast(coursesError, lang, t('nav.courses', lang));
 
   const [editTarget, setEditTarget] = useState<any>(null);
   const [gradeForm, setGradeForm] = useState({ grade: '', feedback: '' });
@@ -145,8 +148,8 @@ export default function HomeworkPage() {
                 <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="h-9" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">{'Matière'}</Label>
-                <Select value={form.course_id} onValueChange={v => setForm(f => ({ ...f, course_id: v }))} placeholder={'Sélectionner une matière'}>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('common.subject', lang)}</Label>
+                <Select value={form.course_id} onValueChange={v => setForm(f => ({ ...f, course_id: v }))} placeholder={t('homework.select_subject', lang)}>
                   {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </Select>
               </div>
@@ -164,18 +167,18 @@ export default function HomeworkPage() {
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8 bg-black/50" onClick={() => { setEditTarget(null); setGradeForm({ grade: '', feedback: '' }); }}>
           <div className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl my-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{'Noter'}</h2>
+              <h2 className="text-lg font-semibold">{t('common.grade', lang)}</h2>
               <button onClick={() => { setEditTarget(null); setGradeForm({ grade: '', feedback: '' }); }} className="h-8 w-8 rounded-lg hover:bg-accent flex items-center justify-center"><X className="h-4 w-4" /></button>
             </div>
             <p className="text-sm text-muted-foreground">{editTarget.studentName} — {editTarget.assignment?.title}</p>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">{'Note /20'}</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('homework.grade', lang)}</Label>
                 <Input type="number" min="0" max="20" step="0.5" value={gradeForm.grade} onChange={e => setGradeForm(f => ({ ...f, grade: e.target.value }))} className="h-9" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">{'Feedback'}</Label>
-                <Textarea value={gradeForm.feedback} onChange={e => setGradeForm(f => ({ ...f, feedback: e.target.value }))} placeholder={'Commentaire...'} />
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('homework.feedback', lang)}</Label>
+                <Textarea value={gradeForm.feedback} onChange={e => setGradeForm(f => ({ ...f, feedback: e.target.value }))} placeholder={t('homework.comment_placeholder', lang)} />
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
@@ -192,7 +195,7 @@ export default function HomeworkPage() {
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         title={t('common.confirm_delete', lang, '')}
-        message={deleteTarget ? `${'Supprimer la remise de'} ${deleteTarget.studentName} ?` : ''}
+        message={deleteTarget ? `${t('homework.delete_submission', lang)} ${deleteTarget.studentName} ?` : ''}
         onConfirm={() => deleteMutation.mutate()}
         loading={deleteMutation.isPending}
       />
@@ -219,10 +222,10 @@ export default function HomeworkPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{s.studentName}</p>
                     <p className="text-xs text-muted-foreground">{s.assignment?.title ?? ''} — {s.assignment?.course?.name ?? ''}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{'Remis le'} {formatDate(s.submitted_at)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t('homework.submitted_on', lang)} {formatDate(s.submitted_at)}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-muted-foreground">{STATUS_LABELS[s.status] ?? s.status}</p>
+                    <p className="text-xs text-muted-foreground">{statusLabel(s.status)}</p>
                     {s.grade && <p className="text-sm font-semibold">{s.grade}/20</p>}
                   </div>
                   <div className="flex gap-1">
