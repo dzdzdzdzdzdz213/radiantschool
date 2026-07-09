@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { usePublicCourses } from '@/hooks/usePublicData';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search } from 'lucide-react';
+import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus } from 'lucide-react';
 
 const categories = [
   { key: 'all', label: 'Tous', icon: BookOpen, btnGradient: 'linear-gradient(135deg, var(--primary), var(--accent))' },
@@ -18,6 +18,7 @@ export default function PublicCoursesPage() {
   const { data: courses, isLoading } = usePublicCourses();
   const [cat, setCat] = useState<'all' | 'primary' | 'middle' | 'high_school'>('all');
   const [selStream, setSelStream] = useState<{ year: string; stream: string } | null>(null);
+  const [typeFilter, setTypeFilter] = useState<'all' | 'normal' | 'vip'>('all');
   const [search, setSearch] = useState('');
 
   const allCourses = courses ?? [];
@@ -25,12 +26,13 @@ export default function PublicCoursesPage() {
   const streamFiltered = selStream
     ? filteredByCat.filter((c: any) => c.level?.name === selStream.year && c.level?.stream === selStream.stream)
     : filteredByCat;
+  const typeFiltered = typeFilter === 'all' ? streamFiltered : streamFiltered.filter((c: any) => c.type === typeFilter);
   const filteredCourses = search
-    ? streamFiltered.filter((c: any) =>
+    ? typeFiltered.filter((c: any) =>
         [c.name, c.subject?.name, c.level?.name, c.level?.stream, c.teacher?.first_name, c.teacher?.last_name]
           .filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase())
       )
-    : streamFiltered;
+    : typeFiltered;
 
   const streamsByYear: { year: string; streams: string[] }[] = [];
   for (const c of filteredByCat) {
@@ -96,6 +98,15 @@ export default function PublicCoursesPage() {
             </div>
           )}
 
+          <div className="flex justify-center gap-2">
+            {(['all', 'normal', 'vip'] as const).map(t => (
+              <button key={t} onClick={() => setTypeFilter(t)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${typeFilter === t ? 'text-white' : 'hover:scale-105'}`}
+                style={typeFilter === t ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
+              >{t === 'all' ? 'Tous les types' : t === 'vip' ? 'VIP' : 'Normal'}</button>
+            ))}
+          </div>
+
           <div className="relative w-full max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--fg-muted)' }} />
             <input
@@ -127,6 +138,7 @@ export default function PublicCoursesPage() {
           {filteredCourses.map((c: any) => {
             const catInfo = categories.find(x => x.key === (c.level?.category ?? 'all')) ?? categories[0];
             const CIcon = catInfo.icon;
+            const isVip = c.type === 'vip';
             return (
             <motion.div
               key={c.id}
@@ -141,7 +153,14 @@ export default function PublicCoursesPage() {
               <div className="relative">
                 <div className="flex items-start justify-between mb-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-widest truncate" style={{ color: 'var(--fg-muted)' }}>{c.subject?.name ?? ''}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-xs font-semibold uppercase tracking-widest truncate" style={{ color: 'var(--fg-muted)' }}>{c.subject?.name ?? ''}</p>
+                      {isVip && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+                          <Star className="h-2.5 w-2.5" />VIP
+                        </span>
+                      )}
+                    </div>
                     <h3 className="text-lg font-bold mt-0.5 truncate">{c.name}</h3>
                   </div>
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ml-3" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
@@ -155,15 +174,26 @@ export default function PublicCoursesPage() {
                 </div>
                 <div className="flex items-center justify-between mb-4">
                   {c.price && <span className="text-lg font-bold">{Number(c.price).toLocaleString()} DA</span>}
-                  {c.capacity && <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{c.capacity} places</span>}
+                  {c.capacity && <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{isVip ? '6' : c.capacity} places</span>}
                 </div>
-                <Link
-                  to="/enroll"
-                  className="inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
-                  style={{ background: catInfo.btnGradient }}
-                >
-                  S'inscrire
-                </Link>
+                <div className="flex gap-2">
+                  {!isVip && (
+                    <Link to="/enroll"
+                      className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
+                      style={{ background: catInfo.btnGradient }}
+                    >S'inscrire</Link>
+                  )}
+                  {isVip && (
+                    <Link to="/enroll"
+                      className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
+                      style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+                    >Réserver VIP</Link>
+                  )}
+                  <Link to={`/private-request/${c.id}`}
+                    className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-semibold transition-all duration-200 active:scale-[0.97]"
+                    style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)`, color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
+                  ><UserPlus className="h-3.5 w-3.5" />Particulier</Link>
+                </div>
               </div>
             </motion.div>
             );

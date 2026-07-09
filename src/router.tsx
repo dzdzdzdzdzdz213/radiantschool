@@ -7,6 +7,7 @@ import ParentRoute from '@/routes/ParentRoute';
 import LoginPage from '@/pages/auth/LoginPage';
 import LandingPage from '@/pages/LandingPage';
 import PublicCoursesPage from '@/pages/PublicCoursesPage';
+import PrivateRequestPage from '@/pages/PrivateRequestPage';
 import LegalPage from '@/pages/LegalPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
@@ -279,6 +280,10 @@ export const router = createBrowserRouter([
   {
     path: '/formations',
     Component: PublicCoursesPage,
+  },
+  {
+    path: '/private-request/:courseId',
+    Component: PrivateRequestPage,
   },
   {
     path: '/',
