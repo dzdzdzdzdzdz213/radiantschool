@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import Resend from 'https://esm.sh/resend@4.1.2';
 
 interface NotificationPayload {
   user_id: string;
@@ -9,6 +10,7 @@ interface NotificationPayload {
   category?: string;
   send_email?: boolean;
   send_sms?: boolean;
+  from_name?: string;
 }
 
 serve(async (req) => {
@@ -32,7 +34,6 @@ serve(async (req) => {
       });
     }
 
-    // Validate user exists
     const { data: user } = await supabase
       .from('users')
       .select('id, email, phone')
@@ -45,7 +46,6 @@ serve(async (req) => {
       });
     }
 
-    // Insert in-app notification
     const { data: notification, error: notifError } = await supabase
       .from('notifications')
       .insert({
@@ -53,29 +53,47 @@ serve(async (req) => {
         title: payload.title,
         message: payload.message,
         type: payload.type || 'info',
+        category: payload.category || 'system',
       })
       .select()
       .single();
 
     if (notifError) throw notifError;
 
-    // Send email via Supabase if requested
+    let emailSent = false;
     if (payload.send_email && user.email) {
-      // In production, call an email service (SendGrid, Resend, etc.)
-      console.log(`[EMAIL] To: ${user.email}, Subject: ${payload.title}`);
-    }
-
-    // Send SMS if requested
-    if (payload.send_sms && user.phone) {
-      // In production, call an SMS service (Twilio, etc.)
-      console.log(`[SMS] To: ${user.phone}, Message: ${payload.message}`);
+      try {
+        const resend = new Resend(Deno.env.get('RESEND_API_KEY')!);
+        const { error: emailError } = await resend.emails.send({
+          from: payload.from_name
+            ? `${payload.from_name} <noreply@radiantlearning.dz>`
+            : 'Radiant Academy <noreply@radiantlearning.dz>',
+          to: [user.email],
+          subject: payload.title,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+            <div style="background:#2563eb;padding:24px;text-align:center;">
+              <h1 style="color:#fff;margin:0;font-size:20px;">Radiant Academy</h1>
+            </div>
+            <div style="padding:24px;background:#f8fafc;">
+              <h2 style="margin:0 0 12px;font-size:18px;color:#1e293b;">${payload.title}</h2>
+              <p style="margin:0;color:#475569;line-height:1.6;">${payload.message.replace(/\n/g, '<br>')}</p>
+            </div>
+            <div style="padding:16px;text-align:center;font-size:12px;color:#94a3b8;">
+              Radiant Academy — Alger, Algérie
+            </div>
+          </div>`,
+        });
+        if (emailError) throw emailError;
+        emailSent = true;
+      } catch (emailErr) {
+        console.error('[EMAIL_ERROR]', emailErr.message);
+      }
     }
 
     return new Response(JSON.stringify({
       success: true,
       notification_id: notification.id,
-      email_sent: payload.send_email && !!user.email,
-      sms_sent: payload.send_sms && !!user.phone,
+      email_sent: emailSent,
     }), {
       status: 200, headers: { 'Content-Type': 'application/json' },
     });

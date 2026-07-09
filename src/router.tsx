@@ -62,6 +62,9 @@ const TeacherEvaluationsPage = LazyPage(() => import('@/pages/TeacherEvaluations
 const SettingsPage = LazyPage(() => import('@/pages/admin/SettingsPage'));
 const StudentDetailPage = LazyPage(() => import('@/pages/StudentDetailPage'));
 const LeaderboardPage = LazyPage(() => import('@/pages/LeaderboardPage'));
+const NotFoundPage = LazyPage(() => import('@/pages/NotFoundPage'));
+const PublicFaqPage = LazyPage(() => import('@/pages/PublicFaqPage'));
+const PublicContactPage = LazyPage(() => import('@/pages/PublicContactPage'));
 const EnrollPage = LazyPage(() => import('@/pages/EnrollPage'));
 const TeacherDashboardPage = LazyPage(() => import('@/features/teacher/dashboard/TeacherDashboardPage'));
 const TeacherStudentsPage = LazyPage(() => import('@/features/teacher/students/TeacherStudentsPage'));
@@ -284,6 +287,14 @@ export const router = createBrowserRouter([
     Component: PublicCoursesPage,
   },
   {
+    path: '/faq',
+    Component: PublicFaqPage,
+  },
+  {
+    path: '/contact',
+    Component: PublicContactPage,
+  },
+  {
     path: '/private-request/:courseId',
     Component: PrivateRequestPage,
   },
@@ -297,6 +308,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <SafeRedirect to="/login" />,
+    Component: NotFoundPage,
   },
 ]);
