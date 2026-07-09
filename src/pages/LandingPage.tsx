@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
@@ -40,6 +40,48 @@ import EducationLevelCard from '@/components/formations/EducationLevelCard';
     own voice/details (year founded, real name, real anecdote).
 */
 
+// Renders `src`; if the image 404s (placeholder paths not filled in yet,
+// slow connection, etc.) it swaps to a soft gradient + initials instead of
+// the browser's broken-image icon. Once real photos are in place this
+// is invisible — it only ever shows on a failed load.
+function ImageWithFallback({
+  src,
+  alt,
+  className,
+  style,
+  initials,
+  gradient = 'linear-gradient(135deg, var(--primary), var(--accent))',
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  style?: CSSProperties;
+  initials?: string;
+  gradient?: string;
+}) {
+  const [errored, setErrored] = useState(false);
+  if (errored || !src) {
+    return (
+      <div className={`flex items-center justify-center ${className ?? ''}`} style={{ background: gradient, ...style }}>
+        <span className="font-bold text-white/90" style={{ fontSize: 'clamp(1rem, 6cqw, 2.25rem)' }}>
+          {initials ?? <BookOpen className="h-8 w-8 text-white/70" />}
+        </span>
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} className={className} style={style} onError={() => setErrored(true)} loading="lazy" />;
+}
+
+function getInitials(name: string) {
+  return name.split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+}
+
+// A bare "0" or "0+" reads as broken, not honest — show a dash until
+// there's a real number worth putting in front of a parent.
+function formatCount(value: number | null | undefined, suffix = '') {
+  return value && value > 0 ? `${value}${suffix}` : '—';
+}
+
 function CountUp({ end = 0 }: { end?: number }) {
   const [c, setC] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -73,10 +115,10 @@ const NAV = [
 
 // Placeholder team data — replace photos + bios with your real team.
 const TEAM = [
-  { name: 'Amina B.', role: 'Fondatrice — Prof de Mathématiques', years: '12 ans d\'expérience', photo: '/team/amina.jpg' },
-  { name: 'Yacine K.', role: 'Prof de Physique', years: '8 ans d\'expérience', photo: '/team/yacine.jpg' },
-  { name: 'Sarah M.', role: 'Prof de Français', years: '6 ans d\'expérience', photo: '/team/sarah.jpg' },
-  { name: 'Riad T.', role: 'Coordinateur pédagogique', years: '10 ans d\'expérience', photo: '/team/riad.jpg' },
+  { name: 'Amina B.', role: 'Fondatrice — Prof de Mathématiques', years: '12 ans d\'expérience', photo: '/team/amina.jpg', gradient: 'linear-gradient(135deg, var(--primary), #a78bfa)' },
+  { name: 'Yacine K.', role: 'Prof de Physique', years: '8 ans d\'expérience', photo: '/team/yacine.jpg', gradient: 'linear-gradient(135deg, #0891b2, #06b6d4)' },
+  { name: 'Sarah M.', role: 'Prof de Français', years: '6 ans d\'expérience', photo: '/team/sarah.jpg', gradient: 'linear-gradient(135deg, #ec4899, #f472b6)' },
+  { name: 'Riad T.', role: 'Coordinateur pédagogique', years: '10 ans d\'expérience', photo: '/team/riad.jpg', gradient: 'linear-gradient(135deg, #f59e0b, #f97316)' },
 ];
 
 export default function LandingPage() {
@@ -222,8 +264,21 @@ export default function LandingPage() {
               {/* Humanizing touch: real-parents trust strip, right under the CTAs */}
               <div className="mt-8 flex items-center gap-3 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.18s' }}>
                 <div className="flex -space-x-3">
-                  {['/avatars/parent1.jpg', '/avatars/parent2.jpg', '/avatars/parent3.jpg', '/avatars/parent4.jpg'].map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-9 w-9 rounded-full object-cover" style={{ border: '2px solid var(--bg)' }} />
+                  {[
+                    { src: '/avatars/parent1.jpg', initials: 'N.K', gradient: 'linear-gradient(135deg, #6366f1, #a78bfa)' },
+                    { src: '/avatars/parent2.jpg', initials: 'S.B', gradient: 'linear-gradient(135deg, #f59e0b, #f97316)' },
+                    { src: '/avatars/parent3.jpg', initials: 'L.M', gradient: 'linear-gradient(135deg, #10b981, #06b6d4)' },
+                    { src: '/avatars/parent4.jpg', initials: 'H.A', gradient: 'linear-gradient(135deg, #ec4899, #f472b6)' },
+                  ].map((p, i) => (
+                    <ImageWithFallback
+                      key={i}
+                      src={p.src}
+                      alt=""
+                      initials={p.initials}
+                      gradient={p.gradient}
+                      className="h-9 w-9 rounded-full object-cover text-[10px]"
+                      style={{ border: '2px solid var(--bg)' }}
+                    />
                   ))}
                 </div>
                 <p className="text-xs font-medium text-left" style={{ color: 'var(--fg-muted)' }}>
@@ -258,10 +313,11 @@ export default function LandingPage() {
             <div className="flex-1 flex justify-center lg:justify-end animate-up" style={{ animationDelay: '0.15s' }}>
               <div className="relative w-80 sm:w-[26rem] h-80 sm:h-[26rem]">
                 <div className="relative w-full h-full rounded-[32px] overflow-hidden" style={{ border: '1px solid var(--border)', boxShadow: '0 24px 60px rgba(0,0,0,0.12)' }}>
-                  <img
+                  <ImageWithFallback
                     src="/images/hero-classroom.jpg"
                     alt="Élèves et professeurs de Radiant Academy en cours"
                     className="w-full h-full object-cover"
+                    gradient="linear-gradient(135deg, var(--primary), #a78bfa)"
                   />
                 </div>
 
@@ -270,7 +326,12 @@ export default function LandingPage() {
                   className="absolute -bottom-8 -left-10 w-44 rounded-lg p-3 pb-4"
                   style={{ backgroundColor: '#fff', boxShadow: '0 16px 40px rgba(0,0,0,0.18)', transform: 'rotate(-6deg)' }}
                 >
-                  <img src="/images/hero-polaroid.jpg" alt="Un cours de soutien à Radiant Academy" className="w-full h-28 object-cover rounded-sm mb-2" />
+                  <ImageWithFallback
+                    src="/images/hero-polaroid.jpg"
+                    alt="Un cours de soutien à Radiant Academy"
+                    className="w-full h-28 object-cover rounded-sm mb-2"
+                    gradient="linear-gradient(135deg, #f59e0b, #f97316)"
+                  />
                   <p className="font-handwritten text-lg leading-none text-center" style={{ color: '#1f2937' }}>
                     On y arrive ensemble ✏️
                   </p>
@@ -304,7 +365,13 @@ export default function LandingPage() {
               </p>
 
               <div className="flex items-center gap-4 rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-                <img src="/team/founder.jpg" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
+                <ImageWithFallback
+                  src="/team/founder.jpg"
+                  alt="Fondatrice de Radiant Academy"
+                  initials="AB"
+                  className="h-16 w-16 rounded-full object-cover shrink-0"
+                  style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }}
+                />
                 <div>
                   <p className="font-handwritten text-3xl leading-none mb-1" style={{ color: 'var(--primary)' }}>Amina B.</p>
                   <p className="text-xs" style={{ color: 'var(--fg-muted)' }}>Fondatrice — prof de mathématiques depuis 12 ans</p>
@@ -314,17 +381,19 @@ export default function LandingPage() {
 
             {/* Photo collage */}
             <div className="relative h-[420px] hidden lg:block">
-              <img
+              <ImageWithFallback
                 src="/images/about-main.jpg"
                 alt="L'équipe de Radiant Academy"
                 className="absolute top-0 right-0 w-72 h-80 object-cover rounded-2xl"
                 style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}
+                gradient="linear-gradient(135deg, var(--primary), var(--accent))"
               />
-              <img
+              <ImageWithFallback
                 src="/images/about-secondary.jpg"
                 alt="Un cours de soutien scolaire"
                 className="absolute bottom-0 left-0 w-56 h-64 object-cover rounded-2xl"
                 style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '4px solid var(--bg)' }}
+                gradient="linear-gradient(135deg, #10b981, #06b6d4)"
               />
               <div
                 className="absolute bottom-16 right-10 rounded-lg p-3 w-40"
@@ -353,7 +422,13 @@ export default function LandingPage() {
                   style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', animationDelay: `${i * 0.06}s`, boxShadow: 'var(--shadow-sm)' }}
                 >
                   <div className="aspect-[4/5] overflow-hidden">
-                    <img src={member.photo} alt={member.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <ImageWithFallback
+                      src={member.photo}
+                      alt={member.name}
+                      initials={getInitials(member.name)}
+                      gradient={member.gradient}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
                   </div>
                   <div className="p-5 text-center">
                     <p className="font-bold text-base">{member.name}</p>
@@ -432,10 +507,10 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Users, key: 'feat.groups', desc: 'feat.groups.desc', getStat: () => `${stats?.minCapacity ?? '—'}`, statLabel: 'élèves max', gradient: 'from-indigo-500/20 to-purple-600/20', iconColor: 'var(--primary)' },
-              { icon: Star, key: 'feat.teachers', desc: 'feat.teachers.desc', getStat: () => `${stats?.teacherCount ?? '—'}+`, statLabel: 'profs', gradient: 'from-amber-500/20 to-orange-600/20', iconColor: '#f59e0b' },
-              { icon: BarChart3, key: 'feat.followup', desc: 'feat.followup.desc', getStat: () => `${stats?.totalEvaluations ?? '—'}`, statLabel: 'évaluations', gradient: 'from-teal-500/20 to-cyan-600/20', iconColor: 'var(--accent)' },
-              { icon: RefreshCw, key: 'feat.flexible', desc: 'feat.flexible.desc', getStat: () => `${stats?.typeCount ?? '—'}`, statLabel: 'formules', gradient: 'from-pink-500/20 to-rose-600/20', iconColor: '#ec4899' },
+              { icon: Users, key: 'feat.groups', desc: 'feat.groups.desc', getStat: () => formatCount(stats?.minCapacity), statLabel: 'élèves max', gradient: 'from-indigo-500/20 to-purple-600/20', iconColor: 'var(--primary)' },
+              { icon: Star, key: 'feat.teachers', desc: 'feat.teachers.desc', getStat: () => formatCount(stats?.teacherCount, '+'), statLabel: 'profs', gradient: 'from-amber-500/20 to-orange-600/20', iconColor: '#f59e0b' },
+              { icon: BarChart3, key: 'feat.followup', desc: 'feat.followup.desc', getStat: () => formatCount(stats?.totalEvaluations), statLabel: 'évaluations', gradient: 'from-teal-500/20 to-cyan-600/20', iconColor: 'var(--accent)' },
+              { icon: RefreshCw, key: 'feat.flexible', desc: 'feat.flexible.desc', getStat: () => formatCount(stats?.typeCount), statLabel: 'formules', gradient: 'from-pink-500/20 to-rose-600/20', iconColor: '#ec4899' },
             ].map((f, i) => {
               const stat = f.getStat();
               return (
@@ -470,10 +545,34 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl relative">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Star, value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis clients', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
-              { icon: Users, value: `${stats?.studentCount ?? 0}+`, label: 'Étudiants', sub: 'Inscrits', color: 'var(--primary)' },
-              { icon: Award, value: `${stats?.successRate ?? 0}%`, label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
-              { icon: Shield, value: `${stats?.yearsActive ?? 0}+`, label: "Années d'expérience", sub: "Dans l'éducation", color: '#6366f1' },
+              {
+                icon: Star,
+                value: stats?.avgRating ? stats.avgRating.toFixed(1) : '—',
+                label: 'Avis clients',
+                sub: stats?.totalEvaluations ? `${stats.totalEvaluations} évaluations` : 'Bientôt disponible',
+                color: '#f59e0b',
+              },
+              {
+                icon: Users,
+                value: stats?.studentCount ? `${stats.studentCount}+` : '—',
+                label: 'Étudiants',
+                sub: stats?.studentCount ? 'Inscrits' : 'Soyez parmi les premiers',
+                color: 'var(--primary)',
+              },
+              {
+                icon: Award,
+                value: stats?.successRate ? `${stats.successRate}%` : '—',
+                label: 'Réussite',
+                sub: 'Aux examens',
+                color: '#10b981',
+              },
+              {
+                icon: Shield,
+                value: stats?.yearsActive ? `${stats.yearsActive}+` : '—',
+                label: "Années d'expérience",
+                sub: "Dans l'éducation",
+                color: '#6366f1',
+              },
             ].map((s, i) => (
               <div key={i} className="group relative rounded-2xl animate-up transition-all duration-300 hover:-translate-y-1.5" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', animationDelay: `${i * 0.06}s`, boxShadow: 'var(--shadow-md)' }}>
                 <div className="h-1.5 rounded-t-2xl bg-gradient-to-r" style={{ background: `linear-gradient(90deg, ${s.color}, color-mix(in srgb, ${s.color} 50%, #fff))` }} />

@@ -1,6 +1,4 @@
 import { type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 
 interface EducationLevelCardProps {
   title: string;
@@ -22,13 +20,11 @@ export default function EducationLevelCard({
   to,
 }: EducationLevelCardProps) {
   return (
-    <Link to={to}>
-      <motion.div
-        whileHover={{ y: -8, scale: 1.01 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="group relative h-[360px] w-full cursor-pointer overflow-hidden rounded-3xl"
-        style={{ boxShadow: '0 4px 30px rgba(0,0,0,0.1)' }}
-      >
+    <a
+      href={to}
+      className="group relative block h-[360px] w-full cursor-pointer overflow-hidden rounded-3xl transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.01]"
+      style={{ boxShadow: '0 4px 30px rgba(0,0,0,0.1)' }}
+    >
       <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`}>
         {image && (
           <img
@@ -60,17 +56,14 @@ export default function EducationLevelCard({
         <p className="text-sm font-medium text-white/70">{subtitle}</p>
 
         <div className="mt-0 overflow-hidden">
-          <motion.div
-            initial={{ opacity: 0, y: 10, height: 0 }}
-            whileHover={{ opacity: 1, y: 0, height: 'auto' }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-none"
+          <div
+            className="pointer-events-none opacity-0 transition-all duration-400 group-hover:opacity-100"
           >
             <div className="h-px w-12 bg-white/40" />
             <p className="mt-3 text-sm leading-relaxed text-white/90">
               {hoverDescription}
             </p>
-          </motion.div>
+          </div>
         </div>
 
         <div className="absolute bottom-8 right-8">
@@ -79,7 +72,6 @@ export default function EducationLevelCard({
           </div>
         </div>
       </div>
-    </motion.div>
-    </Link>
+    </a>
   );
 }

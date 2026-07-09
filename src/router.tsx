@@ -60,11 +60,11 @@ const SettingsPage = LazyPage(() => import('@/pages/admin/SettingsPage'));
 const StudentDetailPage = LazyPage(() => import('@/pages/StudentDetailPage'));
 const LeaderboardPage = LazyPage(() => import('@/pages/LeaderboardPage'));
 const EnrollPage = LazyPage(() => import('@/pages/EnrollPage'));
-const PrimaryPage = LazyPage(() => import('@/pages/formations/PrimaryPage'));
-const MiddleSchoolPage = LazyPage(() => import('@/pages/formations/MiddleSchoolPage'));
-const HighSchoolPage = LazyPage(() => import('@/pages/formations/HighSchoolPage'));
-const TeachersPage = LazyPage(() => import('@/pages/formations/TeachersPage'));
-const TeacherProfilePage = LazyPage(() => import('@/pages/formations/TeacherProfilePage'));
+import PrimaryPage from '@/pages/formations/PrimaryPage';
+import MiddleSchoolPage from '@/pages/formations/MiddleSchoolPage';
+import HighSchoolPage from '@/pages/formations/HighSchoolPage';
+import TeachersPage from '@/pages/formations/TeachersPage';
+import TeacherProfilePage from '@/pages/formations/TeacherProfilePage';
 const TeacherDashboardPage = LazyPage(() => import('@/features/teacher/dashboard/TeacherDashboardPage'));
 const TeacherStudentsPage = LazyPage(() => import('@/features/teacher/students/TeacherStudentsPage'));
 const TeacherSchedulePage = LazyPage(() => import('@/features/teacher/schedule/SchedulePage'));
@@ -285,24 +285,24 @@ export const router = createBrowserRouter([
     Component: LandingPage,
   },
   {
-    path: '/formations/primaire',
-    Component: PrimaryPage,
+    path: '/formations-primaire',
+    element: <PrimaryPage />,
   },
   {
-    path: '/formations/cem',
-    Component: MiddleSchoolPage,
+    path: '/formations-cem',
+    element: <MiddleSchoolPage />,
   },
   {
-    path: '/formations/lycee',
-    Component: HighSchoolPage,
+    path: '/formations-lycee',
+    element: <HighSchoolPage />,
   },
   {
     path: '/teachers',
-    Component: TeachersPage,
+    element: <TeachersPage />,
   },
   {
     path: '/teachers/:id',
-    Component: TeacherProfilePage,
+    element: <TeacherProfilePage />,
   },
   {
     path: '/:page',
