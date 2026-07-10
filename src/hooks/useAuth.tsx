@@ -82,7 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const isOAuthCallback = window.location.hash.includes('access_token=');
+    const hash = window.location.hash;
+    const isOAuthCallback = hash.includes('access_token=');
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
@@ -99,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       setIsLoading(false);
-    });
+    }).catch(() => setIsLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
