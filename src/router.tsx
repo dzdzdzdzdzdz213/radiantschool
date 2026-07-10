@@ -13,6 +13,9 @@ import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import PublicEnrollPage from '@/pages/auth/PublicEnrollPage';
 
+import AuthCallbackPage from '@/pages/auth/AuthCallbackPage';
+import CompleteProfilePage from '@/pages/auth/CompleteProfilePage';
+
 const LazyPage = (imp: any) => {
   const C = lazy(imp);
   return () => (
@@ -118,6 +121,14 @@ export const router = createBrowserRouter([
   {
     path: '/enroll',
     Component: PublicEnrollPage,
+  },
+  {
+    path: '/auth/callback',
+    Component: AuthCallbackPage,
+  },
+  {
+    path: '/complete-profile',
+    Component: CompleteProfilePage,
   },
   {
     path: '/forgot-password',

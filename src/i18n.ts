@@ -243,6 +243,7 @@ const fr: Dict = {
   'auth.back_to_login': 'Retour à la connexion',
   'auth.check_inbox': 'Vérifiez votre boîte de réception.',
   'auth.i_am': 'Je suis',
+  'auth.continue_with_google': 'Continuer avec Google',
 
   // --- Errors ---
   'errors.load_error': (ctx: string) => `Erreur de chargement ${ctx}`,
@@ -1183,6 +1184,7 @@ const en: Dict = {
   'auth.back_to_login': 'Back to login',
   'auth.check_inbox': 'Check your inbox.',
   'auth.i_am': 'I am',
+  'auth.continue_with_google': 'Continue with Google',
 
   // --- Errors ---
   'errors.load_error': (ctx: string) => `Error loading ${ctx}`,
