@@ -69,6 +69,11 @@ const NotFoundPage = LazyPage(() => import('@/pages/NotFoundPage'));
 const PublicFaqPage = LazyPage(() => import('@/pages/PublicFaqPage'));
 const PublicContactPage = LazyPage(() => import('@/pages/PublicContactPage'));
 const EnrollPage = LazyPage(() => import('@/pages/EnrollPage'));
+import PrimaryPage from '@/pages/formations/PrimaryPage';
+import MiddleSchoolPage from '@/pages/formations/MiddleSchoolPage';
+import HighSchoolPage from '@/pages/formations/HighSchoolPage';
+import TeachersPage from '@/pages/formations/TeachersPage';
+import FormationTeacherProfilePage from '@/pages/formations/TeacherProfilePage';
 const TeacherDashboardPage = LazyPage(() => import('@/features/teacher/dashboard/TeacherDashboardPage'));
 const TeacherStudentsPage = LazyPage(() => import('@/features/teacher/students/TeacherStudentsPage'));
 const TeacherSchedulePage = LazyPage(() => import('@/features/teacher/schedule/SchedulePage'));
@@ -296,6 +301,26 @@ export const router = createBrowserRouter([
   {
     path: '/formations',
     Component: PublicCoursesPage,
+  },
+  {
+    path: '/formations-primaire',
+    element: <PrimaryPage />,
+  },
+  {
+    path: '/formations-cem',
+    element: <MiddleSchoolPage />,
+  },
+  {
+    path: '/formations-lycee',
+    element: <HighSchoolPage />,
+  },
+  {
+    path: '/teachers',
+    element: <TeachersPage />,
+  },
+  {
+    path: '/teachers/:id',
+    element: <FormationTeacherProfilePage />,
   },
   {
     path: '/faq',
