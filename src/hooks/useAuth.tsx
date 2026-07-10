@@ -36,6 +36,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  * On mount: reads the Supabase session, fetches the user profile from
  * the `users` table, and listens for `onAuthStateChange` events.
  */
+function getDashboardPath(role: string) {
+  if (role === 'student') return '/student/dashboard';
+  if (role === 'parent') return '/parent/dashboard';
+  if (role === 'teacher') return '/teacher/dashboard';
+  if (role === 'assistant') return '/assistant/dashboard';
+  if (role === 'admin') return '/admin/dashboard';
+  return '/';
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -72,11 +81,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleOAuthRedirect = async (userId: string) => {
+    const isOAuthCallback = window.location.hash.includes('access_token=');
+    if (!isOAuthCallback) return;
+
+    const { data: existing } = await supabase.from('users').select('id, role').eq('id', userId).maybeSingle();
+    if (existing) {
+      window.location.replace(getDashboardPath(existing.role));
+    } else {
+      window.location.replace('/complete-profile');
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
         fetchProfile(session.user.id);
+        handleOAuthRedirect(session.user.id);
       }
       setIsLoading(false);
     });
