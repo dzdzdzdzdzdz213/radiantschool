@@ -156,12 +156,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => { setGoogleLoading(true); signInWithGoogle(); }}
             disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all hover:bg-[var(--bg)]"
-            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
+            className="w-full"
           >
             {googleLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -174,7 +174,7 @@ export default function LoginPage() {
               </svg>
             )}
             {t('auth.continue_with_google', lang)}
-          </button>
+          </Button>
 
           <p className="mt-5 text-center text-small text-muted-foreground">
             {t('auth.dont_have_account', lang)}{' '}

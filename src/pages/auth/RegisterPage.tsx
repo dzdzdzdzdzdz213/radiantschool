@@ -282,12 +282,12 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => { setGoogleLoading(true); signInWithGoogle(); }}
               disabled={googleLoading}
-              className="w-full flex items-center justify-center gap-3 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all hover:bg-[var(--bg)]"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
+              className="w-full"
             >
               {googleLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -300,7 +300,7 @@ export default function RegisterPage() {
                 </svg>
               )}
               {t('auth.continue_with_google', lang)}
-            </button>
+            </Button>
 
             <p className="mt-5 text-center text-sm" style={{ color: 'var(--fg-muted)' }}>
               {t('auth.already_have_account', lang)} <Link to="/login" className="font-medium transition-all hover:opacity-80" style={{ color: 'var(--primary)' }}>{t('auth.sign_in', lang)}</Link>
@@ -409,12 +409,12 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => { setGoogleLoading(true); signInWithGoogle(); }}
                 disabled={googleLoading}
-                className="w-full flex items-center justify-center gap-3 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all hover:bg-[var(--bg)] mb-4"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
+                className="w-full mb-4"
               >
                 {googleLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -427,7 +427,7 @@ export default function RegisterPage() {
                   </svg>
                 )}
                 {t('auth.continue_with_google', lang)}
-              </button>
+              </Button>
 
               <Button type="submit" disabled={isLoading} variant="default" className="w-full">
                 {isLoading ? t('register.loading', lang) : t('auth.register', lang)}
