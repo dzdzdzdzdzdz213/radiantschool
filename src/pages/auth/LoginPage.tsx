@@ -22,10 +22,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (profile) {
-      const allowed = ['student', 'parent'];
-      if (allowed.includes(profile.role)) {
-        navigate(getDefaultRoute(profile.role), { replace: true });
-      }
+      navigate(getDefaultRoute(profile.role), { replace: true });
     }
   }, [profile, navigate]);
 
@@ -44,7 +41,7 @@ export default function LoginPage() {
       .select('role, status')
       .eq('email', email)
       .single();
-    if (!userData || !['student', 'parent'].includes(userData.role as string) || userData.status !== 'active') {
+    if (!userData || userData.status !== 'active') {
       setError(t('auth.invalid_credentials', lang));
       await supabase.auth.signOut();
     }
