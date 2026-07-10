@@ -373,7 +373,7 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Users, key: 'feat.groups', desc: 'feat.groups.desc', getStat: () => `${stats?.minCapacity ?? '—'}`, statLabel: 'élèves max', gradient: 'from-indigo-500/20 to-purple-600/20', iconColor: 'var(--primary)' },
+              { icon: Users, key: 'feat.groups', desc: 'feat.groups.desc', getStat: () => `${stats?.maxCapacity ?? '—'}`, statLabel: 'élèves max', gradient: 'from-indigo-500/20 to-purple-600/20', iconColor: 'var(--primary)' },
               { icon: Star, key: 'feat.teachers', desc: 'feat.teachers.desc', getStat: () => `${stats?.teacherCount ?? '—'}+`, statLabel: 'profs', gradient: 'from-amber-500/20 to-orange-600/20', iconColor: '#f59e0b' },
               { icon: BarChart3, key: 'feat.followup', desc: 'feat.followup.desc', getStat: () => `${stats?.totalEvaluations ?? '—'}`, statLabel: 'évaluations', gradient: 'from-teal-500/20 to-cyan-600/20', iconColor: 'var(--accent)' },
               { icon: RefreshCw, key: 'feat.flexible', desc: 'feat.flexible.desc', getStat: () => `${stats?.typeCount ?? '—'}`, statLabel: 'formules', gradient: 'from-pink-500/20 to-rose-600/20', iconColor: '#ec4899' },

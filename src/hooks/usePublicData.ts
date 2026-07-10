@@ -51,10 +51,10 @@ export function usePublicStats() {
         ? Math.max(1, new Date().getFullYear() - new Date(firstCourse.data.start_date).getFullYear())
         : 5;
       const capacities = (courseRes.data ?? []).map(r => r.capacity).filter(Boolean) as number[];
-      const minCapacity = capacities.length > 0 ? Math.min(...capacities) : 0;
+      const maxCapacity = capacities.length > 0 ? Math.max(...capacities) : 0;
       const types = new Set((typeRes.data ?? []).map(r => r.type).filter(Boolean));
       const typeCount = types.size;
-      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations, teacherCount, minCapacity, typeCount, levelCount };
+      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations, teacherCount, maxCapacity, typeCount, levelCount };
     },
     staleTime: 1000 * 60 * 5,
   });
