@@ -12,7 +12,6 @@ import AlertsWidget from './components/AlertsWidget';
 import PendingRegistrations from './components/PendingRegistrations';
 import OverduePayments from './components/OverduePayments';
 import ActiveTeachers from './components/ActiveTeachers';
-import RoomOccupancy from './components/RoomOccupancy';
 import TodaySchedule from './components/TodaySchedule';
 import RfidSummary from './components/RfidSummary';
 
@@ -72,7 +71,7 @@ function LoadingGrid() {
 export default function AssistantDashboardPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
-  const { kpi, pendingRegistrations, overduePayments, roomStatus, activeTeachers, alerts, quickActions, scheduleData, scheduleLoading, rfidData, isLoading, isError } = useAssistantDashboard();
+      const { kpi, pendingRegistrations, overduePayments, activeTeachers, alerts, quickActions, scheduleData, scheduleLoading, rfidData, isLoading, isError } = useAssistantDashboard();
 
   if (isLoading) return <LoadingGrid />;
 
@@ -114,7 +113,6 @@ export default function AssistantDashboardPage() {
         <PendingRegistrations data={pendingRegistrations} loading={isLoading} />
         <OverduePayments data={overduePayments} loading={isLoading} />
         <ActiveTeachers data={activeTeachers} loading={isLoading} />
-        <RoomOccupancy data={roomStatus} loading={isLoading} />
         <TodaySchedule data={scheduleData} loading={scheduleLoading} />
         <RfidSummary data={rfidData} totalScans={kpi.rfidScansToday} loading={isLoading} />
       </div>

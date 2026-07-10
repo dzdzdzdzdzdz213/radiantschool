@@ -82,8 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const hash = window.location.hash;
-    const isOAuthCallback = hash.includes('access_token=');
+    const isOAuthCallback = window.location.pathname === '/auth/callback';
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {

@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/Toast';
 export default function CompleteProfilePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, refreshProfile } = useAuth();
+  const { user, isLoading, refreshProfile } = useAuth();
 
   const [role, setRole] = useState<'student' | 'parent' | ''>('');
   const [form, setForm] = useState({ first_name: '', last_name: '', phone: '' });
@@ -19,6 +19,7 @@ export default function CompleteProfilePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (isLoading) return;
     if (!user) { navigate('/login'); return; }
     const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
     const parts = name.split(' ');
@@ -27,7 +28,7 @@ export default function CompleteProfilePage() {
       last_name: user.user_metadata?.last_name || parts.slice(1).join(' ') || '',
       phone: '',
     });
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

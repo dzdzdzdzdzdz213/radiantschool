@@ -16,38 +16,46 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { signIn, signInWithGoogle, profile } = useAuth();
+  const { signInWithGoogle, user, profile, isLoading: authLoading } = useAuth();
   const { lang } = useLang();
   const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (user && !profile) {
+      navigate('/complete-profile', { replace: true });
+      return;
+    }
     if (profile) {
       const allowed = ['student', 'parent'];
-      if (allowed.includes(profile.role)) {
-        navigate(getDefaultRoute(profile.role), { replace: true });
+      if (!allowed.includes(profile.role)) {
+        supabase.auth.signOut();
+        return;
       }
+      navigate(getDefaultRoute(profile.role), { replace: true });
     }
-  }, [profile, navigate]);
+  }, [user, profile, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    const result = await signIn(email, password);
-    setIsLoading(false);
-    if (result.error) {
-      setError(t('auth.invalid_credentials', lang));
-      return;
-    }
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role, status')
-      .eq('email', email)
-      .single();
-    if (!userData || !['student', 'parent'].includes(userData.role as string) || userData.status !== 'active') {
-      setError(t('auth.invalid_credentials', lang));
-      await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        if (error.message?.includes('not confirmed')) {
+          setError('Veuillez confirmer votre adresse email avant de vous connecter');
+        } else if (error.message?.includes('Invalid login credentials')) {
+          setError('Email ou mot de passe incorrect');
+        } else {
+          setError('Identifiants invalides');
+        }
+      }
+    } catch {
+      setError('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,7 +71,7 @@ export default function LoginPage() {
           <div className="relative">
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigate(-1)}
               aria-label={t('common.back', lang)}
               className="btn-ghost absolute left-0 top-1/2 h-9 w-9 -translate-y-1/2 p-0"
             >

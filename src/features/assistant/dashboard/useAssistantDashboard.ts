@@ -164,24 +164,6 @@ export function useAssistantDashboard(lang: string = 'fr') {
     gcTime: 5 * 60 * 1000,
   });
 
-  const roomStatusQuery = useQuery({
-    queryKey: ['assistant_room_status', today],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('rooms')
-        .select('id, name, capacity, status')
-        .order('name');
-      return (data ?? []).map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        capacity: r.capacity,
-        status: r.status,
-      })) as RoomStatus[];
-    },
-    staleTime: 30_000,
-    gcTime: 5 * 60 * 1000,
-  });
-
   const activeTeachersQuery = useQuery({
     queryKey: ['assistant_active_teachers', today],
     queryFn: async () => {
@@ -300,6 +282,7 @@ export function useAssistantDashboard(lang: string = 'fr') {
   });
 
   const quickActions: QuickAction[] = [
+    { label: 'Créer une classe', icon: 'GraduationCap', path: '/assistant/groups', description: 'Ajouter un groupe' },
     { label: 'Inscrire un élève', icon: 'UserPlus', path: '/assistant/students/new', description: 'Nouvelle inscription' },
     { label: 'Créer une facture', icon: 'FileText', path: '/assistant/invoices/new', description: 'Générer une facture' },
     { label: 'Enregistrer un paiement', icon: 'DollarSign', path: '/assistant/payments/new', description: 'Saisir un règlement' },
@@ -316,8 +299,8 @@ export function useAssistantDashboard(lang: string = 'fr') {
   const scheduleLoading = scheduleQuery.isLoading;
   const rfidData = rfidQuery.data ?? [];
 
-  const isLoading = kpiQuery.isLoading || pendingRegistrationsQuery.isLoading || overduePaymentsQuery.isLoading || roomStatusQuery.isLoading || activeTeachersQuery.isLoading || scheduleQuery.isLoading || rfidQuery.isLoading || alertsQuery.isLoading;
-  const isError = kpiQuery.isError || pendingRegistrationsQuery.isError || overduePaymentsQuery.isError || roomStatusQuery.isError || activeTeachersQuery.isError || scheduleQuery.isError || rfidQuery.isError || alertsQuery.isError;
+  const isLoading = kpiQuery.isLoading || pendingRegistrationsQuery.isLoading || overduePaymentsQuery.isLoading || activeTeachersQuery.isLoading || scheduleQuery.isLoading || rfidQuery.isLoading || alertsQuery.isLoading;
+  const isError = kpiQuery.isError || pendingRegistrationsQuery.isError || overduePaymentsQuery.isError || activeTeachersQuery.isError || scheduleQuery.isError || rfidQuery.isError || alertsQuery.isError;
 
   return {
     kpi: kpiQuery.data ?? {
@@ -328,7 +311,6 @@ export function useAssistantDashboard(lang: string = 'fr') {
     },
     pendingRegistrations: pendingRegistrationsQuery.data ?? [],
     overduePayments: overduePaymentsQuery.data ?? [],
-    roomStatus: roomStatusQuery.data ?? [],
     activeTeachers: activeTeachersQuery.data ?? [],
     alerts: alertsQuery.data ?? [],
     quickActions,
