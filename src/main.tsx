@@ -7,6 +7,7 @@ const hash = window.location.hash;
 if (hash && hash.includes('access_token=') && !window.location.pathname.includes('/auth/callback')) {
   window.location.replace('/auth/callback' + hash);
 } else {
+  console.log('[main] path:', window.location.pathname, 'hash:', !!window.location.hash);
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
