@@ -81,24 +81,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleOAuthRedirect = async (userId: string) => {
-    const isOAuthCallback = window.location.hash.includes('access_token=');
-    if (!isOAuthCallback) return;
-
-    const { data: existing } = await supabase.from('users').select('id, role').eq('id', userId).maybeSingle();
-    if (existing) {
-      window.location.replace(getDashboardPath(existing.role));
-    } else {
-      window.location.replace('/complete-profile');
-    }
-  };
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const isOAuthCallback = window.location.hash.includes('access_token=');
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        fetchProfile(session.user.id);
-        handleOAuthRedirect(session.user.id);
+        await fetchProfile(session.user.id);
+        if (isOAuthCallback) {
+          const { data: existing } = await supabase.from('users').select('id, role').eq('id', session.user.id).maybeSingle();
+          if (existing) {
+            window.location.replace(getDashboardPath(existing.role));
+          } else {
+            window.location.replace('/complete-profile');
+          }
+          return;
+        }
       }
       setIsLoading(false);
     });
