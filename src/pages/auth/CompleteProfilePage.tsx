@@ -143,7 +143,7 @@ export default function CompleteProfilePage() {
                 <Input value={child.first_name} onChange={e => setChild(p => ({ ...p, first_name: e.target.value }))} placeholder="Prénom de l'enfant" />
                 <Input value={child.last_name} onChange={e => setChild(p => ({ ...p, last_name: e.target.value }))} placeholder="Nom de l'enfant" />
               </div>
-              <Select value={child.level} onChange={v => setChild(p => ({ ...p, level: v }))}>
+              <Select value={child.level} onValueChange={v => setChild(p => ({ ...p, level: v }))}>
                 <SelectItem value="">Niveau scolaire</SelectItem>
                 <SelectItem value="primary">Primaire</SelectItem>
                 <SelectItem value="middle">CEM / Moyen</SelectItem>
