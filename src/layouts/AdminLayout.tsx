@@ -88,11 +88,7 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <div className="gradient-mesh-fixed">
-        <div className="orb" />
-        <div className="orb" />
-        <div className="orb" />
-      </div>
+      {/* Background handled globally by AnimatedBackground */}
       <div className="relative z-10">
         <AdminSidebar
           items={adminNavItems}

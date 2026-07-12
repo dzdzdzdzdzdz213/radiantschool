@@ -276,7 +276,7 @@ export default function LandingPage() {
       </section>
 
       {/* QUI SOMMES-NOUS */}
-      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden">
+      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto' }}>
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-16 lg:grid-cols-2 items-center mb-24">
             {/* Story */}
@@ -296,7 +296,7 @@ export default function LandingPage() {
               </p>
 
               <div className="flex items-center gap-4 rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-                <img src="/team/founder.jpg" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
+                <img src="/team/founder.jpg" loading="lazy" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
                 <div>
                   <p className="font-handwritten text-3xl leading-none mb-1" style={{ color: 'var(--primary)' }}>Amina B.</p>
                   <p className="text-xs" style={{ color: 'var(--fg-muted)' }}>Fondatrice — prof de mathématiques depuis 12 ans</p>
@@ -307,13 +307,13 @@ export default function LandingPage() {
             {/* Photo collage */}
             <div className="relative h-[420px] hidden lg:block">
               <img
-                src="/images/about-main.jpg"
+                src="/images/about-main.jpg" loading="lazy"
                 alt="L'équipe de Radiant Academy"
                 className="absolute top-0 right-0 w-72 h-80 object-cover rounded-2xl"
                 style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}
               />
               <img
-                src="/images/about-secondary.jpg"
+                src="/images/about-secondary.jpg" loading="lazy"
                 alt="Un cours de soutien scolaire"
                 className="absolute bottom-0 left-0 w-56 h-64 object-cover rounded-2xl"
                 style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '4px solid var(--bg)' }}
@@ -341,11 +341,13 @@ export default function LandingPage() {
               {TEAM.map((member, i) => (
                 <div
                   key={member.name}
-                  className="group rounded-2xl overflow-hidden animate-up transition-all duration-300 hover:-translate-y-1.5"
-                  style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', animationDelay: `${i * 0.06}s`, boxShadow: 'var(--shadow-sm)' }}
+                  className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-3 hover:shadow-xl"
+                  style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', animationDelay: `${i * 0.1}s` }}
+                  data-reveal
+                  data-reveal-delay={`${i * 100}`}
                 >
                   <div className="aspect-[4/5] overflow-hidden">
-                    <img src={member.photo} alt={member.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <img src={member.photo} loading="lazy" alt={member.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   </div>
                   <div className="p-5 text-center">
                     <p className="font-bold text-base">{member.name}</p>
@@ -363,7 +365,7 @@ export default function LandingPage() {
 
 
       {/* WHY US */}
-      <section id="why" className="scroll-mt-20 py-28 px-6 relative overflow-hidden">
+      <section id="why" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto' }}>
         <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 50% 40% at 50% 0%, color-mix(in srgb, var(--primary) 4%, transparent), transparent)` }} />
         <div className="mx-auto max-w-7xl relative">
           <div className="text-center mb-16">
@@ -403,7 +405,7 @@ export default function LandingPage() {
       </section>
 
       {/* STATS BANNER */}
-      <section className="relative py-28 px-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+      <section className="relative py-28 px-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }} data-reveal="scale">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-0 w-96 h-96 rounded-full blur-3xl opacity-30" style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--primary) 20%, transparent), transparent)` }} />
           <div className="absolute bottom-1/4 right-0 w-96 h-96 rounded-full blur-3xl opacity-25" style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--accent) 15%, transparent), transparent)` }} />
@@ -433,7 +435,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden py-36 px-6">
+      <section className="relative overflow-hidden py-36 px-6" data-reveal="scale">
         <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #000))` }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-20" style={{ background: `radial-gradient(circle, rgba(255,255,255,0.15), transparent 60%)` }} />
         <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full" style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--accent) 15%, transparent), transparent 60%)` }} />

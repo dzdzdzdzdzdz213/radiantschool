@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { usePublicCourses } from '@/hooks/usePublicData';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus } from 'lucide-react';
+import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus, Sparkles } from 'lucide-react';
 
 const categories = [
   { key: 'all', label: 'Tous', icon: BookOpen, btnGradient: 'linear-gradient(135deg, var(--primary), var(--accent))' },
@@ -47,14 +47,15 @@ export default function PublicCoursesPage() {
   for (const g of streamsByYear) g.streams.sort();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
-      <div className="mx-auto max-w-7xl px-6 py-12">
+    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+      {/* Background handled globally by AnimatedBackground */}
+      <div className="mx-auto max-w-7xl px-6 py-12 relative">
         <Link to="/" className="inline-flex items-center gap-2 text-sm mb-8" style={{ color: 'var(--fg-muted)' }}>
           <ArrowLeft className="h-4 w-4" />
           Retour à l'accueil
         </Link>
 
-        <div className="mb-12 text-center">
+        <div className="mb-12 text-center" data-reveal>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{t('section.formations.title', lang)}</h1>
           <div className="divider-gradient mt-5 mx-auto" />
           <p className="mx-auto mt-5 max-w-xl" style={{ color: 'var(--fg-muted)' }}>{t('section.formations.subtitle', lang)}</p>
@@ -118,10 +119,12 @@ export default function PublicCoursesPage() {
         </div>
 
         {!isLoading && filteredCourses.length === 0 && (
-          <div className="text-center py-24" style={{ color: 'var(--fg-muted)' }}>
-            <GraduationCap className="h-20 w-20 mx-auto mb-5 opacity-30" />
-            <p className="text-xl font-medium mb-2">Aucune formation trouvée</p>
-            <p className="text-sm">Essayez de modifier vos filtres ou votre recherche</p>
+          <div className="text-center py-24 animate-up" style={{ color: 'var(--fg-muted)' }}>
+            <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl mb-6" style={{ backgroundColor: 'var(--primary-light)' }}>
+              <GraduationCap className="h-12 w-12" style={{ color: 'var(--primary)' }} />
+            </div>
+            <p className="text-2xl font-bold mb-2" style={{ color: 'var(--fg)' }}>Aucune formation trouvée</p>
+            <p className="text-sm max-w-xs mx-auto">Essayez de modifier vos filtres ou votre recherche</p>
           </div>
         )}
 
@@ -146,7 +149,7 @@ export default function PublicCoursesPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
-              className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1.5"
+              className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20"
               style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
             >
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/5 to-accent/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

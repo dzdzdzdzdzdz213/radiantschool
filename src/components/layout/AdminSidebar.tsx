@@ -43,11 +43,12 @@ function NavLink({ item, collapsed, isActive, onClick }: { item: NavItem; collap
       className={cn(
         'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
         isActive
-          ? 'bg-sidebar-accent text-sidebar-accent-fg'
+          ? 'text-white shadow-md'
           : 'text-sidebar-fg/60 hover:bg-sidebar-accent hover:text-sidebar-fg',
       )}
+      style={isActive ? { background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' } : {}}
     >
-      {Icon && <Icon className={cn('h-5 w-5 shrink-0 transition-all duration-300', isActive ? 'scale-110 drop-shadow-[0_0_8px_var(--primary)]' : '')} />}
+      {Icon && <Icon className={cn('h-5 w-5 shrink-0 transition-all duration-300', isActive ? 'scale-110' : '')} />}
       {!collapsed && (
         <motion.span
           initial={{ opacity: 0 }}
@@ -124,9 +125,9 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
           open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
+        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4" style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' }}>
           <Link to="/admin/dashboard" className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold shadow-md" style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
               RL
             </div>
             {!collapsed && (
@@ -134,7 +135,7 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="truncate font-semibold text-sidebar-fg"
+                className="truncate font-semibold text-white"
               >
                 Radiant Learning
               </motion.span>

@@ -1356,6 +1356,10 @@ export interface Database {
       };
     };
     Functions: {
+      get_teacher_dashboard_kpi: {
+        Args: { p_teacher_id: string };
+        Returns: Record<string, unknown>;
+      };
       generate_monthly_invoices: {
         Args: Record<string, never>;
         Returns: number;

@@ -29,3 +29,8 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Agent config
+.agents/
+.claude/
+skills-lock.json

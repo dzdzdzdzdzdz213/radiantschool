@@ -41,12 +41,12 @@ export default function Sidebar({ items, open, onClose }: SidebarProps) {
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b px-6">
-          <Link to="/admin/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white font-bold text-sm">RL</div>
-            <span className="font-semibold text-lg">Radiant Learning</span>
+        <div className="flex h-16 items-center justify-between border-b px-6" style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' }}>
+          <Link to="/admin/dashboard" className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white font-bold text-sm backdrop-blur-sm">RL</div>
+            <span className="font-semibold text-base text-white">Radiant Learning</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden">
+          <button onClick={onClose} className="lg:hidden text-white/70 hover:text-white">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -60,10 +60,10 @@ export default function Sidebar({ items, open, onClose }: SidebarProps) {
                 to={item.path}
                 onClick={onClose}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200',
                   isActive
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-muted-foreground hover-bg-page',
+                    ? 'bg-primary text-primary-foreground font-semibold shadow-md'
+                    : 'text-muted-foreground hover:bg-primary/5 hover:text-foreground hover:translate-x-0.5',
                 )}
               >
                 {Icon && <Icon className="h-5 w-5" />}

@@ -21,7 +21,14 @@ export default defineConfig({
         manualChunks(id: string) {
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor';
           if (id.includes('node_modules/@supabase/')) return 'supabase';
-          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react') || id.includes('node_modules/recharts')) return 'ui';
+          if (id.includes('node_modules/framer-motion')) return 'motion';
+          if (id.includes('node_modules/lucide-react') || id.includes('node_modules/recharts')) return 'ui-libs';
+          if (id.includes('node_modules/@tanstack/react-query')) return 'query';
+          if (id.includes('node_modules/react-hook-form') || id.includes('node_modules/@hookform/resolvers')) return 'forms';
+          if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next')) return 'i18n';
+          if (id.includes('node_modules/date-fns')) return 'date';
+          if (id.includes('node_modules/zod')) return 'validation';
+          if (id.includes('node_modules/recharts')) return 'charts';
         },
       },
     },

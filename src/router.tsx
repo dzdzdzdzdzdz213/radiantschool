@@ -69,11 +69,11 @@ const NotFoundPage = LazyPage(() => import('@/pages/NotFoundPage'));
 const PublicFaqPage = LazyPage(() => import('@/pages/PublicFaqPage'));
 const PublicContactPage = LazyPage(() => import('@/pages/PublicContactPage'));
 const EnrollPage = LazyPage(() => import('@/pages/EnrollPage'));
-import PrimaryPage from '@/pages/formations/PrimaryPage';
-import MiddleSchoolPage from '@/pages/formations/MiddleSchoolPage';
-import HighSchoolPage from '@/pages/formations/HighSchoolPage';
-import TeachersPage from '@/pages/formations/TeachersPage';
-import FormationTeacherProfilePage from '@/pages/formations/TeacherProfilePage';
+const PrimaryPage = LazyPage(() => import('@/pages/formations/PrimaryPage'));
+const MiddleSchoolPage = LazyPage(() => import('@/pages/formations/MiddleSchoolPage'));
+const HighSchoolPage = LazyPage(() => import('@/pages/formations/HighSchoolPage'));
+const TeachersPage = LazyPage(() => import('@/pages/formations/TeachersPage'));
+const FormationTeacherProfilePage = LazyPage(() => import('@/pages/formations/TeacherProfilePage'));
 const TeacherDashboardPage = LazyPage(() => import('@/features/teacher/dashboard/TeacherDashboardPage'));
 const TeacherStudentsPage = LazyPage(() => import('@/features/teacher/students/TeacherStudentsPage'));
 const TeacherSchedulePage = LazyPage(() => import('@/features/teacher/schedule/SchedulePage'));
@@ -304,23 +304,23 @@ export const router = createBrowserRouter([
   },
   {
     path: '/formations-primaire',
-    element: <PrimaryPage />,
+    Component: PrimaryPage,
   },
   {
     path: '/formations-cem',
-    element: <MiddleSchoolPage />,
+    Component: MiddleSchoolPage,
   },
   {
     path: '/formations-lycee',
-    element: <HighSchoolPage />,
+    Component: HighSchoolPage,
   },
   {
     path: '/teachers',
-    element: <TeachersPage />,
+    Component: TeachersPage,
   },
   {
     path: '/teachers/:id',
-    element: <FormationTeacherProfilePage />,
+    Component: FormationTeacherProfilePage,
   },
   {
     path: '/faq',

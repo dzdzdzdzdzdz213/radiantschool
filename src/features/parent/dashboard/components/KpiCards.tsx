@@ -23,7 +23,13 @@ export default function KpiCards({ kpi, loading }: KpiCardsProps) {
     { key: 'unreadNotifications', label: t('dashboard.kpi_notifications', lang), icon: Bell, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950', format: (v: number) => String(v) },
   ] as const;
   if (loading) {
-    return <>{Array.from({ length: 7 }).map((_, i) => <div key={i} className="rounded-2xl border border-border bg-card p-5 space-y-3 animate-pulse"><div className="h-3 w-24 bg-muted rounded" /><div className="h-8 w-20 bg-muted rounded" /><div className="h-3 w-16 bg-muted rounded" /></div>)}</>;
+    return <>{Array.from({ length: 7 }).map((_, i) => (
+      <div key={i} className="rounded-2xl border border-border bg-card p-5 space-y-3 shimmer">
+        <div className="h-3 w-24 rounded shimmer" />
+        <div className="h-8 w-20 rounded shimmer" />
+        <div className="h-3 w-16 rounded shimmer" />
+      </div>
+    ))}</>;
   }
 
   return <>
@@ -32,7 +38,7 @@ export default function KpiCards({ kpi, loading }: KpiCardsProps) {
       const value = kpi[cfg.key as keyof ParentKpi] as number;
       return (
         <motion.div key={cfg.key} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: idx * 0.03 }}
-          className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow"
+          className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/20 transition-all duration-300"
         >
           <div className="flex items-start justify-between">
             <div className="space-y-1.5">

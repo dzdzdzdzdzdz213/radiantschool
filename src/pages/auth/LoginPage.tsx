@@ -61,10 +61,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      <div className="gradient-mesh-fixed">
-        <div className="orb" />
-        <div className="orb" />
-      </div>
+      {/* Background handled globally by AnimatedBackground */}
 
       <div className="animate-up w-full max-w-sm">
         <div className="mb-8 text-center">

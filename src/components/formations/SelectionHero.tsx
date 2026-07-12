@@ -14,8 +14,9 @@ export default function SelectionHero({
   return (
     <section className={`relative overflow-hidden bg-gradient-to-br ${gradient} px-6 py-24`}>
       <div className="absolute inset-0">
-        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/5 blur-3xl animate-float" />
+        <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-white/5 blur-3xl animate-float-delayed" />
+        <div className="absolute top-1/3 left-1/4 h-48 w-48 rounded-full bg-white/3 blur-3xl animate-spin-slow" />
         <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient(rgba(255,255,255,0.06) 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
       </div>
 
