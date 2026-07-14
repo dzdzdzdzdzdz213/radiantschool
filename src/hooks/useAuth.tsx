@@ -82,13 +82,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let cancelled = false;
     const isOAuthCallback = window.location.pathname === '/auth/callback';
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (cancelled) return;
       if (session?.user) {
         setUser(session.user);
         await fetchProfile(session.user.id);
         if (isOAuthCallback) {
+          window.history.replaceState({}, document.title, '/auth/callback');
           const { data: existing } = await supabase.from('users').select('id, role').eq('id', session.user.id).maybeSingle();
           if (existing) {
             window.location.replace(getDashboardPath(existing.role));
@@ -98,19 +101,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
       }
-      setIsLoading(false);
-    }).catch(() => setIsLoading(false));
+      if (!cancelled) setIsLoading(false);
+    }).catch(() => { if (!cancelled) setIsLoading(false); });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (cancelled) return;
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id);
+        if (isOAuthCallback && event === 'SIGNED_IN') {
+          window.history.replaceState({}, document.title, '/auth/callback');
+          const { data: existing } = await supabase.from('users').select('id, role').eq('id', session.user.id).maybeSingle();
+          if (existing) {
+            window.location.replace(getDashboardPath(existing.role));
+          } else {
+            window.location.replace('/complete-profile');
+          }
+        }
       } else {
         setProfile(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

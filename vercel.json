@@ -18,7 +18,7 @@
                 { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
                 { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
                 { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-                { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://kaoxcbqhuwhtadpgccjp.supabase.co https://*.googleapis.com https://*.gstatic.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://kaoxcbqhuwhtadpgccjp.supabase.co wss://kaoxcbqhuwhtadpgccjp.supabase.co; frame-src https://www.google.com https://*.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" }
+                { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://kaoxcbqhuwhtadpgccjp.supabase.co https://*.googleapis.com https://*.gstatic.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://kaoxcbqhuwhtadpgccjp.supabase.co wss://kaoxcbqhuwhtadpgccjp.supabase.co; frame-src https://www.google.com https://*.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" }
             ]
         },
         {
