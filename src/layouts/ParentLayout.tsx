@@ -39,7 +39,7 @@ export default function ParentLayout() {
     { label: t('nav.profile', lang), path: '/parent/profile', icon: 'UserCircle' },
   ];
   return (
-    <div className="flex h-screen overflow-hidden bg-page">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar items={items} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(true)} />

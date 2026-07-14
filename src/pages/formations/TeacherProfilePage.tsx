@@ -10,7 +10,7 @@ export default function TeacherProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--primary)] border-t-transparent" />
       </div>
     );
@@ -18,7 +18,7 @@ export default function TeacherProfilePage() {
 
   if (!teacher) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
         <p className="text-lg font-semibold">Professeur introuvable</p>
         <Link to="/teachers" className="btn-primary">Voir tous les professeurs</Link>
       </div>
@@ -31,7 +31,7 @@ export default function TeacherProfilePage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
       <section className="relative overflow-hidden bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] px-6 py-16">
         <div className="absolute inset-0">
           <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/5 blur-3xl" />

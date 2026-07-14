@@ -1,7 +1,7 @@
 const ORBS = [
-  { size: 700, color: 'var(--primary)', opacity: 0.1, name: 'orb1' },
-  { size: 600, color: 'var(--accent)', opacity: 0.08, name: 'orb2' },
-  { size: 500, color: '#00cec9', opacity: 0.06, name: 'orb3' },
+  { size: 700, color: 'var(--primary)', opacity: 0.2, name: 'orb1' },
+  { size: 600, color: 'var(--accent)', opacity: 0.18, name: 'orb2' },
+  { size: 500, color: '#00cec9', opacity: 0.14, name: 'orb3' },
 ];
 
 export default function AnimatedBackground() {

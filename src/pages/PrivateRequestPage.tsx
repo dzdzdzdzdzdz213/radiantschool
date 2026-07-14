@@ -75,7 +75,7 @@ export default function PrivateRequestPage() {
 
   if (courseLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="flex min-h-screen items-center justify-center">
         <Loader className="h-8 w-8 animate-spin" style={{ color: 'var(--primary)' }} />
       </div>
     );
@@ -83,7 +83,7 @@ export default function PrivateRequestPage() {
 
   if (!course) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4" style={{ color: 'var(--fg)' }}>
         <p className="text-lg font-medium">Formation introuvable</p>
         <Link to="/formations" className="text-sm" style={{ color: 'var(--primary)' }}>Voir toutes les formations</Link>
       </div>
@@ -91,7 +91,7 @@ export default function PrivateRequestPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
       <div className="mx-auto max-w-2xl px-6 py-12">
         <Link to="/formations" className="inline-flex items-center gap-2 text-sm mb-8" style={{ color: 'var(--fg-muted)' }}>
           <ArrowLeft className="h-4 w-4" />

@@ -43,7 +43,7 @@ export function useCourse(id: number) {
 export function useCourseEnrollments(courseId: number) {
   return useQuery({
     queryKey: ['enrollments', courseId],
-    queryFn: () => api.list('course_enrollments', { filters: [{ column: 'course_id', operator: 'eq', value: courseId }] }, '*, student:users(first_name, last_name, email, phone)').then(r => r.data),
+    queryFn: () => api.list('course_enrollments', { filters: [{ column: 'course_id', operator: 'eq', value: courseId }] }, '*, student:students!student_id(user:users!students_id_fkey(first_name, last_name, email, phone))').then(r => r.data),
     staleTime: 120_000,
     enabled: !!courseId,
   });
@@ -61,7 +61,7 @@ export function useAttendance(date?: string, courseScheduleId?: number) {
       const filters: FilterParams[] = [];
       if (date) filters.push({ column: 'date', operator: 'eq', value: date });
       if (courseScheduleId) filters.push({ column: 'course_schedule_id', operator: 'eq', value: courseScheduleId });
-      const r = await api.list('attendance', { filters, sort: [{ column: 'date', direction: 'desc' }] }, '*, student:users(first_name, last_name), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time, teacher_id)');
+      const r = await api.list('attendance', { filters, sort: [{ column: 'date', direction: 'desc' }] }, '*, student:students!student_id(user:users!students_id_fkey(first_name, last_name)), schedule:course_schedules!inner(course_id, day_of_week, start_time, end_time, teacher_id)');
       if (profile?.role === 'teacher') {
         return (r.data ?? []).filter((a: any) => a.schedule?.teacher_id === profile.id);
       }
@@ -79,7 +79,7 @@ export function usePayments(studentId?: string) {
     queryFn: async () => {
       const filters: FilterParams[] = [];
       if (studentId) filters.push({ column: 'student_id', operator: 'eq', value: studentId });
-      const r = await api.list('payments', { filters, sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:users(first_name, last_name)');
+      const r = await api.list('payments', { filters, sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:students!student_id(user:users!students_id_fkey(first_name, last_name))');
       return r.data;
     },
     staleTime: 60_000,
@@ -90,7 +90,7 @@ export function usePayments(studentId?: string) {
 export function useInvoices() {
   return useQuery({
     queryKey: ['invoices'],
-    queryFn: () => api.list('invoices', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:users(first_name, last_name)').then(r => r.data),
+    queryFn: () => api.list('invoices', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, student:students!student_id(user:users!students_id_fkey(first_name, last_name))').then(r => r.data),
     staleTime: 120_000,
   });
 }
@@ -222,14 +222,14 @@ export function useRecentActivity() {
     queryKey: ['recent_activity'],
     queryFn: async () => {
       const [enrRes, payRes, attRes] = await Promise.all([
-        api.list('course_enrollments', { sort: [{ column: 'enrollment_date', direction: 'desc' }] }, 'enrollment_date, student:users(first_name,last_name), course:courses(name)'),
-        api.list('payments', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'amount, created_at, student:users(first_name,last_name)'),
-        api.list('attendance', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'date, status, student:users(first_name,last_name), schedule:course_schedules!inner(course:courses(name))'),
+        api.list('course_enrollments', { sort: [{ column: 'enrollment_date', direction: 'desc' }] }, 'enrollment_date, student:students!student_id(user:users!students_id_fkey(first_name,last_name)), course:courses(name)'),
+        api.list('payments', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'amount, created_at, student:students!student_id(user:users!students_id_fkey(first_name,last_name))'),
+        api.list('attendance', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'date, status, student:students!student_id(user:users!students_id_fkey(first_name,last_name)), schedule:course_schedules!inner(course:courses(name))'),
       ]);
       const items: { time: string; icon: string; title: string; description: string }[] = [
-        ...(enrRes.data?.slice(0, 5).map((e: any) => ({ time: e.enrollment_date, icon: '📝', title: `${e.student?.first_name ?? ''} ${e.student?.last_name ?? ''}`, description: `Inscrit en ${e.course?.name ?? ''}` })) ?? []),
-        ...(payRes.data?.slice(0, 5).map((p: any) => ({ time: p.created_at, icon: '💰', title: `${p.student?.first_name ?? ''} ${p.student?.last_name ?? ''}`, description: `Paiement ${p.amount.toLocaleString()} DA` })) ?? []),
-        ...(attRes.data?.slice(0, 5).map((a: any) => ({ time: a.date, icon: a.status === 'present' ? '✅' : a.status === 'late' ? '⏰' : '❌', title: `${a.student?.first_name ?? ''} ${a.student?.last_name ?? ''}`, description: `${a.status === 'present' ? 'Présent' : a.status === 'late' ? 'Retard' : 'Absent'} — ${a.schedule?.course?.name ?? ''}` })) ?? []),
+        ...(enrRes.data?.slice(0, 5).map((e: any) => ({ time: e.enrollment_date, icon: '📝', title: `${e.student?.user?.first_name ?? ''} ${e.student?.user?.last_name ?? ''}`, description: `Inscrit en ${e.course?.name ?? ''}` })) ?? []),
+        ...(payRes.data?.slice(0, 5).map((p: any) => ({ time: p.created_at, icon: '💰', title: `${p.student?.user?.first_name ?? ''} ${p.student?.user?.last_name ?? ''}`, description: `Paiement ${p.amount.toLocaleString()} DA` })) ?? []),
+        ...(attRes.data?.slice(0, 5).map((a: any) => ({ time: a.date, icon: a.status === 'present' ? '✅' : a.status === 'late' ? '⏰' : '❌', title: `${a.student?.user?.first_name ?? ''} ${a.student?.user?.last_name ?? ''}`, description: `${a.status === 'present' ? 'Présent' : a.status === 'late' ? 'Retard' : 'Absent'} — ${a.schedule?.course?.name ?? ''}` })) ?? []),
       ];
       items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
       return items.slice(0, 10);
@@ -254,7 +254,7 @@ export function useAdminAlerts() {
             { column: 'status', operator: 'in', value: ['unpaid', 'partially_paid'] },
           ],
           sort: [{ column: 'due_date', direction: 'asc' }],
-        }, 'id, total_amount, paid_amount, due_date, student:users(first_name,last_name)'),
+        }, 'id, total_amount, paid_amount, due_date, student:students!student_id(user:users!students_id_fkey(first_name,last_name))'),
         api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'id, name, current_enrollments, capacity'),
         api.list('notifications', {
           filters: [{ column: 'type', operator: 'in', value: ['warning', 'error'] }],

@@ -18,7 +18,7 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
     queryFn: async () => {
       let query = (supabase as any)
         .from('invoices')
-        .select('id, student_id, invoice_number, total_amount, paid_amount, status, due_date, student:users(first_name, last_name)', { count: 'exact' })
+        .select('id, student_id, invoice_number, total_amount, paid_amount, status, due_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name))', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       if (statusFilter) query = query.eq('status', statusFilter);
@@ -36,7 +36,7 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
         id: r.id,
         student_id: r.student_id ?? null,
         invoiceNumber: r.invoice_number ?? '',
-        studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
+        studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         totalAmount: r.total_amount ?? 0,
         paidAmount: r.paid_amount ?? 0,
         status: r.status ?? '',

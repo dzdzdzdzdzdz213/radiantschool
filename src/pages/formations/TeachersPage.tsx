@@ -12,7 +12,7 @@ export default function TeachersPage() {
   const { data: teachers, isLoading } = useTeachersBySubject(subject);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
       <section className="relative overflow-hidden bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] px-6 py-20">
         <div className="absolute inset-0">
           <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/5 blur-3xl" />

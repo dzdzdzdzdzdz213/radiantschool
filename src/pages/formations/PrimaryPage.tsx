@@ -55,7 +55,7 @@ export default function PrimaryPage() {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
       <SelectionHero
         title="Primaire"
         subtitle="Du CP à la 5ème année — Construisez des bases solides en mathématiques, français, arabe et anglais."

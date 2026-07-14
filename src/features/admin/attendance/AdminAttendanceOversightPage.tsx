@@ -16,7 +16,9 @@ function useCountdown(target: string | null): string {
   const [display, setDisplay] = useState('');
   useEffect(() => {
     if (!target) { setDisplay(''); return; }
-    const deadline = new Date(target).getTime() + 3600000;
+    const ms = new Date(target).getTime();
+    if (isNaN(ms)) { setDisplay('—'); return; }
+    const deadline = ms + 3600000;
     const tick = () => {
       const diff = deadline - Date.now();
       if (diff <= 0) { setDisplay('00:00'); return; }
@@ -84,11 +86,20 @@ export default function AdminAttendanceOversightPage() {
   const pendingSessions = (groupSessions ?? []).filter((s: any) => !s.check_in_opened_at);
 
   const filteredPrivate = (privateRecords ?? []).filter((r: any) => {
-    if (typeFilter === 'group' && r.course_schedule?.course?.type !== 'group') return false;
-    if (typeFilter === 'private' && r.course_schedule?.course?.type !== 'private') return false;
-    if (typeFilter === 'vip' && r.course_schedule?.course?.type !== 'vip') return false;
+    const t = r.course_schedule?.course?.type;
+    if (typeFilter === 'group' && t !== 'normal') return false;
+    if (typeFilter === 'private' && t !== 'private') return false;
+    if (typeFilter === 'vip' && t !== 'vip') return false;
     return true;
   });
+
+  const searchTerm = search.toLowerCase();
+  const matchSearch = (s: any) => !searchTerm || s.course?.name?.toLowerCase().includes(searchTerm) || `${s.course?.teacher?.first_name} ${s.course?.teacher?.last_name}`.toLowerCase().includes(searchTerm);
+  const matchSearchR = (r: any) => !searchTerm || r.course_schedule?.course?.name?.toLowerCase().includes(searchTerm) || `${r.course_schedule?.course?.teacher?.first_name} ${r.course_schedule?.course?.teacher?.last_name}`.toLowerCase().includes(searchTerm);
+
+  const displayedOpen = openSessions.filter(matchSearch);
+  const displayedClosed = closedSessions.filter(matchSearch);
+  const displayedPrivate = filteredPrivate.filter(matchSearchR);
 
   return (
     <div className="space-y-6">
@@ -148,9 +159,12 @@ export default function AdminAttendanceOversightPage() {
         </Select>
       </div>
 
-      {openSessions.length > 0 && (
+      {(groupLoading || privateLoading) && (
+        <Card><CardContent className="p-12 text-center text-muted-foreground">Chargement...</CardContent></Card>
+      )}
+      {!groupLoading && !privateLoading && displayedOpen.length > 0 && (
         <Card>
-          <CardHeader className="pb-3"><h3 className="text-sm font-semibold text-amber-600 flex items-center gap-2"><Timer className="h-4 w-4" />Séances en cours ({openSessions.length})</h3></CardHeader>
+          <CardHeader className="pb-3"><h3 className="text-sm font-semibold text-amber-600 flex items-center gap-2"><Timer className="h-4 w-4" />Séances en cours ({displayedOpen.length})</h3></CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead><tr className="border-b">
@@ -161,7 +175,7 @@ export default function AdminAttendanceOversightPage() {
                 <th className="text-right py-3 px-4 font-medium">Prix</th>
               </tr></thead>
               <tbody>
-                {openSessions.map((s: any) => (
+                {displayedOpen.map((s: any) => (
                   <tr key={s.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{s.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{s.course?.teacher?.first_name} {s.course?.teacher?.last_name}</td>
@@ -178,7 +192,7 @@ export default function AdminAttendanceOversightPage() {
         </Card>
       )}
 
-      {(closedSessions.length > 0 || typeFilter !== 'all') && (
+      {(displayedClosed.length > 0 || typeFilter !== 'all') && (
         <Card>
           <CardHeader className="pb-3"><h3 className="text-sm font-semibold flex items-center gap-2"><Lock className="h-4 w-4" />Historique des séances</h3></CardHeader>
           <CardContent className="p-0">
@@ -192,7 +206,7 @@ export default function AdminAttendanceOversightPage() {
                 <th className="text-right py-3 px-4 font-medium">Prix calculé</th>
               </tr></thead>
               <tbody>
-                {closedSessions.slice(0, 50).map((s: any) => (
+                {displayedClosed.slice(0, 50).map((s: any) => (
                   <tr key={s.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{s.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{s.course?.teacher?.first_name} {s.course?.teacher?.last_name}</td>
@@ -202,12 +216,12 @@ export default function AdminAttendanceOversightPage() {
                     <td className="py-3 px-4 text-right font-mono">{s.price_calculated ? `${s.price_calculated} DA` : <span className="text-muted-foreground">—</span>}</td>
                   </tr>
                 ))}
-                {filteredPrivate.slice(0, 50).map((r: any) => (
+                {displayedPrivate.slice(0, 50).map((r: any) => (
                   <tr key={r.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{r.course_schedule?.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{r.course_schedule?.course?.teacher?.first_name} {r.course_schedule?.course?.teacher?.last_name}</td>
                     <td className="py-3 px-4 text-center">{new Date(r.date).toLocaleDateString(localeMap[lang])}</td>
-                    <td className="py-3 px-4 text-center"><Badge variant="outline">{r.course_schedule?.course?.type === 'private' ? t('courses.type_private', lang) : t('type.vip', lang)}</Badge></td>
+                    <td className="py-3 px-4 text-center"><Badge variant="outline">{r.course_schedule?.course?.type === 'private' ? t('courses.type_private', lang) : r.course_schedule?.course?.type === 'vip' ? t('type.vip', lang) : 'Groupe'}</Badge></td>
                     <td className="py-3 px-4 text-center">
                       <Badge variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'destructive'}>
                         {r.status === 'present' ? t('status.present', lang) : r.status === 'late' ? t('status.late', lang) : t('status.absent', lang)}
@@ -216,7 +230,7 @@ export default function AdminAttendanceOversightPage() {
                     <td className="py-3 px-4 text-right font-mono text-muted-foreground">—</td>
                   </tr>
                 ))}
-                {closedSessions.length === 0 && filteredPrivate.length === 0 && (
+                {displayedClosed.length === 0 && displayedPrivate.length === 0 && (
                   <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">Aucune séance fermée</td></tr>
                 )}
               </tbody>
@@ -225,7 +239,7 @@ export default function AdminAttendanceOversightPage() {
         </Card>
       )}
 
-      {openSessions.length === 0 && closedSessions.length === 0 && (
+      {!groupLoading && !privateLoading && displayedOpen.length === 0 && displayedClosed.length === 0 && (
         <Card><CardContent className="p-12 text-center text-muted-foreground">Aucune séance trouvée. Les données apparaîtront quand les enseignants commenceront à pointer les présences.</CardContent></Card>
       )}
     </div>

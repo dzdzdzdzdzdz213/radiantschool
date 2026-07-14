@@ -9,7 +9,7 @@ export default function PublicEnrollPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="flex min-h-screen items-center justify-center">
         <Loader className="h-8 w-8 animate-spin" style={{ color: 'var(--primary)' }} />
       </div>
     );

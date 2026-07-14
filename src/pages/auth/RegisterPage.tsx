@@ -217,7 +217,7 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4" style={{ backgroundColor: 'var(--bg)' }}>
+      <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-md rounded-2xl border p-8 text-center shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: `color-mix(in srgb, #22c55e 10%, transparent)` }}>
             <UserCheck className="h-7 w-7" style={{ color: '#22c55e' }} />
@@ -232,7 +232,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4" style={{ backgroundColor: 'var(--bg)' }}>
+    <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <Link to="/" className="mb-4 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
           <ArrowLeft className="h-3.5 w-3.5" /> {t('common.back', lang)}

@@ -126,13 +126,13 @@ export function useAssistantDashboard(lang: string = 'fr') {
     queryFn: async () => {
       const { data } = await supabase
         .from('course_enrollments')
-        .select('id, status, enrollment_date, student:users(first_name, last_name), course:courses(name)')
-        .eq('status', 'pending')
+        .select('id, status, enrollment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name)), course:courses(name)')
+        .eq('status', 'pending_approval')
         .order('enrollment_date', { ascending: false })
         .limit(10);
       return (data ?? []).map((r: any) => ({
         id: r.id,
-        studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
+        studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         courseName: r.course?.name ?? 'Inconnu',
         requestedAt: r.enrollment_date,
         status: r.status,
@@ -147,14 +147,14 @@ export function useAssistantDashboard(lang: string = 'fr') {
     queryFn: async () => {
       const { data } = await supabase
         .from('invoices')
-        .select('id, total_amount, paid_amount, due_date, student:users(first_name, last_name)')
+        .select('id, total_amount, paid_amount, due_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name))')
         .in('status', ['unpaid', 'partially_paid'])
         .lt('due_date', today)
         .order('due_date', { ascending: true })
         .limit(10);
       return (data ?? []).map((r: any) => ({
         id: r.id,
-        studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
+        studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         amount: (r.total_amount ?? 0) - (r.paid_amount ?? 0),
         dueDate: r.due_date,
         daysOverdue: Math.floor((Date.now() - new Date(r.due_date).getTime()) / 86400000),
@@ -216,14 +216,14 @@ export function useAssistantDashboard(lang: string = 'fr') {
     queryFn: async () => {
       const { data } = await supabase
         .from('attendance')
-        .select('id, date, status, created_at, student:users(first_name, last_name)')
+        .select('id, date, status, created_at, student:students!student_id(user:users!students_id_fkey(first_name, last_name))')
         .eq('date', today)
         .eq('method', 'rfid')
         .order('created_at', { ascending: false })
         .limit(10);
       return (data ?? []).map((r: any) => ({
         id: r.id,
-        studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
+        studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         scannedAt: r.created_at ? new Date(r.created_at).toLocaleTimeString(localeMap[lang], { hour: '2-digit', minute: '2-digit' }) : '',
         status: r.status === 'present' ? 'success' : 'failed',
       })) as RfidRecord[];

@@ -78,7 +78,7 @@ export default function CourseDetailPage() {
             <tbody>
               {enrollments.map((e: any) => (
                 <tr key={e.id} className="border-b text-sm last:border-0">
-                  <td className="px-5 py-3 font-medium">{getFullName(e.student.first_name, e.student.last_name)}</td>
+                  <td className="px-5 py-3 font-medium">{getFullName(e.student?.user?.first_name ?? '', e.student?.user?.last_name ?? '')}</td>
                   <td className="px-5 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(e.status)}`}>{e.status}</span></td>
                   <td className="px-5 py-3 text-muted-foreground">{formatDate(e.enrollment_date)}</td>
                 </tr>

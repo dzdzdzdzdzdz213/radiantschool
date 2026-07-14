@@ -87,10 +87,27 @@ export default function AdminDashboardPage() {
   const {
     kpi, revenueData, occupancyData, scheduleData, activityData,
     recentRegistrations, attendanceSummary, alertItems,
-    isLoading,
+    isLoading, isError,
   } = useAdminDashboard();
 
   if (isLoading) return <LoadingGrid />;
+
+  if (isError) {
+    return (
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <PageHeader name={profile?.firstName ?? ''} />
+        <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-6 text-center">
+          <p className="text-red-600 font-medium">{t('dashboard.load_error', lang)}</p>
+          <p className="text-sm text-red-500 mt-1">{t('dashboard.load_error_retry', lang)}</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   const analyticsMetrics: AnalyticsMetric[] = [
     { label: t('dashboard.stat.revenue', lang), value: formatCurrency(kpi.totalRevenue / Math.max(kpi.activeStudents, 1)), change: 8, trend: 'up' },

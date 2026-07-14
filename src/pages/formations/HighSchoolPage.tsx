@@ -146,7 +146,7 @@ export default function HighSchoolPage() {
   const subjects = selectedStream ? SUBJECTS_BY_STREAM[selectedStream] ?? [] : [];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
       <SelectionHero
         title="Lycée"
         subtitle="De la 1ère à la 3ème AS — Préparez votre baccalauréat avec un accompagnement adapté à votre filière."

@@ -47,13 +47,12 @@ export default function RfidPage() {
   const scanMutation = useMutation({
     mutationFn: async (code: string) => {
       const { data: student } = await (supabase as any)
-        .from('users')
+        .from('students')
         .select('id')
         .eq('rfid_tag', code)
-        .eq('role', 'student')
         .maybeSingle();
       const { error } = await (supabase as any).from('rfid_scans').insert({
-        rfid_tag: code,
+        rfid_code: code,
         student_id: student?.id ?? null,
         scanned_at: new Date().toISOString(),
       });

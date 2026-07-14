@@ -47,7 +47,7 @@ export default function PublicCoursesPage() {
   for (const g of streamsByYear) g.streams.sort();
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen relative" style={{ color: 'var(--fg)' }}>
       {/* Background handled globally by AnimatedBackground */}
       <div className="mx-auto max-w-7xl px-6 py-12 relative">
         <Link to="/" className="inline-flex items-center gap-2 text-sm mb-8" style={{ color: 'var(--fg-muted)' }}>

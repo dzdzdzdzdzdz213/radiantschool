@@ -151,6 +151,10 @@ body {
   z-index: 1;
   min-height: 100vh;
 }
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+}
 
 a, button { cursor: pointer; }
 * { box-sizing: border-box; }

@@ -19,7 +19,7 @@ export function usePayments(search: string = '', page: number = 1) {
     queryFn: async () => {
       let query = (supabase as any)
         .from('payments')
-        .select('id, student_id, amount, payment_method, payment_type, receipt_number, payment_date, student:users(first_name, last_name), course:courses(name)', { count: 'exact' })
+        .select('id, student_id, amount, payment_method, payment_type, receipt_number, payment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name)), course:courses(name)', { count: 'exact' })
         .order('payment_date', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       if (search) {
@@ -35,7 +35,7 @@ export function usePayments(search: string = '', page: number = 1) {
       const items = (data ?? []).map((r: any) => ({
         id: r.id,
         student_id: r.student_id ?? null,
-        studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
+        studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         amount: r.amount ?? 0,
         method: r.payment_method ?? '',
         type: r.payment_type ?? '',

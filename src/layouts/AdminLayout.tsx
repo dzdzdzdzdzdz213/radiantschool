@@ -88,7 +88,11 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Background handled globally by AnimatedBackground */}
+      <div className="gradient-mesh-fixed">
+        <div className="orb" />
+        <div className="orb" />
+        <div className="orb" />
+      </div>
       <div className="relative z-10">
         <AdminSidebar
           items={adminNavItems}
@@ -105,7 +109,13 @@ export default function AdminLayout() {
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
                 <AnimatePresence mode="wait">
-                  <motion.div key={location.pathname} {...pageTransition}>
+                  <motion.div
+                    key={location.pathname}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15 }}
+                  >
                     <Outlet />
                   </motion.div>
                 </AnimatePresence>

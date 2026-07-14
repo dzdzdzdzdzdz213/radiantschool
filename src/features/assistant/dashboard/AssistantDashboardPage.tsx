@@ -71,7 +71,7 @@ function LoadingGrid() {
 export default function AssistantDashboardPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
-      const { kpi, pendingRegistrations, overduePayments, activeTeachers, alerts, quickActions, scheduleData, scheduleLoading, rfidData, isLoading, isError } = useAssistantDashboard();
+      const { kpi, pendingRegistrations, overduePayments, activeTeachers, alerts, quickActions, scheduleData, scheduleLoading, rfidData, isLoading, isError } = useAssistantDashboard(lang);
 
   if (isLoading) return <LoadingGrid />;
 

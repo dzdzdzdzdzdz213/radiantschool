@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRoute } from '@/lib/permissions';
 import { Eye, EyeOff, ArrowLeft, ShieldAlert, Loader2 } from 'lucide-react';
+import { asset } from '@/lib/assets';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
@@ -31,7 +32,7 @@ export default function StaffLoginPage() {
 
   useEffect(() => {
     if (profile) {
-      const allowed = ['admin', 'teacher', 'assistant'];
+      const allowed = ['admin', 'assistant'];
       if (allowed.includes(profile.role)) {
         navigate(getDefaultRoute(profile.role), { replace: true });
       } else {
@@ -94,10 +95,10 @@ export default function StaffLoginPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <img src="/logo-transparent.webp" alt="Radiant Academy" className="mx-auto h-10 w-auto" />
+            <img src={asset('logo-transparent.webp')} alt="Radiant Learning" className="mx-auto h-12 w-auto" />
           </div>
-          <h1 className="text-h1 mt-3">
-            <span className="text-gradient">Radiant Academy</span>
+          <h1 className="text-h1 mt-4">
+            <span className="text-gradient">Radiant Learning</span>
           </h1>
           <p className="text-muted mt-1 text-sm">{t('login.admin_space', lang)}</p>
         </div>

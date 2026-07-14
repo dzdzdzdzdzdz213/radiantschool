@@ -30,7 +30,7 @@ export default function MiddleSchoolPage() {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
       <SelectionHero
         title="CEM — Collège"
         subtitle="De la 1ère à la 4ème année moyenne + Préparation BEM — Un accompagnement complet pour réussir au collège."

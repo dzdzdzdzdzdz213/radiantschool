@@ -33,17 +33,17 @@ const ICONS: Record<ToastType, ReactNode> = {
 };
 
 const BG_COLORS: Record<ToastType, string> = {
-  success: 'rgba(34,197,94,0.1)',
-  error: 'rgba(239,68,68,0.1)',
-  info: 'rgba(59,130,246,0.1)',
-  warning: 'rgba(245,158,11,0.1)',
+  success: 'rgba(34,197,94,0.2)',
+  error: 'rgba(239,68,68,0.2)',
+  info: 'rgba(59,130,246,0.2)',
+  warning: 'rgba(245,158,11,0.2)',
 };
 
 const BORDER_COLORS: Record<ToastType, string> = {
-  success: 'rgba(34,197,94,0.25)',
-  error: 'rgba(239,68,68,0.25)',
-  info: 'rgba(59,130,246,0.25)',
-  warning: 'rgba(245,158,11,0.25)',
+  success: 'rgba(34,197,94,0.4)',
+  error: 'rgba(239,68,68,0.4)',
+  info: 'rgba(59,130,246,0.4)',
+  warning: 'rgba(245,158,11,0.4)',
 };
 
 /**

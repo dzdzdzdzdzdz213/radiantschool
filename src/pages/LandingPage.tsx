@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
+import { asset } from '@/lib/assets';
 import { t, LANGUAGES } from '@/i18n';
 import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
@@ -100,7 +101,7 @@ export default function LandingPage() {
   const levelCount = new Set((courses ?? []).map((c: any) => c.level?.name)).size;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
       {/* Signature accent font — used ONLY for handwritten-style touches
           (founder signature, sticky-note captions). Ideally move this
           <link> into your index.html <head> instead of injecting it
@@ -112,7 +113,7 @@ export default function LandingPage() {
       <header className="glass-header fixed top-0 left-0 right-0 z-50">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center">
-            <img src="/logo-transparent.webp" alt="Radiant Academy" className="h-9 w-auto" />
+            <img src={asset('logo-transparent.webp')} alt="Radiant Academy" className="h-9 w-auto" />
           </Link>
 
           <nav className="hidden items-center gap-10 md:flex" style={{ color: 'var(--fg-muted)' }}>
@@ -465,7 +466,7 @@ export default function LandingPage() {
           <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-12">
             {/* Brand */}
             <div className="sm:col-span-2 lg:col-span-4">
-              <img src="/logo-transparent.webp" alt="Radiant Academy" className="h-10 w-auto mb-5" />
+               <img src={asset('logo-transparent.webp')} alt="Radiant Academy" className="h-10 w-auto mb-5" />
               <p className="text-sm leading-relaxed max-w-xs font-medium" style={{ color: 'var(--fg)' }}>{t('footer.tagline', lang)}</p>
               <div className="mt-6 flex gap-3">
                 <a href="https://www.facebook.com/radiantacademy.dz" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 8%, transparent)` }}>

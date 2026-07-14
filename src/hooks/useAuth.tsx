@@ -148,7 +148,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         p_phone: options?.phone || null,
       });
       if (rpcErr) {
-        await supabase.auth.signOut();
         return { error: rpcErr.message };
       }
 
@@ -161,7 +160,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         if (childErr) {
           try { await supabase.rpc('unregister_user', { p_id: data.user.id }); } catch { /* best-effort rollback */ }
-          await supabase.auth.signOut();
           return { error: 'Échec de la création du profil enfant. Veuillez réessayer.' };
         }
       }

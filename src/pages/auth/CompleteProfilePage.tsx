@@ -57,7 +57,7 @@ export default function CompleteProfilePage() {
           p_level_category: child.level || '',
         });
         if (childErr) {
-          await supabase.rpc('unregister_user', { p_id: user!.id });
+          try { await supabase.rpc('unregister_user', { p_id: user!.id }); } catch { /* best-effort rollback */ }
           throw new Error("Échec de la création du profil enfant");
         }
       }
@@ -77,7 +77,7 @@ export default function CompleteProfilePage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4" style={{ backgroundColor: 'var(--bg)' }}>
+    <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <button onClick={() => navigate('/')} className="mb-4 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium" style={{ color: 'var(--fg-muted)' }}>
           <ArrowLeft className="h-3.5 w-3.5" /> Retour à l'accueil

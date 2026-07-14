@@ -28,9 +28,9 @@ export default function ResourcesPage() {
     queryFn: async () => {
       let query = (supabase as any)
         .from('resources')
-        .select('id, name, file_path, file_type, created_at')
+        .select('id, title, file_url, type, created_at')
         .order('created_at', { ascending: false });
-      if (search) query = query.ilike('name', `%${search}%`);
+      if (search) query = query.ilike('title', `%${search}%`);
       const { data } = await query;
       return data ?? [];
     },
@@ -50,10 +50,9 @@ export default function ResourcesPage() {
       if (uploadError) throw uploadError;
       const { data: urlData } = (supabase as any).storage.from('resources').getPublicUrl(filePath);
       const { error: dbError } = await (supabase as any).from('resources').insert({
-        name: file.name,
-        file_type: file.type,
-        file_path: urlData.publicUrl,
-        created_at: new Date().toISOString(),
+        title: file.name,
+        type: file.type,
+        file_url: urlData.publicUrl,
       });
       if (dbError) throw dbError;
     },
@@ -117,15 +116,15 @@ export default function ResourcesPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{r.name}</span>
+                        <span className="text-sm font-medium">{r.title}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell"><Badge variant="outline">{r.file_type ?? '—'}</Badge></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Badge variant="outline">{r.type ?? '—'}</Badge></TableCell>
                     <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">{formatDateTime(r.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_path, filename: r.name })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_url, filename: r.title })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.title })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>

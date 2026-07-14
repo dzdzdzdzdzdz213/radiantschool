@@ -7,6 +7,7 @@ import {
   Award, Megaphone, Video, Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { asset } from '@/lib/assets';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -127,9 +128,12 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
       >
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4" style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' }}>
           <Link to="/admin/dashboard" className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold shadow-md" style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-              RL
-            </div>
+            <img
+              src={asset('logo-transparent.webp')}
+              alt="Radiant Learning"
+              className="h-8 w-8 shrink-0 rounded-lg object-contain"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
             {!collapsed && (
               <motion.span
                 initial={{ opacity: 0 }}

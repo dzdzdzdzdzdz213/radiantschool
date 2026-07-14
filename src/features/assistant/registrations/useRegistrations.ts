@@ -19,7 +19,7 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
     queryFn: async () => {
       let query = (supabase as any)
         .from('course_enrollments')
-        .select('id, status, enrollment_date, student:users(first_name, last_name, id), course:courses(id, name), campaign:campaigns(name)', { count: 'exact' });
+        .select('id, status, enrollment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name, id)), course:courses(id, name), campaign:campaigns(name)', { count: 'exact' });
       if (statusFilter && statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
@@ -28,8 +28,8 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
         .range((page - 1) * 20, page * 20 - 1);
       const items = (data ?? []).map((r: any) => ({
         id: r.id,
-        studentId: r.student?.id ?? '',
-        studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
+        studentId: r.student?.user?.id ?? '',
+        studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         courseId: r.course?.id ?? '',
         courseName: r.course?.name ?? 'Inconnu',
         status: r.status,

@@ -23,14 +23,14 @@ export function useAttendance(date?: string, search: string = '') {
     queryFn: async () => {
       let query = (supabase as any)
         .from('attendance')
-        .select('id, date, status, method, created_at, student:users(first_name, last_name, id), course_schedule:course_schedules!inner(course:courses(name))')
+        .select('id, date, status, method, created_at, student:students!student_id(user:users!students_id_fkey(first_name, last_name, id)), course_schedule:course_schedules!inner(course:courses(name))')
         .eq('date', today);
       const { data } = await query
         .order('created_at', { ascending: false });
       let items = (data ?? []).map((r: any) => ({
         id: r.id,
-        studentId: r.student?.id ?? '',
-        studentName: r.student ? `${r.student.first_name ?? ''} ${r.student.last_name ?? ''}` : 'Inconnu',
+        studentId: r.student?.user?.id ?? '',
+        studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         courseName: r.course_schedule?.course?.name ?? '',
         date: r.date,
         status: r.status,
