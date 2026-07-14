@@ -46,8 +46,7 @@ function ScrollReveal() {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             const el = e.target as HTMLElement;
-            const delay = parseInt(el.getAttribute('data-reveal-delay') || '0');
-            if (delay) el.style.transitionDelay = `${delay}ms`;
+            el.style.transitionDelay = `${parseInt(el.getAttribute('data-reveal-delay') || '0')}ms`;
             el.classList.add('revealed');
             obs.unobserve(el);
           }
@@ -56,14 +55,13 @@ function ScrollReveal() {
       { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
 
-    const observe = () => {
-      document.querySelectorAll('[data-reveal]:not(.revealed)').forEach((el) => obs.observe(el));
-    };
+    const scan = () => { requestAnimationFrame(() => { document.querySelectorAll('[data-reveal]:not(.revealed)').forEach((el) => obs.observe(el)); }); };
 
-    observe();
-    const mo = new MutationObserver(observe);
+    scan();
+    let timer: number;
+    const mo = new MutationObserver(() => { clearTimeout(timer); timer = window.setTimeout(scan, 200); });
     mo.observe(document.body, { childList: true, subtree: true });
-    return () => { obs.disconnect(); mo.disconnect(); };
+    return () => { obs.disconnect(); mo.disconnect(); clearTimeout(timer); };
   }, []);
   return null;
 }
