@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/Toast';
 export default function CompleteProfilePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isLoading, refreshProfile } = useAuth();
+  const { user, profile, isLoading, refreshProfile } = useAuth();
 
   const [role, setRole] = useState<'student' | 'parent' | ''>('');
   const [form, setForm] = useState({ first_name: '', last_name: '', phone: '' });
@@ -20,7 +20,8 @@ export default function CompleteProfilePage() {
 
   useEffect(() => {
     if (isLoading) return;
-    if (!user) { navigate('/login'); return; }
+    if (!user) { navigate('/login', { replace: true }); return; }
+    if (profile) { navigate(`/${profile.role}/dashboard`, { replace: true }); return; }
     const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
     const parts = name.split(' ');
     setForm({
