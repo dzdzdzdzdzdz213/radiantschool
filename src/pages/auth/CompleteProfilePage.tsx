@@ -119,11 +119,11 @@ export default function CompleteProfilePage() {
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div>
                 <label className="mb-1.5 block text-sm font-medium">Prénom <span style={{ color: '#ef4444' }}>*</span></label>
-                <Input value={form.first_name} onChange={e => setForm(p => ({ ...p, first_name: e.target.value }))} required />
+                <Input value={form.first_name} onChange={e => setForm(p => ({ ...p, first_name: e.target.value.replace(/[^a-zA-Z\u00C0-\u024F\s-]/g, '') }))} required />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium">Nom <span style={{ color: '#ef4444' }}>*</span></label>
-                <Input value={form.last_name} onChange={e => setForm(p => ({ ...p, last_name: e.target.value }))} required />
+                <Input value={form.last_name} onChange={e => setForm(p => ({ ...p, last_name: e.target.value.replace(/[^a-zA-Z\u00C0-\u024F\s-]/g, '') }))} required />
               </div>
             </div>
             <div>
@@ -131,7 +131,7 @@ export default function CompleteProfilePage() {
                 <Phone className="h-3.5 w-3.5" style={{ color: 'var(--primary)' }} />
                 Téléphone
               </label>
-              <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="05XX XX XX XX" />
+              <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, '') }))} placeholder="05XX XX XX XX" maxLength={10} />
             </div>
           </div>
 
