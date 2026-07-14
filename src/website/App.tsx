@@ -41,8 +41,6 @@ function ScrollProgress() {
 
 function ScrollReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll('[data-reveal]');
-    if (!els.length) return;
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -57,8 +55,15 @@ function ScrollReveal() {
       },
       { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
-    els.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
+
+    const observe = () => {
+      document.querySelectorAll('[data-reveal]:not(.revealed)').forEach((el) => obs.observe(el));
+    };
+
+    observe();
+    const mo = new MutationObserver(observe);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => { obs.disconnect(); mo.disconnect(); };
   }, []);
   return null;
 }
