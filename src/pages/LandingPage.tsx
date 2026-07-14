@@ -106,8 +106,7 @@ export default function LandingPage() {
           (founder signature, sticky-note captions). Ideally move this
           <link> into your index.html <head> instead of injecting it
           here, for better font-loading performance. */}
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
-        .font-handwritten { font-family: 'Caveat', cursive; }`}</style>
+      <style>{`.font-handwritten { font-family: 'Caveat', cursive; }`}</style>
 
       {/* HEADER */}
       <header className="glass-header fixed top-0 left-0 right-0 z-50">
