@@ -84,25 +84,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     const isOAuthCallback = window.location.pathname === '/auth/callback';
+    const storedHash = sessionStorage.getItem('sb-hash');
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (cancelled) return;
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-        if (isOAuthCallback) {
-          window.history.replaceState({}, document.title, '/auth/callback');
-          const { data: existing } = await supabase.from('users').select('id, role').eq('id', session.user.id).maybeSingle();
-          if (existing) {
-            window.location.replace(getDashboardPath(existing.role));
-          } else {
-            window.location.replace('/complete-profile');
-          }
-          return;
+    async function processSession(session: any) {
+      if (!session?.user) return false;
+      setUser(session.user);
+      await fetchProfile(session.user.id);
+      if (isOAuthCallback) {
+        sessionStorage.removeItem('sb-hash');
+        window.history.replaceState({}, document.title, '/auth/callback');
+        const { data: existing } = await supabase.from('users').select('id, role').eq('id', session.user.id).maybeSingle();
+        if (existing) {
+          window.location.replace(getDashboardPath(existing.role));
+        } else {
+          window.location.replace('/complete-profile');
+        }
+        return true;
+      }
+      return false;
+    }
+
+    (async () => {
+      if (storedHash) {
+        const params = new URLSearchParams(storedHash.slice(1));
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        if (accessToken && refreshToken) {
+          try {
+            const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            if (!error && data.session) {
+              if (cancelled) return;
+              const done = await processSession(data.session);
+              if (done) return;
+            }
+          } catch {}
         }
       }
-      if (!cancelled) setIsLoading(false);
-    }).catch(() => { if (!cancelled) setIsLoading(false); });
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled) return;
+      const done = await processSession(session);
+      if (!done && !cancelled) setIsLoading(false);
+    })();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (cancelled) return;
@@ -110,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         await fetchProfile(session.user.id);
         if (isOAuthCallback && event === 'SIGNED_IN') {
+          sessionStorage.removeItem('sb-hash');
           window.history.replaceState({}, document.title, '/auth/callback');
           const { data: existing } = await supabase.from('users').select('id, role').eq('id', session.user.id).maybeSingle();
           if (existing) {

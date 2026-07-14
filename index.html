@@ -8,8 +8,12 @@
     <script>
       (function() {
         var hash = location.hash;
-        if (hash && hash.indexOf('access_token=') !== -1 && location.pathname.indexOf('/auth/callback') === -1) {
-          location.replace('/auth/callback' + location.hash);
+        if (hash && hash.indexOf('access_token=') !== -1) {
+          if (location.pathname.indexOf('/auth/callback') === -1) {
+            location.replace('/auth/callback' + location.hash);
+          } else {
+            sessionStorage.setItem('sb-hash', hash);
+          }
         }
       })();
     </script>

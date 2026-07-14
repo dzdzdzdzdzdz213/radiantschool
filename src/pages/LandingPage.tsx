@@ -277,7 +277,7 @@ export default function LandingPage() {
       </section>
 
       {/* QUI SOMMES-NOUS */}
-      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto' }}>
+      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal>
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-16 lg:grid-cols-2 items-center mb-24">
             {/* Story */}
