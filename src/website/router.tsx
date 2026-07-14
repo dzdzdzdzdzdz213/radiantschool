@@ -32,6 +32,16 @@ const StudentDashboardPage = lazy(() => import('@/pages/student/StudentDashboard
 const ParentDashboardPage = lazy(() => import('@/pages/parent/ParentDashboardPage'));
 const TeacherDashboardPage = lazy(() => import('@/pages/teacher/TeacherDashboardPage'));
 
+function ComingSoon() {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="text-4xl mb-4">🚧</div>
+      <h2 className="text-xl font-semibold mb-2">Page en cours de développement</h2>
+      <p className="text-muted-foreground">Cette fonctionnalité sera bientôt disponible.</p>
+    </div>
+  );
+}
+
 const websiteRoutes: RouteObject[] = [
   {
     path: '/login',
@@ -124,6 +134,7 @@ const studentRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: StudentDashboardPage },
+      { path: '*', Component: ComingSoon },
     ],
   },
 ];
@@ -141,6 +152,7 @@ const parentRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: ParentDashboardPage },
+      { path: '*', Component: ComingSoon },
     ],
   },
 ];
@@ -158,6 +170,7 @@ const teacherRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: TeacherDashboardPage },
+      { path: '*', Component: ComingSoon },
     ],
   },
 ];
