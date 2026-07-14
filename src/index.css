@@ -169,43 +169,10 @@ a, button { cursor: pointer; }
 ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
 
 /* ─────── SCROLL REVEAL (data-reveal) ─────── */
-[data-reveal] {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-  will-change: opacity, transform;
-}
-[data-reveal].revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-[data-reveal="left"] {
-  opacity: 0;
-  transform: translateX(-20px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-[data-reveal="left"].revealed {
-  opacity: 1;
-  transform: translateX(0);
-}
-[data-reveal="right"] {
-  opacity: 0;
-  transform: translateX(20px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-[data-reveal="right"].revealed {
-  opacity: 1;
-  transform: translateX(0);
-}
-[data-reveal="scale"] {
-  opacity: 0;
-  transform: scale(0.9);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-[data-reveal="scale"].revealed {
-  opacity: 1;
-  transform: scale(1);
-}
+[data-reveal] { opacity: 0; transform: translateY(20px); }
+[data-reveal="left"] { opacity: 0; transform: translateX(-20px); }
+[data-reveal="right"] { opacity: 0; transform: translateX(20px); }
+[data-reveal="scale"] { opacity: 0; transform: scale(0.9); }
 
 /* ─────── TYPOGRAPHY UTILITIES ─────── */
 .text-display { font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; }

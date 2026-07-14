@@ -41,27 +41,32 @@ function ScrollProgress() {
 
 function ScrollReveal() {
   useEffect(() => {
-    const obs = new IntersectionObserver(
+    const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             const el = e.target as HTMLElement;
-            el.style.transitionDelay = `${parseInt(el.getAttribute('data-reveal-delay') || '0')}ms`;
-            el.classList.add('revealed');
-            obs.unobserve(el);
+            const delay = parseInt(el.getAttribute('data-reveal-delay') || '0');
+            requestAnimationFrame(() => {
+              setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, delay);
+            });
+            io.unobserve(el);
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.05 }
     );
 
-    const scan = () => { requestAnimationFrame(() => { document.querySelectorAll('[data-reveal]:not(.revealed)').forEach((el) => obs.observe(el)); }); };
+    const scan = () => {
+      document.querySelectorAll('[data-reveal]').forEach((el) => {
+        const h = el as HTMLElement;
+        if (h.style.opacity !== '1') io.observe(el);
+      });
+    };
 
     scan();
-    let timer: number;
-    const mo = new MutationObserver(() => { clearTimeout(timer); timer = window.setTimeout(scan, 200); });
-    mo.observe(document.body, { childList: true, subtree: true });
-    return () => { obs.disconnect(); mo.disconnect(); clearTimeout(timer); };
+    const retry = setTimeout(scan, 600);
+    return () => { io.disconnect(); clearTimeout(retry); };
   }, []);
   return null;
 }
