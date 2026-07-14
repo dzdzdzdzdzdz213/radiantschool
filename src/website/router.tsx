@@ -5,6 +5,8 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import StudentLayout from '@/layouts/StudentLayout';
 import ParentLayout from '@/layouts/ParentLayout';
 import TeacherLayout from '@/layouts/TeacherLayout';
+import AdminLayout from '@/layouts/AdminLayout';
+import AssistantLayout from '@/layouts/AssistantLayout';
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const StaffLoginPage = lazy(() => import('@/pages/auth/StaffLoginPage'));
@@ -31,6 +33,8 @@ const TeacherProfilePage = lazy(() => import('@/pages/formations/TeacherProfileP
 const StudentDashboardPage = lazy(() => import('@/pages/student/StudentDashboardPage'));
 const ParentDashboardPage = lazy(() => import('@/pages/parent/ParentDashboardPage'));
 const TeacherDashboardPage = lazy(() => import('@/pages/teacher/TeacherDashboardPage'));
+const AdminDashboardPage = lazy(() => import('@/features/dashboard/AdminDashboardPage'));
+const AssistantDashboardPage = lazy(() => import('@/features/assistant/dashboard/AssistantDashboardPage'));
 
 function ComingSoon() {
   return (
@@ -180,6 +184,36 @@ export const router = createBrowserRouter([
   ...studentRoutes,
   ...parentRoutes,
   ...teacherRoutes,
+  {
+    path: '/admin',
+    element: (
+      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+        <ProtectedRoute allowedRoles={['admin']}>
+          <AdminLayout />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+    children: [
+      { index: true, element: <Navigate to="dashboard" replace /> },
+      { path: 'dashboard', Component: AdminDashboardPage },
+      { path: '*', Component: ComingSoon },
+    ],
+  },
+  {
+    path: '/assistant',
+    element: (
+      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+        <ProtectedRoute allowedRoles={['assistant']}>
+          <AssistantLayout />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+    children: [
+      { index: true, element: <Navigate to="dashboard" replace /> },
+      { path: 'dashboard', Component: AssistantDashboardPage },
+      { path: '*', Component: ComingSoon },
+    ],
+  },
   {
     path: '*',
     element: (
