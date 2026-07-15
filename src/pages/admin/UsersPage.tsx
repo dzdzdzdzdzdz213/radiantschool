@@ -1,43 +1,61 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUsers } from '@/hooks/useQueries';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { getFullName, getRoleLabel, getStatusColor, formatDate } from '@/lib/utils';
-import { Search, Plus, MoreHorizontal } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectItem } from '@/components/ui/select';
-import { useToast } from '@/components/ui/Toast';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
+const PAGE_SIZE = 25;
+
 export default function UsersPage() {
   const { lang } = useLang();
-  const { data: users, isLoading, isError } = useUsers();
-  useErrorToast(isError, lang, t('nav.users', lang));
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [page, setPage] = useState(1);
   const [dropdownId, setDropdownId] = useState<string | null>(null);
 
-  const filtered = (users ?? []).filter((u) => {
-    const name = getFullName(u.first_name, u.last_name).toLowerCase();
-    const matchesSearch = name.includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = !roleFilter || u.role === roleFilter;
-    return matchesSearch && matchesRole;
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['users-paginated', page, search, roleFilter],
+    queryFn: async () => {
+      let query = supabase.from('users').select('*', { count: 'exact' });
+      if (roleFilter) query = query.eq('role', roleFilter);
+      if (search) {
+        query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
+      }
+      query = query.order('created_at', { ascending: false });
+      const from = (page - 1) * PAGE_SIZE;
+      query = query.range(from, from + PAGE_SIZE - 1);
+      const { data: rows, count, error } = await query;
+      if (error) throw error;
+      return { rows: rows ?? [], total: count ?? 0 };
+    },
   });
+  useErrorToast(isError, lang, t('nav.users', lang));
+
+  const users = data?.rows ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await (supabase as any).from('users').update({ status: status === 'active' ? 'inactive' : 'active' }).eq('id', id);
+      const { error } = await supabase.from('users').update({ status: status === 'active' ? 'inactive' : 'active' }).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); toast(t('success.updated', lang, 'Statut'), 'success'); setDropdownId(null); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users-paginated'] }); toast(t('success.updated', lang, 'Statut'), 'success'); setDropdownId(null); },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
+
+  const handleSearch = (val: string) => { setSearch(val); setPage(1); };
+  const handleRole = (val: string) => { setRoleFilter(val); setPage(1); };
 
   return (
     <div className="space-y-4">
@@ -48,9 +66,9 @@ export default function UsersPage() {
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('common.search', lang)} className="h-10 pl-10" />
+          <Input value={search} onChange={(e) => handleSearch(e.target.value)} placeholder={t('common.search', lang)} className="h-10 pl-10" />
         </div>
-        <Select value={roleFilter} onValueChange={setRoleFilter} placeholder={t('common.all', lang)}>
+        <Select value={roleFilter} onValueChange={handleRole} placeholder={t('common.all', lang)}>
           <SelectItem value="">{t('common.all', lang)}</SelectItem>
           <SelectItem value="admin">{t('role.admin', lang)}</SelectItem>
           <SelectItem value="assistant">{t('role.assistant', lang)}</SelectItem>
@@ -75,7 +93,7 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => (
+              {users.map((u) => (
                 <tr key={u.id} className="border-b text-sm last:border-0 hover:bg-page cursor-pointer" onClick={() => navigate(`./${u.id}`)}>
                   <td className="px-4 py-3 font-medium">{getFullName(u.first_name, u.last_name)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
@@ -100,13 +118,34 @@ export default function UsersPage() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {users.length === 0 && (
                 <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">{t('common.no_results', lang)}</td></tr>
               )}
             </tbody>
           </table>
         )}
       </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">{total} utilisateurs — Page {page}/{totalPages}</span>
+          <div className="flex items-center gap-2">
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="btn-ghost h-8 w-8 p-0 disabled:opacity-30"><ChevronLeft className="h-4 w-4" /></button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              let p: number;
+              if (totalPages <= 7) p = i + 1;
+              else if (page <= 4) p = i + 1;
+              else if (page >= totalPages - 3) p = totalPages - 6 + i;
+              else p = page - 3 + i;
+              return (
+                <button key={p} onClick={() => setPage(p)} className={`h-8 min-w-[32px] rounded-lg px-2 text-sm font-medium ${p === page ? 'bg-primary text-white' : 'hover:bg-page'}`}>
+                  {p}
+                </button>
+              );
+            })}
+            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="btn-ghost h-8 w-8 p-0 disabled:opacity-30"><ChevronRight className="h-4 w-4" /></button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

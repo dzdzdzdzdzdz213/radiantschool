@@ -65,8 +65,11 @@ function ScrollReveal() {
     };
 
     scan();
-    const retry = setTimeout(scan, 600);
-    return () => { io.disconnect(); clearTimeout(retry); };
+
+    const mo = new MutationObserver(scan);
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => { io.disconnect(); mo.disconnect(); };
   }, []);
   return null;
 }

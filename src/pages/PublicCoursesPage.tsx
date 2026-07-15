@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { usePublicCourses } from '@/hooks/usePublicData';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus, Sparkles } from 'lucide-react';
+import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus, Sparkles, ImageOff } from 'lucide-react';
+import { getCourseImageUrl } from '@/lib/storage';
 
 const categories = [
   { key: 'all', label: 'Tous', icon: BookOpen, btnGradient: 'linear-gradient(135deg, var(--primary), var(--accent))' },
@@ -154,6 +155,11 @@ export default function PublicCoursesPage() {
             >
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/5 to-accent/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="relative">
+                {c.image_url && (
+                  <div className="aspect-video rounded-xl overflow-hidden mb-4 -mx-1 -mt-1">
+                    <img src={getCourseImageUrl(c.image_url) || ''} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                )}
                 <div className="flex items-start justify-between mb-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -192,10 +198,12 @@ export default function PublicCoursesPage() {
                       style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
                     >Réserver VIP</Link>
                   )}
-                  <Link to={`/private-request/${c.id}`}
-                    className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-semibold transition-all duration-200 active:scale-[0.97]"
-                    style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)`, color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
-                  ><UserPlus className="h-3.5 w-3.5" />Particulier</Link>
+                  {c.teacher?.accepts_private_lessons !== false && (
+                    <Link to={`/private-request/${c.id}`}
+                      className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-semibold transition-all duration-200 active:scale-[0.97]"
+                      style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)`, color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
+                    ><UserPlus className="h-3.5 w-3.5" />Particulier</Link>
+                  )}
                 </div>
               </div>
             </motion.div>

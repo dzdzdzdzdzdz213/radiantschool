@@ -32,18 +32,9 @@ export default function StudentLayout() {
     { label: t('nav.schedule', lang), path: '/student/schedule', icon: 'Calendar' },
     { label: t('nav.calendar', lang), path: '/student/calendar', icon: 'Calendar' },
     { label: t('nav.attendance', lang), path: '/student/attendance', icon: 'ClipboardCheck' },
-    { label: t('nav.homework', lang), path: '/student/homework', icon: 'FileText' },
-    { label: t('nav.resources', lang), path: '/student/resources', icon: 'GraduationCap' },
-    { label: t('nav.online_classes', lang), path: '/student/online-classes', icon: 'Video' },
-    { label: t('nav.private_lessons', lang), path: '/student/private-lessons', icon: 'UserPlus' },
-    { label: t('nav.vip_classes', lang), path: '/student/vip-classes', icon: 'Star' },
     { label: t('nav.payments', lang), path: '/student/payments', icon: 'DollarSign' },
     { label: t('nav.invoices', lang), path: '/student/invoices', icon: 'FileText' },
-    { label: t('nav.certificates', lang), path: '/student/certificates', icon: 'Award' },
-    { label: t('nav.announcements', lang), path: '/student/announcements', icon: 'Megaphone' },
     { label: t('nav.messages', lang), path: '/student/messages', icon: 'MessageSquare' },
-    { label: t('nav.reviews', lang), path: '/student/reviews', icon: 'Star' },
-    { label: t('nav.notifications', lang), path: '/student/notifications', icon: 'Bell' },
     { label: t('nav.profile', lang), path: '/student/profile', icon: 'UserCircle' },
   ];
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -77,7 +68,7 @@ export default function StudentLayout() {
           <div className="mx-auto w-full max-w-7xl">
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
-                <PageShell><Outlet /></PageShell>
+                <PageShell><BackButton /><Outlet /></PageShell>
               </Suspense>
             </ErrorBoundary>
           </div>

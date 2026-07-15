@@ -4,8 +4,9 @@ import { useCourse, useCourseEnrollments } from '@/hooks/useQueries';
 import { formatCurrency, formatDate, getStatusColor, getFullName, formatTime, getDayLabel } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { ArrowLeft, Users } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
+import { ArrowLeft, Users, ImageOff } from 'lucide-react';
+import { getCourseImageUrl } from '@/lib/storage';
+import { useToast } from '@/hooks/useToast';
 
 export default function CourseDetailPage() {
   const { id } = useParams();
@@ -34,6 +35,11 @@ export default function CourseDetailPage() {
         </div>
         <span className={`rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(course.status)}`}>{course.status}</span>
       </div>
+      {course.image_url && (
+        <div className="rounded-xl overflow-hidden max-h-64">
+          <img src={getCourseImageUrl(course.image_url) || ''} alt={course.name} className="w-full h-full object-cover" />
+        </div>
+      )}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border bg-card p-5 shadow-sm lg:col-span-2">
           <h2 className="mb-4 font-semibold">{t('common.info', lang)}</h2>

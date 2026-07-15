@@ -20,6 +20,7 @@ export function usePayments(search: string = '', page: number = 1) {
       let query = (supabase as any)
         .from('payments')
         .select('id, student_id, amount, payment_method, payment_type, receipt_number, payment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name)), course:courses(name)', { count: 'exact' })
+        .is('deleted_at', null)
         .order('payment_date', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       if (search) {

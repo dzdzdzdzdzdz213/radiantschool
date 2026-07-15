@@ -57,27 +57,49 @@ export function getCourseImageUrl(path: string | null | undefined): string | nul
   return data.publicUrl;
 }
 
+function convertToWebP(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { reject(new Error('Canvas not available')); return; }
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('WebP conversion failed'));
+        },
+        'image/webp',
+        0.85,
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+    img.src = url;
+  });
+}
+
 /**
- * Uploads a course image to the `courses` bucket. Returns the storage path.
+ * Uploads a course image to the `courses` bucket. Converts to WebP automatically. Returns the storage path.
  */
 export async function uploadCourseImage(courseId: number, file: File): Promise<string> {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
   const maxSize = 5 * 1024 * 1024;
-
-  if (!allowedTypes.includes(file.type)) {
-    throw new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed for course images.');
-  }
   if (file.size > maxSize) {
     throw new Error('File too large. Course images must be under 5MB.');
   }
 
-  const ext = file.name.split('.').pop() || 'jpg';
-  const path = `${courseId}/${Date.now()}.${ext}`;
+  const webpBlob = await convertToWebP(file);
+  const webpFile = new File([webpBlob], `${Date.now()}.webp`, { type: 'image/webp' });
+  const path = `${courseId}/${Date.now()}.webp`;
 
-  const { error: uploadError } = await supabase.storage.from(COURSE_BUCKET).upload(path, file, {
+  const { error: uploadError } = await supabase.storage.from(COURSE_BUCKET).upload(path, webpFile, {
     cacheControl: '3600',
     upsert: true,
-    contentType: file.type,
+    contentType: 'image/webp',
   });
   if (uploadError) throw ApiError.fromPostgrest({ message: uploadError.message, code: String(uploadError.cause ?? ''), details: uploadError });
 

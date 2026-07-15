@@ -14,7 +14,7 @@ import { getInitials, formatDateTime } from '@/lib/utils';
 import { useStudents, useCreateStudent } from './useStudents';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function StudentsPage() {

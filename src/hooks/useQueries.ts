@@ -2,11 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { api, type FilterParams } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
-/** All users with their student profile relation. Sorted by newest first. */
+/** All users with their student profile relation. Sorted by newest first. Limited to 500 rows. */
 export function useUsers() {
   return useQuery({
     queryKey: ['users'],
-    queryFn: () => api.list('users', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, students(*)').then(r => r.data),
+    queryFn: () => api.list('users', { pagination: { page: 1, pageSize: 500 }, sort: [{ column: 'created_at', direction: 'desc' }] }, '*, students(*)').then(r => r.data),
     staleTime: 120_000,
   });
 }
@@ -25,7 +25,7 @@ export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
     queryFn: () => api.list('courses', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream, year), schedules:course_schedules(id, day_of_week, start_time, end_time)').then(r => r.data),
-    staleTime: 120_000,
+    staleTime: 30_000,
   });
 }
 

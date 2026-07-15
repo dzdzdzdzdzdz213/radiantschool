@@ -1,9 +1,13 @@
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Sparkles, Users, Calendar, FileText, Bell } from 'lucide-react';
+import { Sparkles, Users, Calendar, DollarSign, Bell, BookOpen } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Card, CardContent } from '@/components/ui/card';
+import { formatCurrency, getFullName } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
 
 function PageHeader({ name }: { name: string }) {
   const { lang } = useLang();
@@ -21,9 +25,7 @@ function PageHeader({ name }: { name: string }) {
               <Sparkles className="h-7 w-7 text-primary" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                {t('dashboard.greeting', lang, name)}
-              </h1>
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <p className="text-sm text-muted-foreground">{today}</p>
@@ -40,10 +42,37 @@ export default function ParentDashboardPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
 
+  const { data: children } = useQuery({
+    queryKey: ['parent-children', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, photo_url, students(*)')
+        .eq('parent_id', profile.id);
+      return data ?? [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const childIds = (children ?? []).map(c => c.id);
+
+  const { data: stats } = useQuery({
+    queryKey: ['parent-stats', childIds.join(',')],
+    queryFn: async () => {
+      if (!childIds.length) return { enrollments: 0, payments: 0, totalPaid: 0 };
+      const [enr, pay] = await Promise.all([
+        supabase.from('course_enrollments').select('id', { count: 'exact', head: true }).in('student_id', childIds),
+        supabase.from('payments').select('amount').in('student_id', childIds).is('deleted_at', null),
+      ]);
+      return { enrollments: enr.count ?? 0, payments: (pay.data ?? []).length, totalPaid: (pay.data ?? []).reduce((s, p: any) => s + Number(p.amount), 0) };
+    },
+    enabled: childIds.length > 0,
+  });
+
   return (
     <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <PageHeader name={profile?.firstName ?? ''} />
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-6 flex items-center gap-4">
@@ -52,29 +81,29 @@ export default function ParentDashboardPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Mes enfants</p>
-              <p className="text-2xl font-bold">—</p>
+              <p className="text-2xl font-bold">{children?.length ?? '—'}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
-              <Calendar className="h-6 w-6 text-green-600" />
+              <BookOpen className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{t('nav.schedule', lang)}</p>
-              <p className="text-2xl font-bold">—</p>
+              <p className="text-sm text-muted-foreground">{t('nav.registrations', lang)}</p>
+              <p className="text-2xl font-bold">{stats?.enrollments ?? '—'}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100">
-              <FileText className="h-6 w-6 text-purple-600" />
+              <DollarSign className="h-6 w-6 text-purple-600" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{t('nav.payments', lang)}</p>
-              <p className="text-2xl font-bold">—</p>
+              <p className="text-2xl font-bold">{stats ? formatCurrency(stats.totalPaid) : '—'}</p>
             </div>
           </CardContent>
         </Card>
@@ -85,19 +114,29 @@ export default function ParentDashboardPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{t('nav.announcements', lang)}</p>
-              <p className="text-2xl font-bold">—</p>
+              <p className="text-2xl font-bold">{stats?.payments ?? '—'}</p>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardContent className="p-8 text-center">
-          <p className="text-muted-foreground">
-            Votre espace parent est en cours de configuration. Les fonctionnalités détaillées seront bientôt disponibles.
-          </p>
-        </CardContent>
-      </Card>
+      {children && children.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Mes enfants</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {children.map((child: any) => (
+              <Link key={child.id} to={`/parent/profile`} className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                  {child.first_name?.charAt(0)}{child.last_name?.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{getFullName(child.first_name, child.last_name)}</p>
+                  <p className="text-xs text-muted-foreground">{child.students?.[0]?.registration_number || ''}</p>
+                </div>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </motion.div>
   );
 }

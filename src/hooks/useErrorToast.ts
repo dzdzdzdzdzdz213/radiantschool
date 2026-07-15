@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { t } from '@/i18n';
 import type { Lang } from '@/i18n';
 

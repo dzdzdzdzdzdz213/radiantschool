@@ -2,6 +2,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
+import BackButton from '@/components/ui/BackButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
@@ -60,9 +61,8 @@ export default function AssistantLayout() {
     { label: t('nav.attendance', lang), path: '/assistant/attendance', icon: 'ClipboardCheck' },
     { label: t('nav.rfid', lang), path: '/assistant/rfid', icon: 'ClipboardCheck' },
     { label: t('nav.groups', lang), path: '/assistant/groups', icon: 'BookOpen' },
-    { label: t('nav.courses', lang), path: '/assistant/courses', icon: 'BookOpen' },
     { label: t('nav.private_lessons', lang), path: '/assistant/private-lessons', icon: 'UserPlus' },
-    { label: t('nav.schedule', lang), path: '/assistant/schedules', icon: 'Calendar' },
+    { label: t('nav.schedule', lang), path: '/assistant/schedule', icon: 'Calendar' },
     { label: t('nav.rooms', lang), path: '/assistant/rooms', icon: 'MapPin' },
     { label: t('nav.payments', lang), path: '/assistant/payments', icon: 'DollarSign' },
     { label: t('nav.invoices', lang), path: '/assistant/invoices', icon: 'FileText' },
@@ -107,6 +107,7 @@ export default function AssistantLayout() {
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
                 <PageShell>
+                  <BackButton />
                   <Outlet />
                 </PageShell>
               </Suspense>

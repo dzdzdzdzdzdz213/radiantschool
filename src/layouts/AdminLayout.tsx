@@ -1,8 +1,8 @@
 import { useState, useEffect, Suspense } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
+import BackButton from '@/components/ui/BackButton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
@@ -38,16 +38,8 @@ function DashboardFallback() {
   );
 }
 
-const pageTransition = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -16 },
-  transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const },
-};
-
 export default function AdminLayout() {
   const { lang } = useLang();
-  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -88,11 +80,6 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <div className="gradient-mesh-fixed">
-        <div className="orb" />
-        <div className="orb" />
-        <div className="orb" />
-      </div>
       <div className="relative z-10">
         <AdminSidebar
           items={adminNavItems}
@@ -108,17 +95,7 @@ export default function AdminLayout() {
           <div className="mx-auto w-full max-w-7xl">
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={location.pathname}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <Outlet />
-                  </motion.div>
-                </AnimatePresence>
+                <BackButton /><Outlet />
               </Suspense>
             </ErrorBoundary>
           </div>

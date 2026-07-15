@@ -1,18 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
 
 /** Active courses with subject, level, teacher, room, and schedules for the public landing page. Stale after 5 min. */
 export function usePublicCourses() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['public-courses'],
     queryFn: async () => {
       const { data } = await supabase
         .from('courses')
         .select(`
-          id, name, type, capacity, current_enrollments, price, status, start_date, end_date,
+          id, name, type, capacity, current_enrollments, price, status, start_date, end_date, image_url,
           subject:subjects(name),
           level:levels(name, category, stream, year),
-          teacher:users!teacher_id(first_name, last_name),
+          teacher:users!teacher_id(first_name, last_name, accepts_private_lessons),
           room:rooms(name),
           schedules:course_schedules(id, day_of_week, start_time, end_time)
         `)
@@ -22,6 +23,19 @@ export function usePublicCourses() {
     },
     staleTime: 1000 * 60 * 5,
   });
+
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const channel = supabase
+      .channel('public-courses-live')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['public-courses'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
+
+  return query;
 }
 
 /**

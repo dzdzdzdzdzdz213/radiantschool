@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Camera, Loader } from 'lucide-react';
 import { getAvatarUrl, uploadAvatar } from '@/lib/storage';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 
 export default function CompleteProfilePage() {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCourses, useSubjects, useLevels, useRooms } from '@/hooks/useQueries';
 import { useUsers } from '@/hooks/useQueries';
@@ -7,7 +7,7 @@ import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/u
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Search, Plus, BookOpen, X, Pencil, Trash2, Filter, Camera, Loader, ImageOff, Trash } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCourseImageUrl, uploadCourseImage } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
@@ -123,7 +123,7 @@ export default function CoursesPage() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['courses'] });
+      qc.invalidateQueries({ queryKey: ['courses'], refetchType: 'all' });
       toast(t(editingId ? 'success.updated' : 'success.created', lang, t('nav.courses', lang)), 'success');
       setShowModal(false);
       setEditingId(null);
@@ -147,15 +147,6 @@ export default function CoursesPage() {
   });
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
-
-  useEffect(() => {
-    const channel = supabase.channel('courses_live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, () => {
-        qc.invalidateQueries({ queryKey: ['courses'] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [qc]);
 
   const filtered = (courses ?? []).filter((c: any) => {
     const q = search.toLowerCase();
@@ -351,7 +342,13 @@ export default function CoursesPage() {
           <div className="col-span-full p-8 text-center text-muted-foreground">{t('common.no_results', lang)}</div>
         ) : (
           filtered.map((c: any) => (
-            <div key={c.id} className="rounded-xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+            <div key={c.id} className="rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md overflow-hidden">
+              {c.image_url && (
+                <div className="aspect-video overflow-hidden">
+                  <img src={getCourseImageUrl(c.image_url) || ''} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                </div>
+              )}
+              <div className="p-5">
               <div className="mb-3 flex items-start justify-between">
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(`./${c.id}`)}>
                   <BookOpen className="h-5 w-5 text-primary" />
@@ -369,6 +366,7 @@ export default function CoursesPage() {
                 <p><span className="text-foreground">{t('groups.capacity', lang)}:</span> {c.current_enrollments}/{c.capacity}</p>
                 <p>{t('common.price', lang)}: {formatCurrency(c.price)}</p>
                 <p>{t('common.from', lang)} {formatDate(c.start_date)} {t('common.to', lang)} {formatDate(c.end_date)}</p>
+              </div>
               </div>
             </div>
           ))

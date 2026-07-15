@@ -6,7 +6,7 @@ import { getFullName, formatDate, formatCurrency, getRoleLabel, getStatusColor }
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { ArrowLeft, Mail, Phone, User } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 
 export default function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();

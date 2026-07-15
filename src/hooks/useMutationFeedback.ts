@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, type UseMutationOptions, type MutationKey } from '@tanstack/react-query';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 

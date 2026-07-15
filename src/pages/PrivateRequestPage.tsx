@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader, UserPlus, Check } from 'lucide-react';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
+import { useToast } from '@/hooks/useToast';
 
 export default function PrivateRequestPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['public-course', courseId],
@@ -17,7 +19,7 @@ export default function PrivateRequestPage() {
       if (!courseId) return null;
       const { data } = await supabase
         .from('courses')
-        .select('id, name, type, price, subject:subjects(name), level:levels(name, stream, category), teacher:users!teacher_id(id, first_name, last_name)')
+        .select('id, name, type, price, subject:subjects(name), level:levels(name, stream, category), teacher:users!teacher_id(id, first_name, last_name, accepts_private_lessons)')
         .eq('id', Number(courseId))
         .single();
       return data ?? null;
@@ -25,7 +27,14 @@ export default function PrivateRequestPage() {
     enabled: !!courseId,
   });
 
-  const [form, setForm] = useState({ date: '', start_time: '', end_time: '', notes: '' });
+  useEffect(() => {
+    if (course && course.teacher?.accepts_private_lessons === false) {
+      navigate('/formations');
+      toast('Ce professeur n\'accepte pas les demandes de cours particuliers pour le moment.', 'error');
+    }
+  }, [course, navigate, toast]);
+
+  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', date: '', start_time: '', end_time: '', notes: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const bookMutation = useMutationWithFeedback<unknown, Error, void, unknown>(
@@ -36,11 +45,7 @@ export default function PrivateRequestPage() {
         student_id: profile.id,
         teacher_id: course.teacher.id,
         course_id: Number(courseId),
-        date: form.date,
-        start_time: form.start_time,
-        end_time: form.end_time,
         price,
-        notes: form.notes || null,
         status: 'pending',
         created_at: new Date().toISOString(),
       });
@@ -57,20 +62,84 @@ export default function PrivateRequestPage() {
     },
   );
 
+  const inquiryMutation = useMutation({
+    mutationFn: async () => {
+      if (!courseId) return;
+      const { error } = await (supabase as any).from('private_lesson_inquiries').insert({
+        course_id: Number(courseId),
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || null,
+        preferred_date: form.date,
+        start_time: form.start_time,
+        end_time: form.end_time,
+        notes: form.notes.trim() || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast('Votre demande a été envoyée. Nous vous contacterons rapidement.', 'success');
+      setForm({ first_name: '', last_name: '', email: '', phone: '', date: '', start_time: '', end_time: '', notes: '' });
+    },
+    onError: (err: any) => {
+      toast(err?.message ?? 'Une erreur est survenue', 'error');
+    },
+  });
+
   function validate() {
     const e: Record<string, string> = {};
+    if (!profile) {
+      const name = form.first_name.trim();
+      if (!name) e.first_name = 'Requis';
+      else if (name.length < 2) e.first_name = 'Minimum 2 caractères';
+      else if (/[0-9]/.test(name)) e.first_name = 'Ne peut pas contenir de chiffres';
+
+      const lname = form.last_name.trim();
+      if (!lname) e.last_name = 'Requis';
+      else if (lname.length < 2) e.last_name = 'Minimum 2 caractères';
+      else if (/[0-9]/.test(lname)) e.last_name = 'Ne peut pas contenir de chiffres';
+
+      const email = form.email.trim();
+      if (!email) e.email = 'Requis';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Email invalide';
+
+      const phone = form.phone.trim();
+      if (phone && !/^(\+213|0)[5-7]\s?\d(\s?\d{2}){3}$/.test(phone) && !/^\+\d+$/.test(phone)) e.phone = 'Numéro invalide (ex: 0555 12 34 56)';
+    }
+
     if (!form.date) e.date = 'Requis';
+    else {
+      const d = new Date(form.date + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (d < today) e.date = 'La date doit être dans le futur';
+    }
+
     if (!form.start_time) e.start_time = 'Requis';
     if (!form.end_time) e.end_time = 'Requis';
+    if (form.start_time && form.end_time) {
+      if (form.start_time >= form.end_time) e.end_time = 'Doit être après le début';
+      else {
+        const [sh, sm] = form.start_time.split(':').map(Number);
+        const [eh, em] = form.end_time.split(':').map(Number);
+        const diff = (eh * 60 + em) - (sh * 60 + sm);
+        if (diff < 30) e.end_time = 'Minimum 30 minutes';
+      }
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
   function handleSubmit() {
-    if (!profile) { navigate(`/enroll?redirect=/private-request/${courseId}`); return; }
-    if (profile.role !== 'student' && profile.role !== 'parent') { navigate('/'); return; }
+    if (profile) {
+      if (profile.role !== 'student' && profile.role !== 'parent') { navigate('/'); return; }
+      bookMutation.mutate();
+      return;
+    }
     if (!validate()) return;
-    bookMutation.mutate();
+    inquiryMutation.mutate();
   }
 
   if (courseLoading) {
@@ -129,10 +198,60 @@ export default function PrivateRequestPage() {
             </div>
           </div>
 
+          {!profile && (
+            <div className="grid gap-4 sm:grid-cols-2 mb-6">
+              <div>
+                <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--fg-muted)' }}>Prénom *</label>
+                <input type="text" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value.replace(/[0-9]/g, '') })}
+                  className="w-full h-11 rounded-xl px-4 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--primary)]"
+                  style={{ backgroundColor: 'var(--bg)', border: `1px solid ${errors.first_name ? '#ef4444' : 'var(--border)'}`, color: 'var(--fg)' }} />
+                {errors.first_name && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.first_name}</p>}
+              </div>
+              <div>
+                <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--fg-muted)' }}>Nom *</label>
+                <input type="text" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value.replace(/[0-9]/g, '') })}
+                  className="w-full h-11 rounded-xl px-4 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--primary)]"
+                  style={{ backgroundColor: 'var(--bg)', border: `1px solid ${errors.last_name ? '#ef4444' : 'var(--border)'}`, color: 'var(--fg)' }} />
+                {errors.last_name && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.last_name}</p>}
+              </div>
+              <div>
+                <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--fg-muted)' }}>Email *</label>
+                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                  className="w-full h-11 rounded-xl px-4 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--primary)]"
+                  style={{ backgroundColor: 'var(--bg)', border: `1px solid ${errors.email ? '#ef4444' : 'var(--border)'}`, color: 'var(--fg)' }} />
+                {errors.email && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.email}</p>}
+              </div>
+              <div>
+                <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--fg-muted)' }}>Téléphone</label>
+                <input type="tel" value={form.phone} onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9+]/g, '');
+                  let formatted = raw;
+                  if (raw.startsWith('+213')) {
+                    const rest = raw.slice(4).replace(/\D/g, '');
+                    formatted = rest ? `+213 ${rest.slice(0,1)} ${rest.slice(1,3)} ${rest.slice(3,5)} ${rest.slice(5,7)}`.trim() : '+213';
+                  } else if (raw.startsWith('0')) {
+                    const digits = raw.replace(/\D/g, '');
+                    formatted = digits ? `${digits.slice(0,2)} ${digits.slice(2,4)} ${digits.slice(4,6)} ${digits.slice(6,8)}`.trim() : '';
+                  } else if (raw.startsWith('213')) {
+                    const rest = raw.slice(3).replace(/\D/g, '');
+                    formatted = rest ? `+213 ${rest.slice(0,1)} ${rest.slice(1,3)} ${rest.slice(3,5)} ${rest.slice(5,7)}`.trim() : '+213';
+                  } else {
+                    const digits = raw.replace(/\D/g, '');
+                    if (digits.length <= 2) formatted = digits;
+                    else formatted = `${digits.slice(0,2)} ${digits.slice(2,4)} ${digits.slice(4,6)} ${digits.slice(6,8)}`.trim();
+                  }
+                  setForm({ ...form, phone: formatted });
+                }}
+                  className="w-full h-11 rounded-xl px-4 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--primary)]"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--fg)' }} />
+              </div>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-3 mb-6">
             <div>
               <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--fg-muted)' }}>Date *</label>
-              <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
+              <input type="date" value={form.date} min={new Date().toISOString().split('T')[0]} onChange={e => setForm({ ...form, date: e.target.value })}
                 className="w-full h-11 rounded-xl px-4 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--primary)]"
                 style={{ backgroundColor: 'var(--bg)', border: `1px solid ${errors.date ? '#ef4444' : 'var(--border)'}`, color: 'var(--fg)' }}
               />
@@ -165,16 +284,16 @@ export default function PrivateRequestPage() {
             />
           </div>
 
-          <button onClick={handleSubmit} disabled={bookMutation.isPending}
+          <button onClick={handleSubmit} disabled={bookMutation.isPending || inquiryMutation.isPending}
             className="w-full h-12 rounded-xl text-sm font-bold text-white transition-all duration-200 active:scale-[0.97] disabled:opacity-50"
             style={{ background: 'var(--primary)' }}
           >
-            {bookMutation.isPending ? 'Envoi...' : profile ? 'Envoyer la demande' : 'Connectez-vous pour envoyer'}
+            {bookMutation.isPending || inquiryMutation.isPending ? 'Envoi...' : profile ? 'Envoyer la demande' : 'Envoyer ma demande'}
           </button>
 
           {!profile && (
             <p className="text-xs text-center mt-3" style={{ color: 'var(--fg-muted)' }}>
-              Vous devez avoir un compte pour envoyer une demande.
+              Un professeur vous contactera par email ou téléphone.
             </p>
           )}
         </div>

@@ -9,7 +9,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateUserSettings } from '@/hooks/useMutationFeedback';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { useQueryClient } from '@tanstack/react-query';
 
 const settingsSections = [

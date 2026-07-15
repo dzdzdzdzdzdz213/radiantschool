@@ -13,7 +13,7 @@ import { getInitials } from '@/lib/utils';
 import { useParents, useCreateParent } from './useParents';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function ParentsPage() {

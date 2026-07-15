@@ -19,9 +19,10 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
     queryFn: async () => {
       let query = (supabase as any)
         .from('course_enrollments')
-        .select('id, status, enrollment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name, id)), course:courses(id, name), campaign:campaigns(name)', { count: 'exact' });
+        .select('id, status, enrollment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name, id)), course:courses(id, name)', { count: 'exact' });
       if (statusFilter && statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+        const dbStatus = statusFilter === 'pending' ? 'pending_approval' : statusFilter;
+        query = query.eq('status', dbStatus);
       }
       const { data, count } = await query
         .order('enrollment_date', { ascending: false })

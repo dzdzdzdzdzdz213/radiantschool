@@ -3,15 +3,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { getFullName, getRoleLabel } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock } from 'lucide-react';
+import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock, UserPlus } from 'lucide-react';
 import AvatarUpload from '@/components/AvatarUpload';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { profileSchema } from '@/lib/validation';
 import { useUpdateUserSettings, useUpdatePassword } from '@/hooks/useMutationFeedback';
@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const { profile, refreshProfile } = useAuth();
   const { lang } = useLang();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [photoPath, setPhotoPath] = useState<string | null | undefined>(profile?.photoUrl);
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState(profile?.firstName ?? '');
@@ -30,6 +31,7 @@ export default function ProfilePage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [notifications, setNotifications] = useState({ email_notifications: true, push_notifications: true, sms_notifications: false });
+  const [acceptsPrivateLessons, setAcceptsPrivateLessons] = useState(true);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -41,7 +43,7 @@ export default function ProfilePage() {
     queryKey: ['profile_settings', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return {};
-      const { data } = await (supabase as any).from('users').select('email_notifications, push_notifications, sms_notifications').eq('id', profile.id).single();
+      const { data } = await (supabase as any).from('users').select('email_notifications, push_notifications, sms_notifications, accepts_private_lessons').eq('id', profile.id).single();
       return data ?? {};
     },
     enabled: !!profile?.id,
@@ -51,6 +53,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!userSettings) return;
     setNotifications(prev => ({ ...prev, ...userSettings }));
+    if (typeof (userSettings as any).accepts_private_lessons === 'boolean') setAcceptsPrivateLessons((userSettings as any).accepts_private_lessons);
   }, [userSettings]);
 
   const notifDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,6 +183,27 @@ export default function ProfilePage() {
           ))}
         </CardContent>
       </Card>
+
+      {profile.role === 'teacher' && (
+        <Card>
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><UserPlus className="h-4 w-4" />{t('common.type', lang)}</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Accepter les demandes de cours particuliers</p>
+                <p className="text-xs text-muted-foreground">Les visiteurs pourront demander des cours privés</p>
+              </div>
+              <Switch checked={acceptsPrivateLessons} onCheckedChange={v => {
+                setAcceptsPrivateLessons(v);
+                updateSettings.mutate(
+                  { userId: profile?.id ?? '', settings: { accepts_private_lessons: v } },
+                  { onSuccess: () => queryClient.invalidateQueries({ queryKey: ['public-courses'] }) }
+                );
+              }} />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />{t('common.security', lang)}</CardTitle></CardHeader>

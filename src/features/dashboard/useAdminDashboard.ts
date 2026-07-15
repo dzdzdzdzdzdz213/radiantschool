@@ -2,8 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
 import { useDashboardKPI, useRevenueChartData, useOccupancyData, useTodaySchedule, useRecentActivity, useAdminAlerts } from '@/hooks/useQueries';
-import { useRealtimeDashboard } from '@/hooks/useRealtime';
-
 export interface KpiData {
   totalRevenue: number;
   activeStudents: number;
@@ -49,9 +47,6 @@ export interface AnalyticsMetric {
 }
 
 export function useAdminDashboard() {
-  // Activer les souscriptions realtime pour toutes les données du dashboard
-  useRealtimeDashboard();
-
   const kpi = useDashboardKPI();
   const revenue = useRevenueChartData();
   const occupancy = useOccupancyData();

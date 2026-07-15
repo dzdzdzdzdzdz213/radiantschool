@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Sparkles, DollarSign, Users, CalendarCheck, Building2, TrendingUp, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
@@ -24,40 +23,27 @@ function PageHeader({ name }: { name: string }) {
   const today = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <Card className="welcome-glow relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none">
-          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[140%] bg-gradient-radial from-primary/[0.06] to-transparent" />
-        </div>
-        <CardContent className="relative z-10 p-8">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-              <Sparkles className="h-7 w-7 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                {t('dashboard.greeting', lang, name)}
-              </h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                <p className="text-sm text-muted-foreground">{today}</p>
-              </div>
-            </div>
-            <div className="hidden sm:flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('status.live', lang)}</span>
+    <Card className="welcome-glow relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[140%] bg-gradient-radial from-primary/[0.06] to-transparent" />
+      </div>
+      <CardContent className="relative z-10 p-8">
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <Sparkles className="h-7 w-7 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {t('dashboard.greeting', lang, name)}
+            </h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <p className="text-sm text-muted-foreground">{today}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -94,18 +80,13 @@ export default function AdminDashboardPage() {
 
   if (isError) {
     return (
-      <motion.div
-        className="space-y-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
+      <div className="space-y-6">
         <PageHeader name={profile?.firstName ?? ''} />
         <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-6 text-center">
           <p className="text-red-600 font-medium">{t('dashboard.load_error', lang)}</p>
           <p className="text-sm text-red-500 mt-1">{t('dashboard.load_error_retry', lang)}</p>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -117,57 +98,52 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="space-y-6">
       <PageHeader name={profile?.firstName ?? ''} />
 
       <AlertBanner items={alertItems} />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 stagger-visible">
-        <div className="stagger-item"><KpiCard
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <KpiCard
           title={t('common.revenue', lang)}
           value={formatCurrency(kpi.totalRevenue)}
           subtitle="30 derniers jours"
           icon={DollarSign}
           trend={{ up: true, pct: '+12%' }}
-        /></div>
-        <div className="stagger-item"><KpiCard
+        />
+        <KpiCard
           title={t('dashboard.stat.active_students', lang)}
           value={String(kpi.activeStudents)}
           subtitle={t('dashboard.stat.new_students', lang)}
           icon={Users}
           trend={kpi.newStudentsMonth > 0 ? { up: true, pct: `+${kpi.newStudentsMonth}` } : undefined}
-        /></div>
-        <div className="stagger-item"><KpiCard
+        />
+        <KpiCard
           title={t('dashboard.stat.attendance', lang)}
           value={kpi.attendanceRate != null ? `${kpi.attendanceRate}%` : '—'}
           subtitle={t('dashboard.stat.avg_grade', lang)}
           icon={CalendarCheck}
           trend={kpi.attendanceRate != null && kpi.attendanceRate >= 90 ? { up: true, pct: '+3%' } : { up: false, pct: '-2%' }}
-        /></div>
-        <div className="stagger-item"><KpiCard
+        />
+        <KpiCard
           title={t('dashboard.stat.occupancy', lang)}
           value={kpi.occupancyRate != null ? `${kpi.occupancyRate}%` : '—'}
           subtitle={t('dashboard.stat.occupancy', lang)}
           icon={Building2}
-        /></div>
-        <div className="stagger-item"><KpiCard
+        />
+        <KpiCard
           title={t('nav.registrations', lang)}
           value={String(kpi.newStudentsMonth)}
           subtitle={t('common.this_month', lang)}
           icon={TrendingUp}
           trend={kpi.newStudentsMonth > 5 ? { up: true, pct: '+18%' } : undefined}
-        /></div>
-        <div className="stagger-item"><KpiCard
+        />
+        <KpiCard
           title={t('status.alert', lang)}
           value={String(kpi.pendingApprovals + kpi.unpaidInvoices)}
           subtitle={`${kpi.pendingApprovals} en attente, ${kpi.unpaidInvoices} impayés`}
           icon={Bell}
-        /></div>
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -190,6 +166,6 @@ export default function AdminDashboardPage() {
         <ActivityTimeline items={activityData} />
         <TodaySchedule data={scheduleData} />
       </div>
-    </motion.div>
+    </div>
   );
 }

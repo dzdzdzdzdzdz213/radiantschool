@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -9,7 +9,7 @@ const PAGES: Record<string, { title: string; sections: { h2: string; p: string }
     sections: [
       {
         h2: 'Éditeur du site',
-        p: 'Radiant Academy — Centre de soutien scolaire et de formation. Alger, Algérie.',
+        p: 'Radiant Academy — Établissement d\'excellence éducative. Alger, Algérie.',
       },
       {
         h2: 'Hébergement',
@@ -51,7 +51,8 @@ const PAGES: Record<string, { title: string; sections: { h2: string; p: string }
 
 export default function LegalPage() {
   const { lang } = useLang();
-  const { page } = useParams<{ page: string }>();
+  const { pathname } = useLocation();
+  const page = pathname.replace('/', '');
   const content = page ? PAGES[page] : null;
 
   if (!content) {

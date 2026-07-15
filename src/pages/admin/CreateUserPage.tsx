@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { useToast } from '@/components/ui/Toast';
-import { useMutation } from '@tanstack/react-query';
+import { useToast } from '@/hooks/useToast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +38,7 @@ export default function CreateUserPage() {
     return Object.keys(errs).length === 0;
   };
 
+  const qc = useQueryClient();
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!validate()) throw new Error('VALIDATION_FAILED');
@@ -57,6 +58,7 @@ export default function CreateUserPage() {
     },
     onSuccess: () => {
       toast('Compte créé avec succès', 'success');
+      qc.invalidateQueries({ queryKey: ['users'] });
       navigate('/admin/users');
     },
     onError: (err: any) => { if (err?.message !== 'VALIDATION_FAILED') toast(err?.message ?? t('common.error', lang), 'error'); },

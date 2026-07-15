@@ -16,8 +16,6 @@ export default function PublicEnrollPage() {
   }
 
   if (profile) {
-    if (profile.role === 'student') return <Navigate to="/student/enroll" replace />;
-    if (profile.role === 'parent') return <Navigate to="/parent/enroll" replace />;
     return <Navigate to={getDefaultRoute(profile.role)} replace />;
   }
 

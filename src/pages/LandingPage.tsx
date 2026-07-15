@@ -6,7 +6,7 @@ import { useLang } from '@/contexts/LangContext';
 import { asset } from '@/lib/assets';
 import { t, LANGUAGES } from '@/i18n';
 import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, ChevronRight, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 
 /*
   HUMANIZING PASS — summary of what changed vs. the original file
@@ -172,6 +172,14 @@ export default function LandingPage() {
             {/* Auth links — shown in the mobile menu since the header
                 buttons above are hidden below the sm breakpoint */}
             <div className="flex flex-col gap-3 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+              {LANGUAGES.map((l) => (
+                <button key={l.code} onClick={() => { setLang(l.code); setMenuOpen(false); }} className="flex items-center gap-3 text-sm" style={{ color: lang === l.code ? 'var(--primary)' : 'var(--fg-muted)', fontWeight: lang === l.code ? 600 : 400 }}>
+                  <span className="text-base">{l.flag}</span>
+                  {l.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-col gap-3 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
               <Link to="/login" onClick={() => setMenuOpen(false)} className="btn-ghost h-11 text-sm">
                 {t('auth.sign_in', lang)}
               </Link>
@@ -223,14 +231,14 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="mt-12 animate-up" style={{ animationDelay: '0.2s' }}>
-                <div className="inline-flex items-stretch rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
+              <div className="mt-8 sm:mt-12 animate-up" style={{ animationDelay: '0.2s' }}>
+                <div className="flex flex-wrap justify-center rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
                   {[
                     { icon: BookOpen, value: courses?.length ?? 0, key: 'stat.formations' },
                     { icon: GraduationCap, value: stats?.levelCount ?? levelCount, key: 'stat.niveaux' },
                     { icon: Users, value: teacherCount, key: 'stat.professeurs' },
                   ].map((s, i, arr) => (
-                    <div key={s.key} className="flex items-center gap-3.5 px-8 py-5" style={{ borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                    <div key={s.key} className="flex items-center gap-3 px-5 sm:px-8 py-4 sm:py-5 min-w-[160px] flex-1" style={{ borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none', borderBottom: i < arr.length - 1 ? 'none' : 'none' }}>
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
                         <s.icon className="h-5 w-5" style={{ color: 'var(--primary)' }} />
                       </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Loader } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';

@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRoute } from '@/lib/permissions';
-import { Eye, EyeOff, ArrowLeft, ShieldAlert, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, ShieldAlert, Loader2, Clock } from 'lucide-react';
 import { asset } from '@/lib/assets';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -10,16 +10,46 @@ import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
+const LOCKOUT_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+const failedAttempts = new Map<string, { count: number; lockedUntil: number }>();
+
+function checkLockout(key: string): { locked: boolean; remainingMs: number } {
+  const record = failedAttempts.get(key);
+  if (!record) return { locked: false, remainingMs: 0 };
+  if (Date.now() > record.lockedUntil) {
+    failedAttempts.delete(key);
+    return { locked: false, remainingMs: 0 };
+  }
+  return { locked: record.count >= LOCKOUT_ATTEMPTS, remainingMs: record.lockedUntil - Date.now() };
+}
+
+function recordFailedAttempt(key: string) {
+  const record = failedAttempts.get(key) ?? { count: 0, lockedUntil: 0 };
+  record.count++;
+  if (record.count >= LOCKOUT_ATTEMPTS) record.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+  else if (record.count === 1) record.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+  failedAttempts.set(key, record);
+}
+
 export default function StaffLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [remainingLockout, setRemainingLockout] = useState(0);
   const { signIn, profile } = useAuth();
   const { lang } = useLang();
   const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
+  const lockTimerRef = useRef<ReturnType<typeof setInterval>>();
+
+  const lockoutKey = `staff_login:${email.toLowerCase().trim()}`;
+
+  useEffect(() => {
+    return () => { if (lockTimerRef.current) clearInterval(lockTimerRef.current); };
+  }, []);
 
   useEffect(() => {
     document.title = 'Staff Portal';
@@ -32,7 +62,7 @@ export default function StaffLoginPage() {
 
   useEffect(() => {
     if (profile) {
-      const allowed = ['admin', 'assistant'];
+      const allowed = ['admin', 'teacher', 'assistant'];
       if (allowed.includes(profile.role)) {
         navigate(getDefaultRoute(profile.role), { replace: true });
       } else {
@@ -41,16 +71,49 @@ export default function StaffLoginPage() {
     }
   }, [profile, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    const { locked, remainingMs } = checkLockout(lockoutKey);
+    if (locked && remainingMs > 0) {
+      setRemainingLockout(remainingMs);
+      lockTimerRef.current = setInterval(() => {
+        const { remainingMs: rem } = checkLockout(lockoutKey);
+        if (rem <= 0) { setRemainingLockout(0); if (lockTimerRef.current) clearInterval(lockTimerRef.current); }
+        else setRemainingLockout(rem);
+      }, 1000);
+    }
+  }, [email, lockoutKey]);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const { locked, remainingMs } = checkLockout(lockoutKey);
+    if (locked) {
+      setRemainingLockout(remainingMs);
+      setError(`Trop de tentatives. Réessayez dans ${Math.ceil(remainingMs / 60000)} min.`);
+      return;
+    }
+
+    if (password.length < 3) {
+      setError('Mot de passe trop court');
+      return;
+    }
+
     setIsLoading(true);
 
     const result = await signIn(email, password);
     setIsLoading(false);
 
     if (result.error) {
-      setError(t('auth.invalid_credentials', lang));
+      recordFailedAttempt(lockoutKey);
+      const { locked: nowLocked, remainingMs: nowRemaining } = checkLockout(lockoutKey);
+      if (nowLocked) {
+        setRemainingLockout(nowRemaining);
+        setError(`Trop de tentatives. Réessayez dans ${Math.ceil(nowRemaining / 60000)} min.`);
+      } else {
+        setError('Identifiants invalides');
+      }
+      setPassword('');
       return;
     }
 
@@ -61,23 +124,31 @@ export default function StaffLoginPage() {
       .single();
 
     if (!userData) {
-      setError(t('errors.permission', lang));
+      setError('Accès refusé');
       await supabase.auth.signOut();
       return;
     }
 
     const allowed = ['admin', 'teacher', 'assistant'];
     if (!allowed.includes(userData.role)) {
-      setError(t('errors.permission', lang));
+      setError('Accès refusé');
       await supabase.auth.signOut();
       return;
     }
 
     if (userData.status !== 'active') {
-      setError(t('auth.account_disabled', lang));
+      setError('Compte désactivé. Contactez l\'administration.');
       await supabase.auth.signOut();
       return;
     }
+
+    failedAttempts.delete(lockoutKey);
+  }, [email, password, signIn, lockoutKey]);
+
+  const formatLockoutTime = (ms: number) => {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -101,6 +172,10 @@ export default function StaffLoginPage() {
             <span className="text-gradient">Radiant Learning</span>
           </h1>
           <p className="text-muted mt-1 text-sm">{t('login.admin_space', lang)}</p>
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <ShieldAlert className="h-3 w-3" />
+            Accès restreint
+          </div>
         </div>
 
         <form
@@ -110,8 +185,11 @@ export default function StaffLoginPage() {
         >
           {error && (
             <div className="mb-5 flex items-center gap-2 rounded-lg bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
-              <ShieldAlert className="h-4 w-4 shrink-0" />
-              {error}
+              {remainingLockout > 0 ? <Clock className="h-4 w-4 shrink-0 animate-pulse" /> : <ShieldAlert className="h-4 w-4 shrink-0" />}
+              <span>{error}</span>
+              {remainingLockout > 0 && (
+                <span className="ml-auto font-mono tabular-nums text-xs">{formatLockoutTime(remainingLockout)}</span>
+              )}
             </div>
           )}
 
@@ -127,6 +205,7 @@ export default function StaffLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full"
               placeholder={t('login.email_placeholder', lang)}
+              autoComplete="off"
               autoFocus
               required
             />
@@ -144,6 +223,7 @@ export default function StaffLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pr-11"
                 placeholder={t('login.password_placeholder', lang)}
+                autoComplete="off"
                 required
               />
               <button
@@ -169,8 +249,9 @@ export default function StaffLoginPage() {
           </Button>
         </form>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground/40">
+          <p className="mt-6 text-center text-[10px] leading-relaxed text-muted-foreground/40">
             {t('login.restricted_access', lang)}
+            <br />Connexion sécurisée · Chiffrement TLS
           </p>
       </div>
     </div>

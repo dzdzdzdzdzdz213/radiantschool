@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 import { usePayments, useCreatePayment, useUpdatePayment, useDeletePayment } from './usePayments';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { useAuth } from '@/hooks/useAuth';
 import { t } from '@/i18n';

@@ -30,9 +30,7 @@ export default function ParentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const items: NavItem[] = [
     { label: t('nav.dashboard', lang), path: '/parent/dashboard', icon: 'LayoutDashboard' },
-    { label: t('nav.students', lang), path: '/parent/children', icon: 'Users' },
     { label: t('auth.register', lang), path: '/parent/enroll', icon: 'GraduationCap' },
-    { label: t('nav.schedule', lang), path: '/parent/schedule', icon: 'Calendar' },
     { label: t('nav.payments', lang), path: '/parent/payments', icon: 'DollarSign' },
     { label: t('nav.invoices', lang), path: '/parent/invoices', icon: 'FileText' },
     { label: t('nav.messages', lang), path: '/parent/messages', icon: 'MessageSquare' },
@@ -46,7 +44,7 @@ export default function ParentLayout() {
         <main className="flex-1 overflow-y-auto p-6">
           <ErrorBoundary>
             <Suspense fallback={<ParentFallback />}>
-              <Outlet />
+              <BackButton /><Outlet />
             </Suspense>
           </ErrorBoundary>
         </main>
