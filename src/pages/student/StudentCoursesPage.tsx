@@ -18,7 +18,7 @@ export default function StudentCoursesPage() {
         .from('course_enrollments')
         .select('*, course:courses(name, type, price, status, subject:subjects(name), level:levels(name))')
         .eq('student_id', profile.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'pending_approval'])
         .order('enrollment_date', { ascending: false });
       return data ?? [];
     },
