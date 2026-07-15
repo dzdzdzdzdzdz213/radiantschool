@@ -46,11 +46,11 @@ export default function ParentDashboardPage() {
     queryKey: ['parent-children', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
-      const { data } = await supabase
-        .from('users')
-        .select('id, first_name, last_name, photo_url, students(*)')
+      const { data: links } = await supabase
+        .from('student_parent')
+        .select('student:students!student_id(user:users!students_id_fkey(id, first_name, last_name, photo_url))')
         .eq('parent_id', profile.id);
-      return data ?? [];
+      return (links ?? []).map((l: any) => l.student?.user).filter(Boolean);
     },
     enabled: !!profile?.id,
   });
@@ -130,7 +130,6 @@ export default function ParentDashboardPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{getFullName(child.first_name, child.last_name)}</p>
-                  <p className="text-xs text-muted-foreground">{child.students?.[0]?.registration_number || ''}</p>
                 </div>
               </Link>
             ))}
