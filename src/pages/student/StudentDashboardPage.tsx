@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Sparkles, BookOpen, Calendar, DollarSign, TrendingUp } from 'lucide-react';
+import { Sparkles, BookOpen, Calendar, DollarSign, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 function PageHeader({ name }: { name: string }) {
@@ -46,14 +46,15 @@ export default function StudentDashboardPage() {
   const { data: stats } = useQuery({
     queryKey: ['student-dashboard', profile?.id],
     queryFn: async () => {
-      if (!profile?.id) return { enrollments: 0, payments: 0, totalPaid: 0, attendances: 0 };
-      const [enr, pay, att] = await Promise.all([
+      if (!profile?.id) return { enrollments: 0, totalPaid: 0, attendances: 0, unpaidInvoices: 0 };
+      const [enr, pay, att, inv] = await Promise.all([
         supabase.from('course_enrollments').select('id', { count: 'exact', head: true }).eq('student_id', profile.id),
         supabase.from('payments').select('amount').eq('student_id', profile.id).is('deleted_at', null),
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('student_id', profile.id),
+        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('student_id', profile.id).in('status', ['unpaid', 'partially_paid']),
       ]);
       const totalPaid = (pay.data ?? []).reduce((s, p: any) => s + Number(p.amount), 0);
-      return { enrollments: enr.count ?? 0, payments: (pay.data ?? []).length, totalPaid, attendances: att.count ?? 0 };
+      return { enrollments: enr.count ?? 0, totalPaid, attendances: att.count ?? 0, unpaidInvoices: inv.count ?? 0 };
     },
     enabled: !!profile?.id,
   });
@@ -124,11 +125,11 @@ export default function StudentDashboardPage() {
         <Card>
           <CardContent className="p-6 flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
-              <TrendingUp className="h-6 w-6 text-amber-600" />
+              <FileText className="h-6 w-6 text-amber-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{t('common.view_all', lang)}</p>
-              <p className="text-2xl font-bold">{stats?.payments ?? '—'}</p>
+              <p className="text-sm text-muted-foreground">{t('nav.invoices', lang)}</p>
+              <p className="text-2xl font-bold">{stats?.unpaidInvoices ?? '—'}</p>
             </div>
           </CardContent>
         </Card>
