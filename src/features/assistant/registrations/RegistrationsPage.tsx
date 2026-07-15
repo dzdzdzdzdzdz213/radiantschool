@@ -71,12 +71,12 @@ export default function RegistrationsPage() {
                         <TableCell><span className="text-sm">{reg.courseName}</span></TableCell>
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{formatDateTime(reg.enrollmentDate)}</TableCell>
                         <TableCell>
-                          <Badge variant={reg.status === 'active' ? 'success' : reg.status === 'pending' ? 'warning' : 'destructive'}>
-                            {reg.status === 'active' ? t('status.confirmed', lang) : reg.status === 'pending' ? t('status.pending', lang) : t('status.cancelled', lang)}
+                          <Badge variant={reg.status === 'active' ? 'success' : reg.status === 'pending_approval' ? 'warning' : 'destructive'}>
+                            {reg.status === 'active' ? t('status.confirmed', lang) : reg.status === 'pending_approval' ? t('status.pending', lang) : t('status.cancelled', lang)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {reg.status === 'pending' && (
+                          {reg.status === 'pending_approval' && (
                             <div className="flex justify-end gap-1">
                               <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => approve.mutate(reg.id)}>
                                 <Check className="h-4 w-4" />
