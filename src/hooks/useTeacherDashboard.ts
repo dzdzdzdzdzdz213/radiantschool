@@ -63,7 +63,7 @@ export function useTeacherDashboard(teacherId: string | undefined, lang: string)
           room:rooms(name)
         `)
         .eq('teacher_id', teacherId)
-        .eq('day_of_week', todayDayName)
+        .eq('day_of_week', todayDayName as any)
         .order('start_time');
       return data ?? [];
     },

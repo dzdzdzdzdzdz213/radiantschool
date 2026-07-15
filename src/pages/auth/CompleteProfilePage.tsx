@@ -46,7 +46,7 @@ export default function CompleteProfilePage() {
         p_last_name: form.last_name.trim(),
         p_role: role,
         p_status: role === 'student' ? 'active' : 'pending',
-        p_phone: form.phone || null,
+        p_phone: form.phone || null as any,
       });
       if (rpcErr) throw rpcErr;
 

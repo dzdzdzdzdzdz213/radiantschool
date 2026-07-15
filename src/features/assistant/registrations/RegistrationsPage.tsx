@@ -78,10 +78,10 @@ export default function RegistrationsPage() {
                         <TableCell className="text-right">
                           {reg.status === 'pending_approval' && (
                             <div className="flex justify-end gap-1">
-                              <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => approve.mutate(reg.id)}>
+                              <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => approve.mutate(Number(reg.id))}>
                                 <Check className="h-4 w-4" />
                               </Button>
-                              <Button size="sm" variant="ghost" className="text-red-600" onClick={() => reject.mutate(reg.id)}>
+                              <Button size="sm" variant="ghost" className="text-red-600" onClick={() => reject.mutate(Number(reg.id))}>
                                 <X className="h-4 w-4" />
                               </Button>
                             </div>

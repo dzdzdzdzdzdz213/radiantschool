@@ -113,7 +113,7 @@ export default function AssistantDashboardPage() {
         <PendingRegistrations data={pendingRegistrations} loading={isLoading} />
         <OverduePayments data={overduePayments} loading={isLoading} />
         <ActiveTeachers data={activeTeachers} loading={isLoading} />
-        <TodaySchedule data={scheduleData} loading={scheduleLoading} />
+        <TodaySchedule data={scheduleData as any} loading={scheduleLoading} />
         <RfidSummary data={rfidData} totalScans={kpi.rfidScansToday} loading={isLoading} />
       </div>
     </motion.div>

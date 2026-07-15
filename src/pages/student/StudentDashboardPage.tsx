@@ -74,7 +74,7 @@ export default function StudentDashboardPage() {
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses(name), room:rooms(name)')
         .in('course_id', courseIds)
-        .eq('day_of_week', today)
+        .eq('day_of_week', today as any)
         .order('start_time')
         .limit(5);
       return data ?? [];

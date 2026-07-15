@@ -43,7 +43,7 @@ export default function StaffLoginPage() {
   const { lang } = useLang();
   const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
-  const lockTimerRef = useRef<ReturnType<typeof setInterval>>();
+  const lockTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   const lockoutKey = `staff_login:${email.toLowerCase().trim()}`;
 

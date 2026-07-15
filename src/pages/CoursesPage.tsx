@@ -91,7 +91,7 @@ export default function CoursesPage() {
       }
       const base = {
         name: form.name.trim(),
-        type: form.type,
+        type: form.type as any,
         price: form.price ? parseFloat(form.price) : 0,
         capacity: form.capacity ? parseInt(form.capacity, 10) : 1,
         start_date: form.start_date,

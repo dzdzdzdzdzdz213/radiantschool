@@ -51,7 +51,7 @@ export default function CreateUserPage() {
       if (signUpResponse?.user) {
         const { error: rpcError } = await supabase.rpc('register_user', {
           p_id: signUpResponse.user.id, p_email: email, p_first_name: firstName, p_last_name: lastName,
-          p_role: role, p_status: 'pending', p_phone: null,
+          p_role: role, p_status: 'pending' as any, p_phone: null as any,
         });
         if (rpcError) throw rpcError;
       }

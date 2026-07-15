@@ -46,8 +46,8 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
 export function useApproveRegistration() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('course_enrollments').update({ status: 'active' }).eq('id', id);
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('course_enrollments').update({ status: 'active' as any }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_registrations'] }); },
@@ -57,8 +57,8 @@ export function useApproveRegistration() {
 export function useRejectRegistration() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('course_enrollments').update({ status: 'cancelled' }).eq('id', id);
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('course_enrollments').update({ status: 'cancelled' as any }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_registrations'] }); },

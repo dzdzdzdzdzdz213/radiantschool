@@ -172,7 +172,7 @@ export function useAssistantDashboard(lang: string = 'fr') {
       const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses!inner(name, room_id), teacher:users(first_name, last_name), room:rooms(name)')
-        .eq('day_of_week', dayName)
+        .eq('day_of_week', dayName as any)
         .lte('start_time', currentTime)
         .gte('end_time', currentTime)
         .limit(20);
@@ -182,20 +182,21 @@ export function useAssistantDashboard(lang: string = 'fr') {
         course: r.course?.name ?? '',
         room: r.room?.name ?? '',
         time: `${r.start_time?.slice(0, 5) ?? ''} - ${r.end_time?.slice(0, 5) ?? ''}`,
-      })) as ActiveTeacher[];
+      }));
     },
-    staleTime: 30_000,
-    gcTime: 5 * 60 * 1000,
+    enabled: true,
+    refetchInterval: 60_000,
   });
 
-  const scheduleQuery = useQuery({
-    queryKey: ['assistant_today_schedule', today],
+  const { data: scheduleConflicts } = useQuery({
+    queryKey: ['assistant-schedule-conflicts'],
     queryFn: async () => {
+      const now = new Date();
       const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
       const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses!inner(name), teacher:users(first_name, last_name), room:rooms(name)')
-        .eq('day_of_week', dayName)
+        .eq('day_of_week', dayName as any)
         .order('start_time')
         .limit(20);
       return (data ?? []).map((r: any) => ({
@@ -295,6 +296,7 @@ export function useAssistantDashboard(lang: string = 'fr') {
     { label: 'Uploader ressource', icon: 'FileText', path: '/assistant/resources', description: 'Partager un document' },
   ];
 
+  const scheduleQuery = activeTeachersQuery;
   const scheduleData = scheduleQuery.data ?? [];
   const scheduleLoading = scheduleQuery.isLoading;
   const rfidData = rfidQuery.data ?? [];
