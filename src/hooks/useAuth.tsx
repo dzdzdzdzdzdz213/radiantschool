@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         p_last_name: lastName,
         p_role: role,
         p_status: role === 'student' ? 'active' : 'pending',
-        p_phone: options?.phone || null as any,
+        p_phone: options?.phone ?? undefined,
       });
       if (rpcErr) {
         return { error: rpcErr.message };

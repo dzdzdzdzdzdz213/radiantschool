@@ -3165,7 +3165,7 @@ export type Database = {
       backup_status: "in_progress" | "completed" | "failed"
       backup_type: "automatic" | "manual"
       contract_type: "fixed" | "hourly" | "percentage"
-      course_status: "active" | "inactive" | "full" | "cancelled"
+      course_status: "active" | "inactive" | "full" | "cancelled" | "pending"
       course_type: "normal" | "vip" | "private"
       day_of_week:
         | "monday"
@@ -3193,7 +3193,13 @@ export type Database = {
       payment_type: "monthly" | "per_session" | "vip" | "private"
       resource_type: "pdf" | "exercise" | "image" | "video" | "link"
       rfid_status: "active" | "inactive" | "lost"
-      room_status: "active" | "maintenance" | "inactive"
+      room_status:
+        | "active"
+        | "maintenance"
+        | "inactive"
+        | "available"
+        | "occupied"
+        | "reserved"
       student_type: "regular" | "single_session"
       teaching_mode: "online" | "onsite" | "both"
       transaction_type: "payment" | "credit" | "refund" | "adjustment"
@@ -3333,7 +3339,7 @@ export const Constants = {
       backup_status: ["in_progress", "completed", "failed"],
       backup_type: ["automatic", "manual"],
       contract_type: ["fixed", "hourly", "percentage"],
-      course_status: ["active", "inactive", "full", "cancelled"],
+      course_status: ["active", "inactive", "full", "cancelled", "pending"],
       course_type: ["normal", "vip", "private"],
       day_of_week: [
         "monday",
@@ -3364,7 +3370,14 @@ export const Constants = {
       payment_type: ["monthly", "per_session", "vip", "private"],
       resource_type: ["pdf", "exercise", "image", "video", "link"],
       rfid_status: ["active", "inactive", "lost"],
-      room_status: ["active", "maintenance", "inactive"],
+      room_status: [
+        "active",
+        "maintenance",
+        "inactive",
+        "available",
+        "occupied",
+        "reserved",
+      ],
       student_type: ["regular", "single_session"],
       teaching_mode: ["online", "onsite", "both"],
       transaction_type: ["payment", "credit", "refund", "adjustment"],

@@ -27,7 +27,7 @@ export default function UsersPage() {
     queryKey: ['users-paginated', page, search, roleFilter],
     queryFn: async () => {
       let query = supabase.from('users').select('*', { count: 'exact' });
-      if (roleFilter) query = query.eq('role', roleFilter as any);
+      if (roleFilter) query = query.eq('role', roleFilter as never);
       if (search) {
         query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
       }

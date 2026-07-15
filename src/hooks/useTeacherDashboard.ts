@@ -1,14 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-const DAYS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-const DAYS_EN = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-const DAYS_AR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+const DAYS_EN = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 
-function getDayName(lang: string): string {
-  const now = new Date();
-  const idx = now.getDay();
-  return DAYS_EN[idx];
+function getDayName(_lang: string): (typeof DAYS_EN)[number] {
+  return DAYS_EN[new Date().getDay()];
 }
 
 export function useTeacherDashboard(teacherId: string | undefined, lang: string) {
@@ -63,7 +59,7 @@ export function useTeacherDashboard(teacherId: string | undefined, lang: string)
           room:rooms(name)
         `)
         .eq('teacher_id', teacherId)
-        .eq('day_of_week', todayDayName as any)
+        .eq('day_of_week', todayDayName)
         .order('start_time');
       return data ?? [];
     },

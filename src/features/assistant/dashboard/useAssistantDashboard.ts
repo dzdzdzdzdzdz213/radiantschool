@@ -167,12 +167,12 @@ export function useAssistantDashboard(lang: string = 'fr') {
   const activeTeachersQuery = useQuery({
     queryKey: ['assistant_active_teachers', today],
     queryFn: async () => {
-      const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+      const dayName = (['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const)[now.getDay()];
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses!inner(name, room_id), teacher:users(first_name, last_name), room:rooms(name)')
-        .eq('day_of_week', dayName as any)
+        .eq('day_of_week', dayName)
         .lte('start_time', currentTime)
         .gte('end_time', currentTime)
         .limit(20);
@@ -192,11 +192,11 @@ export function useAssistantDashboard(lang: string = 'fr') {
     queryKey: ['assistant-schedule-conflicts'],
     queryFn: async () => {
       const now = new Date();
-      const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+      const dayName = (['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const)[now.getDay()];
       const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses!inner(name), teacher:users(first_name, last_name), room:rooms(name)')
-        .eq('day_of_week', dayName as any)
+        .eq('day_of_week', dayName)
         .order('start_time')
         .limit(20);
       return (data ?? []).map((r: any) => ({

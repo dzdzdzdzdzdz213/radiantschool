@@ -26,7 +26,7 @@ export default function TeacherCoursesPage() {
           schedules:course_schedules(id, day_of_week, start_time, end_time)
         `)
         .eq('teacher_id', profile.id)
-        .in('status', ['active', 'pending'] as any)
+        .in('status', ['active', 'pending'])
         .order('created_at', { ascending: false });
       return data ?? [];
     },

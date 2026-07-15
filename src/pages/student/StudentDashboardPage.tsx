@@ -37,7 +37,7 @@ function PageHeader({ name }: { name: string }) {
   );
 }
 
-const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 
 export default function StudentDashboardPage() {
   const { profile } = useAuth();
@@ -74,7 +74,7 @@ export default function StudentDashboardPage() {
         .from('course_schedules')
         .select('id, start_time, end_time, course:courses(name), room:rooms(name)')
         .in('course_id', courseIds)
-        .eq('day_of_week', today as any)
+        .eq('day_of_week', today)
         .order('start_time')
         .limit(5);
       return data ?? [];
