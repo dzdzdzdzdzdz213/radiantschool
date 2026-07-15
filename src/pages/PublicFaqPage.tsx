@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, MessageCircle, BookOpen, UserPlus, Clock, CreditCard, FileText, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLang } from '@/contexts/LangContext';
-import { t } from '@/i18n';
+
 
 const faqs = [
   { icon: UserPlus, question: 'Comment inscrire un élève ?', answer: 'Rendez-vous dans la section Inscriptions depuis le menu. Cliquez sur "Nouvelle inscription" et remplissez les informations de l\'élève.' },
@@ -13,7 +12,6 @@ const faqs = [
 ];
 
 export default function PublicFaqPage() {
-  const { lang } = useLang();
 
   return (
     <div className="min-h-screen bg-background">

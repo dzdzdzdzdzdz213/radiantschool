@@ -24,7 +24,7 @@ function KpiSkeleton() {
   );
 }
 
-export default function KpiCard({ title, value, subtitle, trend, icon: Icon, sparklineData, loading, className }: KpiCardProps) {
+export default function KpiCard({ title, value, subtitle, trend, icon: Icon, loading, className }: KpiCardProps) {
   if (loading) return <KpiSkeleton />;
 
   return (

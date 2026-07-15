@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BarChart3, Download, FileText, FileSpreadsheet, File as FileIcon } from 'lucide-react';
+import { BarChart3, Download, FileText, File as FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';

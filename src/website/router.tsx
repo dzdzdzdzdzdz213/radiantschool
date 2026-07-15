@@ -50,7 +50,6 @@ const TeacherReportsPage = lazy(() => import('@/pages/teacher/TeacherReportsPage
 const TeacherResourcesPage = lazy(() => import('@/pages/teacher/TeacherResourcesPage'));
 const TeacherVipClassesPage = lazy(() => import('@/pages/teacher/TeacherVipClassesPage'));
 const TeacherOnlineClassesPage = lazy(() => import('@/pages/teacher/TeacherOnlineClassesPage'));
-const TeacherPlaceholderPage = lazy(() => import('@/pages/teacher/TeacherPlaceholderPage'));
 const AdminDashboardPage = lazy(() => import('@/features/dashboard/AdminDashboardPage'));
 const AssistantDashboardPage = lazy(() => import('@/features/assistant/dashboard/AssistantDashboardPage'));
 const AssistantStudentsPage = lazy(() => import('@/features/assistant/students/StudentsPage'));

@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Search, Check, X, Clock, Timer, Lock, Unlock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Search, Check, Timer, Lock, Unlock, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectItem } from '@/components/ui/select';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
@@ -34,10 +32,8 @@ function useCountdown(target: string | null): string {
 }
 
 export default function AdminAttendanceOversightPage() {
-  const { toast } = useToast();
   const { lang } = useLang();
   const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
-  const qc = useQueryClient();
   const [teacherFilter, setTeacherFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');

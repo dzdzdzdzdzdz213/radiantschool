@@ -4,9 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { BookOpen, Star, Search } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 export default function TeacherCoursesPage() {
   const { profile } = useAuth();

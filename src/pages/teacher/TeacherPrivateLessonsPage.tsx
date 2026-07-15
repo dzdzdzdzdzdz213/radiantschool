@@ -1,16 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useLang } from '@/contexts/LangContext';
 import { UserPlus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/hooks/useToast';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 
 export default function TeacherPrivateLessonsPage() {
   const { profile } = useAuth();
-  const { lang } = useLang();
-  const { toast } = useToast();
 
   const { data: inquiries, isLoading } = useQuery({
     queryKey: ['teacher-inquiries'],

@@ -10,8 +10,6 @@ import { t } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateUserSettings } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/hooks/useToast';
-import { useQueryClient } from '@tanstack/react-query';
-
 const settingsSections = [
   { id: 'profile', labelKey: 'nav.profile', icon: User },
   { id: 'notifications', labelKey: 'nav.notifications', icon: Bell },
@@ -22,7 +20,6 @@ export default function SettingsPage() {
   const { profile, refreshProfile } = useAuth();
   const [section, setSection] = useState('profile');
   const { lang } = useLang();
-  const qc = useQueryClient();
   const updateSettings = useUpdateUserSettings();
 
   const [firstName, setFirstName] = useState('');

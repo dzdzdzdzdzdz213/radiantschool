@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useLang } from '@/contexts/LangContext';
 import { Calendar, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -10,7 +9,6 @@ const DAYS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 
 
 export default function TeacherSchedulePage() {
   const { profile } = useAuth();
-  const { lang } = useLang();
 
   const { data: schedules, isLoading } = useQuery({
     queryKey: ['teacher-schedule', profile?.id],

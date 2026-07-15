@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { usePublicCourses } from '@/hooks/usePublicData';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus, Sparkles, ImageOff } from 'lucide-react';
+import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus } from 'lucide-react';
 import { getCourseImageUrl } from '@/lib/storage';
 
 const categories = [

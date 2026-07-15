@@ -188,30 +188,6 @@ export function useAssistantDashboard(lang: string = 'fr') {
     refetchInterval: 60_000,
   });
 
-  const { data: scheduleConflicts } = useQuery({
-    queryKey: ['assistant-schedule-conflicts'],
-    queryFn: async () => {
-      const now = new Date();
-      const dayName = (['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const)[now.getDay()];
-      const { data } = await supabase
-        .from('course_schedules')
-        .select('id, start_time, end_time, course:courses!inner(name), teacher:users(first_name, last_name), room:rooms(name)')
-        .eq('day_of_week', dayName)
-        .order('start_time')
-        .limit(20);
-      return (data ?? []).map((r: any) => ({
-        id: r.id,
-        courseName: r.course?.name ?? '',
-        teacherName: r.teacher ? `${r.teacher.first_name ?? ''} ${r.teacher.last_name ?? ''}` : '',
-        roomName: r.room?.name ?? '',
-        startTime: r.start_time ?? '',
-        endTime: r.end_time ?? '',
-      })) as ScheduleItem[];
-    },
-    staleTime: 30_000,
-    gcTime: 5 * 60 * 1000,
-  });
-
   const rfidQuery = useQuery({
     queryKey: ['assistant_rfid_today', today],
     queryFn: async () => {

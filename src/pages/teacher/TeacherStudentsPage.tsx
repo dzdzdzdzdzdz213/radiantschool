@@ -1,14 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useLang } from '@/contexts/LangContext';
 import { Users, Search } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
 
 export default function TeacherStudentsPage() {
   const { profile } = useAuth();
-  const { lang } = useLang();
   const [search, setSearch] = useState('');
 
   const { data: enrollments, isLoading } = useQuery({

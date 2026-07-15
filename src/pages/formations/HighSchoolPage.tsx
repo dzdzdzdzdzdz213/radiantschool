@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Calculator, FlaskConical, Pen, Globe, BookText,
   History, Brain, GraduationCap, ArrowLeft, Sigma,
-  Building2, Cog, CircuitBoard, TestTube, Languages,
+  Building2, Cog, CircuitBoard, TestTube,
 } from 'lucide-react';
 import SelectionHero from '@/components/formations/SelectionHero';
 import YearCard from '@/components/formations/YearCard';
@@ -97,23 +97,6 @@ const LANG_STREAMS = [
   { name: 'Allemand', icon: <Globe className="h-5 w-5" />, color: '#059669' },
   { name: 'Espagnol', icon: <Globe className="h-5 w-5" />, color: '#dc2626' },
 ];
-
-const BACCALAUREAT_SUBJECTS = [
-  { name: 'Mathématiques', icon: <Calculator className="h-5 w-5" />, color: '#4f46e5' },
-  { name: 'Physique', icon: <FlaskConical className="h-5 w-5" />, color: '#7c3aed' },
-  { name: 'Sciences', icon: <Brain className="h-5 w-5" />, color: '#059669' },
-  { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
-  { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
-  { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
-  { name: 'Histoire', icon: <History className="h-5 w-5" />, color: '#dc2626' },
-  { name: 'Philosophie', icon: <BookText className="h-5 w-5" />, color: '#7c3aed' },
-];
-
-const YEAR_LABELS: Record<string, string> = {
-  '1as': '1ère AS',
-  '2as': '2ème AS',
-  '3as': '3ème AS',
-};
 
 export default function HighSchoolPage() {
   const navigate = useNavigate();

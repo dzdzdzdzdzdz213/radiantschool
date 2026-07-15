@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Check, X, Loader } from 'lucide-react';
+import { Search, Check, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +10,6 @@ import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/lib/utils';
 import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
-import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function AssistantPrivateLessonsPage() {

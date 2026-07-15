@@ -4,7 +4,7 @@ import { useCourse, useCourseEnrollments } from '@/hooks/useQueries';
 import { formatCurrency, formatDate, getStatusColor, getFullName, formatTime, getDayLabel } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { ArrowLeft, Users, ImageOff } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 import { getCourseImageUrl } from '@/lib/storage';
 import { useToast } from '@/hooks/useToast';
 

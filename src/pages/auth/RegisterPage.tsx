@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
 import { UserPlus, ArrowLeft, GraduationCap, UserCheck, Mail, Phone, Lock, Users, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
 import { t, type Lang } from '@/i18n';

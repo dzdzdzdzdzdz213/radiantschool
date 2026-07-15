@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Search, Plus, BookOpen, X, Pencil, Trash2, Filter, Camera, Loader, ImageOff, Trash } from 'lucide-react';
+import { Search, Plus, BookOpen, X, Pencil, Trash2, Camera, Loader, ImageOff, Trash } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCourseImageUrl, uploadCourseImage } from '@/lib/storage';
@@ -52,6 +52,7 @@ export default function CoursesPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  void setUploadingImage;
 
   const openCreateModal = () => {
     setEditingId(null);

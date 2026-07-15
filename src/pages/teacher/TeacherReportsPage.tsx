@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useLang } from '@/contexts/LangContext';
 import { BarChart3, TrendingUp, Award, Users, ClipboardCheck, Star } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function TeacherReportsPage() {
   const { profile } = useAuth();
-  const { lang } = useLang();
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['teacher-reports', profile?.id],

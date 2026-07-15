@@ -39,7 +39,6 @@ export default function ParentsPage() {
     setShowModal(true);
   };
 
-  const stripNonName = (v: string) => v.replace(/[^a-zA-ZÀ-ÿàáâäæãåāăąçćčđďèéêëēėęěğģîïíīįìłñńňôöòóœøōõơßśšşťûüùúūųůýÿźżž\s'-]/g, '');
   const stripDigits = (v: string) => v.replace(/\d/g, '');
 
   const validate = () => {
