@@ -129,9 +129,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (cancelled) return;
+      setIsLoading(true);
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchProfile(session.user.id);
+        setIsLoading(false);
         if (isOAuthCallback && event === 'SIGNED_IN') {
           sessionStorage.removeItem('sb-hash');
           window.history.replaceState({}, document.title, '/auth/callback');
@@ -144,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else {
         setProfile(null);
+        setIsLoading(false);
       }
     });
 
