@@ -71,6 +71,7 @@ const AssistantAttendancePage = lazy(() => import('@/features/assistant/attendan
 const AdminUsersPage = lazy(() => import('@/pages/admin/UsersPage'));
 const AdminCreateUserPage = lazy(() => import('@/pages/admin/CreateUserPage'));
 const AdminStudentDetailPage = lazy(() => import('@/pages/StudentDetailPage'));
+const AssistantStudentDetailPage = lazy(() => import('@/pages/StudentDetailPage'));
 const AdminCoursesPage = lazy(() => import('@/pages/CoursesPage'));
 const AdminCourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
 const AdminAttendanceOversightPage = lazy(() => import('@/features/admin/attendance/AdminAttendanceOversightPage'));
@@ -310,6 +311,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: AssistantDashboardPage },
       { path: 'students', Component: AssistantStudentsPage },
+      { path: 'students/:id', Component: AssistantStudentDetailPage },
       { path: 'parents', Component: AssistantParentsPage },
       { path: 'registrations', Component: AssistantRegistrationsPage },
       { path: 'rfid', Component: AssistantRfidPage },
