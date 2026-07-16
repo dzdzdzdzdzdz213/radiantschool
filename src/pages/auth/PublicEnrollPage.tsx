@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { getDefaultRoute } from '@/lib/permissions';
 import RegisterPage from './RegisterPage';
 import { Loader } from 'lucide-react';
 
@@ -16,7 +15,10 @@ export default function PublicEnrollPage() {
   }
 
   if (profile) {
-    return <Navigate to={getDefaultRoute(profile.role)} replace />;
+    const redirect = profile.role === 'student' ? '/student/enroll'
+      : profile.role === 'parent' ? '/parent/enroll'
+      : `/${profile.role}/dashboard`;
+    return <Navigate to={redirect} replace />;
   }
 
   return <RegisterPage />;
