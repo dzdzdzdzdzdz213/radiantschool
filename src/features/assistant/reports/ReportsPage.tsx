@@ -58,7 +58,7 @@ export default function ReportsPage() {
 <table><thead><tr><th>${t('common.date', lang)}</th><th>${t('common.revenue', lang)}</th></tr></thead><tbody>`;
     rows.forEach((r: any) => { html += `<tr><td>${r.date}</td><td>${r.revenue.toLocaleString()} DA</td></tr>`; });
     html += `</tbody></table><p class="total">Total: ${total.toLocaleString()} DA</p>`;
-    html += `<script>window.print()<\/script></body></html>`;
+    html += `<script>window.print()</script></body></html>`;
     const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

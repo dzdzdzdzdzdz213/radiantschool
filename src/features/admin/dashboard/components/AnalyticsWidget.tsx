@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import type { AnalyticsMetric } from '@/features/dashboard/useAdminDashboard';
+import type { AnalyticsMetric } from '@/features/admin/dashboard/useAdminDashboard';
 
 interface AnalyticsWidgetProps {
   metrics: AnalyticsMetric[];

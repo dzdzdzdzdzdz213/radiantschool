@@ -51,7 +51,7 @@ const TeacherReportsPage = lazy(() => import('@/features/teacher/TeacherReportsP
 const TeacherResourcesPage = lazy(() => import('@/features/teacher/TeacherResourcesPage'));
 const TeacherVipClassesPage = lazy(() => import('@/features/teacher/TeacherVipClassesPage'));
 const TeacherOnlineClassesPage = lazy(() => import('@/features/teacher/TeacherOnlineClassesPage'));
-const AdminDashboardPage = lazy(() => import('@/features/dashboard/AdminDashboardPage'));
+const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/AdminDashboardPage'));
 const AssistantDashboardPage = lazy(() => import('@/features/assistant/dashboard/AssistantDashboardPage'));
 const AssistantStudentsPage = lazy(() => import('@/features/assistant/students/StudentsPage'));
 const AssistantParentsPage = lazy(() => import('@/features/assistant/parents/ParentsPage'));
@@ -67,7 +67,7 @@ const AssistantCampaignsPage = lazy(() => import('@/features/assistant/campaigns
 const AssistantCalendarPage = lazy(() => import('@/features/assistant/calendar/CalendarPage'));
 const AssistantSearchPage = lazy(() => import('@/features/assistant/search/SearchPage'));
 const AssistantSettingsPage = lazy(() => import('@/features/assistant/settings/SettingsPage'));
-const AssistantAttendancePage = lazy(() => import('@/features/assistant/attendance/AttendancePage'));
+const AssistantAttendancePage = lazy(() => import('@/features/assistant/attendance/BulkAttendancePage'));
 
 const UsersPage = lazy(() => import('@/features/admin/UsersPage'));
 const CreateUserPage = lazy(() => import('@/features/admin/CreateUserPage'));
@@ -83,16 +83,10 @@ const SchedulePage = lazy(() => import('@/features/shared/SchedulePage'));
 const ProfilePage = lazy(() => import('@/features/shared/ProfilePage'));
 const SettingsPage = lazy(() => import('@/features/admin/SettingsPage'));
 const HelpPage = lazy(() => import('@/features/shared/HelpPage'));
-
-function ComingSoon({ label }: { label?: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="text-4xl mb-4">🚧</div>
-      <h2 className="text-xl font-semibold mb-2">{label || 'Page en cours de développement'}</h2>
-      <p className="text-muted-foreground">Cette fonctionnalité sera bientôt disponible.</p>
-    </div>
-  );
-}
+const AuditLogPage = lazy(() => import('@/features/admin/audit/AuditLogPage'));
+const PayrollPage = lazy(() => import('@/features/admin/payroll/PayrollPage'));
+const ChildProgressPage = lazy(() => import('@/features/parent/ChildProgressPage'));
+const ComingSoonPage = lazy(() => import('@/components/ui/ComingSoonPage'));
 
 const websiteRoutes: RouteObject[] = [
   {
@@ -201,7 +195,7 @@ const studentRoutes: RouteObject[] = [
       { path: 'invoices', Component: StudentPaymentsPage },
       { path: 'messages', Component: MessagesPage },
       { path: 'profile', Component: ProfilePage },
-      { path: '*', Component: ComingSoon },
+      { path: '*', Component: ComingSoonPage },
     ],
   },
 ];
@@ -214,11 +208,12 @@ const parentRoutes: RouteObject[] = [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: ParentDashboardPage },
       { path: 'enroll', Component: StudentEnrollPage },
+      { path: 'progress/:childId', Component: ChildProgressPage },
       { path: 'payments', Component: StudentPaymentsPage },
       { path: 'invoices', Component: StudentPaymentsPage },
       { path: 'messages', Component: MessagesPage },
       { path: 'profile', Component: ProfilePage },
-      { path: '*', Component: ComingSoon },
+      { path: '*', Component: ComingSoonPage },
     ],
   },
 ];
@@ -276,6 +271,8 @@ export const router = createBrowserRouter([
       { path: 'profile', Component: ProfilePage },
       { path: 'settings', Component: SettingsPage },
       { path: 'help', Component: HelpPage },
+      { path: 'audit-log', Component: AuditLogPage },
+      { path: 'payroll', Component: PayrollPage },
     ],
   },
   {
@@ -306,7 +303,7 @@ export const router = createBrowserRouter([
       { path: 'schedule', Component: SchedulePage },
       { path: 'reports', Component: ReportsPage },
       { path: 'profile', Component: ProfilePage },
-      { path: '*', Component: ComingSoon },
+      { path: '*', Component: ComingSoonPage },
     ],
   },
   {

@@ -56,9 +56,11 @@ export default function AdminLayout() {
     { label: t('nav.attendance', lang), path: '/admin/attendance', icon: 'ClipboardCheck' },
     { label: t('nav.payments', lang), path: '/admin/payments', icon: 'DollarSign' },
     { label: t('nav.invoices', lang), path: '/admin/invoices', icon: 'FileText' },
+    { label: t('nav.payroll', lang), path: '/admin/payroll', icon: 'DollarSign' },
     { label: t('nav.schedule', lang), path: '/admin/schedule', icon: 'Calendar' },
     { label: t('nav.reports', lang), path: '/admin/reports', icon: 'BarChart3' },
     { label: t('nav.messages', lang), path: '/admin/messages', icon: 'MessageSquare' },
+    { label: t('nav.audit_log', lang), path: '/admin/audit-log', icon: 'History' },
     { label: t('nav.profile', lang), path: '/admin/profile', icon: 'UserCircle' },
     { label: t('nav.settings', lang), path: '/admin/settings', icon: 'Settings' },
   ];

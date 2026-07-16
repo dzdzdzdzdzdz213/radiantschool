@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { getInitials, formatDateTime } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import type { RecentRegistration } from '@/features/dashboard/useAdminDashboard';
+import type { RecentRegistration } from '@/features/admin/dashboard/useAdminDashboard';
 
 interface RecentRegistrationsTableProps {
   data: RecentRegistration[];

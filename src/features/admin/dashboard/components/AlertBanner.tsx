@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import type { AlertItem } from '@/features/dashboard/useAdminDashboard';
+import type { AlertItem } from '@/features/admin/dashboard/useAdminDashboard';
 
 interface AlertBannerProps {
   items: AlertItem[];

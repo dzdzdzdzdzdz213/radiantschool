@@ -121,6 +121,7 @@ export const api = {
    * Paginated list with optional filters, sorting, and full-text search.
    * Counts are fetched as an exact total for pagination metadata.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async list<T extends Record<string, any>>(
     table: string,
     params: QueryParams = {},

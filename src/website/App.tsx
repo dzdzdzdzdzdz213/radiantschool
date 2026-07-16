@@ -8,6 +8,10 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { router } from '@/website/router';
 import { Loader } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import { useRealtime } from '@/hooks/useRealtime';
+import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
+import { useAuth } from '@/hooks/useAuth';
+import CmdK from '@/features/shared/CmdK';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,12 +78,20 @@ function ScrollReveal() {
   return null;
 }
 
+function RealtimeActivator() {
+  useRealtime();
+  const { profile } = useAuth();
+  useBrowserNotifications(profile?.id);
+  return null;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LangProvider>
           <AuthProvider>
+            <RealtimeActivator />
             <ToastProvider>
               <AnimatedBackground />
               <div className="app-root">
@@ -89,6 +101,7 @@ export default function App() {
                   <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
                     <RouterProvider router={router} />
                   </Suspense>
+                  <CmdK />
                 </div>
               </div>
             </ToastProvider>

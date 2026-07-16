@@ -77,18 +77,18 @@ export default function UsersPage() {
           <SelectItem value="parent">{t('role.parent', lang)}</SelectItem>
         </Select>
       </div>
-      <div className="rounded-xl border bg-card shadow-sm">
+      <div className="rounded-xl border bg-card shadow-sm overflow-x-auto">
         {isLoading ? (
           <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>
         ) : (
-          <table className="w-full">
+          <table className="w-full min-w-[500px]">
             <thead>
               <tr className="border-b text-left text-sm text-muted-foreground">
                 <th className="px-4 py-3 font-medium">{t('common.name', lang)}</th>
-                <th className="px-4 py-3 font-medium">{t('common.email', lang)}</th>
-                <th className="px-4 py-3 font-medium">{t('common.type', lang)}</th>
+                <th className="hidden sm:table-cell px-4 py-3 font-medium">{t('common.email', lang)}</th>
+                <th className="hidden md:table-cell px-4 py-3 font-medium">{t('common.type', lang)}</th>
                 <th className="px-4 py-3 font-medium">{t('common.status', lang)}</th>
-                <th className="px-4 py-3 font-medium">{t('common.date', lang)}</th>
+                <th className="hidden lg:table-cell px-4 py-3 font-medium">{t('common.date', lang)}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -96,10 +96,10 @@ export default function UsersPage() {
               {users.map((u) => (
                 <tr key={u.id} className="border-b text-sm last:border-0 hover:bg-page cursor-pointer" onClick={() => navigate(`./${u.id}`)}>
                   <td className="px-4 py-3 font-medium">{getFullName(u.first_name, u.last_name)}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-                  <td className="px-4 py-3">{getRoleLabel(u.role)}</td>
+                  <td className="hidden sm:table-cell px-4 py-3 text-muted-foreground truncate max-w-[200px]">{u.email}</td>
+                  <td className="hidden md:table-cell px-4 py-3">{getRoleLabel(u.role)}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(u.status)}`}>{u.status}</span></td>
-                  <td className="px-4 py-3 text-muted-foreground">{formatDate(u.created_at)}</td>
+                  <td className="hidden lg:table-cell px-4 py-3 text-muted-foreground">{formatDate(u.created_at)}</td>
                   <td className="px-4 py-3 relative">
                     <button className="rounded p-1 hover:bg-page" onClick={(e) => { e.stopPropagation(); setDropdownId(dropdownId === u.id ? null : u.id); }}><MoreHorizontal className="h-4 w-4" /></button>
                     {dropdownId === u.id && (

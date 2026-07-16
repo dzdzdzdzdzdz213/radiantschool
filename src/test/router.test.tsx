@@ -1,5 +1,4 @@
-import { describe, it, expect } from 'vitest';
-import { test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 describe('Router', () => {
   test('exports router with routes', async () => {

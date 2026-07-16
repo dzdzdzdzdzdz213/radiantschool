@@ -2,11 +2,43 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg'],
+      manifest: {
+        name: 'Radiant Learning',
+        short_name: 'Radiant',
+        description: 'Application de gestion administrative scolaire',
+        theme_color: '#4f46e5',
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'any',
+        lang: 'fr',
+        icons: [
+          { src: '/icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
+          { src: '/icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,gif,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/kaoxcbqhuwhtadpgccjp\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api',
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {

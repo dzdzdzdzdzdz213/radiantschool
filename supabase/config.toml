@@ -1,0 +1,13 @@
+[project]
+ref = "kaoxcbqhuwhtadpgccjp"
+id = "kaoxcbqhuwhtadpgccjp"
+name = "radiant-learning"
+
+[auth]
+enabled = true
+
+[db]
+migration_dirs = ["supabase/migrations"]
+
+[analytics]
+enabled = false

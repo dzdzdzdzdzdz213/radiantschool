@@ -5,17 +5,17 @@ import { t } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAdminDashboard, type AnalyticsMetric } from '@/features/dashboard/useAdminDashboard';
-import AlertBanner from '@/features/dashboard/components/AlertBanner';
-import KpiCard from '@/features/dashboard/components/KpiCard';
-import RevenueChartWidget from '@/features/dashboard/components/RevenueChartWidget';
-import OccupancyChartWidget from '@/features/dashboard/components/OccupancyChartWidget';
-import ActivityTimeline from '@/features/dashboard/components/ActivityTimeline';
-import TodaySchedule from '@/features/dashboard/components/TodaySchedule';
-import QuickActions from '@/features/dashboard/components/QuickActions';
-import RecentRegistrationsTable from '@/features/dashboard/components/RecentRegistrationsTable';
-import AttendanceWidget from '@/features/dashboard/components/AttendanceWidget';
-import AnalyticsWidget from '@/features/dashboard/components/AnalyticsWidget';
+import { useAdminDashboard, type AnalyticsMetric } from '@/features/admin/dashboard/useAdminDashboard';
+import AlertBanner from '@/features/admin/dashboard/components/AlertBanner';
+import KpiCard from '@/features/admin/dashboard/components/KpiCard';
+import RevenueChartWidget from '@/features/admin/dashboard/components/RevenueChartWidget';
+import OccupancyChartWidget from '@/features/admin/dashboard/components/OccupancyChartWidget';
+import ActivityTimeline from '@/features/admin/dashboard/components/ActivityTimeline';
+import TodaySchedule from '@/features/admin/dashboard/components/TodaySchedule';
+import QuickActions from '@/features/admin/dashboard/components/QuickActions';
+import RecentRegistrationsTable from '@/features/admin/dashboard/components/RecentRegistrationsTable';
+import AttendanceWidget from '@/features/admin/dashboard/components/AttendanceWidget';
+import AnalyticsWidget from '@/features/admin/dashboard/components/AnalyticsWidget';
 
 function PageHeader({ name }: { name: string }) {
   const { lang } = useLang();
