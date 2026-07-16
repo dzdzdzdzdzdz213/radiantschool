@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react';
+import { lazy, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
+import PageSuspense from '@/components/ui/PageSuspense';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import StudentLayout from '@/layouts/StudentLayout';
 import ParentLayout from '@/layouts/ParentLayout';
@@ -68,21 +69,20 @@ const AssistantSearchPage = lazy(() => import('@/features/assistant/search/Searc
 const AssistantSettingsPage = lazy(() => import('@/features/assistant/settings/SettingsPage'));
 const AssistantAttendancePage = lazy(() => import('@/features/assistant/attendance/AttendancePage'));
 
-const AdminUsersPage = lazy(() => import('@/features/admin/UsersPage'));
-const AdminCreateUserPage = lazy(() => import('@/features/admin/CreateUserPage'));
-const AdminStudentDetailPage = lazy(() => import('@/features/public/StudentDetailPage'));
-const AssistantStudentDetailPage = lazy(() => import('@/features/public/StudentDetailPage'));
-const AdminCoursesPage = lazy(() => import('@/features/public/CoursesPage'));
-const AdminCourseDetailPage = lazy(() => import('@/features/public/CourseDetailPage'));
+const UsersPage = lazy(() => import('@/features/admin/UsersPage'));
+const CreateUserPage = lazy(() => import('@/features/admin/CreateUserPage'));
+const StudentDetailPage = lazy(() => import('@/features/public/StudentDetailPage'));
+const CoursesPage = lazy(() => import('@/features/public/CoursesPage'));
+const CourseDetailPage = lazy(() => import('@/features/public/CourseDetailPage'));
 const AdminAttendanceOversightPage = lazy(() => import('@/features/admin/attendance/AdminAttendanceOversightPage'));
-const AdminPaymentsPage = lazy(() => import('@/features/assistant/payments/PaymentsPage'));
-const AdminInvoicesPage = lazy(() => import('@/features/assistant/invoices/InvoicesPage'));
-const AdminReportsPage = lazy(() => import('@/features/assistant/reports/ReportsPage'));
-const AdminMessagesPage = lazy(() => import('@/features/shared/MessagesPage'));
-const AdminSchedulePage = lazy(() => import('@/features/shared/SchedulePage'));
-const AdminProfilePage = lazy(() => import('@/features/shared/ProfilePage'));
-const AdminSettingsPage = lazy(() => import('@/features/admin/SettingsPage'));
-const AdminHelpPage = lazy(() => import('@/features/shared/HelpPage'));
+const PaymentsPage = lazy(() => import('@/features/assistant/payments/PaymentsPage'));
+const InvoicesPage = lazy(() => import('@/features/assistant/invoices/InvoicesPage'));
+const ReportsPage = lazy(() => import('@/features/assistant/reports/ReportsPage'));
+const MessagesPage = lazy(() => import('@/features/shared/MessagesPage'));
+const SchedulePage = lazy(() => import('@/features/shared/SchedulePage'));
+const ProfilePage = lazy(() => import('@/features/shared/ProfilePage'));
+const SettingsPage = lazy(() => import('@/features/admin/SettingsPage'));
+const HelpPage = lazy(() => import('@/features/shared/HelpPage'));
 
 function ComingSoon({ label }: { label?: string }) {
   return (
@@ -181,16 +181,14 @@ const websiteRoutes: RouteObject[] = [
   },
 ];
 
+function routeSuspense(element: ReactNode) {
+  return <PageSuspense>{element}</PageSuspense>;
+}
+
 const studentRoutes: RouteObject[] = [
   {
     path: '/student',
-    element: (
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-        <ProtectedRoute allowedRoles={['student']}>
-          <StudentLayout />
-        </ProtectedRoute>
-      </Suspense>
-    ),
+    element: routeSuspense(<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: StudentDashboardPage },
@@ -201,8 +199,8 @@ const studentRoutes: RouteObject[] = [
       { path: 'attendance', Component: StudentAttendancePage },
       { path: 'payments', Component: StudentPaymentsPage },
       { path: 'invoices', Component: StudentPaymentsPage },
-      { path: 'messages', Component: AdminMessagesPage },
-      { path: 'profile', Component: AdminProfilePage },
+      { path: 'messages', Component: MessagesPage },
+      { path: 'profile', Component: ProfilePage },
       { path: '*', Component: ComingSoon },
     ],
   },
@@ -211,21 +209,15 @@ const studentRoutes: RouteObject[] = [
 const parentRoutes: RouteObject[] = [
   {
     path: '/parent',
-    element: (
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-        <ProtectedRoute allowedRoles={['parent']}>
-          <ParentLayout />
-        </ProtectedRoute>
-      </Suspense>
-    ),
+    element: routeSuspense(<ProtectedRoute allowedRoles={['parent']}><ParentLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: ParentDashboardPage },
       { path: 'enroll', Component: StudentEnrollPage },
       { path: 'payments', Component: StudentPaymentsPage },
       { path: 'invoices', Component: StudentPaymentsPage },
-      { path: 'messages', Component: AdminMessagesPage },
-      { path: 'profile', Component: AdminProfilePage },
+      { path: 'messages', Component: MessagesPage },
+      { path: 'profile', Component: ProfilePage },
       { path: '*', Component: ComingSoon },
     ],
   },
@@ -234,13 +226,7 @@ const parentRoutes: RouteObject[] = [
 const teacherRoutes: RouteObject[] = [
   {
     path: '/teacher',
-    element: (
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-        <ProtectedRoute allowedRoles={['teacher']}>
-          <TeacherLayout />
-        </ProtectedRoute>
-      </Suspense>
-    ),
+    element: routeSuspense(<ProtectedRoute allowedRoles={['teacher']}><TeacherLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: TeacherDashboardPage },
@@ -249,8 +235,8 @@ const teacherRoutes: RouteObject[] = [
       { path: 'calendar', Component: TeacherSchedulePage },
       { path: 'students', Component: TeacherStudentsPage },
       { path: 'private-lessons', Component: TeacherPrivateLessonsPage },
-      { path: 'profile', Component: AdminProfilePage },
-      { path: 'messages', Component: AdminMessagesPage },
+      { path: 'profile', Component: ProfilePage },
+      { path: 'messages', Component: MessagesPage },
       { path: 'attendance', Component: AdminAttendanceOversightPage },
       { path: 'assignments', Component: TeacherAssignmentsPage },
       { path: 'homework', Component: TeacherAssignmentsPage },
@@ -272,46 +258,34 @@ export const router = createBrowserRouter([
   ...teacherRoutes,
   {
     path: '/admin',
-    element: (
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-        <ProtectedRoute allowedRoles={['admin']}>
-          <AdminLayout />
-        </ProtectedRoute>
-      </Suspense>
-    ),
+    element: routeSuspense(<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: AdminDashboardPage },
-      { path: 'users', Component: AdminUsersPage },
-      { path: 'users/new', Component: AdminCreateUserPage },
-      { path: 'users/:id', Component: AdminStudentDetailPage },
-      { path: 'courses', Component: AdminCoursesPage },
-      { path: 'courses/:id', Component: AdminCourseDetailPage },
+      { path: 'users', Component: UsersPage },
+      { path: 'users/new', Component: CreateUserPage },
+      { path: 'users/:id', Component: StudentDetailPage },
+      { path: 'courses', Component: CoursesPage },
+      { path: 'courses/:id', Component: CourseDetailPage },
       { path: 'attendance', Component: AdminAttendanceOversightPage },
-      { path: 'payments', Component: AdminPaymentsPage },
-      { path: 'invoices', Component: AdminInvoicesPage },
-      { path: 'reports', Component: AdminReportsPage },
-      { path: 'messages', Component: AdminMessagesPage },
-      { path: 'schedule', Component: AdminSchedulePage },
-      { path: 'profile', Component: AdminProfilePage },
-      { path: 'settings', Component: AdminSettingsPage },
-      { path: 'help', Component: AdminHelpPage },
+      { path: 'payments', Component: PaymentsPage },
+      { path: 'invoices', Component: InvoicesPage },
+      { path: 'reports', Component: ReportsPage },
+      { path: 'messages', Component: MessagesPage },
+      { path: 'schedule', Component: SchedulePage },
+      { path: 'profile', Component: ProfilePage },
+      { path: 'settings', Component: SettingsPage },
+      { path: 'help', Component: HelpPage },
     ],
   },
   {
     path: '/assistant',
-    element: (
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-        <ProtectedRoute allowedRoles={['assistant']}>
-          <AssistantLayout />
-        </ProtectedRoute>
-      </Suspense>
-    ),
+    element: routeSuspense(<ProtectedRoute allowedRoles={['assistant']}><AssistantLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', Component: AssistantDashboardPage },
       { path: 'students', Component: AssistantStudentsPage },
-      { path: 'students/:id', Component: AssistantStudentDetailPage },
+      { path: 'students/:id', Component: StudentDetailPage },
       { path: 'parents', Component: AssistantParentsPage },
       { path: 'registrations', Component: AssistantRegistrationsPage },
       { path: 'rfid', Component: AssistantRfidPage },
@@ -326,21 +300,17 @@ export const router = createBrowserRouter([
       { path: 'search', Component: AssistantSearchPage },
       { path: 'settings', Component: AssistantSettingsPage },
       { path: 'attendance', Component: AssistantAttendancePage },
-      { path: 'payments', Component: AdminPaymentsPage },
-      { path: 'invoices', Component: AdminInvoicesPage },
-      { path: 'messages', Component: AdminMessagesPage },
-      { path: 'schedule', Component: AdminSchedulePage },
-      { path: 'reports', Component: AdminReportsPage },
-      { path: 'profile', Component: AdminProfilePage },
+      { path: 'payments', Component: PaymentsPage },
+      { path: 'invoices', Component: InvoicesPage },
+      { path: 'messages', Component: MessagesPage },
+      { path: 'schedule', Component: SchedulePage },
+      { path: 'reports', Component: ReportsPage },
+      { path: 'profile', Component: ProfilePage },
       { path: '*', Component: ComingSoon },
     ],
   },
   {
     path: '*',
-    element: (
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
-        <NotFoundPage />
-      </Suspense>
-    ),
+    element: <PageSuspense><NotFoundPage /></PageSuspense>,
   },
 ]);
