@@ -4,7 +4,6 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 export default defineConfig({
-  base: process.env.VITE_ELECTRON ? './' : '/',
   plugins: [
     react(),
     tailwindcss(),
@@ -22,10 +21,6 @@ export default defineConfig({
     sourcemap: false,
     cssCodeSplit: false,
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'),
-        desktop: path.resolve(__dirname, 'desktop.html'),
-      },
       output: {
         manualChunks(id: string) {
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor';

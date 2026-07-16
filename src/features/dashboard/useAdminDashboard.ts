@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
-import { useDashboardKPI, useRevenueChartData, useOccupancyData, useTodaySchedule, useRecentActivity, useAdminAlerts } from '@/hooks/useQueries';
+import { useDashboardKPI, useRevenueChartData, useOccupancyData, useTodaySchedule, useRecentActivity, useAdminAlerts } from './useDashboardQueries';
 export interface KpiData {
   totalRevenue: number;
   activeStudents: number;
