@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRoute } from '@/lib/permissions';
-import { Eye, EyeOff, ArrowLeft, Loader2, BookOpen, GraduationCap, Users } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, Loader2, BookOpen, Users } from 'lucide-react';
 import { asset } from '@/lib/assets';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -63,7 +63,6 @@ export default function LoginPage() {
 
   const features = [
     { icon: BookOpen, title: 'Suivi des formations', desc: 'Accédez à vos cours et emplois du temps' },
-    { icon: GraduationCap, title: 'Résultats & bulletins', desc: 'Consultez vos notes et progrès' },
     { icon: Users, title: 'Communauté', desc: 'Échangez avec enseignants et camarades' },
   ];
 
