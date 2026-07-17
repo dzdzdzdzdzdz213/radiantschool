@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
+import PageTransition from '@/components/ui/PageTransition';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
@@ -36,10 +37,6 @@ function DashboardFallback() {
       </div>
     </div>
   );
-}
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
 export default function AssistantLayout() {
@@ -106,10 +103,10 @@ export default function AssistantLayout() {
           <div className="mx-auto w-full max-w-7xl">
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
-                <PageShell>
+                <PageTransition>
                   <BackButton />
                   <Outlet />
-                </PageShell>
+                </PageTransition>
               </Suspense>
             </ErrorBoundary>
           </div>

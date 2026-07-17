@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
+import PageTransition from '@/components/ui/PageTransition';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
@@ -11,16 +12,34 @@ import type { NavItem } from '@/components/layout/AdminSidebar';
 
 function DashboardFallback() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="rounded-2xl border border-border bg-card p-8"><div className="flex items-center gap-4"><Skeleton className="h-14 w-14 rounded-2xl" /><div className="space-y-2"><Skeleton className="h-8 w-64" /><Skeleton className="h-4 w-40" /></div></div></div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="rounded-2xl border border-border bg-card p-6 space-y-3"><Skeleton className="h-3 w-24" /><Skeleton className="h-8 w-20" /><Skeleton className="h-3 w-16" /></div>))}</div>
-      <div className="grid gap-6 lg:grid-cols-2"><Skeleton className="h-[340px] rounded-2xl" /><Skeleton className="h-[340px] rounded-2xl" /></div>
+    <div className="space-y-6">
+      <div className="overflow-hidden rounded-2xl border border-border">
+        <div className="h-32 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent animate-pulse" />
+        <div className="p-6 -mt-8">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-14 w-14 rounded-2xl" />
+            <div className="space-y-2"><Skeleton className="h-8 w-64" /><Skeleton className="h-4 w-40" /></div>
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="h-1 bg-gradient-to-r from-muted to-transparent" />
+            <div className="p-6 space-y-3">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Skeleton className="h-[340px] rounded-2xl" />
+        <Skeleton className="h-[340px] rounded-2xl" />
+      </div>
     </div>
   );
-}
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
 export default function StudentLayout() {
@@ -70,7 +89,7 @@ export default function StudentLayout() {
           <div className="mx-auto w-full max-w-7xl">
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
-                <PageShell><BackButton /><Outlet /></PageShell>
+                <PageTransition><BackButton /><Outlet /></PageTransition>
               </Suspense>
             </ErrorBoundary>
           </div>

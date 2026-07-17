@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
+import PageTransition from '@/components/ui/PageTransition';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
@@ -17,10 +18,6 @@ function DashboardFallback() {
       <div className="grid gap-6 lg:grid-cols-2"><Skeleton className="h-[340px] rounded-2xl" /><Skeleton className="h-[340px] rounded-2xl" /></div>
     </div>
   );
-}
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return <div className="animate-in fade-in duration-500">{children}</div>;
 }
 
 export default function TeacherLayout() {
@@ -85,7 +82,7 @@ export default function TeacherLayout() {
           <div className="mx-auto w-full max-w-7xl">
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
-                <PageShell><BackButton /><Outlet /></PageShell>
+                <PageTransition><BackButton /><Outlet /></PageTransition>
               </Suspense>
             </ErrorBoundary>
           </div>

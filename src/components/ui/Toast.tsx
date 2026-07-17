@@ -1,5 +1,6 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { ToastContext } from '@/hooks/useToast';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -26,47 +27,66 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 max-w-sm">
-        {toasts.map(t => (
-          <ToastItem key={t.id} toast={t} onClose={() => removeToast(t.id)} />
-        ))}
+      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+        <AnimatePresence mode="popLayout">
+          {toasts.map(t => (
+            <ToastItem key={t.id} toast={t} onClose={() => removeToast(t.id)} />
+          ))}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   );
 }
 
 const ICONS: Record<ToastType, ReactNode> = {
-  success: <CheckCircle className="h-5 w-5" style={{ color: '#22c55e' }} />,
-  error: <AlertCircle className="h-5 w-5" style={{ color: '#ef4444' }} />,
-  info: <Info className="h-5 w-5" style={{ color: '#3b82f6' }} />,
-  warning: <AlertTriangle className="h-5 w-5" style={{ color: '#f59e0b' }} />,
+  success: <CheckCircle2 className="h-5 w-5 text-emerald-400" />,
+  error: <AlertCircle className="h-5 w-5 text-red-400" />,
+  info: <Info className="h-5 w-5 text-blue-400" />,
+  warning: <AlertTriangle className="h-5 w-5 text-amber-400" />,
 };
 
-const BG_COLORS: Record<ToastType, string> = {
-  success: 'rgba(34,197,94,0.2)',
-  error: 'rgba(239,68,68,0.2)',
-  info: 'rgba(130,191,246,0.2)',
-  warning: 'rgba(245,158,11,0.2)',
+const GRADIENT: Record<ToastType, string> = {
+  success: 'from-emerald-500/20 to-emerald-500/5',
+  error: 'from-red-500/20 to-red-500/5',
+  info: 'from-blue-500/20 to-blue-500/5',
+  warning: 'from-amber-500/20 to-amber-500/5',
 };
 
-const BORDER_COLORS: Record<ToastType, string> = {
-  success: 'rgba(34,197,94,0.4)',
-  error: 'rgba(239,68,68,0.4)',
-  info: 'rgba(59,130,246,0.4)',
-  warning: 'rgba(245,158,11,0.4)',
+const BORDER: Record<ToastType, string> = {
+  success: 'border-emerald-500/30',
+  error: 'border-red-500/30',
+  info: 'border-blue-500/30',
+  warning: 'border-amber-500/30',
+};
+
+const TOPBAR: Record<ToastType, string> = {
+  success: 'from-emerald-500 to-emerald-600',
+  error: 'from-red-500 to-red-600',
+  info: 'from-blue-500 to-blue-600',
+  warning: 'from-amber-500 to-amber-600',
 };
 
 function ToastItem({ toast: t, onClose }: { toast: Toast; onClose: () => void }) {
   return (
-    <div
-      className="flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-md animate-slide-up"
-      style={{ backgroundColor: BG_COLORS[t.type], borderColor: BORDER_COLORS[t.type] }}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 80, scale: 0.95 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      className={`pointer-events-auto relative overflow-hidden rounded-2xl border backdrop-blur-xl shadow-2xl ${BORDER[t.type]}`}
+      style={{ background: 'color-mix(in srgb, var(--card) 85%, transparent)' }}
     >
-      <span className="shrink-0 mt-0.5">{ICONS[t.type]}</span>
-      <p className="text-sm font-medium flex-1" style={{ color: 'var(--fg)' }}>{t.message}</p>
-      <button onClick={onClose} className="shrink-0 opacity-40 hover:opacity-100 transition-opacity" style={{ color: 'var(--fg-muted)' }}>
-        <X className="h-4 w-4" />
-      </button>
-    </div>
+      <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${TOPBAR[t.type]}`} />
+      <div className="flex items-start gap-3 p-4">
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT[t.type]}`}>
+          {ICONS[t.type]}
+        </div>
+        <p className="text-sm font-medium flex-1 pt-1.5 text-foreground">{t.message}</p>
+        <button onClick={onClose} className="shrink-0 rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </motion.div>
   );
 }

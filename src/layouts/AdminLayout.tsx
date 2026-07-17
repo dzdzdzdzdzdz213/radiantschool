@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminTopbar from '@/components/layout/AdminTopbar';
 import BackButton from '@/components/ui/BackButton';
+import PageTransition from '@/components/ui/PageTransition';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
@@ -97,7 +98,7 @@ export default function AdminLayout() {
           <div className="mx-auto w-full max-w-7xl">
             <ErrorBoundary>
               <Suspense fallback={<DashboardFallback />}>
-                <BackButton /><Outlet />
+                <PageTransition><BackButton /><Outlet /></PageTransition>
               </Suspense>
             </ErrorBoundary>
           </div>

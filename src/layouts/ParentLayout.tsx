@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import BackButton from '@/components/ui/BackButton';
+import PageTransition from '@/components/ui/PageTransition';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
@@ -44,7 +45,7 @@ export default function ParentLayout() {
         <main className="flex-1 overflow-y-auto p-6">
           <ErrorBoundary>
             <Suspense fallback={<ParentFallback />}>
-              <BackButton /><Outlet />
+              <PageTransition><BackButton /><Outlet /></PageTransition>
             </Suspense>
           </ErrorBoundary>
         </main>
