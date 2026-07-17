@@ -39,8 +39,9 @@ export default function AvatarUpload({ userId, url, name, size = 64, onUpdate }:
     try {
       const path = await uploadAvatar(userId, file);
       onUpdate?.(path);
-    } catch {
-      toast(t('errors.save_error', lang, "de l'avatar"), 'error');
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+      toast(err instanceof Error ? err.message : t('errors.save_error', lang, "de l'avatar"), 'error');
       setPreview(null);
     } finally {
       setUploading(false);
