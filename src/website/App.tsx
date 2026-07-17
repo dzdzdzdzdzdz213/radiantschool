@@ -11,6 +11,7 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import { useRealtime } from '@/hooks/useRealtime';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
 import { useAuth } from '@/hooks/useAuth';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,6 +87,7 @@ function RealtimeActivator() {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LangProvider>
@@ -107,5 +109,6 @@ export default function App() {
         </LangProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
