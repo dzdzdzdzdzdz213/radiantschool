@@ -252,13 +252,29 @@ const teacherRoutes: RouteObject[] = [
   },
 ];
 
+function RouteErrorBoundary() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+      <h1 className="text-2xl font-bold">Une erreur est survenue</h1>
+      <p className="text-muted-foreground text-sm max-w-md">Le chargement de la page a échoué.</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="mt-4 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+      >
+        Recharger la page
+      </button>
+    </div>
+  );
+}
+
 export const router = createBrowserRouter([
-  ...websiteRoutes,
-  ...studentRoutes,
-  ...parentRoutes,
-  ...teacherRoutes,
+  ...websiteRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
+  ...studentRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
+  ...parentRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
+  ...teacherRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
   {
     path: '/admin',
+    errorElement: <RouteErrorBoundary />,
     element: routeSuspense(<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
@@ -283,6 +299,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/assistant',
+    errorElement: <RouteErrorBoundary />,
     element: routeSuspense(<ProtectedRoute allowedRoles={['assistant']}><AssistantLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
