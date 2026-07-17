@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDateTime } from '@/lib/utils';
 import { useRegistrations, useApproveRegistration, useRejectRegistration } from './useRegistrations';
 import { useLang } from '@/contexts/LangContext';
@@ -18,6 +19,18 @@ export default function RegistrationsPage() {
   useErrorToast(isError, lang, t('nav.registrations', lang));
   const approve = useApproveRegistration();
   const reject = useRejectRegistration();
+  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
+
+  const handleConfirm = () => {
+    if (confirmId === null || !confirmAction) return;
+    if (confirmAction === 'approve') approve.mutate(confirmId);
+    else reject.mutate(confirmId);
+    setConfirmId(null);
+    setConfirmAction(null);
+  };
+
+  const pendingRecord = confirmId ? data?.data.find(r => Number(r.id) === confirmId) : null;
 
   return (
     <div className="space-y-6">
@@ -78,10 +91,10 @@ export default function RegistrationsPage() {
                         <TableCell className="text-right">
                           {reg.status === 'pending_approval' && (
                             <div className="flex justify-end gap-1">
-                              <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => approve.mutate(Number(reg.id))}>
+                              <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => { setConfirmId(Number(reg.id)); setConfirmAction('approve'); }}>
                                 <Check className="h-4 w-4" />
                               </Button>
-                              <Button size="sm" variant="ghost" className="text-red-600" onClick={() => reject.mutate(Number(reg.id))}>
+                              <Button size="sm" variant="ghost" className="text-red-600" onClick={() => { setConfirmId(Number(reg.id)); setConfirmAction('reject'); }}>
                                 <X className="h-4 w-4" />
                               </Button>
                             </div>
@@ -96,6 +109,19 @@ export default function RegistrationsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onClose={() => { setConfirmId(null); setConfirmAction(null); }}
+        onConfirm={handleConfirm}
+        title={confirmAction === 'approve' ? t('registrations.confirm_approve_title', lang) : t('registrations.confirm_reject_title', lang)}
+        message={confirmAction === 'approve'
+          ? t('registrations.confirm_approve_message', lang) + (pendingRecord ? ` "${pendingRecord.studentName}"` : '')
+          : t('registrations.confirm_reject_message', lang) + (pendingRecord ? ` "${pendingRecord.studentName}"` : '')}
+        loading={approve.isPending || reject.isPending}
+        confirmLabel={confirmAction === 'approve' ? t('registrations.confirm_approve', lang) : t('registrations.confirm_reject', lang)}
+        variant={confirmAction === 'approve' ? 'success' : 'destructive'}
+      />
     </div>
   );
 }

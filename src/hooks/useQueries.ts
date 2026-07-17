@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { api, type FilterParams } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -56,10 +57,17 @@ export function useMessages() {
     queryKey: ['messages', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
-      const r = await api.list('messages', { sort: [{ column: 'created_at', direction: 'desc' }] }, '*, sender:users!sender_id(first_name, last_name), receiver:users!receiver_id(first_name, last_name)');
-      return r.data.filter((m: any) => m.sender_id === profile.id || m.receiver_id === profile.id);
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*, sender:users!sender_id(first_name, last_name), receiver:users!receiver_id(first_name, last_name)')
+        .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
     },
     enabled: !!profile?.id,
+    staleTime: 30_000,
   });
 }
 

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
 export interface PaymentRecord {
@@ -13,27 +14,43 @@ export interface PaymentRecord {
   courseName: string | null;
 }
 
+interface PaymentRow {
+  id: string;
+  student_id: string | null;
+  amount: number | null;
+  payment_method: string | null;
+  payment_type: string | null;
+  receipt_number: string | null;
+  payment_date: string | null;
+  student: { user: { first_name: string | null; last_name: string | null } | null } | null;
+  course: { name: string | null } | null;
+}
+
+interface UserRow {
+  id: string;
+}
+
 export function usePayments(search: string = '', page: number = 1) {
   return useQuery({
     queryKey: ['assistant_payments', search, page],
     queryFn: async () => {
-      let query = (supabase as any)
-        .from('payments')
+      const base = supabase.from('payments') as any;
+      let query = base
         .select('id, student_id, amount, payment_method, payment_type, receipt_number, payment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name)), course:courses(name)', { count: 'exact' })
         .is('deleted_at', null)
         .order('payment_date', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       if (search) {
         const like = `%${search}%`;
-        const { data: matchingUsers } = await (supabase as any)
-          .from('users')
+        const usersBase = supabase.from('users') as any;
+        const { data: matchingUsers } = await usersBase
           .select('id')
           .or(`first_name.ilike.${like},last_name.ilike.${like}`);
-        const ids = (matchingUsers ?? []).map((u: any) => u.id);
+        const ids = (matchingUsers ?? []).map((u: UserRow) => u.id);
         query = query.in('student_id', ids.length ? ids : [null]);
       }
       const { data, count } = await query;
-      const items = (data ?? []).map((r: any) => ({
+      const items = (data ?? []).map((r: PaymentRow) => ({
         id: r.id,
         student_id: r.student_id ?? null,
         studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
@@ -64,7 +81,7 @@ export function useUpdatePayment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const { error } = await (supabase as any).from('payments').update(data).eq('id', id);
+      const { error } = await supabase.from('payments').update(data as any).eq('id', id as any);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_payments'] }); },
@@ -75,7 +92,7 @@ export function useDeletePayment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('payments').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      const { error } = await supabase.from('payments').update({ deleted_at: new Date().toISOString() } as any).eq('id', id as any);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_payments'] }); },

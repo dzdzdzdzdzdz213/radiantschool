@@ -12,27 +12,42 @@ export interface InvoiceRecord {
   dueDate: string;
 }
 
+interface InvoiceRow {
+  id: string;
+  student_id: string | null;
+  invoice_number: string | null;
+  total_amount: number | null;
+  paid_amount: number | null;
+  status: string | null;
+  due_date: string | null;
+  student: { user: { first_name: string | null; last_name: string | null } | null } | null;
+}
+
+interface UserRow {
+  id: string;
+}
+
 export function useInvoices(search: string = '', page: number = 1, statusFilter: string = '') {
   return useQuery({
     queryKey: ['assistant_invoices', search, page, statusFilter],
     queryFn: async () => {
-      let query = (supabase as any)
-        .from('invoices')
+      const base = supabase.from('invoices') as any;
+      let query = base
         .select('id, student_id, invoice_number, total_amount, paid_amount, status, due_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name))', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
       if (statusFilter) query = query.eq('status', statusFilter);
       if (search) {
         const like = `%${search}%`;
-        const { data: matchingUsers } = await (supabase as any)
-          .from('users')
+        const usersBase = supabase.from('users') as any;
+        const { data: matchingUsers } = await usersBase
           .select('id')
           .or(`first_name.ilike.${like},last_name.ilike.${like}`);
-        const ids = (matchingUsers ?? []).map((u: any) => u.id);
+        const ids = (matchingUsers ?? []).map((u: UserRow) => u.id);
         query = query.in('student_id', ids.length ? ids : [null]);
       }
       const { data, count } = await query;
-      const items = (data ?? []).map((r: any) => ({
+      const items = (data ?? []).map((r: InvoiceRow) => ({
         id: r.id,
         student_id: r.student_id ?? null,
         invoiceNumber: r.invoice_number ?? '',
@@ -52,7 +67,7 @@ export function useCreateInvoice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: any) => {
-      const { data: result, error } = await (supabase as any).from('invoices').insert(data).select().single();
+      const { data: result, error } = await supabase.from('invoices').insert(data as any).select().single();
       if (error) throw error;
       return result;
     },
@@ -64,7 +79,7 @@ export function useUpdateInvoice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const { error } = await (supabase as any).from('invoices').update(data).eq('id', id);
+      const { error } = await supabase.from('invoices').update(data as any).eq('id', id as any);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_invoices'] }); },
@@ -75,7 +90,7 @@ export function useDeleteInvoice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('invoices').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      const { error } = await supabase.from('invoices').update({ deleted_at: new Date().toISOString() } as any).eq('id', id as any);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_invoices'] }); },

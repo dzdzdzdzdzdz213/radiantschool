@@ -29,17 +29,17 @@ export function useMutationWithFeedback<TData = unknown, TError = Error, TVariab
   return useMutation<TData, TError, TVariables, TContext>({
     mutationFn,
     ...options,
-    onSuccess: (_data, _variables, _context) => {
+    onSuccess: (_data, _variables, _context, _meta) => {
       if (successMessage) toast(successMessage, 'success');
       if (invalidateQueries) {
         invalidateQueries.forEach(key => queryClient.invalidateQueries({ queryKey: key }));
       }
-      options.onSuccess?.(_data, _variables, _context);
+      options.onSuccess?.(_data, _variables, _context, _meta);
     },
-    onError: (error, _variables, _context) => {
+    onError: (error, _variables, _context, _meta) => {
       const message = errorMessage ?? (error instanceof Error ? error.message : 'Une erreur est survenue');
       toast(message, 'error');
-      options.onError?.(error, _variables, _context);
+      options.onError?.(error, _variables, _context, _meta);
     },
   });
 }

@@ -9,9 +9,11 @@ interface ConfirmDialogProps {
   title?: string;
   message: string;
   loading?: boolean;
+  confirmLabel?: string;
+  variant?: 'destructive' | 'default' | 'success';
 }
 
-export default function ConfirmDialog({ open, onClose, onConfirm, title, message, loading }: ConfirmDialogProps) {
+export default function ConfirmDialog({ open, onClose, onConfirm, title, message, loading, confirmLabel, variant = 'destructive' }: ConfirmDialogProps) {
   const { lang } = useLang();
   if (!open) return null;
   return (
@@ -22,8 +24,8 @@ export default function ConfirmDialog({ open, onClose, onConfirm, title, message
         <p className="text-sm text-muted-foreground">{message}</p>
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" size="sm" className="h-9" onClick={onClose} disabled={loading}>{t('common.cancel', lang)}</Button>
-          <Button variant="destructive" size="sm" className="h-9" onClick={onConfirm} disabled={loading}>
-            {loading ? t('common.loading', lang) : t('common.delete', lang)}
+          <Button variant={variant === 'success' ? 'default' : variant} size="sm" className="h-9" onClick={onConfirm} disabled={loading}>
+            {loading ? t('common.loading', lang) : confirmLabel ?? t('common.confirm', lang)}
           </Button>
         </div>
       </div>
