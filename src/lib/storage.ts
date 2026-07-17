@@ -53,6 +53,14 @@ function convertToWebP(file: File, maxDim = 256): Promise<Blob> {
   });
 }
 
+export async function deleteAvatar(userId: string, photoUrl: string | null | undefined): Promise<void> {
+  if (photoUrl && !photoUrl.startsWith('http')) {
+    await supabase.storage.from(AVATAR_BUCKET).remove([photoUrl]);
+  }
+  const { error } = await supabase.from('users').update({ photo_url: null }).eq('id', userId);
+  if (error) throw ApiError.fromPostgrest({ message: error.message, code: error.code, details: error.details });
+}
+
 export async function uploadAvatar(userId: string, file: File): Promise<string | null> {
   const maxSize = 5 * 1024 * 1024;
   if (file.size > maxSize) {
