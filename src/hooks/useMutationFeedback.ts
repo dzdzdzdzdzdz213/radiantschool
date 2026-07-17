@@ -47,17 +47,17 @@ export function useMutationWithFeedback<TData = unknown, TError = Error, TVariab
 /** Updates a user's settings row. */
 export function useUpdateUserSettings() {
   const { toast } = useToast();
+  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ userId, settings }: { userId: string; settings: Database['public']['Tables']['users']['Update'] }) => {
+      if (!userId) throw new Error('Utilisateur non identifié');
       const { error } = await supabase.from('users').update(settings).eq('id', userId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      qc.setQueryData(['profile_settings', variables.userId], (old: any) => old ? { ...old, ...variables.settings } : old);
       toast('Paramètres mis à jour', 'success');
-    },
-    onError: (err: any) => {
-      toast(err?.message ?? 'Erreur lors de la mise à jour', 'error');
     },
   });
 }
