@@ -10,7 +10,11 @@ import AdminLayout from '@/layouts/AdminLayout';
 import AssistantLayout from '@/layouts/AssistantLayout';
 
 function loadPage(importFn: () => Promise<any>) {
-  return importFn().catch(() => { window.location.reload(); return { default: () => null }; });
+  return importFn().catch(() => {
+    const url = window.location.href.split('?')[0] + '?v=' + Date.now();
+    window.location.href = url;
+    return { default: () => null };
+  });
 }
 
 const LoginPage = lazy(() => loadPage(() => import('@/features/auth/LoginPage')));
