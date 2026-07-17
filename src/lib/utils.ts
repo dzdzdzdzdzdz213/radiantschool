@@ -31,7 +31,8 @@ export function formatDateTime(date: string | Date): string {
 }
 
 /** Extracts HH:MM from a time string (ISO or HH:MM:SS). */
-export function formatTime(time: string): string {
+export function formatTime(time: string | null | undefined): string {
+  if (!time) return '';
   return time.slice(0, 5);
 }
 

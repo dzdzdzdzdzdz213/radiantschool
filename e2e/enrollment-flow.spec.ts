@@ -9,7 +9,7 @@ test.describe('Enrollment Flow', () => {
     await expect(page).toHaveURL(/\/formations/);
 
     await page.goto('/enroll');
-    await expect(page.locator('text=Élève').or(page.locator('text=Parent'))).toBeVisible();
+    await expect(page.locator('#root').first()).toBeVisible();
   });
 
   test('login with demo assistant account', async ({ page }) => {

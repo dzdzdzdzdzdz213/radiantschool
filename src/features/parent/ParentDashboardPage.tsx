@@ -144,7 +144,7 @@ export default function ParentDashboardPage() {
       (schedRes.data ?? []).forEach((s: any) => {
         const sid = s.course?.course_enrollments?.[0]?.student_id;
         if (sid && !nextClassByStudent[sid]) {
-          nextClassByStudent[sid] = { name: s.course.name, time: s.start_time?.slice(0, 5) };
+          nextClassByStudent[sid] = { name: s.course?.name ?? '', time: s.start_time?.slice(0, 5) ?? '' };
         }
       });
 

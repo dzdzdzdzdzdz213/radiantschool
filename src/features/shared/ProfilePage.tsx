@@ -224,7 +224,7 @@ export default function ProfilePage() {
             if (!currentPassword || !newPassword) { toast(t('common.required', lang), 'error'); return; }
             if (newPassword.length < 8) { toast(t('validation.min_length', lang, '8'), 'error'); return; }
             if (newPassword !== confirmPassword) { toast(t('validation.password_mismatch', lang), 'error'); return; }
-            updatePasswordMutation.mutate({ currentPassword, newPassword, email: profile?.email });
+            updatePasswordMutation.mutate({ currentPassword, newPassword });
           }} disabled={updatePasswordMutation.isPending}>
             {t('common.update', lang)}
           </Button>

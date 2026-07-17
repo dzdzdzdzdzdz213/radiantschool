@@ -32,5 +32,8 @@ describe('i18n', () => {
     const { getDir } = await import('@/i18n');
     expect(getDir('ar')).toBe('rtl');
     expect(getDir('fr')).toBe('ltr');
+    expect(getDir('en')).toBe('ltr');
   });
+
+
 });

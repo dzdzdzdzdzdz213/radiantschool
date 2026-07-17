@@ -28,23 +28,25 @@ export function useMutationWithFeedback<TData = unknown, TError = Error, TVariab
 
   return useMutation<TData, TError, TVariables, TContext>({
     mutationFn,
+    ...options,
     onSuccess: (_data, _variables, _context) => {
       if (successMessage) toast(successMessage, 'success');
       if (invalidateQueries) {
         invalidateQueries.forEach(key => queryClient.invalidateQueries({ queryKey: key }));
       }
+      options.onSuccess?.(_data, _variables, _context);
     },
     onError: (error, _variables, _context) => {
       const message = errorMessage ?? (error instanceof Error ? error.message : 'Une erreur est survenue');
       toast(message, 'error');
+      options.onError?.(error, _variables, _context);
     },
   });
 }
 
-/** Updates a user's settings row and invalidates the profile cache. */
+/** Updates a user's settings row. */
 export function useUpdateUserSettings() {
   const { toast } = useToast();
-  const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ userId, settings }: { userId: string; settings: Database['public']['Tables']['users']['Update'] }) => {
@@ -53,7 +55,6 @@ export function useUpdateUserSettings() {
     },
     onSuccess: () => {
       toast('Paramètres mis à jour', 'success');
-      qc.invalidateQueries({ queryKey: ['profile_settings'] });
     },
     onError: (err: any) => {
       toast(err?.message ?? 'Erreur lors de la mise à jour', 'error');
@@ -66,8 +67,10 @@ export function useUpdatePassword() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ currentPassword, newPassword, email }: { currentPassword: string; newPassword: string; email?: string }) => {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email: email ?? '', password: currentPassword });
+    mutationFn: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) throw new Error('Impossible de vérifier votre identité. Reconnectez-vous.');
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword });
       if (signInError) throw new Error('Mot de passe actuel incorrect');
 
       const { error } = await supabase.auth.updateUser({ password: newPassword });
