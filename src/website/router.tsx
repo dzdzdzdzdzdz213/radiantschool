@@ -37,6 +37,8 @@ const StudentAttendancePage = lazy(() => import('@/features/student/StudentAtten
 const StudentPaymentsPage = lazy(() => import('@/features/student/StudentPaymentsPage'));
 const StudentCoursesPage = lazy(() => import('@/features/student/StudentCoursesPage'));
 const StudentEnrollPage = lazy(() => import('@/features/student/StudentEnrollPage'));
+const StudentOnlineClassesPage = lazy(() => import('@/features/student/StudentOnlineClassesPage'));
+const StudentPrivateLessonsPage = lazy(() => import('@/features/student/StudentPrivateLessonsPage'));
 const ParentDashboardPage = lazy(() => import('@/features/parent/ParentDashboardPage'));
 const TeacherDashboardPage = lazy(() => import('@/features/teacher/TeacherDashboardPage'));
 const TeacherCoursesPage = lazy(() => import('@/features/teacher/TeacherCoursesPage'));
@@ -193,6 +195,8 @@ const studentRoutes: RouteObject[] = [
       { path: 'attendance', Component: StudentAttendancePage },
       { path: 'payments', Component: StudentPaymentsPage },
       { path: 'invoices', Component: StudentPaymentsPage },
+      { path: 'online-classes', Component: StudentOnlineClassesPage },
+      { path: 'private-lessons', Component: StudentPrivateLessonsPage },
       { path: 'messages', Component: MessagesPage },
       { path: 'profile', Component: ProfilePage },
       { path: '*', Component: ComingSoonPage },

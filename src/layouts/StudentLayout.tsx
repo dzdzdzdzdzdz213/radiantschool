@@ -34,6 +34,8 @@ export default function StudentLayout() {
     { label: t('nav.attendance', lang), path: '/student/attendance', icon: 'ClipboardCheck' },
     { label: t('nav.payments', lang), path: '/student/payments', icon: 'DollarSign' },
     { label: t('nav.invoices', lang), path: '/student/invoices', icon: 'FileText' },
+    { label: t('nav.online_classes', lang), path: '/student/online-classes', icon: 'Video' },
+    { label: t('nav.private_lessons', lang), path: '/student/private-lessons', icon: 'UserPlus' },
     { label: t('nav.messages', lang), path: '/student/messages', icon: 'MessageSquare' },
     { label: t('nav.profile', lang), path: '/student/profile', icon: 'UserCircle' },
   ];

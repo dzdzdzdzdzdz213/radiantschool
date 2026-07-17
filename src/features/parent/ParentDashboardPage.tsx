@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Sparkles, Users, DollarSign, BookOpen, CalendarCheck, TrendingUp, ArrowRight, Clock } from 'lucide-react';
+import { Sparkles, Users, DollarSign, BookOpen, CalendarCheck, TrendingUp, ArrowRight, Clock, UserPlus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
@@ -180,6 +180,21 @@ export default function ParentDashboardPage() {
     enabled: childIds.length > 0,
   });
 
+  const { data: privateLessons } = useQuery({
+    queryKey: ['parent-children-private-lessons', childIds.join(',')],
+    queryFn: async () => {
+      if (!childIds.length) return [];
+      const { data } = await supabase
+        .from('private_lessons')
+        .select('*, student:users!student_id(first_name, last_name), teacher:users!teacher_id(first_name, last_name), course:courses(name)')
+        .in('student_id', childIds)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      return data ?? [];
+    },
+    enabled: childIds.length > 0,
+  });
+
   return (
     <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <PageHeader name={profile?.firstName ?? ''} />
@@ -249,12 +264,37 @@ export default function ParentDashboardPage() {
               <DollarSign className="h-4 w-4 text-primary" />
               Voir les paiements
             </Link>
+            <Link to="/parent/enroll" className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-sm">
+              <UserPlus className="h-4 w-4 text-primary" />
+              Demander un cours particulier
+            </Link>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-sm">Dernières notifications</CardTitle></CardHeader>
-          <CardContent className="text-sm text-muted-foreground text-center py-6">
-            Aucune notification récente
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><UserPlus className="h-4 w-4" />Cours particuliers</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {!privateLessons?.length ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Aucun cours particulier</p>
+            ) : (
+              privateLessons.map((pl: any) => (
+                <div key={pl.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20 text-sm">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{pl.student?.first_name} {pl.student?.last_name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {pl.teacher?.first_name} {pl.teacher?.last_name}
+                      {pl.course ? ` · ${pl.course.name}` : ''}
+                    </p>
+                  </div>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                    pl.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                    pl.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                    'bg-amber-100 text-amber-700'
+                  }`}>
+                    {pl.status === 'accepted' ? 'Accepté' : pl.status === 'rejected' ? 'Refusé' : 'En attente'}
+                  </span>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
