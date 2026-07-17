@@ -1,5 +1,5 @@
 import { lazy, type ReactNode } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import PageSuspense from '@/components/ui/PageSuspense';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -8,6 +8,7 @@ import ParentLayout from '@/layouts/ParentLayout';
 import TeacherLayout from '@/layouts/TeacherLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import AssistantLayout from '@/layouts/AssistantLayout';
+import CmdK from '@/features/shared/CmdK';
 
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const StaffLoginPage = lazy(() => import('@/features/auth/StaffLoginPage'));
@@ -247,67 +248,81 @@ const teacherRoutes: RouteObject[] = [
 ];
 
 export const router = createBrowserRouter([
-  ...websiteRoutes,
-  ...studentRoutes,
-  ...parentRoutes,
-  ...teacherRoutes,
   {
-    path: '/admin',
-    element: routeSuspense(<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>),
+    element: <CmdKWrapper />,
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', Component: AdminDashboardPage },
-      { path: 'users', Component: UsersPage },
-      { path: 'users/new', Component: CreateUserPage },
-      { path: 'users/:id', Component: StudentDetailPage },
-      { path: 'courses', Component: CoursesPage },
-      { path: 'courses/:id', Component: CourseDetailPage },
-      { path: 'attendance', Component: AdminAttendanceOversightPage },
-      { path: 'payments', Component: PaymentsPage },
-      { path: 'invoices', Component: InvoicesPage },
-      { path: 'reports', Component: ReportsPage },
-      { path: 'messages', Component: MessagesPage },
-      { path: 'schedule', Component: SchedulePage },
-      { path: 'profile', Component: ProfilePage },
-      { path: 'settings', Component: SettingsPage },
-      { path: 'help', Component: HelpPage },
-      { path: 'audit-log', Component: AuditLogPage },
-      { path: 'payroll', Component: PayrollPage },
+      ...websiteRoutes,
+      ...studentRoutes,
+      ...parentRoutes,
+      ...teacherRoutes,
+      {
+        path: '/admin',
+        element: routeSuspense(<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>),
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', Component: AdminDashboardPage },
+          { path: 'users', Component: UsersPage },
+          { path: 'users/new', Component: CreateUserPage },
+          { path: 'users/:id', Component: StudentDetailPage },
+          { path: 'courses', Component: CoursesPage },
+          { path: 'courses/:id', Component: CourseDetailPage },
+          { path: 'attendance', Component: AdminAttendanceOversightPage },
+          { path: 'payments', Component: PaymentsPage },
+          { path: 'invoices', Component: InvoicesPage },
+          { path: 'reports', Component: ReportsPage },
+          { path: 'messages', Component: MessagesPage },
+          { path: 'schedule', Component: SchedulePage },
+          { path: 'profile', Component: ProfilePage },
+          { path: 'settings', Component: SettingsPage },
+          { path: 'help', Component: HelpPage },
+          { path: 'audit-log', Component: AuditLogPage },
+          { path: 'payroll', Component: PayrollPage },
+        ],
+      },
+      {
+        path: '/assistant',
+        element: routeSuspense(<ProtectedRoute allowedRoles={['assistant']}><AssistantLayout /></ProtectedRoute>),
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', Component: AssistantDashboardPage },
+          { path: 'students', Component: AssistantStudentsPage },
+          { path: 'students/:id', Component: StudentDetailPage },
+          { path: 'parents', Component: AssistantParentsPage },
+          { path: 'registrations', Component: AssistantRegistrationsPage },
+          { path: 'rfid', Component: AssistantRfidPage },
+          { path: 'groups', Component: AssistantGroupsPage },
+          { path: 'private-lessons', Component: AssistantPrivateLessonsPage },
+          { path: 'rooms', Component: AssistantRoomsPage },
+          { path: 'notifications', Component: AssistantNotificationsPage },
+          { path: 'emails', Component: AssistantEmailsPage },
+          { path: 'resources', Component: AssistantResourcesPage },
+          { path: 'campaigns', Component: AssistantCampaignsPage },
+          { path: 'calendar', Component: AssistantCalendarPage },
+          { path: 'search', Component: AssistantSearchPage },
+          { path: 'settings', Component: AssistantSettingsPage },
+          { path: 'attendance', Component: AssistantAttendancePage },
+          { path: 'payments', Component: PaymentsPage },
+          { path: 'invoices', Component: InvoicesPage },
+          { path: 'messages', Component: MessagesPage },
+          { path: 'schedule', Component: SchedulePage },
+          { path: 'reports', Component: ReportsPage },
+          { path: 'profile', Component: ProfilePage },
+          { path: '*', Component: ComingSoonPage },
+        ],
+      },
+      {
+        path: '*',
+        element: <PageSuspense><NotFoundPage /></PageSuspense>,
+      },
     ],
-  },
-  {
-    path: '/assistant',
-    element: routeSuspense(<ProtectedRoute allowedRoles={['assistant']}><AssistantLayout /></ProtectedRoute>),
-    children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', Component: AssistantDashboardPage },
-      { path: 'students', Component: AssistantStudentsPage },
-      { path: 'students/:id', Component: StudentDetailPage },
-      { path: 'parents', Component: AssistantParentsPage },
-      { path: 'registrations', Component: AssistantRegistrationsPage },
-      { path: 'rfid', Component: AssistantRfidPage },
-      { path: 'groups', Component: AssistantGroupsPage },
-      { path: 'private-lessons', Component: AssistantPrivateLessonsPage },
-      { path: 'rooms', Component: AssistantRoomsPage },
-      { path: 'notifications', Component: AssistantNotificationsPage },
-      { path: 'emails', Component: AssistantEmailsPage },
-      { path: 'resources', Component: AssistantResourcesPage },
-      { path: 'campaigns', Component: AssistantCampaignsPage },
-      { path: 'calendar', Component: AssistantCalendarPage },
-      { path: 'search', Component: AssistantSearchPage },
-      { path: 'settings', Component: AssistantSettingsPage },
-      { path: 'attendance', Component: AssistantAttendancePage },
-      { path: 'payments', Component: PaymentsPage },
-      { path: 'invoices', Component: InvoicesPage },
-      { path: 'messages', Component: MessagesPage },
-      { path: 'schedule', Component: SchedulePage },
-      { path: 'reports', Component: ReportsPage },
-      { path: 'profile', Component: ProfilePage },
-      { path: '*', Component: ComingSoonPage },
-    ],
-  },
-  {
-    path: '*',
-    element: <PageSuspense><NotFoundPage /></PageSuspense>,
   },
 ]);
+
+function CmdKWrapper() {
+  return (
+    <>
+      <Outlet />
+      <CmdK />
+    </>
+  );
+}

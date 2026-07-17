@@ -9,7 +9,8 @@ describe('Router', () => {
 
   test('has public, protected, and catch-all routes', async () => {
     const mod = await import('@/website/router');
-    const paths = mod.router.routes.map((r: any) => r.path ?? '');
+    const routes = mod.router.routes[0]?.children ?? mod.router.routes;
+    const paths = routes.map((r: any) => r.path ?? '');
     expect(paths).toContain('/login');
     expect(paths).toContain('/');
     expect(paths).toContain('/student');

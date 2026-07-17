@@ -11,7 +11,6 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import { useRealtime } from '@/hooks/useRealtime';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
 import { useAuth } from '@/hooks/useAuth';
-import CmdK from '@/features/shared/CmdK';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,7 +100,6 @@ export default function App() {
                   <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
                     <RouterProvider router={router} />
                   </Suspense>
-                  <CmdK />
                 </div>
               </div>
             </ToastProvider>
