@@ -13,7 +13,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(true);
   const navigate = useNavigate();
   const { lang } = useLang();
   const pwRef = useRef<HTMLInputElement>(null);
@@ -22,12 +22,21 @@ export default function ResetPasswordPage() {
   useEffect(() => () => clearTimeout(redirectTimer.current), []);
 
   useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        setCheckingSession(false);
+        if (!session?.user?.email_confirmed_at) {
+          navigate('/login', { replace: true });
+        }
+      }
+    });
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setCheckingSession(false);
       if (!session?.user?.email_confirmed_at) {
         navigate('/login', { replace: true });
       }
-      setChecking(false);
     });
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,12 +55,16 @@ export default function ResetPasswordPage() {
     }
   };
 
-  if (checking) return null;
+  if (checkingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      {/* Background handled globally by AnimatedBackground */}
-
       <div className="animate-up w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
