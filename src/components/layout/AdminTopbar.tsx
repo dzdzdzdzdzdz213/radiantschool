@@ -207,15 +207,13 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           <Menu className="h-5 w-5" />
         </button>
 
-        <a
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={() => navigate('/')}
           className="hidden sm:inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium text-sidebar-fg/60 hover:bg-sidebar-accent hover:text-sidebar-fg transition-colors"
         >
           <ExternalLink className="h-3.5 w-3.5" />
           Site
-        </a>
+        </button>
 
         <div className="hidden md:flex items-center">
           <form onSubmit={handleSearch} className="relative">
