@@ -118,7 +118,7 @@ export default function ParentDashboardPage() {
     queryFn: async () => {
       if (!childIds.length) return [];
 
-      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
       const today = dayNames[new Date().getDay()];
 
       const [enrRes, attRes, schedRes] = await Promise.all([

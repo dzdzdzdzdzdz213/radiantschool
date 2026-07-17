@@ -44,7 +44,7 @@ export default function PayrollPage() {
       else if (filter === 'paid') q = q.eq('status', 'paid');
 
       const { data } = await q;
-      return (data ?? []) as PayrollEntry[];
+      return (data ?? []) as unknown as PayrollEntry[];
     },
     staleTime: 15_000,
   });

@@ -50,7 +50,7 @@ export default function CmdK() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
-  const [courses, setCourses] = useState<{ id: string; name: string }[]>([]);
+  const [courses, setCourses] = useState<{ id: number; name: string }[]>([]);
   const navigate = useNavigate();
   const { profile } = useAuth();
   const role = profile?.role || '';

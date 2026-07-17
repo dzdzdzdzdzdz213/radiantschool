@@ -50,7 +50,7 @@ export default function BulkAttendancePage() {
         .select('id, name, subject')
         .eq('status', 'active')
         .order('name');
-      return (data ?? []) as CourseOption[];
+      return (data ?? []) as unknown as CourseOption[];
     },
     staleTime: 60_000,
   });
@@ -93,7 +93,7 @@ export default function BulkAttendancePage() {
   });
 
   const upsertAttendance = useMutation({
-    mutationFn: async ({ studentId, status }: { studentId: string; status: string }) => {
+    mutationFn: async ({ studentId, status }: { studentId: string; status: 'present' | 'absent' | 'late' }) => {
       const existing = await supabase
         .from('attendance')
         .select('id')
@@ -101,16 +101,17 @@ export default function BulkAttendancePage() {
         .eq('date', date)
         .maybeSingle();
 
+      const payload = { status, recorded_by: profile?.id ?? null, method: 'manual' as const };
       if (existing.data) {
         const { error } = await supabase
           .from('attendance')
-          .update({ status, recorded_by: profile?.id, method: 'manual' })
+          .update(payload as any)
           .eq('id', existing.data.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('attendance')
-          .insert({ student_id: studentId, date, status, recorded_by: profile?.id, method: 'manual' });
+          .insert({ student_id: studentId, date, ...payload } as any);
         if (error) throw error;
       }
     },

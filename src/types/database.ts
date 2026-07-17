@@ -1478,6 +1478,53 @@ export type Database = {
           },
         ]
       }
+      notification_outbox: {
+        Row: {
+          channel: string
+          created_at: string | null
+          error: string | null
+          id: number
+          message: string
+          priority: string | null
+          sent_at: string | null
+          status: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          error?: string | null
+          id?: never
+          message: string
+          priority?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          error?: string | null
+          id?: never
+          message?: string
+          priority?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_outbox_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           category: Database["public"]["Enums"]["notification_category"]
@@ -1846,6 +1893,44 @@ export type Database = {
           {
             foreignKeyName: "private_lessons_teacher_id_fkey_users"
             columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string | null
+          endpoint: string
+          id: number
+          p256dh_key: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string | null
+          endpoint: string
+          id?: never
+          p256dh_key: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string | null
+          endpoint?: string
+          id?: never
+          p256dh_key?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -2584,6 +2669,8 @@ export type Database = {
           theme: string | null
           timezone: string | null
           updated_at: string
+          whatsapp_notifications: boolean | null
+          whatsapp_phone: string | null
           wilaya: string | null
         }
         Insert: {
@@ -2631,6 +2718,8 @@ export type Database = {
           theme?: string | null
           timezone?: string | null
           updated_at?: string
+          whatsapp_notifications?: boolean | null
+          whatsapp_phone?: string | null
           wilaya?: string | null
         }
         Update: {
@@ -2678,6 +2767,8 @@ export type Database = {
           theme?: string | null
           timezone?: string | null
           updated_at?: string
+          whatsapp_notifications?: boolean | null
+          whatsapp_phone?: string | null
           wilaya?: string | null
         }
         Relationships: [
@@ -2968,6 +3059,8 @@ export type Database = {
           teacher_name: string
         }[]
       }
+      bytea_to_text: { Args: { data: string }; Returns: string }
+      check_consecutive_absences: { Args: never; Returns: undefined }
       dispatch_notification: {
         Args: {
           category?: string
@@ -3045,6 +3138,131 @@ export type Database = {
         Args: { p_teacher_id: string }
         Returns: Json
       }
+      http: {
+        Args: { request: Database["public"]["CompositeTypes"]["http_request"] }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+        SetofOptions: {
+          from: "http_request"
+          to: "http_response"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      http_delete:
+        | {
+            Args: { uri: string }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+            SetofOptions: {
+              from: "*"
+              to: "http_response"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { content: string; content_type: string; uri: string }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+            SetofOptions: {
+              from: "*"
+              to: "http_response"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      http_get:
+        | {
+            Args: { uri: string }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+            SetofOptions: {
+              from: "*"
+              to: "http_response"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { data: Json; uri: string }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+            SetofOptions: {
+              from: "*"
+              to: "http_response"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      http_head: {
+        Args: { uri: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+        SetofOptions: {
+          from: "*"
+          to: "http_response"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      http_header: {
+        Args: { field: string; value: string }
+        Returns: Database["public"]["CompositeTypes"]["http_header"]
+        SetofOptions: {
+          from: "*"
+          to: "http_header"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      http_list_curlopt: {
+        Args: never
+        Returns: {
+          curlopt: string
+          value: string
+        }[]
+      }
+      http_patch: {
+        Args: { content: string; content_type: string; uri: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+        SetofOptions: {
+          from: "*"
+          to: "http_response"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      http_post:
+        | {
+            Args: { content: string; content_type: string; uri: string }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+            SetofOptions: {
+              from: "*"
+              to: "http_response"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { data: Json; uri: string }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+            SetofOptions: {
+              from: "*"
+              to: "http_response"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      http_put: {
+        Args: { content: string; content_type: string; uri: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+        SetofOptions: {
+          from: "*"
+          to: "http_response"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      http_reset_curlopt: { Args: never; Returns: boolean }
+      http_set_curlopt: {
+        Args: { curlopt: string; value: string }
+        Returns: boolean
+      }
       is_admin: { Args: never; Returns: boolean }
       is_assistant: { Args: never; Returns: boolean }
       is_parent: { Args: never; Returns: boolean }
@@ -3091,6 +3309,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      run_attendance_summary: { Args: never; Returns: string }
       search_users: {
         Args: {
           result_limit?: number
@@ -3142,6 +3361,8 @@ export type Database = {
           theme: string | null
           timezone: string | null
           updated_at: string
+          whatsapp_notifications: boolean | null
+          whatsapp_phone: string | null
           wilaya: string | null
         }[]
         SetofOptions: {
@@ -3152,7 +3373,23 @@ export type Database = {
         }
       }
       search_users_count: { Args: { search_query: string }; Returns: number }
+      text_to_bytea: { Args: { data: string }; Returns: string }
+      time_to_minutes: { Args: { t: string }; Returns: number }
       unregister_user: { Args: { p_id: string }; Returns: undefined }
+      urlencode:
+        | { Args: { data: Json }; Returns: string }
+        | {
+            Args: { string: string }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.urlencode(string => bytea), public.urlencode(string => varchar). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+        | {
+            Args: { string: string }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.urlencode(string => bytea), public.urlencode(string => varchar). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
       validate_attendance_session: {
         Args: { p_session_id: number; p_validated_by: string }
         Returns: Json
@@ -3208,7 +3445,23 @@ export type Database = {
       waiting_list_status: "waiting" | "notified" | "enrolled" | "expired"
     }
     CompositeTypes: {
-      [_ in never]: never
+      http_header: {
+        field: string | null
+        value: string | null
+      }
+      http_request: {
+        method: unknown
+        uri: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content_type: string | null
+        content: string | null
+      }
+      http_response: {
+        status: number | null
+        content_type: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content: string | null
+      }
     }
   }
 }

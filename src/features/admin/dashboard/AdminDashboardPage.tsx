@@ -148,7 +148,7 @@ export default function AdminDashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <RevenueChartWidget data={revenueData} />
-        <OccupancyChartWidget data={occupancyData} />
+        <OccupancyChartWidget data={occupancyData as any} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -163,8 +163,8 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ActivityTimeline items={activityData} />
-        <TodaySchedule data={scheduleData} />
+        <ActivityTimeline items={activityData as any} />
+        <TodaySchedule data={scheduleData as any} />
       </div>
     </div>
   );

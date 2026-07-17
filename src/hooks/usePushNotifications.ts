@@ -34,7 +34,7 @@ export function usePushNotifications(userId?: string | null) {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
           import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
-        ),
+        ) as unknown as BufferSource,
       });
 
       const json = sub.toJSON();

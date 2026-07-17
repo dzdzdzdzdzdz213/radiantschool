@@ -14,7 +14,7 @@ export default function ChildProgressPage() {
   const { data: child } = useQuery({
     queryKey: ['child-profile', childId],
     queryFn: async () => {
-      const { data } = await supabase.from('users').select('id, first_name, last_name, email, photo_url').eq('id', childId).single();
+      const { data } = await supabase.from('users').select('id, first_name, last_name, email, photo_url').eq('id', childId!).single();
       return data;
     },
     enabled: !!childId,
@@ -25,7 +25,7 @@ export default function ChildProgressPage() {
     queryFn: async () => {
       const { data } = await supabase.from('assignment_submissions')
         .select('grade, feedback, created_at, assignment:assignments!inner(name, max_grade, course:courses(name))')
-        .eq('student_id', childId)
+        .eq('student_id', childId!)
         .not('grade', 'is', null)
         .order('created_at', { ascending: false });
       return data ?? [];
@@ -36,7 +36,7 @@ export default function ChildProgressPage() {
   const { data: attendance } = useQuery({
     queryKey: ['child-attendance', childId],
     queryFn: async () => {
-      const { data } = await supabase.from('attendance').select('status, date').eq('student_id', childId).order('date', { ascending: false }).limit(30);
+      const { data } = await supabase.from('attendance').select('status, date').eq('student_id', childId!).order('date', { ascending: false }).limit(30);
       return data ?? [];
     },
     enabled: !!childId,
@@ -45,7 +45,7 @@ export default function ChildProgressPage() {
   const { data: enrollments } = useQuery({
     queryKey: ['child-enrollments', childId],
     queryFn: async () => {
-      const { data } = await supabase.from('course_enrollments').select('course:courses(name, subject)').eq('student_id', childId).eq('status', 'active');
+      const { data } = await supabase.from('course_enrollments').select('course:courses(name, subject)').eq('student_id', childId!).eq('status', 'active');
       return data ?? [];
     },
     enabled: !!childId,
