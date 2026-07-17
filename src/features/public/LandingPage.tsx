@@ -7,6 +7,9 @@ import { asset } from '@/lib/assets';
 import { t, LANGUAGES } from '@/i18n';
 import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { motion, useScroll, useTransform } from 'framer-motion';
+
+const ease = [0.16, 1, 0.3, 1] as const;
 
 /*
   HUMANIZING PASS — summary of what changed vs. the original file
@@ -102,10 +105,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
-      {/* Signature accent font — used ONLY for handwritten-style touches
-          (founder signature, sticky-note captions). Ideally move this
-          <link> into your index.html <head> instead of injecting it
-          here, for better font-loading performance. */}
       <style>{`.font-handwritten { font-family: 'Caveat', cursive; }`}</style>
 
       {/* HEADER */}
@@ -169,8 +168,6 @@ export default function LandingPage() {
                 )
               ))}
             </nav>
-            {/* Auth links — shown in the mobile menu since the header
-                buttons above are hidden below the sm breakpoint */}
             <div className="flex flex-col gap-3 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
               {LANGUAGES.map((l) => (
                 <button key={l.code} onClick={() => { setLang(l.code); setMenuOpen(false); }} className="flex items-center gap-3 text-sm" style={{ color: lang === l.code ? 'var(--primary)' : 'var(--fg-muted)', fontWeight: lang === l.code ? 600 : 400 }}>
@@ -188,97 +185,126 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* HERO */}
+      {/* HERO — Animated mesh gradient */}
       <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 60% 45% at 20% 45%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 70%), radial-gradient(ellipse 40% 35% at 80% 35%, color-mix(in srgb, #a78bfa 5%, transparent), transparent 70%)` }} />
+        {/* Animated mesh background */}
+        <div className="absolute inset-0 mesh-bg" />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 noise-overlay" />
+
+        {/* Floating orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="orb-1 absolute top-[15%] left-[20%] w-96 h-96 rounded-full bg-purple-500/10 blur-[100px]" />
+          <div className="orb-2 absolute top-[50%] right-[15%] w-80 h-80 rounded-full bg-pink-500/10 blur-[80px]" />
+          <div className="orb-3 absolute bottom-[20%] left-[35%] w-72 h-72 rounded-full bg-blue-500/10 blur-[90px]" />
         </div>
-        <div className="mx-auto max-w-7xl px-6 py-16 w-full relative">
+
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+
+        <div className="mx-auto max-w-7xl px-6 py-16 w-full relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-20">
             <div className="flex-1 text-center lg:text-left max-w-xl">
-              <div className="badge mb-8 inline-flex animate-up gap-2 rounded-full shadow-sm" style={{ animationDelay: '0s', boxShadow: '0 1px 6px color-mix(in srgb, var(--primary) 10%, transparent)' }}>
-                <Sparkles className="h-3.5 w-3.5" />
-                {t('hero.badge', lang)}
-              </div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }} className="mb-8 inline-flex gap-2 rounded-full glass px-4 py-2">
+                <Sparkles className="h-3.5 w-3.5 text-purple-300" />
+                <span className="text-xs font-semibold text-white/80">{t('hero.badge', lang)}</span>
+              </motion.div>
 
-              <h1 className="animate-up" style={{ animationDelay: '0.05s' }}>
-                <span className="block text-base sm:text-lg font-medium tracking-wider mb-3 uppercase" style={{ color: 'var(--fg-muted)', letterSpacing: '0.15em' }}>{t('hero.title1', lang)}</span>
-                <span className="block text-6xl sm:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tighter text-gradient">{t('hero.title2', lang)}</span>
-              </h1>
+              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease }}>
+                <span className="block text-base sm:text-lg font-medium tracking-wider mb-3 uppercase text-white/50" style={{ letterSpacing: '0.15em' }}>{t('hero.title1', lang)}</span>
+                <span className="block text-6xl sm:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tighter hero-title">{t('hero.title2', lang)}</span>
+              </motion.h1>
 
-              <p className="mt-6 text-base sm:text-lg leading-relaxed animate-up max-w-md mx-auto lg:mx-0" style={{ color: 'var(--fg-muted)', animationDelay: '0.1s' }}>
+              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2, ease }} className="mt-6 text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0 text-white/50">
                 {t('hero.subtitle', lang)}
-              </p>
+              </motion.p>
 
-              <div className="mt-10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.15s' }}>
-                <Link to="/formations" className="btn-primary h-14 px-10 text-base gap-2.5 w-full sm:w-auto shadow-2xl shadow-[var(--primary)]/30 hover:shadow-[var(--primary)]/40 transition-all duration-300 active:scale-[0.97]">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3, ease }} className="mt-10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+                <Link to="/formations" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 px-10 text-sm font-bold text-white shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.97] w-full sm:w-auto">
                   {t('hero.cta1', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
                 </Link>
-                <Link to="/enroll" className="btn-ghost h-14 px-10 text-base w-full sm:w-auto">
+                <Link to="/enroll" className="inline-flex h-14 items-center rounded-2xl border-2 border-white/10 px-10 text-sm font-semibold text-white/80 hover:bg-white/5 hover:border-white/20 hover:text-white transition-all duration-300 active:scale-[0.97] w-full sm:w-auto">
                   {t('hero.cta2', lang)}
                 </Link>
-              </div>
+              </motion.div>
 
-              {/* Humanizing touch: real-parents trust strip, right under the CTAs */}
-              <div className="mt-8 flex items-center gap-3 justify-center lg:justify-start animate-up" style={{ animationDelay: '0.18s' }}>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35, ease }} className="mt-8 flex items-center gap-3 justify-center lg:justify-start">
                 <div className="flex -space-x-3">
                   {['/avatars/parent1.jpg', '/avatars/parent2.jpg', '/avatars/parent3.jpg', '/avatars/parent4.jpg'].map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-9 w-9 rounded-full object-cover" style={{ border: '2px solid var(--bg)' }} />
+                    <img key={i} src={src} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-black/50" />
                   ))}
                 </div>
-                <p className="text-xs font-medium text-left" style={{ color: 'var(--fg-muted)' }}>
-                  Rejoint par <span style={{ color: 'var(--fg)', fontWeight: 700 }}>{stats?.studentCount ?? '200'}+</span> familles à Alger
+                <p className="text-xs font-medium text-left text-white/50">
+                  Rejoint par <span className="text-white font-bold">{stats?.studentCount ?? '200'}+</span> familles à Alger
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="mt-8 sm:mt-12 animate-up" style={{ animationDelay: '0.2s' }}>
-                <div className="flex flex-wrap justify-center rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease }} className="mt-8 sm:mt-12">
+                <div className="flex flex-wrap justify-center rounded-2xl overflow-hidden glass-card">
                   {[
                     { icon: BookOpen, value: courses?.length ?? 0, key: 'stat.formations' },
                     { icon: GraduationCap, value: stats?.levelCount ?? levelCount, key: 'stat.niveaux' },
                     { icon: Users, value: teacherCount, key: 'stat.professeurs' },
                   ].map((s, i, arr) => (
-                    <div key={s.key} className="flex items-center gap-3 px-5 sm:px-8 py-4 sm:py-5 min-w-[160px] flex-1" style={{ borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none', borderBottom: i < arr.length - 1 ? 'none' : 'none' }}>
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
-                        <s.icon className="h-5 w-5" style={{ color: 'var(--primary)' }} />
+                    <div key={s.key} className="flex items-center gap-3 px-5 sm:px-8 py-4 sm:py-5 min-w-[160px] flex-1" style={{ borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0 bg-white/10">
+                        <s.icon className="h-5 w-5 text-purple-300" />
                       </div>
                       <div className="text-left">
-                        <p className="text-2xl font-black leading-none mb-0.5" style={{ color: 'var(--primary)' }}><CountUp end={s.value} /></p>
-                        <p className="text-xs font-medium" style={{ color: 'var(--fg-muted)' }}>{t(s.key, lang)}</p>
+                        <p className="text-2xl font-black leading-none mb-0.5 text-white"><CountUp end={s.value} /></p>
+                        <p className="text-xs font-medium text-white/40">{t(s.key, lang)}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Humanizing touch: a real photo + a rotated Polaroid-style
-                card with a handwritten caption, instead of an abstract
-                logo-in-a-blob visual. */}
-            <div className="flex-1 flex justify-center lg:justify-end animate-up" style={{ animationDelay: '0.15s' }}>
+            {/* Hero image */}
+            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.2, ease }} className="flex-1 flex justify-center lg:justify-end">
               <div className="relative w-80 sm:w-[26rem] h-80 sm:h-[26rem]">
-                <div className="relative w-full h-full rounded-[32px] overflow-hidden" style={{ border: '1px solid var(--border)', boxShadow: '0 24px 60px rgba(0,0,0,0.12)' }}>
+                <div className="relative w-full h-full rounded-[32px] overflow-hidden shadow-2xl shadow-black/30">
                   <img
                     src="/images/hero-classroom.jpg"
                     alt="Élèves et professeurs de Radiant Academy en cours"
                     className="w-full h-full object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </div>
 
-                {/* Rotated Polaroid card, the one "signature" human element */}
-                <div
-                  className="absolute -bottom-8 -left-10 w-44 rounded-lg p-3 pb-4"
-                  style={{ backgroundColor: '#fff', boxShadow: '0 16px 40px rgba(0,0,0,0.18)', transform: 'rotate(-6deg)' }}
+                {/* Floating badge */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.6, ease }}
+                  className="absolute -bottom-6 -left-6 glass-card rounded-2xl p-4 flex items-center gap-3"
                 >
-                  <img src="/images/hero-polaroid.jpg" alt="Un cours de soutien à Radiant Academy" className="w-full h-28 object-cover rounded-sm mb-2" />
-                  <p className="font-handwritten text-lg leading-none text-center" style={{ color: '#1f2937' }}>
-                    On y arrive ensemble ✏️
-                  </p>
-                </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-500">
+                    <Award className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">98% Réussite</p>
+                    <p className="text-xs text-white/50">Aux examens 2025</p>
+                  </div>
+                </motion.div>
 
-                <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 25%, transparent)` }} />
+                {/* Floating rating */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.7, ease }}
+                  className="absolute -top-4 -right-4 glass-card rounded-2xl p-3 flex items-center gap-2"
+                >
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                  </div>
+                  <span className="text-sm font-bold text-white">4.9</span>
+                </motion.div>
+
+                {/* Decorative orb */}
+                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-purple-500/20 blur-[60px] orb-1" />
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -413,54 +439,76 @@ export default function LandingPage() {
       </section>
 
       {/* STATS BANNER */}
-      <section className="relative py-28 px-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }} data-reveal="scale">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-0 w-96 h-96 rounded-full blur-3xl opacity-30" style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--primary) 20%, transparent), transparent)` }} />
-          <div className="absolute bottom-1/4 right-0 w-96 h-96 rounded-full blur-3xl opacity-25" style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--accent) 15%, transparent), transparent)` }} />
+      <section className="relative py-28 px-6 overflow-hidden">
+        <div className="absolute inset-0 mesh-bg" />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 noise-overlay" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="orb-1 absolute top-[20%] left-[10%] w-72 h-72 rounded-full bg-purple-500/15 blur-[80px]" />
+          <div className="orb-2 absolute bottom-[20%] right-[10%] w-80 h-80 rounded-full bg-pink-500/10 blur-[100px]" />
         </div>
-        <div className="mx-auto max-w-7xl relative">
+        <div className="mx-auto max-w-7xl relative z-10">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-white">{t('section.pourquoi.title', lang)}</h2>
+            <p className="mt-4 text-white/50 max-w-xl mx-auto">Des chiffres qui parlent d'eux-mêmes</p>
+          </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: Star, value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis clients', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
-              { icon: Users, value: `${stats?.studentCount ?? 0}+`, label: 'Étudiants', sub: 'Inscrits', color: 'var(--primary)' },
+              { icon: Users, value: `${stats?.studentCount ?? 0}+`, label: 'Étudiants', sub: 'Inscrits', color: '#a855f7' },
               { icon: Award, value: `${stats?.successRate ?? 0}%`, label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
-              { icon: Shield, value: `${stats?.yearsActive ?? 0}+`, label: "Années d'expérience", sub: "Dans l'éducation", color: '#6366f1' },
+              { icon: Shield, value: `${stats?.yearsActive ?? 0}+`, label: "Années d'expérience", sub: "Dans l'éducation", color: '#3b82f6' },
             ].map((s, i) => (
-              <div key={i} className="group relative rounded-2xl animate-up transition-all duration-300 hover:-translate-y-1.5" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', animationDelay: `${i * 0.06}s`, boxShadow: 'var(--shadow-md)' }}>
-                <div className="h-1.5 rounded-t-2xl bg-gradient-to-r" style={{ background: `linear-gradient(90deg, ${s.color}, color-mix(in srgb, ${s.color} 50%, #fff))` }} />
-                <div className="p-8 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl mx-auto mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg" style={{ backgroundColor: `color-mix(in srgb, ${s.color} 10%, transparent)` }}>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1, ease }}
+                className="group glass-card rounded-2xl text-center"
+              >
+                <div className="h-1.5 rounded-t-2xl" style={{ background: `linear-gradient(90deg, ${s.color}, transparent)` }} />
+                <div className="p-8">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl mx-auto mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg bg-white/5">
                     <s.icon className="h-7 w-7" style={{ color: s.color }} />
                   </div>
                   <p className="text-5xl font-black tracking-tight mb-1" style={{ color: s.color }}>{s.value}</p>
-                  <p className="text-sm font-bold mt-2">{s.label}</p>
-                  <p className="text-xs mt-1" style={{ color: 'var(--fg-muted)' }}>{s.sub}</p>
+                  <p className="text-sm font-bold mt-2 text-white">{s.label}</p>
+                  <p className="text-xs mt-1 text-white/40">{s.sub}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden py-36 px-6" data-reveal="scale">
-        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #000))` }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-20" style={{ background: `radial-gradient(circle, rgba(255,255,255,0.15), transparent 60%)` }} />
-        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full" style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--accent) 15%, transparent), transparent 60%)` }} />
-        <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full" style={{ background: `radial-gradient(circle, rgba(255,255,255,0.04), transparent 60%)` }} />
-        <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient(rgba(255,255,255,0.04) 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
-        <div className="relative mx-auto max-w-4xl text-center">
-          <div className="badge inline-flex mb-8 text-white/90 border-white/20 bg-white/10 backdrop-blur-md shadow-lg" style={{ color: '#fff', boxShadow: '0 4px 20px rgba(255,255,255,0.05)' }}>{t('cta.badge', lang)}</div>
-          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.02]">{t('cta.title', lang)}</h2>
-          <p className="mt-6 text-white/70 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">{t('cta.subtitle', lang)}</p>
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
-            <Link to="/enroll" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-white px-10 text-sm font-bold shadow-2xl transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-1 active:scale-[0.97] text-base" style={{ color: 'var(--primary)' }}>
-              {t('cta.button', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
-            </Link>
-            <Link to="/formations" className="inline-flex h-14 items-center rounded-2xl border-2 px-10 text-sm font-semibold text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-white active:scale-[0.97] text-base" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
-              {t('cta.secondary', lang)}
-            </Link>
-          </div>
+      {/* CTA — Animated gradient */}
+      <section className="relative overflow-hidden py-36 px-6">
+        <div className="absolute inset-0 mesh-bg" />
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 noise-overlay" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="orb-1 absolute top-[30%] left-[20%] w-96 h-96 rounded-full bg-white/5 blur-[100px]" />
+          <div className="orb-2 absolute bottom-[30%] right-[20%] w-80 h-80 rounded-full bg-white/5 blur-[80px]" />
+        </div>
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        <div className="relative mx-auto max-w-4xl text-center z-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease }}>
+            <div className="inline-flex mb-8 gap-2 rounded-full glass px-4 py-2 text-white/80">
+              <Sparkles className="h-3.5 w-3.5" />
+              {t('cta.badge', lang)}
+            </div>
+            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.02]">{t('cta.title', lang)}</h2>
+            <p className="mt-6 text-white/60 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">{t('cta.subtitle', lang)}</p>
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
+              <Link to="/enroll" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-white px-10 text-sm font-bold text-purple-700 shadow-2xl transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-1 active:scale-[0.97]">
+                {t('cta.button', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
+              </Link>
+              <Link to="/formations" className="inline-flex h-14 items-center rounded-2xl border-2 border-white/20 px-10 text-sm font-semibold text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white hover:border-white/30 active:scale-[0.97]">
+                {t('cta.secondary', lang)}
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 
