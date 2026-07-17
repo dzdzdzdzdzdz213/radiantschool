@@ -59,21 +59,32 @@ export async function uploadAvatar(userId: string, file: File): Promise<string |
     throw new Error('File too large. Avatar images must be under 5MB.');
   }
 
-  const webpBlob = await convertToWebP(file);
-  const path = `${userId}/${Date.now()}.webp`;
-  const webpFile = new File([webpBlob], `${Date.now()}.webp`, { type: 'image/webp' });
+  let uploadFile = file;
+  let uploadPath: string;
+  let uploadContentType: string;
 
-  const { error: uploadError } = await supabase.storage.from(AVATAR_BUCKET).upload(path, webpFile, {
+  try {
+    const webpBlob = await convertToWebP(file);
+    uploadPath = `${userId}/${Date.now()}.webp`;
+    uploadFile = new File([webpBlob], `${Date.now()}.webp`, { type: 'image/webp' });
+    uploadContentType = 'image/webp';
+  } catch {
+    const ext = file.name.split('.').pop() || 'jpg';
+    uploadPath = `${userId}/${Date.now()}.${ext}`;
+    uploadContentType = file.type || 'image/jpeg';
+  }
+
+  const { error: uploadError } = await supabase.storage.from(AVATAR_BUCKET).upload(uploadPath, uploadFile, {
     cacheControl: '3600',
     upsert: true,
-    contentType: 'image/webp',
+    contentType: uploadContentType,
   });
   if (uploadError) throw ApiError.fromPostgrest({ message: uploadError.message, code: String(uploadError.cause ?? ''), details: uploadError });
 
-  const { error: dbError } = await supabase.from('users').update({ photo_url: path }).eq('id', userId);
+  const { error: dbError } = await supabase.from('users').update({ photo_url: uploadPath }).eq('id', userId);
   if (dbError) throw ApiError.fromPostgrest({ message: dbError.message, code: dbError.code, details: dbError.details });
 
-  return path;
+  return uploadPath;
 }
 
 /**
