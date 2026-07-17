@@ -55,6 +55,9 @@ export default function StudentEnrollPage() {
     onError: (err: any) => toast(err?.message || 'Erreur lors de l\'inscription', 'error'),
   });
 
+  const activeCount = (myEnrollments ?? []).filter(e => e.status === 'active' || e.status === 'pending_approval').length;
+  const remaining = Math.max(0, 8 - activeCount);
+
   const getEnrollmentStatus = (courseId: number) => {
     const found = myEnrollments?.find(e => e.course_id === courseId);
     return found?.status ?? null;
@@ -62,7 +65,10 @@ export default function StudentEnrollPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="h-6 w-6" /> Inscription aux formations</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="h-6 w-6" /> Inscription aux formations</h1>
+        <p className="text-sm text-muted-foreground">{activeCount}/8 inscriptions · {remaining} restante{remaining !== 1 ? 's' : ''}</p>
+      </div>
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-40 rounded-xl bg-muted/30 animate-pulse" />)}</div>
       ) : (
