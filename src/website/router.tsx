@@ -9,86 +9,90 @@ import TeacherLayout from '@/layouts/TeacherLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import AssistantLayout from '@/layouts/AssistantLayout';
 
-const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
-const StaffLoginPage = lazy(() => import('@/features/auth/StaffLoginPage'));
-const PublicEnrollPage = lazy(() => import('@/features/auth/PublicEnrollPage'));
-const AuthCallbackPage = lazy(() => import('@/features/auth/AuthCallbackPage'));
-const CompleteProfilePage = lazy(() => import('@/features/auth/CompleteProfilePage'));
-const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
+function loadPage(importFn: () => Promise<any>) {
+  return importFn().catch(() => { window.location.reload(); return { default: () => null }; });
+}
 
-const LandingPage = lazy(() => import('@/features/public/LandingPage'));
-const PublicCoursesPage = lazy(() => import('@/features/public/PublicCoursesPage'));
-const PrivateRequestPage = lazy(() => import('@/features/public/PrivateRequestPage'));
-const LegalPage = lazy(() => import('@/features/public/LegalPage'));
-const NotFoundPage = lazy(() => import('@/features/public/NotFoundPage'));
-const PublicFaqPage = lazy(() => import('@/features/public/PublicFaqPage'));
-const PublicContactPage = lazy(() => import('@/features/public/PublicContactPage'));
-const LeaderboardPage = lazy(() => import('@/features/public/LeaderboardPage'));
-const PrimaryPage = lazy(() => import('@/features/public/PrimaryPage'));
-const MiddleSchoolPage = lazy(() => import('@/features/public/MiddleSchoolPage'));
-const HighSchoolPage = lazy(() => import('@/features/public/HighSchoolPage'));
-const TeachersPage = lazy(() => import('@/features/public/TeachersPage'));
-const TeacherProfilePage = lazy(() => import('@/features/public/TeacherProfilePage'));
+const LoginPage = lazy(() => loadPage(() => import('@/features/auth/LoginPage')));
+const StaffLoginPage = lazy(() => loadPage(() => import('@/features/auth/StaffLoginPage')));
+const PublicEnrollPage = lazy(() => loadPage(() => import('@/features/auth/PublicEnrollPage')));
+const AuthCallbackPage = lazy(() => loadPage(() => import('@/features/auth/AuthCallbackPage')));
+const CompleteProfilePage = lazy(() => loadPage(() => import('@/features/auth/CompleteProfilePage')));
+const ForgotPasswordPage = lazy(() => loadPage(() => import('@/features/auth/ForgotPasswordPage')));
+const ResetPasswordPage = lazy(() => loadPage(() => import('@/features/auth/ResetPasswordPage')));
 
-const StudentDashboardPage = lazy(() => import('@/features/student/StudentDashboardPage'));
-const StudentSchedulePage = lazy(() => import('@/features/student/StudentSchedulePage'));
-const StudentAttendancePage = lazy(() => import('@/features/student/StudentAttendancePage'));
-const StudentPaymentsPage = lazy(() => import('@/features/student/StudentPaymentsPage'));
-const StudentCoursesPage = lazy(() => import('@/features/student/StudentCoursesPage'));
-const StudentEnrollPage = lazy(() => import('@/features/student/StudentEnrollPage'));
-const StudentOnlineClassesPage = lazy(() => import('@/features/student/StudentOnlineClassesPage'));
-const StudentPrivateLessonsPage = lazy(() => import('@/features/student/StudentPrivateLessonsPage'));
-const ParentDashboardPage = lazy(() => import('@/features/parent/ParentDashboardPage'));
-const TeacherDashboardPage = lazy(() => import('@/features/teacher/TeacherDashboardPage'));
-const TeacherCoursesPage = lazy(() => import('@/features/teacher/TeacherCoursesPage'));
-const TeacherSchedulePage = lazy(() => import('@/features/teacher/TeacherSchedulePage'));
-const TeacherStudentsPage = lazy(() => import('@/features/teacher/TeacherStudentsPage'));
-const TeacherPrivateLessonsPage = lazy(() => import('@/features/teacher/TeacherPrivateLessonsPage'));
-const TeacherAssignmentsPage = lazy(() => import('@/features/teacher/TeacherAssignmentsPage'));
-const TeacherAnnouncementsPage = lazy(() => import('@/features/teacher/TeacherAnnouncementsPage'));
-const TeacherReviewsPage = lazy(() => import('@/features/teacher/TeacherReviewsPage'));
-const TeacherRevenuePage = lazy(() => import('@/features/teacher/TeacherRevenuePage'));
-const TeacherReportsPage = lazy(() => import('@/features/teacher/TeacherReportsPage'));
-const TeacherResourcesPage = lazy(() => import('@/features/teacher/TeacherResourcesPage'));
-const TeacherVipClassesPage = lazy(() => import('@/features/teacher/TeacherVipClassesPage'));
-const TeacherOnlineClassesPage = lazy(() => import('@/features/teacher/TeacherOnlineClassesPage'));
-const AdminDashboardPage = lazy(() => import('@/features/admin/dashboard/AdminDashboardPage'));
-const AssistantDashboardPage = lazy(() => import('@/features/assistant/dashboard/AssistantDashboardPage'));
-const AssistantStudentsPage = lazy(() => import('@/features/assistant/students/StudentsPage'));
-const AssistantParentsPage = lazy(() => import('@/features/assistant/parents/ParentsPage'));
-const AssistantRegistrationsPage = lazy(() => import('@/features/assistant/registrations/RegistrationsPage'));
-const AssistantRfidPage = lazy(() => import('@/features/assistant/rfid/RfidPage'));
-const AssistantGroupsPage = lazy(() => import('@/features/assistant/groups/GroupsPage'));
-const AssistantPrivateLessonsPage = lazy(() => import('@/features/assistant/private-lessons/AssistantPrivateLessonsPage'));
-const AssistantRoomsPage = lazy(() => import('@/features/assistant/rooms/RoomsPage'));
-const AssistantNotificationsPage = lazy(() => import('@/features/assistant/notifications/NotificationsPage'));
-const AssistantEmailsPage = lazy(() => import('@/features/assistant/emails/EmailsPage'));
-const AssistantResourcesPage = lazy(() => import('@/features/assistant/resources/ResourcesPage'));
-const AssistantCampaignsPage = lazy(() => import('@/features/assistant/campaigns/CampaignsPage'));
-const AssistantCalendarPage = lazy(() => import('@/features/assistant/calendar/CalendarPage'));
-const AssistantSearchPage = lazy(() => import('@/features/assistant/search/SearchPage'));
-const AssistantSettingsPage = lazy(() => import('@/features/assistant/settings/SettingsPage'));
-const AssistantAttendancePage = lazy(() => import('@/features/assistant/attendance/BulkAttendancePage'));
+const LandingPage = lazy(() => loadPage(() => import('@/features/public/LandingPage')));
+const PublicCoursesPage = lazy(() => loadPage(() => import('@/features/public/PublicCoursesPage')));
+const PrivateRequestPage = lazy(() => loadPage(() => import('@/features/public/PrivateRequestPage')));
+const LegalPage = lazy(() => loadPage(() => import('@/features/public/LegalPage')));
+const NotFoundPage = lazy(() => loadPage(() => import('@/features/public/NotFoundPage')));
+const PublicFaqPage = lazy(() => loadPage(() => import('@/features/public/PublicFaqPage')));
+const PublicContactPage = lazy(() => loadPage(() => import('@/features/public/PublicContactPage')));
+const LeaderboardPage = lazy(() => loadPage(() => import('@/features/public/LeaderboardPage')));
+const PrimaryPage = lazy(() => loadPage(() => import('@/features/public/PrimaryPage')));
+const MiddleSchoolPage = lazy(() => loadPage(() => import('@/features/public/MiddleSchoolPage')));
+const HighSchoolPage = lazy(() => loadPage(() => import('@/features/public/HighSchoolPage')));
+const TeachersPage = lazy(() => loadPage(() => import('@/features/public/TeachersPage')));
+const TeacherProfilePage = lazy(() => loadPage(() => import('@/features/public/TeacherProfilePage')));
 
-const UsersPage = lazy(() => import('@/features/admin/UsersPage'));
-const CreateUserPage = lazy(() => import('@/features/admin/CreateUserPage'));
-const StudentDetailPage = lazy(() => import('@/features/public/StudentDetailPage'));
-const CoursesPage = lazy(() => import('@/features/public/CoursesPage'));
-const CourseDetailPage = lazy(() => import('@/features/public/CourseDetailPage'));
-const AdminAttendanceOversightPage = lazy(() => import('@/features/admin/attendance/AdminAttendanceOversightPage'));
-const PaymentsPage = lazy(() => import('@/features/assistant/payments/PaymentsPage'));
-const InvoicesPage = lazy(() => import('@/features/assistant/invoices/InvoicesPage'));
-const ReportsPage = lazy(() => import('@/features/assistant/reports/ReportsPage'));
-const MessagesPage = lazy(() => import('@/features/shared/MessagesPage'));
-const SchedulePage = lazy(() => import('@/features/shared/SchedulePage'));
-const ProfilePage = lazy(() => import('@/features/shared/ProfilePage'));
-const SettingsPage = lazy(() => import('@/features/admin/SettingsPage'));
-const HelpPage = lazy(() => import('@/features/shared/HelpPage'));
-const AuditLogPage = lazy(() => import('@/features/admin/audit/AuditLogPage'));
-const PayrollPage = lazy(() => import('@/features/admin/payroll/PayrollPage'));
-const ChildProgressPage = lazy(() => import('@/features/parent/ChildProgressPage'));
-const ComingSoonPage = lazy(() => import('@/components/ui/ComingSoonPage'));
+const StudentDashboardPage = lazy(() => loadPage(() => import('@/features/student/StudentDashboardPage')));
+const StudentSchedulePage = lazy(() => loadPage(() => import('@/features/student/StudentSchedulePage')));
+const StudentAttendancePage = lazy(() => loadPage(() => import('@/features/student/StudentAttendancePage')));
+const StudentPaymentsPage = lazy(() => loadPage(() => import('@/features/student/StudentPaymentsPage')));
+const StudentCoursesPage = lazy(() => loadPage(() => import('@/features/student/StudentCoursesPage')));
+const StudentEnrollPage = lazy(() => loadPage(() => import('@/features/student/StudentEnrollPage')));
+const StudentOnlineClassesPage = lazy(() => loadPage(() => import('@/features/student/StudentOnlineClassesPage')));
+const StudentPrivateLessonsPage = lazy(() => loadPage(() => import('@/features/student/StudentPrivateLessonsPage')));
+const ParentDashboardPage = lazy(() => loadPage(() => import('@/features/parent/ParentDashboardPage')));
+const TeacherDashboardPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherDashboardPage')));
+const TeacherCoursesPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherCoursesPage')));
+const TeacherSchedulePage = lazy(() => loadPage(() => import('@/features/teacher/TeacherSchedulePage')));
+const TeacherStudentsPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherStudentsPage')));
+const TeacherPrivateLessonsPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherPrivateLessonsPage')));
+const TeacherAssignmentsPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherAssignmentsPage')));
+const TeacherAnnouncementsPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherAnnouncementsPage')));
+const TeacherReviewsPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherReviewsPage')));
+const TeacherRevenuePage = lazy(() => loadPage(() => import('@/features/teacher/TeacherRevenuePage')));
+const TeacherReportsPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherReportsPage')));
+const TeacherResourcesPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherResourcesPage')));
+const TeacherVipClassesPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherVipClassesPage')));
+const TeacherOnlineClassesPage = lazy(() => loadPage(() => import('@/features/teacher/TeacherOnlineClassesPage')));
+const AdminDashboardPage = lazy(() => loadPage(() => import('@/features/admin/dashboard/AdminDashboardPage')));
+const AssistantDashboardPage = lazy(() => loadPage(() => import('@/features/assistant/dashboard/AssistantDashboardPage')));
+const AssistantStudentsPage = lazy(() => loadPage(() => import('@/features/assistant/students/StudentsPage')));
+const AssistantParentsPage = lazy(() => loadPage(() => import('@/features/assistant/parents/ParentsPage')));
+const AssistantRegistrationsPage = lazy(() => loadPage(() => import('@/features/assistant/registrations/RegistrationsPage')));
+const AssistantRfidPage = lazy(() => loadPage(() => import('@/features/assistant/rfid/RfidPage')));
+const AssistantGroupsPage = lazy(() => loadPage(() => import('@/features/assistant/groups/GroupsPage')));
+const AssistantPrivateLessonsPage = lazy(() => loadPage(() => import('@/features/assistant/private-lessons/AssistantPrivateLessonsPage')));
+const AssistantRoomsPage = lazy(() => loadPage(() => import('@/features/assistant/rooms/RoomsPage')));
+const AssistantNotificationsPage = lazy(() => loadPage(() => import('@/features/assistant/notifications/NotificationsPage')));
+const AssistantEmailsPage = lazy(() => loadPage(() => import('@/features/assistant/emails/EmailsPage')));
+const AssistantResourcesPage = lazy(() => loadPage(() => import('@/features/assistant/resources/ResourcesPage')));
+const AssistantCampaignsPage = lazy(() => loadPage(() => import('@/features/assistant/campaigns/CampaignsPage')));
+const AssistantCalendarPage = lazy(() => loadPage(() => import('@/features/assistant/calendar/CalendarPage')));
+const AssistantSearchPage = lazy(() => loadPage(() => import('@/features/assistant/search/SearchPage')));
+const AssistantSettingsPage = lazy(() => loadPage(() => import('@/features/assistant/settings/SettingsPage')));
+const AssistantAttendancePage = lazy(() => loadPage(() => import('@/features/assistant/attendance/BulkAttendancePage')));
+
+const UsersPage = lazy(() => loadPage(() => import('@/features/admin/UsersPage')));
+const CreateUserPage = lazy(() => loadPage(() => import('@/features/admin/CreateUserPage')));
+const StudentDetailPage = lazy(() => loadPage(() => import('@/features/public/StudentDetailPage')));
+const CoursesPage = lazy(() => loadPage(() => import('@/features/public/CoursesPage')));
+const CourseDetailPage = lazy(() => loadPage(() => import('@/features/public/CourseDetailPage')));
+const AdminAttendanceOversightPage = lazy(() => loadPage(() => import('@/features/admin/attendance/AdminAttendanceOversightPage')));
+const PaymentsPage = lazy(() => loadPage(() => import('@/features/assistant/payments/PaymentsPage')));
+const InvoicesPage = lazy(() => loadPage(() => import('@/features/assistant/invoices/InvoicesPage')));
+const ReportsPage = lazy(() => loadPage(() => import('@/features/assistant/reports/ReportsPage')));
+const MessagesPage = lazy(() => loadPage(() => import('@/features/shared/MessagesPage')));
+const SchedulePage = lazy(() => loadPage(() => import('@/features/shared/SchedulePage')));
+const ProfilePage = lazy(() => loadPage(() => import('@/features/shared/ProfilePage')));
+const SettingsPage = lazy(() => loadPage(() => import('@/features/admin/SettingsPage')));
+const HelpPage = lazy(() => loadPage(() => import('@/features/shared/HelpPage')));
+const AuditLogPage = lazy(() => loadPage(() => import('@/features/admin/audit/AuditLogPage')));
+const PayrollPage = lazy(() => loadPage(() => import('@/features/admin/payroll/PayrollPage')));
+const ChildProgressPage = lazy(() => loadPage(() => import('@/features/parent/ChildProgressPage')));
+const ComingSoonPage = lazy(() => loadPage(() => import('@/components/ui/ComingSoonPage')));
 
 const websiteRoutes: RouteObject[] = [
   {
@@ -252,29 +256,13 @@ const teacherRoutes: RouteObject[] = [
   },
 ];
 
-function RouteErrorBoundary() {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-2xl font-bold">Une erreur est survenue</h1>
-      <p className="text-muted-foreground text-sm max-w-md">Le chargement de la page a échoué.</p>
-      <button
-        onClick={() => window.location.reload()}
-        className="mt-4 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-      >
-        Recharger la page
-      </button>
-    </div>
-  );
-}
-
 export const router = createBrowserRouter([
-  ...websiteRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
-  ...studentRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
-  ...parentRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
-  ...teacherRoutes.map(r => ({ ...r, errorElement: <RouteErrorBoundary /> })),
+  ...websiteRoutes,
+  ...studentRoutes,
+  ...parentRoutes,
+  ...teacherRoutes,
   {
     path: '/admin',
-    errorElement: <RouteErrorBoundary />,
     element: routeSuspense(<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
@@ -299,7 +287,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '/assistant',
-    errorElement: <RouteErrorBoundary />,
     element: routeSuspense(<ProtectedRoute allowedRoles={['assistant']}><AssistantLayout /></ProtectedRoute>),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
