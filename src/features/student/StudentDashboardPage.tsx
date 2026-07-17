@@ -1,43 +1,59 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Sparkles, BookOpen, Calendar, DollarSign, FileText } from 'lucide-react';
+import { BookOpen, Calendar, DollarSign, FileText, Clock, MapPin, GraduationCap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 
 function PageHeader({ name }: { name: string }) {
   const { lang } = useLang();
   const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const today = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return (
-    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}>
-      <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none">
-          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[140%] bg-gradient-radial from-primary/[0.06] to-transparent" />
-        </div>
-        <CardContent className="relative z-10 p-8">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="relative overflow-hidden rounded-2xl border border-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle,currentColor 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative z-10 p-6 sm:p-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100">
-              <Sparkles className="h-7 w-7 text-amber-500" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+              <GraduationCap className="h-6 w-6 text-white" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                <p className="text-sm text-muted-foreground">{today}</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
+              <p className="mt-0.5 text-sm text-white/70">{today}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
-const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+function StatCard({ icon: Icon, label, value, color, delay }: { icon: any; label: string; value: string | number; color: string; delay: number }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+        <div className={`h-1 bg-gradient-to-r ${color}`} />
+        <div className="p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
+              <Icon className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </div>
+          <p className="mt-3 text-2xl font-bold tracking-tight">{value}</p>
+          <p className="mt-0.5 text-xs font-medium text-muted-foreground">{label}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function StudentDashboardPage() {
   const { profile } = useAuth();
@@ -85,74 +101,55 @@ export default function StudentDashboardPage() {
 
   if (!profile) return null;
 
+  const statsData = [
+    { icon: BookOpen, label: t('nav.my_courses', lang), value: stats?.enrollments ?? 0, color: 'from-blue-500 to-blue-600' },
+    { icon: Calendar, label: t('nav.attendance', lang), value: stats?.attendances ?? 0, color: 'from-emerald-500 to-emerald-600' },
+    { icon: DollarSign, label: t('nav.payments', lang), value: stats ? formatCurrency(stats.totalPaid) : '—', color: 'from-violet-500 to-violet-600' },
+    { icon: FileText, label: t('nav.invoices', lang), value: stats?.unpaidInvoices ?? 0, color: 'from-amber-500 to-orange-500' },
+  ];
+
   return (
-    <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+    <div className="space-y-6">
       <PageHeader name={profile.firstName ?? ''} />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
-              <BookOpen className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('nav.my_courses', lang)}</p>
-              <p className="text-2xl font-bold">{stats?.enrollments ?? '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
-              <Calendar className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('nav.attendance', lang)}</p>
-              <p className="text-2xl font-bold">{stats?.attendances ?? '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100">
-              <DollarSign className="h-6 w-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('nav.payments', lang)}</p>
-              <p className="text-2xl font-bold">{stats ? formatCurrency(stats.totalPaid) : '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
-              <FileText className="h-6 w-6 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('nav.invoices', lang)}</p>
-              <p className="text-2xl font-bold">{stats?.unpaidInvoices ?? '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
+        {statsData.map((s, i) => (
+          <StatCard key={s.label} icon={s.icon} label={s.label} value={s.value} color={s.color} delay={0.05 + i * 0.05} />
+        ))}
       </div>
+
       {upcoming && upcoming.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-lg">{t('nav.schedule', lang)} — {new Date().toLocaleDateString('fr-FR', { weekday: 'long' })}</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {upcoming.map((s: any) => (
-              <div key={s.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
-                <div className="text-center min-w-[60px]">
-                  <p className="text-sm font-bold">{s.start_time?.slice(0, 5)}</p>
-                  <p className="text-[10px] text-muted-foreground">{s.end_time?.slice(0, 5)}</p>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">{s.course?.name}</p>
-                  {s.room && <p className="text-xs text-muted-foreground">{s.room.name}</p>}
-                </div>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}>
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="flex items-center gap-2.5 p-5 pb-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
+                <Clock className="h-4 w-4 text-blue-600" />
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <h2 className="text-sm font-semibold">{t('nav.schedule', lang)} — {new Date().toLocaleDateString('fr-FR', { weekday: 'long' })}</h2>
+            </div>
+            <div className="p-5 space-y-2">
+              {upcoming.map((s: any) => (
+                <div key={s.id} className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <div className="flex flex-col items-center min-w-[56px]">
+                    <span className="text-base font-bold leading-tight">{s.start_time?.slice(0, 5)}</span>
+                    <span className="text-[10px] text-muted-foreground">{s.end_time?.slice(0, 5)}</span>
+                  </div>
+                  <div className="h-8 w-px bg-border" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{s.course?.name}</p>
+                    {s.room && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <MapPin className="h-3 w-3" />
+                        {s.room.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       )}
-    </motion.div>
+    </div>
   );
 }

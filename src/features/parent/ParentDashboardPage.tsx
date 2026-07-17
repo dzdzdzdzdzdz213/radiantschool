@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Sparkles, Users, DollarSign, BookOpen, CalendarCheck, TrendingUp, ArrowRight, Clock, UserPlus } from 'lucide-react';
+import { Users, DollarSign, BookOpen, CalendarCheck, TrendingUp, ArrowRight, Clock, UserPlus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency, getFullName } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 
 interface ChildSummary {
@@ -25,72 +24,94 @@ function PageHeader({ name }: { name: string }) {
   const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const today = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return (
-    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}>
-      <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none">
-          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[140%] bg-gradient-radial from-primary/[0.06] to-transparent" />
-        </div>
-        <CardContent className="relative z-10 p-8">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="relative overflow-hidden rounded-2xl border border-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-500 via-pink-600 to-rose-600" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle,currentColor 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative z-10 p-6 sm:p-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-              <Sparkles className="h-7 w-7 text-primary" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+              <Users className="h-6 w-6 text-white" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                <p className="text-sm text-muted-foreground">{today}</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
+              <p className="mt-0.5 text-sm text-white/70">{today}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
-function ChildCard({ child }: { child: ChildSummary }) {
+function StatCard({ icon: Icon, label, value, color, delay }: { icon: any; label: string; value: string | number; color: string; delay: number }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+        <div className={`h-1 bg-gradient-to-r ${color}`} />
+        <div className="p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
+              <Icon className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </div>
+          <p className="mt-3 text-2xl font-bold tracking-tight">{value}</p>
+          <p className="mt-0.5 text-xs font-medium text-muted-foreground">{label}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function ChildCard({ child, delay }: { child: ChildSummary; delay: number }) {
   const { lang } = useLang();
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary shrink-0">
-            {child.firstName?.charAt(0)}{child.lastName?.charAt(0)}
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-pink-500/5 transition-all duration-300">
+        <div className="h-1 bg-gradient-to-r from-pink-500 to-rose-500" />
+        <div className="p-5">
+          <div className="flex items-center gap-3.5 mb-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-rose-500 text-white text-sm font-bold shrink-0">
+              {child.firstName?.charAt(0)}{child.lastName?.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold truncate">{getFullName(child.firstName, child.lastName)}</p>
+              <p className="text-xs text-muted-foreground">{child.activeCourses} cours actifs</p>
+            </div>
+            <Link to={`/parent/progress/${child.id}`} className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold truncate">{getFullName(child.firstName, child.lastName)}</p>
-            <p className="text-xs text-muted-foreground">{child.activeCourses} cours actifs</p>
-          </div>
-          <Link to={`/parent/progress/${child.id}`} className="text-primary hover:text-primary/80 shrink-0">
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-muted/30 rounded-lg p-3 text-center">
-            <CalendarCheck className="h-4 w-4 mx-auto mb-1 text-green-600" />
-            <p className="text-lg font-bold">
-              {child.attendanceRate != null ? `${child.attendanceRate}%` : '—'}
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('dashboard.stat.attendance', lang)}</p>
+          <div className="grid grid-cols-2 gap-2.5 mb-4">
+            <div className="rounded-xl bg-muted/30 p-3 text-center">
+              <CalendarCheck className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
+              <p className="text-lg font-bold">
+                {child.attendanceRate != null ? `${child.attendanceRate}%` : '—'}
+              </p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Présence</p>
+            </div>
+            <div className="rounded-xl bg-muted/30 p-3 text-center">
+              <BookOpen className="h-4 w-4 mx-auto mb-1 text-blue-500" />
+              <p className="text-lg font-bold">{child.activeCourses}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Cours</p>
+            </div>
           </div>
-          <div className="bg-muted/30 rounded-lg p-3 text-center">
-            <BookOpen className="h-4 w-4 mx-auto mb-1 text-blue-600" />
-            <p className="text-lg font-bold">{child.activeCourses}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('nav.courses', lang)}</p>
-          </div>
-        </div>
 
-        {child.upcomingClass && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground border-t border-border pt-3">
-            <Clock className="h-3 w-3 shrink-0" />
-            <span className="truncate">Prochain cours: {child.upcomingClass}</span>
-            {child.nextClassTime && <span className="shrink-0 font-medium">{child.nextClassTime}</span>}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {child.upcomingClass && (
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground border-t border-border/50 pt-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-pink-500/10">
+                <Clock className="h-3 w-3 text-pink-500" />
+              </div>
+              <span className="truncate">{child.upcomingClass}</span>
+              {child.nextClassTime && <span className="shrink-0 font-semibold">{child.nextClassTime}</span>}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -195,51 +216,27 @@ export default function ParentDashboardPage() {
     enabled: childIds.length > 0,
   });
 
+  const statsData = [
+    { icon: Users, label: t('nav.students', lang), value: children?.length ?? 0, color: 'from-pink-500 to-pink-600' },
+    { icon: BookOpen, label: t('nav.registrations', lang), value: stats?.enrollments ?? 0, color: 'from-blue-500 to-blue-600' },
+    { icon: DollarSign, label: t('nav.payments', lang), value: stats ? formatCurrency(stats.totalPaid) : '—', color: 'from-violet-500 to-violet-600' },
+  ];
+
   return (
-    <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+    <div className="space-y-6">
       <PageHeader name={profile?.firstName ?? ''} />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
-              <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('nav.students', lang)}</p>
-              <p className="text-2xl font-bold">{children?.length ?? '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
-              <BookOpen className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('nav.registrations', lang)}</p>
-              <p className="text-2xl font-bold">{stats?.enrollments ?? '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-              <DollarSign className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('nav.payments', lang)}</p>
-              <p className="text-2xl font-bold">{stats ? formatCurrency(stats.totalPaid) : '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
+        {statsData.map((s, i) => (
+          <StatCard key={s.label} icon={s.icon} label={s.label} value={s.value} color={s.color} delay={0.05 + i * 0.05} />
+        ))}
       </div>
 
       {summaries && summaries.length > 0 && (
-        <>
-          <div className="flex items-center justify-between">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}>
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
+              <TrendingUp className="h-5 w-5 text-pink-500" />
               Suivi des enfants
             </h2>
             <Link to="/parent/enroll" className="text-sm text-primary hover:underline flex items-center gap-1">
@@ -247,57 +244,87 @@ export default function ParentDashboardPage() {
             </Link>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {summaries.map(child => <ChildCard key={child.id} child={child} />)}
+            {summaries.map((child, i) => <ChildCard key={child.id} child={child} delay={0.25 + i * 0.05} />)}
           </div>
-        </>
+        </motion.div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Actions rapides</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            <Link to="/parent/enroll" className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-sm">
-              <BookOpen className="h-4 w-4 text-primary" />
-              {t('common.enroll', lang)} un enfant
-            </Link>
-            <Link to="/parent/payments" className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-sm">
-              <DollarSign className="h-4 w-4 text-primary" />
-              Voir les paiements
-            </Link>
-            <Link to="/parent/enroll" className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-sm">
-              <UserPlus className="h-4 w-4 text-primary" />
-              Demander un cours particulier
-            </Link>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><UserPlus className="h-4 w-4" />Cours particuliers</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {!privateLessons?.length ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Aucun cours particulier</p>
-            ) : (
-              privateLessons.map((pl: any) => (
-                <div key={pl.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20 text-sm">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{pl.student?.first_name} {pl.student?.last_name}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {pl.teacher?.first_name} {pl.teacher?.last_name}
-                      {pl.course ? ` · ${pl.course.name}` : ''}
-                    </p>
-                  </div>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                    pl.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                    pl.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                    'bg-amber-100 text-amber-700'
-                  }`}>
-                    {pl.status === 'accepted' ? 'Accepté' : pl.status === 'rejected' ? 'Refusé' : 'En attente'}
-                  </span>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Quick actions */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}>
+          <div className="rounded-2xl border border-border bg-card overflow-hidden h-full">
+            <div className="flex items-center gap-2.5 p-5 pb-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10">
+                <BookOpen className="h-4 w-4 text-pink-600" />
+              </div>
+              <h2 className="text-sm font-semibold">Actions rapides</h2>
+            </div>
+            <div className="p-5 space-y-2">
+              <Link to="/parent/enroll" className="flex items-center gap-3.5 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-sm group">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10">
+                  <BookOpen className="h-4 w-4 text-pink-500" />
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+                <span className="font-medium group-hover:text-foreground transition-colors">{t('common.enroll', lang)} un enfant</span>
+              </Link>
+              <Link to="/parent/payments" className="flex items-center gap-3.5 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-sm group">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10">
+                  <DollarSign className="h-4 w-4 text-violet-500" />
+                </div>
+                <span className="font-medium group-hover:text-foreground transition-colors">Voir les paiements</span>
+              </Link>
+              <Link to="/parent/enroll" className="flex items-center gap-3.5 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-sm group">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
+                  <UserPlus className="h-4 w-4 text-blue-500" />
+                </div>
+                <span className="font-medium group-hover:text-foreground transition-colors">Demander un cours particulier</span>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Private lessons */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+          <div className="rounded-2xl border border-border bg-card overflow-hidden h-full">
+            <div className="flex items-center gap-2.5 p-5 pb-0">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+                <UserPlus className="h-4 w-4 text-emerald-600" />
+              </div>
+              <h2 className="text-sm font-semibold">Cours particuliers</h2>
+            </div>
+            <div className="p-5">
+              {!privateLessons?.length ? (
+                <div className="text-center py-8">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/30 mb-3">
+                    <UserPlus className="h-6 w-6 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Aucun cours particulier</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {privateLessons.map((pl: any) => (
+                    <div key={pl.id} className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{pl.student?.first_name} {pl.student?.last_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {pl.teacher?.first_name} {pl.teacher?.last_name}
+                          {pl.course ? ` · ${pl.course.name}` : ''}
+                        </p>
+                      </div>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                        pl.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-600' :
+                        pl.status === 'rejected' ? 'bg-destructive/10 text-destructive' :
+                        'bg-amber-500/10 text-amber-600'
+                      }`}>
+                        {pl.status === 'accepted' ? 'Accepté' : pl.status === 'rejected' ? 'Refusé' : 'En attente'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </motion.div>
+    </div>
   );
 }

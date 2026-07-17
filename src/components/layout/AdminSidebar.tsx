@@ -44,19 +44,18 @@ function NavLink({ item, collapsed, isActive, onClick }: { item: NavItem; collap
       className={cn(
         'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
         isActive
-          ? 'text-white shadow-md'
+          ? 'text-white'
           : 'text-sidebar-fg/60 hover:bg-sidebar-accent hover:text-sidebar-fg',
       )}
-      style={isActive ? { background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' } : {}}
+      style={isActive ? { background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #000))', boxShadow: '0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent)' } : {}}
     >
-      {Icon && <Icon className={cn('h-5 w-5 shrink-0 transition-all duration-300', isActive ? 'scale-110' : '')} />}
+      <div className={cn(
+        'absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full transition-all duration-300',
+        isActive ? 'bg-white scale-100' : 'bg-transparent scale-0',
+      )} />
+      {Icon && <Icon className={cn('h-5 w-5 shrink-0 transition-all duration-300', isActive && 'scale-110')} />}
       {!collapsed && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="truncate"
-        >
+        <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="truncate">
           {item.label}
         </motion.span>
       )}
@@ -64,13 +63,6 @@ function NavLink({ item, collapsed, isActive, onClick }: { item: NavItem; collap
         <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
           {item.badge}
         </span>
-      )}
-      {isActive && (
-        <motion.div
-          layoutId="nav-indicator"
-          className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary"
-          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-        />
       )}
     </Link>
   );

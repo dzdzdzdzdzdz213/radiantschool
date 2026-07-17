@@ -1,9 +1,10 @@
-import { Sparkles, DollarSign, Users, CalendarCheck, Building2, TrendingUp, Bell } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Shield, DollarSign, Users, CalendarCheck, Building2, TrendingUp, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminDashboard, type AnalyticsMetric } from '@/features/admin/dashboard/useAdminDashboard';
 import AlertBanner from '@/features/admin/dashboard/components/AlertBanner';
@@ -23,27 +24,25 @@ function PageHeader({ name }: { name: string }) {
   const today = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <Card className="welcome-glow relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[140%] bg-gradient-radial from-primary/[0.06] to-transparent" />
-      </div>
-      <CardContent className="relative z-10 p-8">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <Sparkles className="h-7 w-7 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {t('dashboard.greeting', lang, name)}
-            </h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-              <p className="text-sm text-muted-foreground">{today}</p>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="relative overflow-hidden rounded-2xl border border-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-amber-600 to-orange-600" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle,currentColor 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative z-10 p-6 sm:p-8">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+              <Shield className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
+              <p className="mt-0.5 text-sm text-white/70">{today}</p>
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   );
 }
 

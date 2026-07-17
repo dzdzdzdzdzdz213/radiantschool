@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Headphones } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAssistantDashboard } from './useAssistantDashboard';
 import KpiCards from './components/KpiCards';
@@ -21,32 +21,24 @@ function PageHeader({ name }: { name: string }) {
   const today = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full pointer-events-none">
-          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[140%] bg-gradient-radial from-primary/[0.06] to-transparent" />
-        </div>
-        <CardContent className="relative z-10 p-8">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="relative overflow-hidden rounded-2xl border border-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle,currentColor 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative z-10 p-6 sm:p-8">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-              <Sparkles className="h-7 w-7 text-primary" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+              <Headphones className="h-6 w-6 text-white" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                {t('dashboard.greeting', lang, name)}
-              </h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                <p className="text-sm text-muted-foreground">{today}</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
+              <p className="mt-0.5 text-sm text-white/70">{today}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

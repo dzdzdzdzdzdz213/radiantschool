@@ -198,7 +198,9 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   }, []);
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
+    <header className="relative">
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      <div className="flex h-14 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
@@ -270,6 +272,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         <Separator orientation="vertical" className="h-8 mx-1 hidden sm:block" />
 
         <UserMenu />
+      </div>
       </div>
     </header>
   );
