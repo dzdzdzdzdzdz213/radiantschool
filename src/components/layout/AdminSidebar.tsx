@@ -119,7 +119,7 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4" style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' }}>
-          <Link to="/admin/dashboard" className="flex items-center gap-2.5 overflow-hidden">
+          <Link to={items[0]?.path ?? '/'} className="flex items-center gap-2.5 overflow-hidden">
             <img
               src={asset('logo-transparent.webp')}
               alt="Radiant Learning"
@@ -157,7 +157,7 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
                 key={item.path}
                 item={item}
                 collapsed={collapsed}
-                isActive={location.pathname === item.path}
+                isActive={item.path.endsWith('/dashboard') ? location.pathname === item.path : location.pathname.startsWith(item.path)}
                 onClick={onClose}
               />
             ))}

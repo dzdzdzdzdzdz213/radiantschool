@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users, BookOpen, LayoutDashboard, Settings, CreditCard, Calendar, FileText, UserCircle } from 'lucide-react';
+import { Search, Users, BookOpen, LayoutDashboard, Settings, CreditCard, Calendar, FileText, UserCircle, GraduationCap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
@@ -10,7 +10,7 @@ const roleRoutes: Record<string, { icon: React.ReactNode; label: string; path: s
     { icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: <Users className="h-4 w-4" />, label: 'Utilisateurs', path: '/admin/users' },
     { icon: <BookOpen className="h-4 w-4" />, label: 'Cours', path: '/admin/courses' },
-    { icon: <Calendar className="h-4 w-4" />, label: 'Emploi du temps', path: '/admin/schedules' },
+    { icon: <Calendar className="h-4 w-4" />, label: 'Emploi du temps', path: '/admin/schedule' },
     { icon: <CreditCard className="h-4 w-4" />, label: 'Paiements', path: '/admin/payments' },
     { icon: <FileText className="h-4 w-4" />, label: 'Paie', path: '/admin/payroll' },
     { icon: <FileText className="h-4 w-4" />, label: 'Audit', path: '/admin/audit-log' },
@@ -20,7 +20,7 @@ const roleRoutes: Record<string, { icon: React.ReactNode; label: string; path: s
     { icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', path: '/assistant/dashboard' },
     { icon: <Users className="h-4 w-4" />, label: 'Élèves', path: '/assistant/students' },
     { icon: <Users className="h-4 w-4" />, label: 'Parents', path: '/assistant/parents' },
-    { icon: <BookOpen className="h-4 w-4" />, label: 'Cours', path: '/assistant/courses' },
+    { icon: <BookOpen className="h-4 w-4" />, label: 'Cours', path: '/assistant/groups' },
     { icon: <Calendar className="h-4 w-4" />, label: 'Présences', path: '/assistant/attendance' },
     { icon: <CreditCard className="h-4 w-4" />, label: 'Paiements', path: '/assistant/payments' },
     { icon: <Search className="h-4 w-4" />, label: 'Recherche', path: '/assistant/search' },
@@ -30,7 +30,8 @@ const roleRoutes: Record<string, { icon: React.ReactNode; label: string; path: s
     { icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', path: '/teacher/dashboard' },
     { icon: <BookOpen className="h-4 w-4" />, label: 'Mes cours', path: '/teacher/courses' },
     { icon: <Calendar className="h-4 w-4" />, label: 'Emploi du temps', path: '/teacher/schedule' },
-    { icon: <Settings className="h-4 w-4" />, label: 'Paramètres', path: '/teacher/settings' },
+    { icon: <Users className="h-4 w-4" />, label: 'Élèves', path: '/teacher/students' },
+    { icon: <Settings className="h-4 w-4" />, label: 'Paramètres', path: '/teacher/profile' },
   ],
   student: [
     { icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', path: '/student/dashboard' },
@@ -40,9 +41,9 @@ const roleRoutes: Record<string, { icon: React.ReactNode; label: string; path: s
   ],
   parent: [
     { icon: <LayoutDashboard className="h-4 w-4" />, label: 'Dashboard', path: '/parent/dashboard' },
-    { icon: <Users className="h-4 w-4" />, label: 'Mes enfants', path: '/parent/children' },
+    { icon: <GraduationCap className="h-4 w-4" />, label: 'Inscription', path: '/parent/enroll' },
     { icon: <CreditCard className="h-4 w-4" />, label: 'Paiements', path: '/parent/payments' },
-    { icon: <Settings className="h-4 w-4" />, label: 'Paramètres', path: '/parent/settings' },
+    { icon: <Settings className="h-4 w-4" />, label: 'Profil', path: '/parent/profile' },
   ],
 };
 

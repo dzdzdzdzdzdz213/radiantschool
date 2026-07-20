@@ -42,7 +42,7 @@ export default function Sidebar({ items, open, onClose }: SidebarProps) {
         )}
       >
         <div className="flex h-16 items-center justify-between border-b px-6" style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' }}>
-          <Link to="/admin/dashboard" className="flex items-center gap-2.5">
+          <Link to={items[0]?.path ?? '/'} className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white font-bold text-sm backdrop-blur-sm">RL</div>
             <span className="font-semibold text-base text-white">Radiant Learning</span>
           </Link>
@@ -53,7 +53,7 @@ export default function Sidebar({ items, open, onClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {items.map((item) => {
             const Icon = iconMap[item.icon];
-            const isActive = location.pathname === item.path;
+            const isActive = item.path.endsWith('/dashboard') ? location.pathname === item.path : location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}

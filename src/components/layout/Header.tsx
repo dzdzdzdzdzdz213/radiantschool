@@ -1,4 +1,4 @@
-import { Menu, Bell, LogOut, Sun, Moon, Globe } from 'lucide-react';
+import { Menu, LogOut, Sun, Moon, Globe } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
@@ -69,10 +69,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
             </>
           )}
         </div>
-
-        <button onClick={() => navigate('/notifications')} className="relative rounded-xl p-2.5 transition-all duration-200 hover:bg-white/10 active:scale-95">
-          <Bell className="h-4 w-4" style={{ color: 'var(--fg-muted)' }} />
-        </button>
 
         <div className="flex items-center gap-3 pl-2 ml-2" style={{ borderLeft: '1px solid var(--border)' }}>
           <div className="hidden sm:block text-right">
