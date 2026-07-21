@@ -239,22 +239,29 @@ export default function LandingPage() {
                 </p>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease }} className="mt-8 sm:mt-12">
-                <div className="flex flex-wrap justify-center rounded-2xl overflow-hidden glass-card">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease }} className="mt-10 sm:mt-14">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
                   {[
-                    { icon: BookOpen, value: courses?.length ?? 0, key: 'stat.formations' },
-                    { icon: GraduationCap, value: stats?.levelCount ?? levelCount, key: 'stat.niveaux' },
-                    { icon: Users, value: teacherCount, key: 'stat.professeurs' },
-                  ].map((s, i, arr) => (
-                    <div key={s.key} className="flex items-center gap-3 px-5 sm:px-8 py-4 sm:py-5 min-w-[160px] flex-1" style={{ borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0 bg-white/10">
-                        <s.icon className="h-5 w-5 text-purple-300" />
+                    { icon: BookOpen, value: courses?.length ?? 0, key: 'stat.formations', gradient: 'from-purple-500/20 to-purple-600/10', iconBg: 'bg-purple-500/20', iconColor: 'text-purple-300' },
+                    { icon: GraduationCap, value: stats?.levelCount ?? levelCount, key: 'stat.niveaux', gradient: 'from-pink-500/20 to-pink-600/10', iconBg: 'bg-pink-500/20', iconColor: 'text-pink-300' },
+                    { icon: Users, value: teacherCount, key: 'stat.professeurs', gradient: 'from-blue-500/20 to-blue-600/10', iconBg: 'bg-blue-500/20', iconColor: 'text-blue-300' },
+                  ].map((s, i) => (
+                    <motion.div
+                      key={s.key}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, delay: 0.5 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 sm:p-6 text-center hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                      <div className="relative z-10">
+                        <div className={`flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl ${s.iconBg} mx-auto mb-3`}>
+                          <s.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${s.iconColor}`} />
+                        </div>
+                        <p className="text-3xl sm:text-4xl font-black leading-none text-white tracking-tight"><CountUp end={s.value} /></p>
+                        <p className="mt-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-white/50">{t(s.key, lang)}</p>
                       </div>
-                      <div className="text-left">
-                        <p className="text-2xl font-black leading-none mb-0.5 text-white"><CountUp end={s.value} /></p>
-                        <p className="text-xs font-medium text-white/40">{t(s.key, lang)}</p>
-                      </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>
