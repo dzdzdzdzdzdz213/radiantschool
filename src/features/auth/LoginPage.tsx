@@ -76,16 +76,11 @@ export default function LoginPage() {
       <div className="absolute inset-0 mesh-bg" />
       <div className="absolute inset-0 bg-black/30" />
 
-      {/* Noise texture overlay */}
-      <div className="absolute inset-0 noise-overlay" />
-
       {/* Floating orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="orb-1 absolute top-[10%] left-[15%] w-72 h-72 rounded-full bg-purple-500/20 blur-[80px]" />
-        <div className="orb-2 absolute top-[60%] right-[10%] w-96 h-96 rounded-full bg-pink-500/15 blur-[100px]" />
-        <div className="orb-3 absolute bottom-[15%] left-[40%] w-64 h-64 rounded-full bg-blue-500/20 blur-[70px]" />
-        <div className="orb-1 absolute top-[30%] right-[30%] w-48 h-48 rounded-full bg-violet-400/10 blur-[60px]" />
-        <div className="orb-2 absolute bottom-[40%] left-[10%] w-56 h-56 rounded-full bg-fuchsia-400/10 blur-[80px]" />
+        <div className="orb-1 absolute top-[10%] left-[15%] w-72 h-72 rounded-full bg-purple-500/20 blur-[40px]" />
+        <div className="orb-2 absolute top-[60%] right-[10%] w-96 h-96 rounded-full bg-pink-500/15 blur-[40px]" />
+        <div className="orb-3 absolute bottom-[15%] left-[40%] w-64 h-64 rounded-full bg-blue-500/20 blur-[30px]" />
       </div>
 
       {/* Grid pattern overlay */}

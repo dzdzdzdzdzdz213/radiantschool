@@ -190,13 +190,12 @@ export default function LandingPage() {
         {/* Animated mesh background */}
         <div className="absolute inset-0 mesh-bg" />
         <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 noise-overlay" />
 
         {/* Floating orbs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="orb-1 absolute top-[15%] left-[20%] w-96 h-96 rounded-full bg-purple-500/10 blur-[100px]" />
-          <div className="orb-2 absolute top-[50%] right-[15%] w-80 h-80 rounded-full bg-pink-500/10 blur-[80px]" />
-          <div className="orb-3 absolute bottom-[20%] left-[35%] w-72 h-72 rounded-full bg-blue-500/10 blur-[90px]" />
+          <div className="orb-1 absolute top-[15%] left-[20%] w-96 h-96 rounded-full bg-purple-500/10 blur-[50px]" />
+          <div className="orb-2 absolute top-[50%] right-[15%] w-80 h-80 rounded-full bg-pink-500/10 blur-[40px]" />
+          <div className="orb-3 absolute bottom-[20%] left-[35%] w-72 h-72 rounded-full bg-blue-500/10 blur-[40px]" />
         </div>
 
         {/* Grid pattern */}
@@ -436,44 +435,32 @@ export default function LandingPage() {
       </section>
 
       {/* STATS BANNER */}
-      <section className="hero-dark relative py-28 px-6 overflow-hidden">
+      <section className="relative py-20 px-6 overflow-hidden">
         <div className="absolute inset-0 mesh-bg" />
         <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute inset-0 noise-overlay" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="orb-1 absolute top-[20%] left-[10%] w-72 h-72 rounded-full bg-purple-500/15 blur-[80px]" />
-          <div className="orb-2 absolute bottom-[20%] right-[10%] w-80 h-80 rounded-full bg-pink-500/10 blur-[100px]" />
+          <div className="absolute top-[20%] left-[10%] w-72 h-72 rounded-full bg-purple-500/10 blur-[60px]" />
+          <div className="absolute bottom-[20%] right-[10%] w-80 h-80 rounded-full bg-pink-500/10 blur-[60px]" />
         </div>
-        <div className="mx-auto max-w-7xl relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-white">{t('section.pourquoi.title', lang)}</h2>
-            <p className="mt-4 text-white/50 max-w-xl mx-auto">Des chiffres qui parlent d'eux-mêmes</p>
+        <div className="mx-auto max-w-5xl relative z-10">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">{t('section.pourquoi.title', lang)}</h2>
+            <p className="mt-3 text-white/40 text-sm">Des chiffres qui parlent d'eux-mêmes</p>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {[
-              { icon: Star, value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis clients', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
-              { icon: Users, value: `${stats?.studentCount ?? 0}+`, label: 'Étudiants', sub: 'Inscrits', color: '#a855f7' },
-              { icon: Award, value: `${stats?.successRate ?? 0}%`, label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
-              { icon: Shield, value: `${stats?.yearsActive ?? 0}+`, label: "Années d'expérience", sub: "Dans l'éducation", color: '#3b82f6' },
+              { value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
+              { value: `${stats?.studentCount ?? 0}`, suffix: '+', label: 'Étudiants', sub: 'Inscrits', color: '#a855f7' },
+              { value: `${stats?.successRate ?? 0}`, suffix: '%', label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
+              { value: `${stats?.yearsActive ?? 0}`, suffix: '+', label: "Années", sub: "D'expérience", color: '#3b82f6' },
             ].map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease }}
-                className="group glass-card rounded-2xl text-center"
-              >
-                <div className="h-1.5 rounded-t-2xl" style={{ background: `linear-gradient(90deg, ${s.color}, transparent)` }} />
-                <div className="p-8">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl mx-auto mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg bg-white/5">
-                    <s.icon className="h-7 w-7" style={{ color: s.color }} />
-                  </div>
-                  <p className="text-5xl font-black tracking-tight mb-1" style={{ color: s.color }}>{s.value}</p>
-                  <p className="text-sm font-bold mt-2 text-white">{s.label}</p>
-                  <p className="text-xs mt-1 text-white/40">{s.sub}</p>
-                </div>
-              </motion.div>
+              <div key={i} className="text-center">
+                <p className="text-4xl sm:text-5xl font-black tracking-tight leading-none" style={{ color: s.color }}>
+                  {s.value}{s.suffix ?? ''}
+                </p>
+                <p className="mt-2 text-sm font-bold text-white">{s.label}</p>
+                <p className="text-[11px] text-white/35 mt-0.5">{s.sub}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -483,10 +470,9 @@ export default function LandingPage() {
       <section className="relative overflow-hidden py-36 px-6">
         <div className="absolute inset-0 mesh-bg" />
         <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute inset-0 noise-overlay" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="orb-1 absolute top-[30%] left-[20%] w-96 h-96 rounded-full bg-white/5 blur-[100px]" />
-          <div className="orb-2 absolute bottom-[30%] right-[20%] w-80 h-80 rounded-full bg-white/5 blur-[80px]" />
+          <div className="orb-1 absolute top-[30%] left-[20%] w-96 h-96 rounded-full bg-white/5 blur-[40px]" />
+          <div className="orb-2 absolute bottom-[30%] right-[20%] w-80 h-80 rounded-full bg-white/5 blur-[40px]" />
         </div>
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         <div className="relative mx-auto max-w-4xl text-center z-10">
