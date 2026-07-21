@@ -1352,6 +1352,12 @@ html {
   transform: translateY(-2px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
+.hero-dark .glass-card,
+.hero-dark .glass-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
 
 /* ─────── ANIMATED GRADIENT BORDER ─────── */
 @keyframes borderGlow {
