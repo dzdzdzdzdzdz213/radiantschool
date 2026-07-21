@@ -35,7 +35,7 @@ export default function AuthCallbackPage() {
         };
         navigate(rolePath[profile.role] || '/', { replace: true });
       } else {
-        navigate('/auth/complete-profile', { replace: true });
+        navigate('/complete-profile', { replace: true });
       }
     });
 

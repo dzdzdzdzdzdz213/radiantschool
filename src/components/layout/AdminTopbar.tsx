@@ -145,7 +145,7 @@ function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           {t('nav.profile', lang)}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate(`/${role}/settings`)}>
+        <DropdownMenuItem onClick={() => navigate(role === 'teacher' ? `/${role}/profile` : `/${role}/settings`)}>
           <Settings className="mr-2 h-4 w-4" />
           {t('nav.settings', lang)}
         </DropdownMenuItem>

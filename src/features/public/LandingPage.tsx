@@ -75,10 +75,10 @@ const NAV = [
 
 // Placeholder team data — replace photos + bios with your real team.
 const TEAM = [
-  { name: 'Amina B.', role: 'Fondatrice — Prof de Mathématiques', years: '12 ans d\'expérience', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=500&fit=crop&crop=face' },
-  { name: 'Yacine K.', role: 'Prof de Physique', years: '8 ans d\'expérience', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop&crop=face' },
-  { name: 'Sarah M.', role: 'Prof de Français', years: '6 ans d\'expérience', photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=500&fit=crop&crop=face' },
-  { name: 'Riad T.', role: 'Coordinateur pédagogique', years: '10 ans d\'expérience', photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=500&fit=crop&crop=face' },
+  { name: 'Amina B.', role: 'Fondatrice — Prof de Mathématiques', years: '12 ans d\'expérience', photo: asset('team/amina.jpg') },
+  { name: 'Yacine K.', role: 'Prof de Physique', years: '8 ans d\'expérience', photo: asset('team/yacine.jpg') },
+  { name: 'Sarah M.', role: 'Prof de Français', years: '6 ans d\'expérience', photo: asset('team/sarah.jpg') },
+  { name: 'Riad T.', role: 'Coordinateur pédagogique', years: '10 ans d\'expérience', photo: asset('team/riad.jpg') },
 ];
 
 export default function LandingPage() {
@@ -230,7 +230,7 @@ export default function LandingPage() {
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35, ease }} className="mt-8 flex items-center gap-3 justify-center lg:justify-start">
                 <div className="flex -space-x-3">
-                  {['https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face'].map((src, i) => (
+                  {[asset('avatars/parent1.jpg'), asset('avatars/parent2.jpg'), asset('avatars/parent3.jpg'), asset('avatars/parent4.jpg')].map((src, i) => (
                     <img key={i} src={src} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-black/50" />
                   ))}
                 </div>
@@ -265,7 +265,7 @@ export default function LandingPage() {
               <div className="relative w-80 sm:w-[26rem] h-80 sm:h-[26rem]">
                 <div className="relative w-full h-full rounded-[32px] overflow-hidden shadow-2xl shadow-black/30">
                   <img
-                    src="https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=800&h=800&fit=crop"
+                    src={asset('images/hero-classroom.jpg')}
                     alt="Élèves et professeurs de Radiant Academy en cours"
                     className="w-full h-full object-cover"
                   />
@@ -330,7 +330,7 @@ export default function LandingPage() {
               </p>
 
               <div className="flex items-center gap-4 rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face" loading="lazy" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
+                <img src={asset('team/founder.jpg')} loading="lazy" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
                 <div>
                   <p className="font-handwritten text-3xl leading-none mb-1" style={{ color: 'var(--primary)' }}>Amina B.</p>
                   <p className="text-xs" style={{ color: 'var(--fg-muted)' }}>Fondatrice — prof de mathématiques depuis 12 ans</p>
@@ -341,13 +341,13 @@ export default function LandingPage() {
             {/* Photo collage */}
             <div className="relative h-[420px] hidden lg:block">
               <img
-                src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=700&fit=crop" loading="lazy"
+                src={asset('images/about-main.jpg')} loading="lazy"
                 alt="L'équipe de Radiant Academy"
                 className="absolute top-0 right-0 w-72 h-80 object-cover rounded-2xl"
                 style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}
               />
               <img
-                src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=500&h=600&fit=crop" loading="lazy"
+                src={asset('images/about-secondary.jpg')} loading="lazy"
                 alt="Un cours de soutien scolaire"
                 className="absolute bottom-0 left-0 w-56 h-64 object-cover rounded-2xl"
                 style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '4px solid var(--bg)' }}

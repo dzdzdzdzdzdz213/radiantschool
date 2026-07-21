@@ -9,7 +9,7 @@ import { t } from '@/i18n';
 
 const searchCategories = [
   { key: 'students', label: '', icon: Users, basePath: '/assistant/students' },
-  { key: 'courses', label: '', icon: BookOpen, basePath: '/assistant/courses' },
+  { key: 'courses', label: '', icon: BookOpen, basePath: '/assistant/groups' },
   { key: 'invoices', label: '', icon: FileText, basePath: '/assistant/invoices' },
   { key: 'payments', label: '', icon: DollarSign, basePath: '/assistant/payments' },
 ] as const;

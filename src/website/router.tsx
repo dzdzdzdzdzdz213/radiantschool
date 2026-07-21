@@ -208,6 +208,7 @@ const studentRoutes: RouteObject[] = [
       { path: 'messages', Component: MessagesPage },
       { path: 'profile', Component: ProfilePage },
       { path: 'help', Component: HelpPage },
+      { path: 'settings', Component: ProfilePage },
       { path: '*', Component: ComingSoonPage },
     ],
   },
@@ -256,6 +257,9 @@ const teacherRoutes: RouteObject[] = [
       { path: 'reports', Component: TeacherReportsPage },
       { path: 'revenue', Component: TeacherRevenuePage },
       { path: 'reviews', Component: TeacherReviewsPage },
+      { path: 'help', Component: HelpPage },
+      { path: 'settings', Component: ProfilePage },
+      { path: '*', Component: ComingSoonPage },
     ],
   },
 ];
