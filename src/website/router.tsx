@@ -321,6 +321,7 @@ export const router = createBrowserRouter([
       { path: 'schedule', Component: SchedulePage },
       { path: 'reports', Component: ReportsPage },
       { path: 'profile', Component: ProfilePage },
+      { path: 'help', Component: HelpPage },
       { path: '*', Component: ComingSoonPage },
     ],
   },

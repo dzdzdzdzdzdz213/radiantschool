@@ -117,7 +117,7 @@ export default function CmdK() {
         {courses.length > 0 && (
           <CommandGroup heading="Cours">
             {courses.map((c) => (
-              <CommandItem key={c.id} onSelect={() => run(`/assistant/courses/${c.id}`)}>
+              <CommandItem key={c.id} onSelect={() => run(`/assistant/groups/${c.id}`)}>
                 <BookOpen className="h-4 w-4" />
                 {c.name}
               </CommandItem>
