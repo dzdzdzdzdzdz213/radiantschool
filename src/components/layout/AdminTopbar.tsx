@@ -217,6 +217,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           Site
         </button>
 
+        {profile?.role === 'assistant' && (
         <div className="hidden md:flex items-center">
           <form onSubmit={handleSearch} className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -232,6 +233,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
             </kbd>
           </form>
         </div>
+        )}
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">

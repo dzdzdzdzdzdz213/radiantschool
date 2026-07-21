@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import CmdK from '@/features/shared/CmdK';
 import type { NavItem } from '@/components/layout/AdminSidebar';
 
 function DashboardFallback() {
@@ -90,6 +91,7 @@ export default function AssistantLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <CmdK />
       <AdminSidebar
         items={assistantNavItems}
         open={sidebarOpen}

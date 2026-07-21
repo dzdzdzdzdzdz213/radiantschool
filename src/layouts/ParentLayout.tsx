@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import CmdK from '@/features/shared/CmdK';
 import type { NavItem } from '@/components/layout/Sidebar';
 
 function ParentFallback() {
@@ -39,6 +40,7 @@ export default function ParentLayout() {
   ];
   return (
     <div className="flex h-screen overflow-hidden">
+      <CmdK />
       <Sidebar items={items} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(true)} />
