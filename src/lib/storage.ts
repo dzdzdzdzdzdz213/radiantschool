@@ -26,7 +26,7 @@ function resizeImage(img: HTMLImageElement, maxDim: number): { width: number; he
   return { width: Math.round(width * ratio), height: Math.round(height * ratio) };
 }
 
-function convertToWebP(file: File, maxDim = 256): Promise<Blob> {
+export function convertToWebP(file: File, maxDim = 256): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);

@@ -1,12 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCourses, useSubjects, useLevels, useRooms } from '@/hooks/useQueries';
-import { useUsers } from '@/hooks/useQueries';
+import { useCourses, useSubjects, useLevels, useRooms, useUsers } from '@/hooks/useQueries';
 import { supabase } from '@/lib/supabase';
-import { formatCurrency, formatDate, getStatusColor, getFullName } from '@/lib/utils';
+import { formatCurrency, formatDate, getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Search, Plus, BookOpen, X, Pencil, Trash2, Camera, Loader, ImageOff, Trash } from 'lucide-react';
+import { Search, Plus, BookOpen, X, Pencil, Trash2, Camera, Loader, ImageOff, Trash, Users, Clock, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCourseImageUrl, uploadCourseImage } from '@/lib/storage';
@@ -14,9 +13,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+
+function CapacityBar({ current, capacity }: { current: number; capacity: number }) {
+  const pct = Math.min((current / (capacity || 1)) * 100, 100);
+  const color = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-orange-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-emerald-500';
+  return (
+    <div className="h-1 rounded-full bg-accent overflow-hidden">
+      <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+const STATUS_MAP: Record<string, { fr: string; en: string; ar: string; variant: string }> = {
+  active: { fr: 'Actif', en: 'Active', ar: 'نشط', variant: 'success' },
+  inactive: { fr: 'Inactif', en: 'Inactive', ar: 'غير نشط', variant: 'outline' },
+  full: { fr: 'Complet', en: 'Full', ar: 'مكتمل', variant: 'warning' },
+  cancelled: { fr: 'Annulé', en: 'Cancelled', ar: 'ملغي', variant: 'destructive' },
+};
 
 export default function CoursesPage() {
   const { data: courses, isLoading, isError } = useCourses();
@@ -28,11 +46,22 @@ export default function CoursesPage() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const channel = supabase.channel('admin_courses_live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, () => {
+        qc.invalidateQueries({ queryKey: ['courses'] });
+      })
+      .subscribe();
+    return () => { channel.unsubscribe(); supabase.removeChannel(channel); };
+  }, [qc]);
+
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [catFilter, setCatFilter] = useState('');
   const [levelFilter, setLevelFilter] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'enrollment' | 'price'>('name');
 
   const levelsByCat = useMemo(() => {
     const grouped: Record<string, any[]> = {};
@@ -43,7 +72,6 @@ export default function CoursesPage() {
   }, [levels]);
 
   const filteredLevels = catFilter ? (levelsByCat[catFilter] ?? []) : (levels ?? []);
-
   const teachers = allUsers?.filter((u: any) => u.role === 'teacher') ?? [];
 
   const [showModal, setShowModal] = useState(false);
@@ -149,15 +177,23 @@ export default function CoursesPage() {
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
-  const filtered = (courses ?? []).filter((c: any) => {
-    const q = search.toLowerCase();
-    const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q) || c.level?.stream?.toLowerCase().includes(q);
-    const matchesType = !typeFilter || c.type === typeFilter;
-    const matchesCat = !catFilter || c.level?.category === catFilter;
-    const matchesLevel = !levelFilter || c.level_id === parseInt(levelFilter);
-    const matchesSubject = !subjectFilter || c.subject_id === parseInt(subjectFilter);
-    return matchesSearch && matchesType && matchesCat && matchesLevel && matchesSubject;
-  });
+  const filtered = useMemo(() => {
+    const result = (courses ?? []).filter((c: any) => {
+      const q = search.toLowerCase();
+      const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q) || c.level?.stream?.toLowerCase().includes(q);
+      const matchesType = !typeFilter || c.type === typeFilter;
+      const matchesCat = !catFilter || c.level?.category === catFilter;
+      const matchesLevel = !levelFilter || c.level_id === parseInt(levelFilter);
+      const matchesSubject = !subjectFilter || c.subject_id === parseInt(subjectFilter);
+      return matchesSearch && matchesType && matchesCat && matchesLevel && matchesSubject;
+    });
+    result.sort((a: any, b: any) => {
+      if (sortBy === 'enrollment') return (b.current_enrollments ?? 0) - (a.current_enrollments ?? 0);
+      if (sortBy === 'price') return (b.price ?? 0) - (a.price ?? 0);
+      return a.name.localeCompare(b.name);
+    });
+    return result;
+  }, [courses, search, typeFilter, catFilter, levelFilter, subjectFilter, sortBy]);
 
   return (
     <div className="space-y-4">
@@ -168,10 +204,6 @@ export default function CoursesPage() {
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteMutation.isPending}
       />
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('nav.courses', lang)}</h1>
-        <Button className="h-9 gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('common.add', lang)}</Button>
-      </div>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8 bg-black/50" onClick={() => setShowModal(false)}>
@@ -190,7 +222,7 @@ export default function CoursesPage() {
                 <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="h-9" rows={2} />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Image du cours</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('groups.room', lang)} (WebP)</Label>
                 <div className="flex items-center gap-3">
                   <div className="relative w-20 h-20 rounded-lg border bg-muted flex items-center justify-center overflow-hidden shrink-0">
                     {imagePreview || form.image_url ? (
@@ -213,7 +245,8 @@ export default function CoursesPage() {
                         <Trash className="h-4 w-4" />{t('common.delete', lang)}
                       </Button>
                     )}
-                    <input id="course-image-input" type="file" accept="image/*" className="hidden" onChange={e => {
+                    <p className="text-[10px] text-muted-foreground">{lang === 'fr' ? 'Converti automatiquement en WebP' : lang === 'ar' ? 'يتم التحويل تلقائياً إلى WebP' : 'Auto-converted to WebP'}</p>
+                    <input id="course-image-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={e => {
                       const file = e.target.files?.[0];
                       if (file) { setImageFile(file); setImagePreview(URL.createObjectURL(file)); }
                     }} />
@@ -223,9 +256,9 @@ export default function CoursesPage() {
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.type', lang)} *</Label>
                 <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v }))} placeholder={t('common.select', lang)}>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="vip">VIP</SelectItem>
-                  <SelectItem value="private">Particulier</SelectItem>
+                  <SelectItem value="normal">{t('type.normal', lang)}</SelectItem>
+                  <SelectItem value="vip">{t('type.vip', lang)}</SelectItem>
+                  <SelectItem value="private">{t('type.private', lang)}</SelectItem>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -262,7 +295,7 @@ export default function CoursesPage() {
                   {(levels ?? [])
                     .sort((a: any, b: any) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
                     .map((l: any) => {
-                      const catLabel = l.category === 'primary' ? 'Primaire' : l.category === 'middle' ? 'CEM' : 'Lycée';
+                      const catLabel = l.category === 'primary' ? t('landing.category_primaire', lang) : l.category === 'middle' ? t('landing.category_cem', lang) : t('landing.category_lycee', lang);
                       return (
                         <SelectItem key={l.id} value={String(l.id)}>
                           [{catLabel}] {l.name}{l.stream ? ` - ${l.stream}` : ''}
@@ -299,11 +332,11 @@ export default function CoursesPage() {
         </div>
       )}
 
-      {isError && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          {t('errors.load_error', lang, t('nav.courses', lang))}. {t('dashboard.load_error_retry', lang)}
-        </div>
-      )}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t('nav.courses', lang)}</h1>
+        <Button className="h-9 gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('common.add', lang)}</Button>
+      </div>
+
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -329,48 +362,86 @@ export default function CoursesPage() {
         </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter} placeholder={t('common.all', lang)}>
           <SelectItem value="">{t('common.all', lang)}</SelectItem>
-          <SelectItem value="normal">Normal</SelectItem>
+          <SelectItem value="normal">{t('type.normal', lang)}</SelectItem>
           <SelectItem value="vip">{t('type.vip', lang)}</SelectItem>
           <SelectItem value="private">{t('type.private', lang)}</SelectItem>
         </Select>
+        <Select value={sortBy} onValueChange={v => setSortBy(v as any)} className="min-w-[130px]">
+          <SelectItem value="name">{t('common.name', lang)}</SelectItem>
+          <SelectItem value="enrollment">{t('groups.enrolled', lang)}</SelectItem>
+          <SelectItem value="price">{t('common.price', lang)}</SelectItem>
+        </Select>
       </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading ? (
-          <div className="col-span-full p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>
-        ) : isError ? (
+        {isLoading ? Array.from({ length: 6 }).map((_, i) => (
+          <Card key={i} className="overflow-hidden">
+            <Skeleton className="aspect-video" />
+            <div className="p-5 space-y-3">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          </Card>
+        )) : isError ? (
           <div className="col-span-full p-8 text-center text-muted-foreground">{t('errors.load_error', lang, t('nav.courses', lang))}</div>
         ) : filtered.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-muted-foreground">{t('common.no_results', lang)}</div>
+          <div className="col-span-full p-8 text-center text-muted-foreground">
+            <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-20" />
+            <p>{t('common.no_results', lang)}</p>
+          </div>
         ) : (
-          filtered.map((c: any) => (
-            <div key={c.id} className="rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md overflow-hidden">
-              {c.image_url && (
-                <div className="aspect-video overflow-hidden">
-                  <img src={getCourseImageUrl(c.image_url) || ''} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
-                </div>
-              )}
-              <div className="p-5">
-              <div className="mb-3 flex items-start justify-between">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(`./${c.id}`)}>
-                  <BookOpen className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">{c.name}</h3>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(c.status)}`}>{c.status}</span>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(c)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: c.id, name: c.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+          filtered.map((c: any) => {
+            const statusInfo = STATUS_MAP[c.status] ?? STATUS_MAP.active;
+            const statusLabel = statusInfo[lang as keyof typeof statusInfo] || statusInfo.en;
+            return (
+              <div key={c.id} className="rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md overflow-hidden">
+                {c.image_url && (
+                  <div className="aspect-video overflow-hidden">
+                    <img src={getCourseImageUrl(c.image_url) || ''} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                )}
+                <div className="p-5">
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-center gap-2 cursor-pointer min-w-0 flex-1" onClick={() => navigate(`./${c.id}`)}>
+                      <BookOpen className="h-5 w-5 text-primary shrink-0" />
+                      <h3 className="font-semibold truncate">{c.name}</h3>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Badge variant={statusInfo.variant as any}>{statusLabel}</Badge>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(c)}><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: c.id, name: c.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-sm text-muted-foreground">
+                    <p className="truncate"><span className="text-foreground">{t('common.teacher', lang)}:</span> {c.teacher ? getFullName(c.teacher.first_name, c.teacher.last_name) : t('common.not_assigned', lang)}</p>
+                    <p><span className="text-foreground">{t('common.level', lang)}:</span> {c.level?.name}{c.level?.stream ? ` - ${c.level.stream}` : ''}</p>
+                  </div>
+
+                  {/* Enrollment bar */}
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        <span>{c.current_enrollments ?? 0}/{c.capacity}</span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">{t(`type.${c.type}`, lang) || c.type}</Badge>
+                    </div>
+                    <CapacityBar current={c.current_enrollments ?? 0} capacity={c.capacity} />
+                  </div>
+
+                  {/* Price + dates */}
+                  <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">{formatCurrency(c.price)}</span>
+                    {c.start_date && c.end_date && (
+                      <span>{formatDate(c.start_date)} – {formatDate(c.end_date)}</span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p><span className="text-foreground">{t('common.teacher', lang)}:</span> {c.teacher ? getFullName(c.teacher.first_name, c.teacher.last_name) : t('common.not_assigned', lang)}</p>
-                <p><span className="text-foreground">{t('common.level', lang)}:</span> {c.level?.name}{c.level?.stream ? ` - ${c.level.stream}` : ''}</p>
-                <p><span className="text-foreground">{t('groups.capacity', lang)}:</span> {c.current_enrollments}/{c.capacity}</p>
-                <p>{t('common.price', lang)}: {formatCurrency(c.price)}</p>
-                <p>{t('common.from', lang)} {formatDate(c.start_date)} {t('common.to', lang)} {formatDate(c.end_date)}</p>
-              </div>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

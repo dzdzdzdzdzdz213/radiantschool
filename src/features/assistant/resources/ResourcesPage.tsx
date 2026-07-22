@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { convertToWebP } from '@/lib/storage';
 import { formatDateTime } from '@/lib/utils';
 import { useDownloadFile } from '@/hooks/useMutationFeedback';
 import { useToast } from '@/hooks/useToast';
@@ -45,13 +46,22 @@ export default function ResourcesPage() {
       if (!ALLOWED_TYPES.includes(file.type)) {
         throw new Error(t('errors.mime_not_supported', lang, file.type));
       }
-      const filePath = `assistant-resources/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await (supabase as any).storage.from('resources').upload(filePath, file);
+      let uploadFile = file;
+      let filePath = `assistant-resources/${Date.now()}_${file.name}`;
+      const isImage = file.type.startsWith('image/') && file.type !== 'image/gif';
+      if (isImage) {
+        try {
+          const webpBlob = await convertToWebP(file, 1200);
+          uploadFile = new File([webpBlob], `${Date.now()}.webp`, { type: 'image/webp' });
+          filePath = `assistant-resources/${Date.now()}.webp`;
+        } catch { /* keep original file */ }
+      }
+      const { error: uploadError } = await (supabase as any).storage.from('resources').upload(filePath, uploadFile, { contentType: uploadFile.type });
       if (uploadError) throw uploadError;
       const { data: urlData } = (supabase as any).storage.from('resources').getPublicUrl(filePath);
       const { error: dbError } = await (supabase as any).from('resources').insert({
-        title: file.name,
-        type: file.type,
+        title: isImage ? `${file.name.replace(/\.[^.]+$/, '')}.webp` : file.name,
+        type: isImage ? 'image/webp' : file.type,
         file_url: urlData.publicUrl,
       });
       if (dbError) throw dbError;
@@ -80,7 +90,7 @@ export default function ResourcesPage() {
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteMutation.isPending}
       />
-      <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z" onChange={(e) => { if (e.target.files?.[0]) uploadMutation.mutate(e.target.files[0]); }} />
+      <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z" onChange={(e) => { if (e.target.files?.[0]) { uploadMutation.mutate(e.target.files[0]); e.target.value = ''; } }} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.resources', lang)}</h1>
