@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Users, X, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Users, X, Pencil, Trash2, Search, Calendar, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,44 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import { useSubjects, useLevels, useRooms, useUsers } from '@/hooks/useQueries';
 import { getFullName } from '@/lib/utils';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+
+const DAY_LABELS: Record<string, Record<string, string>> = {
+  fr: { monday: 'Lun', tuesday: 'Mar', wednesday: 'Mer', thursday: 'Jeu', friday: 'Ven', saturday: 'Sam', sunday: 'Dim' },
+  en: { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' },
+  ar: { monday: 'اثنين', tuesday: 'ثلاثاء', wednesday: 'اربعاء', thursday: 'خميس', friday: 'جمعة', saturday: 'سبت', sunday: 'احد' },
+};
+
+function CapacityBar({ current, capacity }: { current: number; capacity: number }) {
+  const pct = Math.min((current / (capacity || 1)) * 100, 100);
+  const color = pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-orange-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-emerald-500';
+  return (
+    <div className="mt-2 h-1.5 rounded-full bg-accent overflow-hidden">
+      <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+function StatusBadge({ status, lang }: { status: string; lang: string }) {
+  const variant = status === 'active' ? 'success' : status === 'full' ? 'warning' : status === 'cancelled' ? 'destructive' : 'outline';
+  const key = `status.${status}`;
+  const label = t(key, lang) || status;
+  return <Badge variant={variant as any}>{label}</Badge>;
+}
+
+function ScheduleChips({ schedules, lang }: { schedules: any[]; lang: string }) {
+  if (!schedules?.length) return null;
+  const langKey = lang === 'ar' ? 'ar' : lang === 'fr' ? 'fr' : 'en';
+  return (
+    <div className="flex flex-wrap gap-1 mt-1.5">
+      {schedules.map((s: any) => (
+        <span key={s.id} className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+          <Clock className="h-2.5 w-2.5" />
+          {DAY_LABELS[langKey]?.[s.day_of_week] ?? s.day_of_week} {s.start_time?.slice(0, 5)}–{s.end_time?.slice(0, 5)}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function GroupsPage() {
   const { lang } = useLang();
@@ -36,7 +74,7 @@ export default function GroupsPage() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('courses')
-        .select('id, name, type, capacity, current_enrollments, status, level:levels(name, category), subject:subjects(name), teacher:users!teacher_id(first_name, last_name)')
+        .select('id, name, type, capacity, current_enrollments, status, description, price, start_date, end_date, level_id, subject_id, room:rooms(id, name), level:levels(name, category), subject:subjects(name), teacher:users!teacher_id(first_name, last_name), schedules:course_schedules(id, day_of_week, start_time, end_time)')
         .order('name');
       return data ?? [];
     },
@@ -52,6 +90,7 @@ export default function GroupsPage() {
   const [catFilter, setCatFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const [subjectFilter, setSubjectFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<'name' | 'enrollment' | 'capacity'>('name');
 
   const levelsByCat = useMemo(() => {
     const grouped: Record<string, any[]> = {};
@@ -62,14 +101,22 @@ export default function GroupsPage() {
   }, [levels]);
   const filteredLevels = catFilter !== 'all' ? (levelsByCat[catFilter] ?? []) : (levels ?? []);
 
-  const filteredGroups = (groups ?? []).filter((c: any) => {
-    const q = search.toLowerCase();
-    const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q);
-    const matchesCat = catFilter === 'all' || c.level?.category === catFilter;
-    const matchesLevel = levelFilter === 'all' || c.level_id === parseInt(levelFilter);
-    const matchesSubject = subjectFilter === 'all' || c.subject_id === parseInt(subjectFilter);
-    return matchesSearch && matchesCat && matchesLevel && matchesSubject;
-  });
+  const filteredGroups = useMemo(() => {
+    const result = (groups ?? []).filter((c: any) => {
+      const q = search.toLowerCase();
+      const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q) || c.teacher ? getFullName(c.teacher?.first_name, c.teacher?.last_name).toLowerCase().includes(q) : false;
+      const matchesCat = catFilter === 'all' || c.level?.category === catFilter;
+      const matchesLevel = levelFilter === 'all' || c.level_id === parseInt(levelFilter);
+      const matchesSubject = subjectFilter === 'all' || c.subject_id === parseInt(subjectFilter);
+      return matchesSearch && matchesCat && matchesLevel && matchesSubject;
+    });
+    result.sort((a: any, b: any) => {
+      if (sortBy === 'enrollment') return (b.current_enrollments ?? 0) - (a.current_enrollments ?? 0);
+      if (sortBy === 'capacity') return b.capacity - a.capacity;
+      return a.name.localeCompare(b.name);
+    });
+    return result;
+  }, [groups, search, catFilter, levelFilter, subjectFilter, sortBy]);
 
   useErrorToast(isError, lang, t('nav.groups', lang));
 
@@ -145,7 +192,36 @@ export default function GroupsPage() {
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const { error } = await (supabase as any).from('courses').update({ status }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_groups'] });
+      toast(t('success.updated', lang, t('groups.status', lang)), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  // Student roster state
+  const [rosterGroupId, setRosterGroupId] = useState<number | null>(null);
+  const { data: rosterStudents, isLoading: rosterLoading } = useQuery({
+    queryKey: ['group_roster', rosterGroupId],
+    queryFn: async () => {
+      if (!rosterGroupId) return [];
+      const { data } = await (supabase as any)
+        .from('course_enrollments')
+        .select('id, enrollment_date, status, student:users!student_id(id, first_name, last_name, email)')
+        .eq('course_id', rosterGroupId)
+        .order('enrollment_date', { ascending: false });
+      return data ?? [];
+    },
+    enabled: !!rosterGroupId,
+  });
 
   return (
     <div className="space-y-6">
@@ -156,6 +232,45 @@ export default function GroupsPage() {
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteMutation.isPending}
       />
+
+      {/* Student Roster Modal */}
+      {rosterGroupId && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setRosterGroupId(null)} />
+          <Card className="relative w-full max-w-lg mx-4 my-auto">
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                {t('groups.students', lang)}
+              </CardTitle>
+              <button onClick={() => setRosterGroupId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </CardHeader>
+            <CardContent>
+              {rosterLoading ? (
+                <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-10 bg-muted rounded animate-pulse" />)}</div>
+              ) : rosterStudents?.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">{t('groups.no_students', lang)}</p>
+              ) : (
+                <div className="space-y-1">
+                  {rosterStudents?.map((e: any) => (
+                    <div key={e.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+                      <div>
+                        <p className="text-sm font-medium">{e.student ? getFullName(e.student.first_name, e.student.last_name) : '—'}</p>
+                        <p className="text-xs text-muted-foreground">{e.student?.email}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={e.status === 'active' ? 'success' : 'outline'} className="text-[10px]">{e.status}</Badge>
+                        <span className="text-[10px] text-muted-foreground">{e.enrollment_date ? new Date(e.enrollment_date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US') : ''}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('nav.groups', lang)}</h1>
@@ -186,6 +301,11 @@ export default function GroupsPage() {
           {(subjects ?? []).map((s: any) => (
             <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
           ))}
+        </Select>
+        <Select value={sortBy} onValueChange={v => setSortBy(v as any)} className="min-w-[130px]">
+          <SelectItem value="name">{t('common.name', lang)}</SelectItem>
+          <SelectItem value="enrollment">{t('groups.enrolled', lang)}</SelectItem>
+          <SelectItem value="capacity">{t('groups.capacity', lang)}</SelectItem>
         </Select>
       </div>
 
@@ -292,35 +412,61 @@ export default function GroupsPage() {
           </div>
         ) : filteredGroups.map((g: any) => (
           <Card key={g.id} className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-base">{g.name}</CardTitle>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="text-base truncate">{g.name}</CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">{g.level?.name ?? '—'} · {g.subject?.name ?? '—'}</p>
                   <p className="text-xs text-muted-foreground">{g.teacher ? getFullName(g.teacher.first_name, g.teacher.last_name) : '—'}</p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Badge variant={g.status === 'active' ? 'success' : 'outline'}>
-                    {g.status === 'active' ? t('status.active', lang) : t('status.inactive', lang)}
-                  </Badge>
+                <div className="flex items-center gap-1 shrink-0">
+                  <StatusBadge status={g.status} lang={lang} />
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(g)}><Pencil className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: g.id, name: g.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users className="h-4 w-4" />
-                  <span>{g.current_enrollments ?? 0}/{g.capacity}</span>
+                  <span>{g.current_enrollments ?? 0}/{g.capacity} {t('groups.enrolled', lang)}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">{g.type}</span>
+                <Badge variant="outline" className="text-[10px]">{t(`type.${g.type}`, lang) || g.type}</Badge>
               </div>
-              <div className="mt-3 h-2 rounded-full bg-accent overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${Math.min(((g.current_enrollments ?? 0) / (g.capacity || 1)) * 100, 100)}%` }}
-                />
+              <CapacityBar current={g.current_enrollments ?? 0} capacity={g.capacity} />
+
+              {/* Room */}
+              {g.room && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+                  <MapPin className="h-3 w-3" />
+                  <span>{g.room.name}</span>
+                </div>
+              )}
+
+              {/* Dates */}
+              {g.start_date && g.end_date && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  <span>{new Date(g.start_date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' })} – {new Date(g.end_date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', year: 'numeric' })}</span>
+                </div>
+              )}
+
+              {/* Schedule */}
+              <ScheduleChips schedules={g.schedules} lang={lang} />
+
+              {/* Actions row */}
+              <div className="flex items-center gap-2 pt-1">
+                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setRosterGroupId(g.id)}>
+                  <Users className="h-3 w-3" />
+                  {t('groups.view_students', lang)}
+                </Button>
+                <Select value={g.status} onValueChange={v => statusMutation.mutate({ id: g.id, status: v })} className="h-7 text-xs">
+                  <SelectItem value="active">{t('status.active', lang)}</SelectItem>
+                  <SelectItem value="inactive">{t('status.inactive', lang)}</SelectItem>
+                  <SelectItem value="full">{t('status.full', lang)}</SelectItem>
+                  <SelectItem value="cancelled">{t('status.cancelled', lang)}</SelectItem>
+                </Select>
               </div>
             </CardContent>
           </Card>
