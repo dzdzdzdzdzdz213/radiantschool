@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { MapPin, Plus, X, Pencil, Trash2 } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { MapPin, Plus, X, Pencil, Trash2, Search, Users, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectItem } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/useToast';
@@ -18,29 +20,58 @@ export default function RoomsPage() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
+  useEffect(() => {
+    const channel = supabase.channel('rooms_live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => {
+        qc.invalidateQueries({ queryKey: ['assistant_rooms'] });
+      })
+      .subscribe();
+    return () => { channel.unsubscribe(); supabase.removeChannel(channel); };
+  }, [qc]);
+
   const { data: rooms, isLoading, isError } = useQuery({
     queryKey: ['assistant_rooms'],
     queryFn: async () => {
-      const { data } = await (supabase as any).from('rooms').select('*').order('name');
+      const { data } = await (supabase as any)
+        .from('rooms')
+        .select('*, courses!courses_room_id_fkey(id, name, status)')
+        .order('name');
       return data ?? [];
     },
   });
 
   useErrorToast(isError, lang, t('nav.rooms', lang));
 
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', capacity: '', floor: '' });
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState({ name: '', capacity: '', floor: '', status: 'active', equipment: '' });
+
+  const filteredRooms = useMemo(() => {
+    return (rooms ?? []).filter((r: any) => {
+      const q = search.toLowerCase();
+      const matchesSearch = !q || r.name.toLowerCase().includes(q) || String(r.floor).includes(q);
+      const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [rooms, search, statusFilter]);
 
   const openCreateModal = () => {
     setEditingId(null);
-    setForm({ name: '', capacity: '', floor: '' });
+    setForm({ name: '', capacity: '', floor: '', status: 'active', equipment: '' });
     setShowModal(true);
   };
 
   const openEditModal = (item: any) => {
     setEditingId(item.id);
-    setForm({ name: item.name ?? '', capacity: item.capacity?.toString() ?? '', floor: item.floor?.toString() ?? '' });
+    setForm({
+      name: item.name ?? '',
+      capacity: item.capacity?.toString() ?? '',
+      floor: item.floor?.toString() ?? '',
+      status: item.status ?? 'active',
+      equipment: Array.isArray(item.equipment) ? item.equipment.join(', ') : '',
+    });
     setShowModal(true);
   };
 
@@ -49,7 +80,14 @@ export default function RoomsPage() {
       if (!form.name.trim()) throw new Error(t('rooms.name_required', lang));
       const capacity = parseInt(form.capacity, 10);
       if (isNaN(capacity) || capacity <= 0) throw new Error(t('rooms.capacity_invalid', lang));
-      const payload = { name: form.name.trim(), capacity, floor: form.floor.trim() || null, status: 'available' };
+      const equipment = form.equipment.trim() ? form.equipment.split(',').map((e: string) => e.trim()).filter(Boolean) : [];
+      const payload: Record<string, any> = {
+        name: form.name.trim(),
+        capacity,
+        floor: form.floor ? parseInt(form.floor, 10) : null,
+        status: form.status,
+        equipment,
+      };
       if (editingId) {
         const { error } = await (supabase as any).from('rooms').update(payload).eq('id', editingId);
         if (error) throw error;
@@ -63,13 +101,13 @@ export default function RoomsPage() {
       toast(t(editingId ? 'success.updated' : 'success.created', lang, t('rooms.room', lang)), 'success');
       setShowModal(false);
       setEditingId(null);
-      setForm({ name: '', capacity: '', floor: '' });
+      setForm({ name: '', capacity: '', floor: '', status: 'active', equipment: '' });
     },
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       const { error } = await (supabase as any).from('rooms').delete().eq('id', id);
       if (error) throw error;
     },
@@ -80,7 +118,22 @@ export default function RoomsPage() {
     onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const { error } = await (supabase as any).from('rooms').update({ status }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_rooms'] });
+      toast(t('success.updated', lang, t('rooms.room', lang)), 'success');
+    },
+    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
+
+  const statusVariant = (s: string) => s === 'active' ? 'success' : s === 'maintenance' ? 'warning' : 'destructive';
+  const statusLabel = (s: string) => s === 'active' ? t('rooms.available', lang) : s === 'maintenance' ? t('rooms.reserved', lang) : t('rooms.occupied', lang);
 
   return (
     <div className="space-y-6">
@@ -91,13 +144,6 @@ export default function RoomsPage() {
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteMutation.isPending}
       />
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t('nav.rooms', lang)}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t('rooms.subtitle', lang)}</p>
-        </div>
-        <Button className="gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('rooms.new', lang)}</Button>
-      </div>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8">
@@ -112,13 +158,33 @@ export default function RoomsPage() {
                 <Label>{t('rooms.name', lang)} *</Label>
                 <Input placeholder={t('common.name', lang)} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
-              <div className="space-y-2">
-                <Label>{t('rooms.capacity', lang)} *</Label>
-                <Input type="number" placeholder={t('rooms.capacity_placeholder', lang)} value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>{t('rooms.capacity', lang)} *</Label>
+                  <Input type="number" placeholder={t('rooms.capacity_placeholder', lang)} value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('rooms.floor', lang)}</Label>
+                  <Input type="number" placeholder={t('rooms.floor_placeholder', lang)} value={form.floor} onChange={e => setForm(f => ({ ...f, floor: e.target.value }))} />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>{t('rooms.floor', lang)}</Label>
-                <Input placeholder={t('rooms.floor_placeholder', lang)} value={form.floor} onChange={e => setForm(f => ({ ...f, floor: e.target.value }))} />
+                <Label>{t('groups.status', lang)}</Label>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+                  <SelectItem value="active">{t('rooms.available', lang)}</SelectItem>
+                  <SelectItem value="maintenance">{t('rooms.reserved', lang)}</SelectItem>
+                  <SelectItem value="inactive">{t('rooms.occupied', lang)}</SelectItem>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('rooms.equipment', lang)}</Label>
+                <Textarea
+                  placeholder={lang === 'fr' ? 'tableau, climatisation, vidéoprojecteur...' : lang === 'ar' ? 'سبورة، تكييف، جهاز عرض...' : 'whiteboard, AC, projector...'}
+                  value={form.equipment}
+                  onChange={e => setForm(f => ({ ...f, equipment: e.target.value }))}
+                  rows={2}
+                />
+                <p className="text-[10px] text-muted-foreground">{lang === 'fr' ? 'Séparer par des virgules' : lang === 'ar' ? 'افصل بفواصل' : 'Separate with commas'}</p>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
@@ -131,45 +197,92 @@ export default function RoomsPage() {
         </div>
       )}
 
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t('nav.rooms', lang)}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('rooms.subtitle', lang)}</p>
+        </div>
+        <Button className="gap-2" onClick={openCreateModal} disabled={saveMutation.isPending}><Plus className="h-4 w-4" />{t('rooms.new', lang)}</Button>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('rooms.search_placeholder', lang)} className="h-9 pl-9" />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter} className="min-w-[130px]">
+          <SelectItem value="all">{t('groups.all_levels', lang)}</SelectItem>
+          <SelectItem value="active">{t('rooms.available', lang)}</SelectItem>
+          <SelectItem value="maintenance">{t('rooms.reserved', lang)}</SelectItem>
+          <SelectItem value="inactive">{t('rooms.occupied', lang)}</SelectItem>
+        </Select>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {isLoading ? Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}><CardHeader className="pb-3"><div className="h-24 bg-muted rounded-xl animate-pulse" /></CardHeader></Card>
-        )) : (rooms ?? []).length === 0 ? (
+        )) : filteredRooms.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
             <MapPin className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
           </div>
-        ) : (rooms ?? []).map((room: any) => (
+        ) : filteredRooms.map((room: any) => (
           <Card key={room.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <MapPin className="h-5 w-5 text-primary" />
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                    <Building2 className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <CardTitle className="text-base">{room.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground">{t('rooms.floor', lang)} {room.floor ?? '—'}</p>
+                  <div className="min-w-0">
+                    <CardTitle className="text-base truncate">{room.name}</CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      {t('rooms.floor', lang)} {room.floor ?? '—'} · {room.capacity} {t('rooms.seats', lang)}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Badge variant={room.status === 'available' ? 'success' : room.status === 'occupied' ? 'destructive' : 'warning'}>
-                    {room.status === 'available' ? t('rooms.available', lang) : room.status === 'occupied' ? t('rooms.occupied', lang) : t('rooms.reserved', lang)}
-                  </Badge>
+                <div className="flex items-center gap-1 shrink-0">
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(room)}><Pencil className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: room.id, name: room.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('rooms.capacity', lang)}</span>
-                <span className="font-medium">{room.capacity} {t('rooms.seats', lang)}</span>
+            <CardContent className="space-y-3">
+              {/* Status + Course count */}
+              <div className="flex items-center justify-between">
+                <Select value={room.status} onValueChange={v => statusMutation.mutate({ id: room.id, status: v })} className="h-7 w-auto text-xs">
+                  <SelectItem value="active">{t('rooms.available', lang)}</SelectItem>
+                  <SelectItem value="maintenance">{t('rooms.reserved', lang)}</SelectItem>
+                  <SelectItem value="inactive">{t('rooms.occupied', lang)}</SelectItem>
+                </Select>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Users className="h-3 w-3" />
+                  <span>{room.courses?.length ?? 0} {t('rooms.courses', lang)}</span>
+                </div>
               </div>
-              {room.equipment && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {(room.equipment as string[] ?? []).map((eq: string) => (
-                    <span key={eq} className="text-[10px] px-1.5 py-0.5 rounded bg-accent text-muted-foreground">{eq}</span>
+
+              {/* Equipment */}
+              {room.equipment && room.equipment.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {room.equipment.map((eq: string) => (
+                    <span key={eq} className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{eq}</span>
                   ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-muted-foreground">{t('rooms.no_equipment', lang)}</p>
+              )}
+
+              {/* Courses assigned */}
+              {room.courses && room.courses.length > 0 && (
+                <div className="space-y-1">
+                  {room.courses.slice(0, 3).map((c: any) => (
+                    <div key={c.id} className="flex items-center justify-between text-xs">
+                      <span className="truncate">{c.name}</span>
+                      <Badge variant={c.status === 'active' ? 'success' : 'outline'} className="text-[9px] shrink-0">{c.status}</Badge>
+                    </div>
+                  ))}
+                  {room.courses.length > 3 && (
+                    <p className="text-[10px] text-muted-foreground">+{room.courses.length - 3} {t('rooms.courses', lang)}</p>
+                  )}
                 </div>
               )}
             </CardContent>
