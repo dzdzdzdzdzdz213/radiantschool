@@ -124,7 +124,7 @@ export default function StaffLoginPage() {
       .single();
 
     if (!userData) {
-      setError('Accès refusé');
+      setError('Aucun compte associé. Veuillez vérifier votre email ou contacter l\'administration.');
       await supabase.auth.signOut();
       return;
     }

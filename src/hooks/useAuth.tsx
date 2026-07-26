@@ -76,7 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           guardianPhone: userMeta.guardian_phone || undefined,
         });
       }
-    } catch {
+    } catch (error) {
+      console.error('[Auth] Failed to fetch profile:', error);
       setProfile(null);
     }
   };

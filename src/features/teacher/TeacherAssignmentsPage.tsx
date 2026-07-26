@@ -59,7 +59,7 @@ export default function TeacherAssignmentsPage() {
       setShowForm(false);
       setForm({ title: '', description: '', due_date: '', course_id: '', max_grade: '' });
     },
-    onError: (err: any) => toast(err.message, 'error'),
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -68,7 +68,7 @@ export default function TeacherAssignmentsPage() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher-assignments'] }); toast('Supprimé', 'success'); },
-    onError: (err: any) => toast(err.message, 'error'),
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   return (

@@ -94,7 +94,7 @@ export default function UsersPage() {
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b text-sm last:border-0 hover:bg-page cursor-pointer" onClick={() => navigate(`./${u.id}`)}>
+                <tr key={u.id} className="border-b text-sm last:border-0">
                   <td className="px-4 py-3 font-medium">{getFullName(u.first_name, u.last_name)}</td>
                   <td className="hidden sm:table-cell px-4 py-3 text-muted-foreground truncate max-w-[200px]">{u.email}</td>
                   <td className="hidden md:table-cell px-4 py-3">{getRoleLabel(u.role)}</td>
@@ -109,9 +109,9 @@ export default function UsersPage() {
                           <button className="w-full text-left px-4 py-2 text-sm hover:bg-accent" onClick={(e) => { e.stopPropagation(); toggleStatusMutation.mutate({ id: u.id, status: u.status }); }}>
                             {u.status === 'active' ? t('common.deactivate', lang) : t('common.activate', lang)}
                           </button>
-                          <button className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-accent" onClick={(e) => { e.stopPropagation(); navigate(`./${u.id}`); }}>
-                            {t('common.edit', lang)}
-                          </button>
+<button className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-accent" onClick={(e) => { e.stopPropagation(); toast(t('common.edit_feature_coming', lang), 'info'); }}>
+                             {t('common.edit', lang)}
+                           </button>
                         </div>
                       </>
                     )}

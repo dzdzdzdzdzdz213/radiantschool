@@ -14,16 +14,17 @@ export default function CourseDetailPage() {
   const { lang } = useLang();
   const { toast } = useToast();
   const courseId = Number(id);
-  const { data: course, isLoading, isError: courseError } = useCourse(courseId);
-  const { data: enrollments, isLoading: enrollLoading } = useCourseEnrollments(courseId);
+  const isValidId = !isNaN(courseId) && !!id;
+  const { data: course, isLoading, isError: courseError } = useCourse(isValidId ? courseId : 0);
+  const { data: enrollments, isLoading: enrollLoading } = useCourseEnrollments(isValidId ? courseId : 0);
 
   useEffect(() => {
     if (courseError) toast(t('errors.load_error', lang, t('nav.courses', lang)), 'error');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseError]);
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground-foreground">{t('common.loading', lang)}</div>;
-  if (!course) return <div className="p-8 text-center text-muted-foreground-foreground">{t('errors.not_found_resource', lang, t('nav.courses', lang))}</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>;
+  if (!course) return <div className="p-8 text-center text-muted-foreground">{t('errors.not_found_resource', lang, t('nav.courses', lang))}</div>;
 
   return (
     <div className="space-y-6">

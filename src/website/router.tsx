@@ -78,6 +78,7 @@ const AssistantCalendarPage = lazy(() => loadPage(() => import('@/features/assis
 const AssistantSearchPage = lazy(() => loadPage(() => import('@/features/assistant/search/SearchPage')));
 const AssistantSettingsPage = lazy(() => loadPage(() => import('@/features/assistant/settings/SettingsPage')));
 const AssistantAttendancePage = lazy(() => loadPage(() => import('@/features/assistant/attendance/BulkAttendancePage')));
+const TeacherAttendancePage = lazy(() => loadPage(() => import('@/features/teacher/TeacherAttendancePage')));
 
 const UsersPage = lazy(() => loadPage(() => import('@/features/admin/UsersPage')));
 const CreateUserPage = lazy(() => loadPage(() => import('@/features/admin/CreateUserPage')));
@@ -247,7 +248,7 @@ const teacherRoutes: RouteObject[] = [
       { path: 'private-lessons', Component: TeacherPrivateLessonsPage },
       { path: 'profile', Component: ProfilePage },
       { path: 'messages', Component: MessagesPage },
-      { path: 'attendance', Component: AdminAttendanceOversightPage },
+      { path: 'attendance', Component: TeacherAttendancePage },
       { path: 'assignments', Component: TeacherAssignmentsPage },
       { path: 'homework', Component: TeacherAssignmentsPage },
       { path: 'resources', Component: TeacherResourcesPage },

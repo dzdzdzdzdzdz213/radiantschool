@@ -116,7 +116,7 @@ export default function BulkAttendancePage() {
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['course-students', selectedCourseId] }),
-    onError: (err: any) => toast(err.message, 'error'),
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   const markAll = useCallback(async (status: 'present' | 'absent' | 'late') => {

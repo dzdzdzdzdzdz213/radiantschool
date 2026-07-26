@@ -64,7 +64,8 @@ export default function StudentDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payError]);
 
-  if (userLoading || !user) return <div className="p-8 text-center text-muted-foreground-foreground">{t('common.loading', lang)}</div>;
+  if (userLoading) return <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>;
+  if (!user) return <div className="p-8 text-center text-muted-foreground">{t('errors.not_found', lang)}</div>;
 
   return (
     <div className="space-y-6">

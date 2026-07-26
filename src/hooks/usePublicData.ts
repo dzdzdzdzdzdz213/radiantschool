@@ -28,7 +28,7 @@ export function usePublicCourses() {
   useEffect(() => {
     const channel = supabase
       .channel('public-courses-live')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, () => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'courses' }, () => {
         queryClient.invalidateQueries({ queryKey: ['public-courses'] });
       })
       .subscribe();

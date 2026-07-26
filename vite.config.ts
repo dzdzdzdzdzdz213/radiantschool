@@ -30,7 +30,7 @@ export default defineConfig({
         navigateFallback: null,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/kaoxcbqhuwhtadpgccjp\.supabase\.co\/.*/i,
+            urlPattern: /^https:\/\/[^/]+\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'supabase-api',

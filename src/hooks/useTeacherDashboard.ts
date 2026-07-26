@@ -2,8 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
 const DAYS_EN = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+const DAYS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'] as const;
+const DAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] as const;
 
-function getDayName(_lang: string): (typeof DAYS_EN)[number] {
+function getDayName(lang: string): string {
+  if (lang === 'ar') return DAYS_AR[new Date().getDay()];
+  if (lang === 'fr') return DAYS_FR[new Date().getDay()];
   return DAYS_EN[new Date().getDay()];
 }
 
@@ -122,6 +126,6 @@ export function useTeacherDashboard(teacherId: string | undefined, lang: string)
     upcomingCourses: upcomingCoursesQuery.data ?? [],
     recentEnrollments: recentEnrollmentsQuery.data ?? [],
     isLoading: kpiQuery.isLoading || todayScheduleQuery.isLoading || upcomingCoursesQuery.isLoading || recentEnrollmentsQuery.isLoading,
-    isError: kpiQuery.isError || todayScheduleQuery.isError || upcomingCoursesQuery.isError,
+    isError: kpiQuery.isError || todayScheduleQuery.isError || upcomingCoursesQuery.isError || recentEnrollmentsQuery.isError,
   };
 }

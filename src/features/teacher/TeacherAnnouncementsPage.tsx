@@ -57,7 +57,7 @@ export default function TeacherAnnouncementsPage() {
       setShowForm(false);
       setForm({ title: '', content: '', course_id: '' });
     },
-    onError: (err: any) => toast(err.message, 'error'),
+    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   const deleteMutation = useMutation({

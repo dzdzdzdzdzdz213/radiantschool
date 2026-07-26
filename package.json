@@ -60,6 +60,7 @@
     "lint-staged": "^16.4.0",
     "lucide-react": "^1.22.0",
     "oxlint": "^1.69.0",
+    "playwright": "^1.62.0",
     "pngjs": "^7.0.0",
     "postcss": "^8.5.16",
     "prettier": "^3.9.5",
