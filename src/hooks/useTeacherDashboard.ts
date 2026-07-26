@@ -5,7 +5,7 @@ const DAYS_EN = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday
 const DAYS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'] as const;
 const DAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] as const;
 
-function getDayName(lang: string): string {
+function getDayName(lang: string): (typeof DAYS_EN)[number] | (typeof DAYS_FR)[number] | (typeof DAYS_AR)[number] {
   if (lang === 'ar') return DAYS_AR[new Date().getDay()];
   if (lang === 'fr') return DAYS_FR[new Date().getDay()];
   return DAYS_EN[new Date().getDay()];
