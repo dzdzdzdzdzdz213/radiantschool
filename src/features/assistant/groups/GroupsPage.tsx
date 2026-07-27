@@ -11,7 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
-import { t } from '@/i18n';
+import { t, type Lang } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useSubjects, useLevels, useRooms, useUsers } from '@/hooks/useQueries';
 import { getFullName } from '@/lib/utils';
@@ -36,7 +36,7 @@ function CapacityBar({ current, capacity }: { current: number; capacity: number 
 function StatusBadge({ status, lang }: { status: string; lang: string }) {
   const variant = status === 'active' ? 'success' : status === 'full' ? 'warning' : status === 'cancelled' ? 'destructive' : 'outline';
   const key = `status.${status}`;
-  const label = t(key, lang) || status;
+  const label = t(key, lang as Lang) || status;
   return <Badge variant={variant as any}>{label}</Badge>;
 }
 

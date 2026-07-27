@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { Lang } from '@/i18n';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -12,9 +15,9 @@ export default function TeacherAttendancePage() {
   const { data: sessions, isLoading } = useQuery({
     queryKey: ['teacher-attendance-sessions', date],
     queryFn: async () => {
-      if (!date) return [];
+      if (!date || !profile?.id) return [];
       const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date(date).getDay()];
-      const courseIds = await supabase.from('courses').select('id').eq('teacher_id', profile?.id).in('status', ['active']).then(r => r.data?.map(c => c.id) ?? []);
+      const courseIds = await supabase.from('courses').select('id').eq('teacher_id', profile.id).in('status', ['active']).then(r => r.data?.map(c => c.id) ?? []);
       if (!courseIds.length) return [];
       const { data } = await supabase
         .from('course_schedules')

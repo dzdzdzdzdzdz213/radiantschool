@@ -60,7 +60,7 @@ const DAY_LABELS: Record<string, string> = {
 export default function TeacherDashboardPage() {
   const { profile } = useAuth();
   const { lang } = useLang();
-  const { kpi, todaySchedule, upcomingCourses, recentEnrollments, isLoading } = useTeacherDashboard(profile?.id, lang);
+  const { kpi, todaySchedule, upcomingCourses, recentEnrollments, isLoading } = useTeacherDashboard(profile?.id);
 
   const statsData = [
     { icon: BookOpen, label: t('nav.my_courses', lang), value: isLoading ? '...' : kpi.courseCount, color: 'from-violet-500 to-violet-600' },

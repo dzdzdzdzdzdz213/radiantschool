@@ -1,18 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-const DAYS_EN = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
-const DAYS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'] as const;
-const DAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] as const;
+const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 
-function getDayName(lang: string): (typeof DAYS_EN)[number] | (typeof DAYS_FR)[number] | (typeof DAYS_AR)[number] {
-  if (lang === 'ar') return DAYS_AR[new Date().getDay()];
-  if (lang === 'fr') return DAYS_FR[new Date().getDay()];
-  return DAYS_EN[new Date().getDay()];
+function getDayName(): (typeof DAYS)[number] {
+  return DAYS[new Date().getDay()];
 }
 
-export function useTeacherDashboard(teacherId: string | undefined, lang: string) {
-  const todayDayName = getDayName(lang);
+export function useTeacherDashboard(teacherId: string | undefined) {
+  const todayDayName = getDayName();
 
   const kpiQuery = useQuery({
     queryKey: ['teacher-kpi', teacherId],
