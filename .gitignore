@@ -34,7 +34,6 @@ dist-ssr
 .agents/
 .claude/
 skills-lock.json
-package-lock.json
 test-routes.mjs
 test-results/
-.github/
+
