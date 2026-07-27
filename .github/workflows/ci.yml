@@ -27,16 +27,16 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: lint-and-test
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - run: |
-          curl -s -X POST "https://api.vercel.com/v1/integrations/deploy/prj_Oz39EveZwiJsWUTj9Xn9INgEND0K/vflFWaQ1GA" \
-            -H "Content-Type: application/json" \
-            -d '{"name":"radiantschool","target":"production","gitMetadata":{"commitSha":"${{ github.sha }}","commitMessage":"${{ github.event.head_commit.message }}","commitRef":"${{ github.ref_name }}"}}'
+          curl -s -X POST "https://api.vercel.com/v1/integrations/deploy/prj_Oz39EveZwiJsWUTj9Xn9INgEND0K/lS7lyqWQSG"
 
   deploy-edge-functions:
     if: github.ref == 'refs/heads/main'
     needs: lint-and-test
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
