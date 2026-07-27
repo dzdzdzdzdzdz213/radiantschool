@@ -27,16 +27,22 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: lint-and-test
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
-      - run: |
-          curl -s -X POST "https://api.vercel.com/v1/integrations/deploy/prj_Oz39EveZwiJsWUTj9Xn9INgEND0K/lS7lyqWQSG"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: npx vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
   deploy-edge-functions:
     if: github.ref == 'refs/heads/main'
     needs: lint-and-test
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
