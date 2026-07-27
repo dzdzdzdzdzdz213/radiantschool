@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint:check
+      - run: npm run build
+      - run: npm test
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -s -X POST "https://api.vercel.com/v1/integrations/deploy/prj_Oz39EveZwiJsWUTj9Xn9INgEND0K/vflFWaQ1GA" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"radiantschool","target":"production","gitMetadata":{"commitSha":"${{ github.sha }}","commitMessage":"${{ github.event.head_commit.message }}","commitRef":"${{ github.ref_name }}"}}'
+
+  deploy-edge-functions:
+    if: github.ref == 'refs/heads/main'
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      - run: supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
