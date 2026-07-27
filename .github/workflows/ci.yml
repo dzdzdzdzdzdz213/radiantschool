@@ -43,6 +43,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: lint-and-test
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1

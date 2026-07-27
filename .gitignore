@@ -29,6 +29,7 @@ dist-ssr
 *.sw?
 
 .vercel
+!.vercel/project.json
 
 # Agent config
 .agents/
