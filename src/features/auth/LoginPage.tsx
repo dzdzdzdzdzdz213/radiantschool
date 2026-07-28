@@ -71,7 +71,7 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden bg-black">
+    <div className="login-page relative flex min-h-screen overflow-hidden bg-black">
       {/* Animated mesh gradient background */}
       <div className="absolute inset-0 mesh-bg" />
       <div className="absolute inset-0 bg-black/30" />
