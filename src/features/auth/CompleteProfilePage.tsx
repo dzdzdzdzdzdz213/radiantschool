@@ -48,7 +48,10 @@ export default function CompleteProfilePage() {
         p_status: role === 'student' ? 'active' : 'pending',
         p_phone: form.phone || undefined,
       });
-      if (rpcErr) throw rpcErr;
+      if (rpcErr) {
+        const msg = rpcErr.hint || rpcErr.message || 'Erreur lors de la création du profil';
+        throw new Error(msg);
+      }
 
       if (role === 'parent' && child.first_name.trim()) {
         const { error: childErr } = await supabase.rpc('register_child', {

@@ -192,7 +192,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         p_phone: options?.phone ?? undefined,
       });
       if (rpcErr) {
-        return { error: rpcErr.message };
+        const msg = rpcErr.hint || rpcErr.message || 'Une erreur est survenue lors de l\'inscription';
+        return { error: msg };
       }
 
       if (role === 'parent' && options?.childFirstName) {
@@ -204,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         if (childErr) {
           try { await supabase.rpc('unregister_user', { p_id: data.user.id }); } catch { /* best-effort rollback */ }
-          return { error: 'Échec de la création du profil enfant. Veuillez réessayer.' };
+          return { error: childErr.hint || 'Échec de la création du profil enfant. Veuillez réessayer.' };
         }
       }
 

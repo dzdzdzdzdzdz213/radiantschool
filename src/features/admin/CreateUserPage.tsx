@@ -53,7 +53,10 @@ export default function CreateUserPage() {
           p_id: signUpResponse.user.id, p_email: email, p_first_name: firstName, p_last_name: lastName,
           p_role: role, p_status: 'pending', p_phone: undefined,
         });
-        if (rpcError) throw rpcError;
+        if (rpcError) {
+          const msg = rpcError.hint || rpcError.message || 'Erreur lors de la création du profil';
+          throw new Error(msg);
+        }
       }
     },
     onSuccess: () => {
