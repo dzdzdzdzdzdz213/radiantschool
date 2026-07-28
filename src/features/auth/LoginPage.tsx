@@ -105,11 +105,11 @@ export default function LoginPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl glass">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <span className="text-lg font-bold tracking-tight">Radiant Academy</span>
+              <span className="text-lg font-bold tracking-tight text-white">Radiant Academy</span>
             </div>
-            <h2 className="text-4xl font-black tracking-tight leading-[1.1]">
+            <h2 className="text-4xl font-black tracking-tight leading-[1.1] text-white">
               Votre espace<br />
-              <span className="text-gradient-animated">éducatif</span>
+              <span className="text-white">éducatif</span>
             </h2>
             <p className="mt-4 text-white/50 text-sm max-w-sm leading-relaxed">
               Connectez-vous pour suivre vos formations, consulter vos résultats et rester informé de tout.
@@ -123,7 +123,7 @@ export default function LoginPage() {
                   <f.icon className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold">{f.title}</p>
+                  <p className="text-sm font-bold text-white">{f.title}</p>
                   <p className="text-xs text-white/50">{f.desc}</p>
                 </div>
               </div>
