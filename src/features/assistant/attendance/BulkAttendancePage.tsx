@@ -47,10 +47,10 @@ export default function BulkAttendancePage() {
     queryFn: async () => {
       const { data } = await supabase
         .from('courses')
-        .select('id, name, subject')
+        .select('id, name, subject:subjects(name)')
         .eq('status', 'active')
         .order('name');
-      return (data ?? []) as unknown as CourseOption[];
+      return ((data ?? []) as any[]).map(c => ({ id: c.id, name: c.name, subject: c.subject?.name ?? '' })) as CourseOption[];
     },
     staleTime: 60_000,
   });
