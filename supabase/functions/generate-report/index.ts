@@ -1,14 +1,16 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://esm.sh/zod@4.4.3';
 import { authorizeRequest, jsonError } from '../_shared/auth.ts';
+import { validateRequest } from '../_shared/validation.ts';
 
-interface ReportRequest {
-  type: 'revenue' | 'attendance' | 'payroll' | 'students' | 'occupancy';
-  date_from?: string;
-  date_to?: string;
-  format?: 'json' | 'csv';
-  filters?: Record<string, string>;
-}
+const reportSchema = z.object({
+  type: z.enum(['revenue', 'attendance', 'payroll', 'students', 'occupancy']),
+  date_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  date_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  format: z.enum(['json', 'csv']).optional(),
+  filters: z.record(z.string()).optional(),
+});
 
 serve(async (req) => {
   const supabase = createClient(
@@ -26,7 +28,9 @@ serve(async (req) => {
     const auth = await authorizeRequest(req, supabase, ['admin', 'assistant']);
     if (!auth.ok) return jsonError(auth.status, auth.error);
 
-    const payload: ReportRequest = await req.json();
+    const parsed = await validateRequest(req, reportSchema);
+    if (!parsed.ok) return parsed.response;
+    const payload = parsed.data;
     const dateFrom = payload.date_from || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
     const dateTo = payload.date_to || new Date().toISOString().split('T')[0];
     const format = payload.format || 'json';

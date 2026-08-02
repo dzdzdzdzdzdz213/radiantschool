@@ -1,16 +1,18 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://esm.sh/zod@4.4.3';
 import { authorizeRequest, jsonError } from '../_shared/auth.ts';
+import { validateRequest } from '../_shared/validation.ts';
 
-interface NotificationPayload {
-  user_id: string;
-  title: string;
-  message: string;
-  type?: 'info' | 'warning' | 'success' | 'error';
-  category?: string;
-  send_email?: boolean;
-  from_name?: string;
-}
+const notificationSchema = z.object({
+  user_id: z.string().uuid(),
+  title: z.string().min(1).max(200),
+  message: z.string().min(1).max(5000),
+  type: z.enum(['info', 'warning', 'success', 'error']).optional(),
+  category: z.string().max(50).optional(),
+  send_email: z.boolean().optional(),
+  from_name: z.string().max(100).optional(),
+});
 
 serve(async (req) => {
   const supabase = createClient(
@@ -34,13 +36,9 @@ serve(async (req) => {
       if (!auth.ok) return jsonError(auth.status, auth.error);
     }
 
-    const payload: NotificationPayload = await req.json();
-
-    if (!payload.user_id || !payload.title || !payload.message) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    const parsed = await validateRequest(req, notificationSchema);
+    if (!parsed.ok) return parsed.response;
+    const payload = parsed.data;
 
     const { data: user } = await supabase
       .from('users')

@@ -1,6 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://esm.sh/zod@4.4.3';
 import { authorizeRequest, jsonError } from '../_shared/auth.ts';
+import { validateRequest } from '../_shared/validation.ts';
+
+const translateSchema = z.object({
+  text: z.string().min(1).max(2000),
+  target: z.enum(['en', 'ar']),
+});
 
 serve(async (req) => {
   if (req.method !== 'POST') {
@@ -19,19 +26,9 @@ serve(async (req) => {
     const auth = await authorizeRequest(req, supabase, ['admin', 'assistant', 'teacher', 'student', 'parent']);
     if (!auth.ok) return jsonError(auth.status, auth.error);
 
-    const { text, target } = await req.json();
-
-    if (!text || !target) {
-      return new Response(JSON.stringify({ error: 'Missing text or target' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (!['en', 'ar'].includes(target)) {
-      return new Response(JSON.stringify({ error: 'Target must be en or ar' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    const parsed = await validateRequest(req, translateSchema);
+    if (!parsed.ok) return parsed.response;
+    const { text, target } = parsed.data;
 
     // NOTE: Uses an unofficial Google Translate API endpoint (translate.googleapis.com).
     // This endpoint is undocumented, may break without notice, and does not provide

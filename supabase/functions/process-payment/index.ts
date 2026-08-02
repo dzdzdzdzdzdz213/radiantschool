@@ -1,16 +1,18 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://esm.sh/zod@4.4.3';
 import { authorizeRequest, jsonError } from '../_shared/auth.ts';
+import { validateRequest } from '../_shared/validation.ts';
 
-interface PaymentPayload {
-  student_id: string;
-  amount: number;
-  payment_method: 'cash' | 'bank_transfer' | 'card' | 'check';
-  payment_type: 'monthly' | 'per_session' | 'vip' | 'private';
-  recorded_by: string;
-  invoice_ids?: number[];
-  course_id?: number;
-}
+const paymentSchema = z.object({
+  student_id: z.string().uuid(),
+  amount: z.number().positive(),
+  payment_method: z.enum(['cash', 'bank_transfer', 'card', 'check']),
+  payment_type: z.enum(['monthly', 'per_session', 'vip', 'private']),
+  recorded_by: z.string().uuid(),
+  invoice_ids: z.array(z.number().int().positive()).optional(),
+  course_id: z.number().int().positive().optional(),
+});
 
 serve(async (req) => {
   const supabase = createClient(
@@ -29,32 +31,14 @@ serve(async (req) => {
     if (!auth.ok) return jsonError(auth.status, auth.error);
     const caller = auth.user;
 
-    const payload: PaymentPayload = await req.json();
-
-    // Validate required fields
-    if (!payload.student_id || !payload.amount || !payload.payment_method || !payload.payment_type || !payload.recorded_by) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    const parsed = await validateRequest(req, paymentSchema);
+    if (!parsed.ok) return parsed.response;
+    const payload = parsed.data;
 
     // Cross-check recorded_by against the authenticated caller
     if (payload.recorded_by !== caller.id) {
       return new Response(JSON.stringify({ error: 'recorded_by must match the authenticated caller' }), {
         status: 403, headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (payload.amount <= 0) {
-      return new Response(JSON.stringify({ error: 'Amount must be positive' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const validMethods = ['cash', 'bank_transfer', 'card', 'check'];
-    if (!validMethods.includes(payload.payment_method)) {
-      return new Response(JSON.stringify({ error: 'Invalid payment method' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
 

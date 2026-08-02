@@ -1,6 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://esm.sh/zod@4.4.3';
 import { authorizeRequest, jsonError } from '../_shared/auth.ts';
+import { validateRequest } from '../_shared/validation.ts';
+
+const payrollRequestSchema = z.object({
+  month: z.number().int().min(1).max(12).optional(),
+  year: z.number().int().min(2000).max(2100).optional(),
+});
 
 interface PayrollItem {
   teacher_id: string;
@@ -32,7 +39,9 @@ serve(async (req) => {
     const auth = await authorizeRequest(req, supabase, ['admin']);
     if (!auth.ok) return jsonError(auth.status, auth.error);
 
-    const { month, year } = await req.json();
+    const parsed = await validateRequest(req, payrollRequestSchema);
+    if (!parsed.ok) return parsed.response;
+    const { month, year } = parsed.data;
     const targetMonth = month ?? new Date().getMonth() + 1;
     const targetYear = year ?? new Date().getFullYear();
 
