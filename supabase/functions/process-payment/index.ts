@@ -71,80 +71,21 @@ serve(async (req) => {
       });
     }
 
-    // Create payment record
-    const { data: payment, error: paymentError } = await supabase
-      .from('payments')
-      .insert({
-        student_id: payload.student_id,
-        amount: payload.amount,
-        payment_method: payload.payment_method,
-        payment_type: payload.payment_type,
-        recorded_by: payload.recorded_by,
-        course_id: payload.course_id || null,
-      })
-      .select()
-      .single();
+    // Create payment + transaction + invoice allocations + notification
+    // atomically in the database (process_payment_tx).
+    const { data: result, error: rpcError } = await supabase.rpc('process_payment_tx', {
+      p_student_id: payload.student_id,
+      p_amount: payload.amount,
+      p_payment_method: payload.payment_method,
+      p_payment_type: payload.payment_type,
+      p_recorded_by: payload.recorded_by,
+      p_course_id: payload.course_id ?? null,
+      p_invoice_ids: payload.invoice_ids ?? null,
+    });
 
-    if (paymentError) throw paymentError;
+    if (rpcError) throw rpcError;
 
-    // Create transaction record
-    const { error: txError } = await supabase
-      .from('transactions')
-      .insert({
-        student_id: payload.student_id,
-        type: 'payment',
-        amount: payload.amount,
-        reference: payment.receipt_number,
-        recorded_by: payload.recorded_by,
-      });
-
-    if (txError) throw txError;
-
-    // NOTE: This multi-invoice allocation is NOT wrapped in a database transaction.
-    // If the process fails after creating the payment record but before updating
-    // all invoices, the payment record will exist without corresponding invoice
-    // updates (known limitation of current Supabase PostgREST setup).
-    if (payload.invoice_ids && payload.invoice_ids.length > 0) {
-      try {
-        for (const invoiceId of payload.invoice_ids) {
-          const { data: invoice } = await supabase
-            .from('invoices')
-            .select('paid_amount, total_amount')
-            .eq('id', invoiceId)
-            .single();
-
-          if (invoice) {
-            const newPaid = (invoice.paid_amount || 0) + (payload.amount / payload.invoice_ids.length);
-            const newStatus = newPaid >= invoice.total_amount ? 'paid' : 'partially_paid';
-
-            const { error: updateError } = await supabase
-              .from('invoices')
-              .update({ paid_amount: newPaid, status: newStatus })
-              .eq('id', invoiceId);
-
-            if (updateError) throw updateError;
-          }
-        }
-      } catch (invoiceError) {
-        // Rollback: soft-delete the payment record if invoice updates fail
-        await supabase.from('payments').update({ deleted_at: new Date().toISOString() }).eq('id', payment.id);
-        await supabase.from('transactions').update({ deleted_at: new Date().toISOString() }).eq('reference', payment.receipt_number);
-        throw invoiceError;
-      }
-    }
-
-    // Create notification
-    await supabase
-      .from('notifications')
-      .insert({
-        user_id: payload.student_id,
-        title: 'Paiement reçu',
-        message: `Paiement de ${payload.amount.toLocaleString()} DA reçu (${payload.payment_method})`,
-        type: 'success',
-        category: 'payment',
-      });
-
-    return new Response(JSON.stringify({ success: true, payment }), {
+    return new Response(JSON.stringify(result), {
       status: 200, headers: { 'Content-Type': 'application/json' },
     });
 
