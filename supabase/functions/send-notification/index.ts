@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authorizeRequest, jsonError } from '../_shared/auth.ts';
 
 interface NotificationPayload {
   user_id: string;
@@ -24,6 +25,15 @@ serve(async (req) => {
   }
 
   try {
+    // Service-to-service calls (attendance-summary cron) present the service-role key.
+    // Allow those, otherwise require an authenticated admin/assistant.
+    const authHeader = req.headers.get('Authorization');
+    const presentedKey = authHeader?.replace('Bearer ', '') ?? '';
+    if (presentedKey !== Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
+      const auth = await authorizeRequest(req, supabase, ['admin', 'assistant']);
+      if (!auth.ok) return jsonError(auth.status, auth.error);
+    }
+
     const payload: NotificationPayload = await req.json();
 
     if (!payload.user_id || !payload.title || !payload.message) {

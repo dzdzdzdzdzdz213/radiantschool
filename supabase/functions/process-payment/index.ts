@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authorizeRequest, jsonError } from '../_shared/auth.ts';
 
 interface PaymentPayload {
   student_id: string;
@@ -24,12 +25,23 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await authorizeRequest(req, supabase, ['admin', 'assistant']);
+    if (!auth.ok) return jsonError(auth.status, auth.error);
+    const caller = auth.user;
+
     const payload: PaymentPayload = await req.json();
 
     // Validate required fields
     if (!payload.student_id || !payload.amount || !payload.payment_method || !payload.payment_type || !payload.recorded_by) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Cross-check recorded_by against the authenticated caller
+    if (payload.recorded_by !== caller.id) {
+      return new Response(JSON.stringify({ error: 'recorded_by must match the authenticated caller' }), {
+        status: 403, headers: { 'Content-Type': 'application/json' },
       });
     }
 

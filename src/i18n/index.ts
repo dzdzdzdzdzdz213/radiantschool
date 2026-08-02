@@ -22,6 +22,16 @@ export function t(key: string, lang: Lang, ...args: string[]): string {
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
+async function getSessionToken(): Promise<string | null> {
+  try {
+    const { supabase } = await import('@/lib/supabase');
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function autoTranslate(text: string, target: 'en' | 'ar'): Promise<string> {
   const cacheKey = `_tr_${target}_${text}`;
   try {
@@ -30,9 +40,13 @@ export async function autoTranslate(text: string, target: 'en' | 'ar'): Promise<
   } catch {}
 
   try {
+    const token = await getSessionToken();
     const res = await fetch(`${SUPABASE_URL}/functions/v1/auto-translate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ text, target }),
     });
     if (!res.ok) return text;

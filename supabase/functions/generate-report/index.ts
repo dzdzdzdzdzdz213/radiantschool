@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authorizeRequest, jsonError } from '../_shared/auth.ts';
 
 interface ReportRequest {
   type: 'revenue' | 'attendance' | 'payroll' | 'students' | 'occupancy';
@@ -22,6 +23,9 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await authorizeRequest(req, supabase, ['admin', 'assistant']);
+    if (!auth.ok) return jsonError(auth.status, auth.error);
+
     const payload: ReportRequest = await req.json();
     const dateFrom = payload.date_from || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
     const dateTo = payload.date_to || new Date().toISOString().split('T')[0];

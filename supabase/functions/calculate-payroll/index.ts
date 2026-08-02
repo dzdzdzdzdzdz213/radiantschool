@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authorizeRequest, jsonError } from '../_shared/auth.ts';
 
 interface PayrollItem {
   teacher_id: string;
@@ -28,6 +29,9 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await authorizeRequest(req, supabase, ['admin']);
+    if (!auth.ok) return jsonError(auth.status, auth.error);
+
     const { month, year } = await req.json();
     const targetMonth = month ?? new Date().getMonth() + 1;
     const targetYear = year ?? new Date().getFullYear();

@@ -1,4 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authorizeRequest, jsonError } from '../_shared/auth.ts';
 
 serve(async (req) => {
   if (req.method !== 'POST') {
@@ -7,7 +9,16 @@ serve(async (req) => {
     });
   }
 
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
+
   try {
+    // Any authenticated user may translate UI strings; anonymous access is not needed.
+    const auth = await authorizeRequest(req, supabase, ['admin', 'assistant', 'teacher', 'student', 'parent']);
+    if (!auth.ok) return jsonError(auth.status, auth.error);
+
     const { text, target } = await req.json();
 
     if (!text || !target) {
