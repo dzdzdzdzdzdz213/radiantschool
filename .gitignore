@@ -39,3 +39,4 @@ skills-lock.json
 test-routes.mjs
 test-results/
 
+.env.vercel-check
