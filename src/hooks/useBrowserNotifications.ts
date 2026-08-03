@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import type { Database } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 
 export function useBrowserNotifications(userId?: string | null) {
@@ -17,7 +18,7 @@ export function useBrowserNotifications(userId?: string | null) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         (payload) => {
-          const n = payload.new as any;
+          const n = payload.new as Database['public']['Tables']['notifications']['Row'];
           if (shown.current.has(n.id)) return;
           shown.current.add(n.id);
 

@@ -30,11 +30,11 @@ export default function TeacherStudentsPage() {
     staleTime: 1000 * 60 * 2,
   });
 
-  const uniqueStudents = new Map<string, any>();
+  const uniqueStudents = new Map<string, NonNullable<NonNullable<typeof enrollments>[number]['student']>['user'] & { course: NonNullable<NonNullable<typeof enrollments>[number]['course']> | null; enrolledAt: string }>();
   for (const e of enrollments ?? []) {
-    const s = (e as any).student;
+    const s = e.student;
     const u = s?.user;
-    if (u && !uniqueStudents.has(u.id)) uniqueStudents.set(u.id, { ...u, course: (e as any).course, enrolledAt: (e as any).enrollment_date });
+    if (u && !uniqueStudents.has(u.id)) uniqueStudents.set(u.id, { ...u, course: e.course, enrolledAt: e.enrollment_date });
   }
 
   const filtered = Array.from(uniqueStudents.values()).filter((s) =>

@@ -159,7 +159,7 @@ export default function StudentCoursesPage() {
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {enrollments.map((e: any, idx: number) => {
+          {enrollments.map((e, idx: number) => {
             const c = e.course;
             const gradient = getSubjectColor(c?.subject?.name);
             return (
@@ -212,7 +212,7 @@ export default function StudentCoursesPage() {
                     {/* Schedule */}
                     {c?.schedules?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
-                        {c.schedules.map((s: any, i: number) => (
+                        {c.schedules.map((s, i: number) => (
                           <span key={i} className="inline-flex items-center gap-1 rounded-lg bg-muted/50 px-2 py-1 text-[11px] font-medium text-muted-foreground">
                             <CalendarDays className="h-3 w-3" />
                             {DAY_LABELS[s.day_of_week] || s.day_of_week} {formatTime(s.start_time)}

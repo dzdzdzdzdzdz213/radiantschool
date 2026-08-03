@@ -98,7 +98,7 @@ export default function TeacherProfilePage() {
       <section className="mx-auto max-w-5xl px-6 py-12">
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
-            {(teacher as any).biography && (
+            {teacher.biography && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -110,7 +110,7 @@ export default function TeacherProfilePage() {
                   <GraduationCap className="h-5 w-5" style={{ color: 'var(--primary)' }} />
                   Biographie
                 </h2>
-                <p className="leading-relaxed" style={{ color: 'var(--fg-muted)' }}>{(teacher as any).biography}</p>
+                <p className="leading-relaxed" style={{ color: 'var(--fg-muted)' }}>{teacher.biography}</p>
               </motion.div>
             )}
 
@@ -127,7 +127,7 @@ export default function TeacherProfilePage() {
                   Avis des élèves
                 </h2>
                 <div className="space-y-4">
-                  {teacher.reviews.slice(0, 5).map((review: any, i: number) => (
+                  {teacher.reviews.slice(0, 5).map((review, i: number) => (
                     <div key={i} className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg)' }}>
                       <div className="mb-2 flex items-center gap-2">
                         <div className="flex">
@@ -135,8 +135,8 @@ export default function TeacherProfilePage() {
                             <Star
                               key={s}
                               className="h-3.5 w-3.5"
-                              style={{ color: s < Math.round(review.average_score) ? '#f59e0b' : 'var(--border)' }}
-                              fill={s < Math.round(review.average_score) ? '#f59e0b' : 'transparent'}
+                              style={{ color: s < Math.round(review.average_score ?? 0) ? '#f59e0b' : 'var(--border)' }}
+                              fill={s < Math.round(review.average_score ?? 0) ? '#f59e0b' : 'transparent'}
                             />
                           ))}
                         </div>

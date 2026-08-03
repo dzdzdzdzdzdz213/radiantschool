@@ -73,8 +73,8 @@ export default function CompleteProfilePage() {
       await refreshProfile();
       toast('Profil complété avec succès', 'success');
       navigate(role === 'student' ? '/student/dashboard' : '/parent/dashboard');
-    } catch (err: any) {
-      toast(err?.message || 'Erreur lors de la création du profil', 'error');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Erreur lors de la création du profil', 'error');
     } finally {
       setSaving(false);
     }

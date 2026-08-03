@@ -130,7 +130,7 @@ export default function SettingsPage() {
                       <p className="text-sm font-medium">{item.label}</p>
                       <p className="text-xs text-muted-foreground">{item.desc}</p>
                     </div>
-                    <Switch checked={(notifPrefs as any)[item.key]} onCheckedChange={v => handleNotifChange(item.key, v)} />
+                    <Switch checked={notifPrefs[item.key as keyof typeof notifPrefs]} onCheckedChange={v => handleNotifChange(item.key, v)} />
                   </div>
                 ))}
               </CardContent>

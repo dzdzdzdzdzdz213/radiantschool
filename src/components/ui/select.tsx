@@ -4,6 +4,12 @@ import { ChevronDown } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 
+interface SelectItemShape { value?: string; children?: ReactNode }
+
+function isSelectItem(node: ReactNode): node is ReactElement<SelectItemShape> {
+  return isValidElement<SelectItemShape>(node);
+}
+
 interface SelectProps {
   value: string;
   onValueChange: (value: string) => void;
@@ -78,13 +84,13 @@ export function Select({ value, onValueChange, placeholder, children, className 
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute top-full mt-1 z-50 w-full min-w-[8rem] rounded-xl border border-border bg-popover p-1 shadow-md">
-            {(items.length > 0 ? items : Children.toArray(children)).map((item: any, idx: number) => (
+            {(items.length > 0 ? items : Children.toArray(children)).map((item, idx: number) => (
               <button
-                key={item.key ?? idx}
-                className={`relative flex w-full cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none hover:bg-accent ${value === item.props.value ? 'bg-accent font-medium' : ''}`}
-                onClick={() => { onValueChange(item.props.value); setOpen(false); }}
+                key={idx}
+                className={`relative flex w-full cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none hover:bg-accent ${value === (isSelectItem(item) ? item.props.value : undefined) ? 'bg-accent font-medium' : ''}`}
+                onClick={() => { if (isSelectItem(item)) { onValueChange(item.props.value as string); } setOpen(false); }}
               >
-                {item.props.children}
+                {isSelectItem(item) ? item.props.children : item}
               </button>
             ))}
           </div>

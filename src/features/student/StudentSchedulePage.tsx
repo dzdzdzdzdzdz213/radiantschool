@@ -31,9 +31,9 @@ export default function StudentSchedulePage() {
     enabled: !!profile?.id,
   });
 
-  const grouped: Record<string, any[]> = {};
+  const grouped: Record<string, NonNullable<typeof schedules>[number][]> = {};
   for (const s of schedules ?? []) {
-    const day = (s as any).day_of_week;
+    const day = s.day_of_week;
     if (!grouped[day]) grouped[day] = [];
     grouped[day].push(s);
   }

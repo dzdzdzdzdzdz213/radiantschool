@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { BookOpen, Calendar, DollarSign, FileText, Clock, MapPin, GraduationCap } from 'lucide-react';
+import { BookOpen, Calendar, DollarSign, FileText, Clock, MapPin, GraduationCap, type LucideIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
@@ -36,7 +36,7 @@ function PageHeader({ name }: { name: string }) {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color, delay }: { icon: any; label: string; value: string | number; color: string; delay: number }) {
+function StatCard({ icon: Icon, label, value, color, delay }: { icon: LucideIcon; label: string; value: string | number; color: string; delay: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
       <div className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
@@ -69,7 +69,7 @@ export default function StudentDashboardPage() {
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('student_id', profile.id),
         supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('student_id', profile.id).in('status', ['unpaid', 'partially_paid']),
       ]);
-      const totalPaid = (pay.data ?? []).reduce((s, p: any) => s + Number(p.amount), 0);
+      const totalPaid = (pay.data ?? []).reduce((s, p) => s + Number(p.amount), 0);
       return { enrollments: enr.count ?? 0, totalPaid, attendances: att.count ?? 0, unpaidInvoices: inv.count ?? 0 };
     },
     enabled: !!profile?.id,

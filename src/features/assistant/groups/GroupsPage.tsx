@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Users, X, Pencil, Trash2, Search, Calendar, MapPin, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Users, X, Pencil, Trash2, Search, Calendar, MapPin, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
@@ -35,13 +35,15 @@ function CapacityBar({ current, capacity }: { current: number; capacity: number 
 }
 
 function StatusBadge({ status, lang }: { status: string; lang: string }) {
-  const variant = status === 'active' ? 'success' : status === 'full' ? 'warning' : status === 'cancelled' ? 'destructive' : 'outline';
+  const variant: BadgeProps['variant'] = status === 'active' ? 'success' : status === 'full' ? 'warning' : status === 'cancelled' ? 'destructive' : 'outline';
   const key = `status.${status}`;
   const label = t(key, lang as Lang) || status;
-  return <Badge variant={variant as any}>{label}</Badge>;
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
-function ScheduleChips({ schedules, lang }: { schedules: any[]; lang: string }) {
+type ScheduleChip = { id: number; day_of_week: Database['public']['Enums']['day_of_week']; start_time: string; end_time: string };
+
+function ScheduleChips({ schedules, lang }: { schedules: ScheduleChip[] | null | undefined; lang: string }) {
   if (!schedules?.length) return null;
   const langKey = lang === 'ar' ? 'ar' : lang === 'fr' ? 'fr' : 'en';
   return (
@@ -94,7 +96,7 @@ export default function GroupsPage() {
   const [sortBy, setSortBy] = useState<'name' | 'enrollment' | 'capacity'>('name');
 
   const levelsByCat = useMemo(() => {
-    const grouped: Record<string, any[]> = {};
+    const grouped: Record<string, NonNullable<typeof levels>[number][]> = {};
     for (const l of levels ?? []) {
       (grouped[l.category] ??= []).push(l);
     }
@@ -111,7 +113,7 @@ export default function GroupsPage() {
       const matchesSubject = subjectFilter === 'all' || c.subject_id === parseInt(subjectFilter);
       return matchesSearch && matchesCat && matchesLevel && matchesSubject;
     });
-    result.sort((a: any, b: any) => {
+    result.sort((a, b) => {
       if (sortBy === 'enrollment') return (b.current_enrollments ?? 0) - (a.current_enrollments ?? 0);
       if (sortBy === 'capacity') return b.capacity - a.capacity;
       return a.name.localeCompare(b.name);
@@ -206,7 +208,6 @@ export default function GroupsPage() {
   });
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   // Student roster state
   const [rosterGroupId, setRosterGroupId] = useState<number | null>(null);
@@ -303,7 +304,7 @@ export default function GroupsPage() {
             <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
           ))}
         </Select>
-        <Select value={sortBy} onValueChange={v => setSortBy(v as any)} className="min-w-[130px]">
+        <Select value={sortBy} onValueChange={v => setSortBy(v as 'name' | 'enrollment' | 'capacity')} className="min-w-[130px]">
           <SelectItem value="name">{t('common.name', lang)}</SelectItem>
           <SelectItem value="enrollment">{t('groups.enrolled', lang)}</SelectItem>
           <SelectItem value="capacity">{t('groups.capacity', lang)}</SelectItem>
@@ -357,7 +358,7 @@ export default function GroupsPage() {
                 <Label>{t('common.level', lang)} *</Label>
                 <Select value={form.level_id} onValueChange={v => setForm(f => ({ ...f, level_id: v }))} placeholder={t('common.select', lang)}>
                   {(levels ?? [])
-                    .sort((a: any, b: any) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
+                    .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
                     .map((l) => {
                       const catLabel = l.category === 'primary' ? t('landing.category_primaire', lang) : l.category === 'middle' ? t('landing.category_cem', lang) : t('landing.category_lycee', lang);
                       return (

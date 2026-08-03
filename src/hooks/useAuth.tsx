@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { User } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import type { UserProfile } from '@/types/models';
 import type { UserRole } from '@/types/models';
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isOAuthCallback = window.location.pathname === '/auth/callback';
     const storedHash = sessionStorage.getItem('sb-hash');
 
-    async function processSession(session: any) {
+    async function processSession(session: Session | null) {
       if (!session?.user) return false;
       setUser(session.user);
       await fetchProfile(session.user.id);
@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string, role: UserRole, options?: SignUpOptions) => {
-    const meta: Record<string, any> = { first_name: firstName, last_name: lastName, role };
+    const meta: Record<string, unknown> = { first_name: firstName, last_name: lastName, role };
     if (options?.guardianName) meta.guardian_name = options.guardianName;
     if (options?.guardianEmail) meta.guardian_email = options.guardianEmail;
     if (options?.guardianPhone) meta.guardian_phone = options.guardianPhone;
@@ -210,8 +210,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       return {};
-    } catch (err: any) {
-      return { error: err?.message ?? 'Une erreur est survenue lors de l\'inscription' };
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : 'Une erreur est survenue lors de l\'inscription' };
     }
   };
 

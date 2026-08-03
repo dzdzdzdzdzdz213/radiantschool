@@ -1,4 +1,4 @@
-import { Sparkles, BookOpen, Calendar, Users, Clock, MapPin, GraduationCap } from 'lucide-react';
+import { Sparkles, BookOpen, Calendar, Users, Clock, MapPin, GraduationCap, type LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -33,7 +33,7 @@ function PageHeader({ name }: { name: string }) {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color, delay }: { icon: any; label: string; value: string | number; color: string; delay: number }) {
+function StatCard({ icon: Icon, label, value, color, delay }: { icon: LucideIcon; label: string; value: string | number; color: string; delay: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
       <div className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">

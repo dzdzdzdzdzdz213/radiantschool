@@ -98,7 +98,7 @@ export default function TeacherOnlineClassesPage() {
     onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
   });
 
-  function startEdit(oc: any) {
+  function startEdit(oc: NonNullable<typeof onlineClasses>[number]) {
     setEditingId(oc.id);
     setEditForm({ title: oc.title, meeting_url: oc.meeting_url || '', platform: oc.platform || '', description: oc.description || '' });
   }

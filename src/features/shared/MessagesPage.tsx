@@ -17,7 +17,7 @@ export default function MessagesPage() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { data: messages, isLoading } = useMessages();
-  const [selectedMsg, setSelectedMsg] = useState<any>(null);
+  const [selectedMsg, setSelectedMsg] = useState<NonNullable<typeof messages>[number] | null>(null);
   const [reply, setReply] = useState('');
 
   const filtered = (messages ?? []).filter((m) => m.sender_id === profile?.id || m.receiver_id === profile?.id);

@@ -24,7 +24,7 @@ export default function ChildProgressPage() {
     queryKey: ['child-grades', childId],
     queryFn: async () => {
       const { data } = await supabase.from('assignment_submissions')
-        .select('grade, feedback, created_at, assignment:assignments!inner(name, max_grade, course:courses(name))')
+        .select('grade, feedback, created_at, assignment:assignments!inner(title, max_grade, course:courses(name))')
         .eq('student_id', childId!)
         .not('grade', 'is', null)
         .order('created_at', { ascending: false });
@@ -152,11 +152,11 @@ export default function ChildProgressPage() {
             {grades && grades.length > 0 ? (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {grades.slice(0, 10).map((s, i) => {
-                  const a = s.assignment as any;
+                  const a = s.assignment;
                   return (
                     <div key={i} className="flex justify-between items-center py-2 border-b border-border/50">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{a.name}</p>
+                        <p className="text-sm font-medium truncate">{a.title}</p>
                         <p className="text-xs text-muted-foreground truncate">{a.course?.name}</p>
                       </div>
                       <span className="text-sm font-bold text-primary ml-4">{s.grade}{a.max_grade ? `/${a.max_grade}` : ''}</span>

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Users, DollarSign, BookOpen, CalendarCheck, TrendingUp, ArrowRight, Clock, UserPlus } from 'lucide-react';
+import { Users, DollarSign, BookOpen, CalendarCheck, TrendingUp, ArrowRight, Clock, UserPlus, type LucideIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
@@ -46,7 +46,7 @@ function PageHeader({ name }: { name: string }) {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color, delay }: { icon: any; label: string; value: string | number; color: string; delay: number }) {
+function StatCard({ icon: Icon, label, value, color, delay }: { icon: LucideIcon; label: string; value: string | number; color: string; delay: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
       <div className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
@@ -148,10 +148,10 @@ export default function ParentDashboardPage() {
         supabase.from('course_schedules').select('id, start_time, end_time, course:courses!inner(id, name), course:courses!inner(course_enrollments!inner(student_id))').eq('day_of_week', today).in('course.course_enrollments.student_id', childIds).order('start_time', { ascending: true }),
       ]);
 
-      const enrollmentsByStudent: Record<string, any[]> = {};
+      const enrollmentsByStudent: Record<string, NonNullable<NonNullable<(typeof enrRes.data)>[number]['course']>[]> = {};
       (enrRes.data ?? []).forEach((e) => {
         if (!enrollmentsByStudent[e.student_id]) enrollmentsByStudent[e.student_id] = [];
-        enrollmentsByStudent[e.student_id].push(e.course);
+        if (e.course) enrollmentsByStudent[e.student_id].push(e.course);
       });
 
       const attendanceByStudent: Record<string, { present: number; total: number }> = {};
@@ -196,7 +196,7 @@ export default function ParentDashboardPage() {
         supabase.from('course_enrollments').select('id', { count: 'exact', head: true }).in('student_id', childIds),
         supabase.from('payments').select('amount').in('student_id', childIds).is('deleted_at', null),
       ]);
-      return { enrollments: enr.count ?? 0, totalPaid: (pay.data ?? []).reduce((s: any, p: any) => s + Number(p.amount), 0) };
+      return { enrollments: enr.count ?? 0, totalPaid: (pay.data ?? []).reduce((s, p) => s + Number(p.amount), 0) };
     },
     enabled: childIds.length > 0,
   });

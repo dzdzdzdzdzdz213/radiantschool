@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Lang } from '@/i18n';
+import type { Database } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
@@ -23,7 +24,7 @@ export default function TeacherAttendancePage() {
         .from('course_schedules')
         .select(`id, start_time, end_time, course:courses(id, name), room:rooms(name)`)
         .in('course_id', courseIds)
-        .eq('day_of_week', dayName as any)
+        .eq('day_of_week', dayName as Database['public']['Enums']['day_of_week'])
         .order('start_time');
       return data ?? [];
     },

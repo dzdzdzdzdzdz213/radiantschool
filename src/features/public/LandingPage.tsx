@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { asset } from '@/lib/assets';
 import { t, LANGUAGES } from '@/i18n';
-import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart, type LucideIcon } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
@@ -520,7 +520,7 @@ export default function LandingPage() {
             </div>
 
             {/* Links */}
-            {[
+            {([
               { title: 'footer.links', col: 'lg:col-span-2', items: [
                 ...NAV.map(x => ({ label: x.label ?? t(x.key, lang), href: x.href })),
                 { label: t('nav.leaderboard', lang), to: '/leaderboard' },
@@ -531,11 +531,11 @@ export default function LandingPage() {
                 { label: 'contact@radiant.dz', icon: Mail },
                 { label: 'Bordj El Bahri, Alger', icon: MapPin },
               ]},
-            ].map((section) => (
+            ] as { title: string; col?: string; items: { label: string; to?: string; href?: string; icon?: LucideIcon }[] }[]).map((section) => (
               <div key={section.title} className={section.col || ''}>
                 <h3 className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--fg-muted)' }}>{t(section.title, lang)}</h3>
                 <ul className="space-y-3.5" style={{ color: 'var(--fg-muted)' }}>
-                  {section.items.map((item: any, i) => {
+                  {section.items.map((item, i) => {
                     const Icon = item.icon;
                     return (
                       <li key={i}>

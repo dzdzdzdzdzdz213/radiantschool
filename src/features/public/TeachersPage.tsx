@@ -46,7 +46,7 @@ export default function TeachersPage() {
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-8">
           <Link
-            to={-1 as any}
+            to={-1 as never}
             onClick={(e) => { e.preventDefault(); window.history.back(); }}
             className="inline-flex items-center gap-2 text-sm font-medium transition-colors duration-200 hover:text-[var(--primary)]"
             style={{ color: 'var(--fg-muted)' }}
@@ -81,18 +81,18 @@ export default function TeachersPage() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {teachers.map((teacher: any, i: number) => (
+            {teachers.map((teacher, i: number) => (
               <TeacherCard
                 key={teacher.id}
                 id={teacher.id}
-                photoUrl={teacher.photo_url}
+                photoUrl={teacher.photo_url ?? undefined}
                 firstName={teacher.first_name}
                 lastName={teacher.last_name}
                 specialty={subject ?? ''}
                 yearsOfExperience={teacher.yearsActive}
                 rating={teacher.avgRating}
                 studentsCount={teacher.studentCount}
-                biography={teacher.biography || teacher.bio}
+                biography={teacher.biography ?? undefined}
                 index={i}
                 onClick={() => navigate(`/teachers/${teacher.id}`)}
               />

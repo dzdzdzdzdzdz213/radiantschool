@@ -22,7 +22,7 @@ export default function TeacherReviewsPage() {
   });
 
   const avgScore = reviews?.length
-    ? (reviews.reduce((sum: number, r: any) => sum + (r.average_score ?? (r.teaching_quality + r.communication + r.punctuality + r.organization) / 4), 0) / reviews.length).toFixed(1)
+    ? (reviews.reduce((sum, r) => sum + (r.average_score ?? (r.teaching_quality + r.communication + r.punctuality + r.organization) / 4), 0) / reviews.length).toFixed(1)
     : '—';
 
   return (

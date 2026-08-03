@@ -42,8 +42,8 @@ export default function TeacherRevenuePage() {
     enabled: !!profile?.id,
   });
 
-  const totalPayroll = payroll?.reduce((s: number, p: any) => s + Number(p.net_pay), 0) ?? 0;
-  const totalPayments = payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) ?? 0;
+  const totalPayroll = payroll?.reduce((s, p) => s + Number(p.net_pay), 0) ?? 0;
+  const totalPayments = payments?.reduce((s, p) => s + Number(p.amount), 0) ?? 0;
 
   const isLoading = plLoading || pmLoading;
 

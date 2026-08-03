@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Database } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
@@ -50,7 +51,7 @@ export default function BulkAttendancePage() {
         .select('id, name, subject:subjects(name)')
         .eq('status', 'active')
         .order('name');
-      return ((data ?? []) as any[]).map(c => ({ id: c.id, name: c.name, subject: c.subject?.name ?? '' })) as CourseOption[];
+      return (data ?? []).map(c => ({ id: c.id, name: c.name, subject: c.subject?.name ?? '' }));
     },
     staleTime: 60_000,
   });
@@ -101,17 +102,17 @@ export default function BulkAttendancePage() {
         .eq('date', date)
         .maybeSingle();
 
-      const payload = { status, recorded_by: profile?.id ?? null, method: 'manual' as const };
+      const payload: Partial<Database['public']['Tables']['attendance']['Insert']> = { status: status as Database['public']['Enums']['attendance_status'], recorded_by: profile?.id ?? null, method: 'manual' as const };
       if (existing.data) {
         const { error } = await supabase
           .from('attendance')
-          .update(payload as any)
+          .update(payload)
           .eq('id', existing.data.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('attendance')
-          .insert({ student_id: studentId, date, ...payload } as any);
+          .insert({ student_id: studentId, date, ...payload } as Database['public']['Tables']['attendance']['Insert']);
         if (error) throw error;
       }
     },

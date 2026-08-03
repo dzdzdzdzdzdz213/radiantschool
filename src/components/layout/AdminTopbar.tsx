@@ -259,7 +259,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
             {LANGUAGES.map((l) => (
               <DropdownMenuItem
                 key={l.code}
-                onClick={() => setLang(l.code as any)}
+                onClick={() => setLang(l.code as typeof lang)}
                 className={lang === l.code ? 'bg-sidebar-accent font-medium' : ''}
               >
                 <span className="mr-2">{l.flag}</span>

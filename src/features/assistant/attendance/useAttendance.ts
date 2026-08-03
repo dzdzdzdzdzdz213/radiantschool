@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Database } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
@@ -62,7 +63,7 @@ export function useCorrectAttendance() {
   const { toast } = useToast();
   const { lang } = useLang();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Database['public']['Tables']['attendance']['Update']> }) => {
       return api.update('attendance', id, data);
     },
     onSuccess: () => {

@@ -1,4 +1,4 @@
-import { lazy, type ReactNode } from 'react';
+import { lazy, type ComponentType, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import PageSuspense from '@/components/ui/PageSuspense';
@@ -9,7 +9,7 @@ import TeacherLayout from '@/layouts/TeacherLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import AssistantLayout from '@/layouts/AssistantLayout';
 
-function loadPage(importFn: () => Promise<any>) {
+function loadPage(importFn: () => Promise<{ default: ComponentType }>) {
   return importFn().catch(() => {
     const url = window.location.href.split('?')[0] + '?v=' + Date.now();
     window.location.href = url;

@@ -32,7 +32,7 @@ export default function SchedulesPage() {
         .filter('courses.start_date', 'lte', endStr)
         .filter('courses.end_date', 'gte', startStr)
         .order('start_time');
-      const grouped: Record<string, any[]> = {};
+      const grouped: Record<string, NonNullable<typeof data>[number][]> = {};
       for (const day of DAYS) grouped[day] = [];
       for (const s of data ?? []) {
         if (grouped[s.day_of_week]) grouped[s.day_of_week].push(s);

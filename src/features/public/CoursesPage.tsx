@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
@@ -29,7 +29,7 @@ function CapacityBar({ current, capacity }: { current: number; capacity: number 
   );
 }
 
-const STATUS_MAP: Record<string, { fr: string; en: string; ar: string; variant: string }> = {
+const STATUS_MAP: Record<string, { fr: string; en: string; ar: string; variant: BadgeProps['variant'] }> = {
   active: { fr: 'Actif', en: 'Active', ar: 'نشط', variant: 'success' },
   inactive: { fr: 'Inactif', en: 'Inactive', ar: 'غير نشط', variant: 'outline' },
   full: { fr: 'Complet', en: 'Full', ar: 'مكتمل', variant: 'warning' },
@@ -64,7 +64,7 @@ export default function CoursesPage() {
   const [sortBy, setSortBy] = useState<'name' | 'enrollment' | 'price'>('name');
 
   const levelsByCat = useMemo(() => {
-    const grouped: Record<string, any[]> = {};
+    const grouped: Record<string, NonNullable<typeof levels>[number][]> = {};
     for (const l of levels ?? []) {
       (grouped[l.category] ??= []).push(l);
     }
@@ -187,7 +187,7 @@ export default function CoursesPage() {
       const matchesSubject = !subjectFilter || c.subject_id === parseInt(subjectFilter);
       return matchesSearch && matchesType && matchesCat && matchesLevel && matchesSubject;
     });
-    result.sort((a: any, b: any) => {
+    result.sort((a, b) => {
       if (sortBy === 'enrollment') return (b.current_enrollments ?? 0) - (a.current_enrollments ?? 0);
       if (sortBy === 'price') return (b.price ?? 0) - (a.price ?? 0);
       return a.name.localeCompare(b.name);
@@ -293,7 +293,7 @@ export default function CoursesPage() {
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.level', lang)} *</Label>
                 <Select value={form.level_id} onValueChange={v => setForm(f => ({ ...f, level_id: v }))} placeholder={t('common.select', lang)}>
                   {(levels ?? [])
-                    .sort((a: any, b: any) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
+                    .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
                     .map((l) => {
                       const catLabel = l.category === 'primary' ? t('landing.category_primaire', lang) : l.category === 'middle' ? t('landing.category_cem', lang) : t('landing.category_lycee', lang);
                       return (
@@ -366,7 +366,7 @@ export default function CoursesPage() {
           <SelectItem value="vip">{t('type.vip', lang)}</SelectItem>
           <SelectItem value="private">{t('type.private', lang)}</SelectItem>
         </Select>
-        <Select value={sortBy} onValueChange={v => setSortBy(v as any)} className="min-w-[130px]">
+        <Select value={sortBy} onValueChange={v => setSortBy(v as 'name' | 'enrollment' | 'price')} className="min-w-[130px]">
           <SelectItem value="name">{t('common.name', lang)}</SelectItem>
           <SelectItem value="enrollment">{t('groups.enrolled', lang)}</SelectItem>
           <SelectItem value="price">{t('common.price', lang)}</SelectItem>
@@ -408,7 +408,7 @@ export default function CoursesPage() {
                       <h3 className="font-semibold truncate">{c.name}</h3>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <Badge variant={statusInfo.variant as any}>{statusLabel}</Badge>
+                      <Badge variant={statusInfo.variant}>{statusLabel}</Badge>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(c)}><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: c.id, name: c.name })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                     </div>

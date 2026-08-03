@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import type { Database } from '@/types/database';
 import { useAuth } from '@/hooks/useAuth';
 import { getFullName, getRoleLabel } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
@@ -57,7 +58,7 @@ export default function ProfilePage() {
 
   const { data: userSettings, isError } = useQuery({
     queryKey: ['profile_settings', profile?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Partial<Database['public']['Tables']['users']['Row']>> => {
       if (!profile?.id) return {};
       const { data } = await supabase.from('users').select('email_notifications, push_notifications, sms_notifications, accepts_private_lessons').eq('id', profile.id).single();
       return data ?? {};
@@ -68,8 +69,12 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!userSettings) return;
-    setNotifications(prev => ({ ...prev, ...userSettings }));
-    if (typeof (userSettings as any).accepts_private_lessons === 'boolean') setAcceptsPrivateLessons((userSettings as any).accepts_private_lessons);
+    setNotifications(prev => ({
+      email_notifications: userSettings.email_notifications ?? prev.email_notifications,
+      push_notifications: userSettings.push_notifications ?? prev.push_notifications,
+      sms_notifications: userSettings.sms_notifications ?? prev.sms_notifications,
+    }));
+    if (typeof userSettings.accepts_private_lessons === 'boolean') setAcceptsPrivateLessons(userSettings.accepts_private_lessons);
   }, [userSettings]);
 
   const notifDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -242,7 +247,7 @@ export default function ProfilePage() {
                 <p className="text-sm font-medium">{n.label}</p>
                 <p className="text-xs text-muted-foreground">{n.desc}</p>
               </div>
-              <Switch checked={(notifications as any)[n.key]} onCheckedChange={v => handleNotifChange(n.key, v)} />
+              <Switch checked={notifications[n.key as keyof typeof notifications]} onCheckedChange={v => handleNotifChange(n.key, v)} />
             </div>
           ))}
         </div>

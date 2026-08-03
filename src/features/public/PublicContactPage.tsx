@@ -27,8 +27,8 @@ export default function PublicContactPage() {
       if (error) throw error;
       toast('Message envoyé avec succès', 'success');
       setForm({ name: '', email: '', subject: '', message: '' });
-    } catch (err: any) {
-      toast(err?.message ?? 'Erreur lors de l\'envoi', 'error');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Erreur lors de l\'envoi', 'error');
     } finally {
       setSending(false);
     }

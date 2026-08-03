@@ -34,9 +34,9 @@ export default function TeacherReportsPage() {
       }
 
       const uniqueStudents = new Set(enrollments.map((e) => e.student_id));
-      const totalCapacity = courses.reduce((s: number, c: any) => s + Number(c.capacity), 0);
-      const totalEnrolled = courses.reduce((s: number, c: any) => s + (c.current_enrollments ?? 0), 0);
-      const avgScore = evals.length ? (evals.reduce((s: number, e: any) => s + Number(e.average_score ?? 0), 0) / evals.length).toFixed(1) : '—';
+      const totalCapacity = courses.reduce((s, c) => s + Number(c.capacity), 0);
+      const totalEnrolled = courses.reduce((s, c) => s + (c.current_enrollments ?? 0), 0);
+      const avgScore = evals.length ? (evals.reduce((s, e) => s + Number(e.average_score ?? 0), 0) / evals.length).toFixed(1) : '—';
 
       return {
         courseCount: courses.length,
