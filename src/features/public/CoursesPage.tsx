@@ -72,7 +72,7 @@ export default function CoursesPage() {
   }, [levels]);
 
   const filteredLevels = catFilter ? (levelsByCat[catFilter] ?? []) : (levels ?? []);
-  const teachers = allUsers?.filter((u: any) => u.role === 'teacher') ?? [];
+  const teachers = allUsers?.filter((u) => u.role === 'teacher') ?? [];
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -90,7 +90,7 @@ export default function CoursesPage() {
     setShowModal(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: NonNullable<typeof courses>[number]) => {
     setEditingId(item.id);
     setForm({
       name: item.name ?? '',
@@ -160,7 +160,7 @@ export default function CoursesPage() {
       setImageFile(null);
       setImagePreview(null);
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -172,13 +172,13 @@ export default function CoursesPage() {
       qc.invalidateQueries({ queryKey: ['courses'] });
       toast(t('success.deleted', lang, t('nav.courses', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   const filtered = useMemo(() => {
-    const result = (courses ?? []).filter((c: any) => {
+    const result = (courses ?? []).filter((c) => {
       const q = search.toLowerCase();
       const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q) || c.level?.stream?.toLowerCase().includes(q);
       const matchesType = !typeFilter || c.type === typeFilter;
@@ -284,7 +284,7 @@ export default function CoursesPage() {
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.subject', lang)} *</Label>
                 <Select value={form.subject_id} onValueChange={v => setForm(f => ({ ...f, subject_id: v }))} placeholder={t('common.select', lang)}>
-                  {(subjects ?? []).map((s: any) => (
+                  {(subjects ?? []).map((s) => (
                     <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                   ))}
                 </Select>
@@ -294,7 +294,7 @@ export default function CoursesPage() {
                 <Select value={form.level_id} onValueChange={v => setForm(f => ({ ...f, level_id: v }))} placeholder={t('common.select', lang)}>
                   {(levels ?? [])
                     .sort((a: any, b: any) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
-                    .map((l: any) => {
+                    .map((l) => {
                       const catLabel = l.category === 'primary' ? t('landing.category_primaire', lang) : l.category === 'middle' ? t('landing.category_cem', lang) : t('landing.category_lycee', lang);
                       return (
                         <SelectItem key={l.id} value={String(l.id)}>
@@ -308,7 +308,7 @@ export default function CoursesPage() {
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.room', lang)}</Label>
                 <Select value={form.room_id} onValueChange={v => setForm(f => ({ ...f, room_id: v }))} placeholder={t('common.select', lang)}>
                   <SelectItem value="">—</SelectItem>
-                  {(rooms ?? []).map((r: any) => (
+                  {(rooms ?? []).map((r) => (
                     <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
                   ))}
                 </Select>
@@ -316,7 +316,7 @@ export default function CoursesPage() {
               <div>
                 <Label className="text-xs text-muted-foreground mb-1 block">{t('common.teacher', lang)} *</Label>
                 <Select value={form.teacher_id} onValueChange={v => setForm(f => ({ ...f, teacher_id: v }))} placeholder={t('common.select', lang)}>
-                  {teachers.map((t: any) => (
+                  {teachers.map((t) => (
                     <SelectItem key={t.id} value={t.id}>{getFullName(t.first_name, t.last_name)}</SelectItem>
                   ))}
                 </Select>
@@ -350,13 +350,13 @@ export default function CoursesPage() {
         </Select>
         <Select value={levelFilter} onValueChange={setLevelFilter} placeholder={t('common.all', lang)}>
           <SelectItem value="">{t('common.all', lang)}</SelectItem>
-          {filteredLevels.map((l: any) => (
+          {filteredLevels.map((l) => (
             <SelectItem key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</SelectItem>
           ))}
         </Select>
         <Select value={subjectFilter} onValueChange={setSubjectFilter} placeholder={t('common.all', lang)}>
           <SelectItem value="">{t('common.all', lang)}</SelectItem>
-          {(subjects ?? []).map((s: any) => (
+          {(subjects ?? []).map((s) => (
             <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
           ))}
         </Select>
@@ -391,7 +391,7 @@ export default function CoursesPage() {
             <p>{t('common.no_results', lang)}</p>
           </div>
         ) : (
-          filtered.map((c: any) => {
+          filtered.map((c) => {
             const statusInfo = STATUS_MAP[c.status] ?? STATUS_MAP.active;
             const statusLabel = statusInfo[lang as keyof typeof statusInfo] || statusInfo.en;
             return (

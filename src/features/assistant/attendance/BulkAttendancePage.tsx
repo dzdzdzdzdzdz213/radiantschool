@@ -65,7 +65,7 @@ export default function BulkAttendancePage() {
         .eq('course_id', selectedCourseId)
         .eq('status', 'active');
 
-      const rows: StudentRow[] = (enr ?? []).map((e: any) => ({
+      const rows: StudentRow[] = (enr ?? []).map((e) => ({
         id: e.student?.user?.id ?? '',
         firstName: e.student?.user?.first_name ?? '',
         lastName: e.student?.user?.last_name ?? '',
@@ -116,7 +116,7 @@ export default function BulkAttendancePage() {
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['course-students', selectedCourseId] }),
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   const markAll = useCallback(async (status: 'present' | 'absent' | 'late') => {

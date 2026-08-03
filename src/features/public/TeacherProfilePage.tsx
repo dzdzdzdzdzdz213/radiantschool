@@ -168,7 +168,7 @@ export default function TeacherProfilePage() {
                   Cours disponibles
                 </h2>
                 <div className="space-y-4">
-                  {teacher.courses.map((course: any) => (
+                  {teacher.courses.map((course) => (
                     <div
                       key={course.id}
                       className="flex items-center justify-between rounded-xl p-4"
@@ -246,7 +246,7 @@ export default function TeacherProfilePage() {
                   Disponibilités
                 </h2>
                 <div className="space-y-2">
-                  {teacher.schedules.map((sched: any) => (
+                  {teacher.schedules.map((sched) => (
                     <div key={sched.id} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: 'var(--bg)' }}>
                       <span className="font-medium">{DAY_LABELS[sched.day_of_week] ?? `Jour ${sched.day_of_week}`}</span>
                       <span style={{ color: 'var(--fg-muted)' }}>

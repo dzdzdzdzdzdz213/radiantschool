@@ -128,7 +128,7 @@ export default function StudentDashboardPage() {
               <h2 className="text-sm font-semibold">{t('nav.schedule', lang)} — {new Date().toLocaleDateString('fr-FR', { weekday: 'long' })}</h2>
             </div>
             <div className="p-5 space-y-2">
-              {upcoming.map((s: any) => (
+              {upcoming.map((s) => (
                 <div key={s.id} className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                   <div className="flex flex-col items-center min-w-[56px]">
                     <span className="text-base font-bold leading-tight">{s.start_time?.slice(0, 5)}</span>

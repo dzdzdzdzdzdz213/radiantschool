@@ -59,7 +59,7 @@ export default function TeacherAssignmentsPage() {
       setShowForm(false);
       setForm({ title: '', description: '', due_date: '', course_id: '', max_grade: '' });
     },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -68,7 +68,7 @@ export default function TeacherAssignmentsPage() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher-assignments'] }); toast('Supprimé', 'success'); },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   return (
@@ -83,7 +83,7 @@ export default function TeacherAssignmentsPage() {
           <CardContent className="p-4 space-y-4">
             <select value={form.course_id} onChange={e => setForm({ ...form, course_id: e.target.value })} className="w-full h-10 rounded-xl px-3 text-sm border bg-background">
               <option value="">Sélectionner une formation...</option>
-              {courses?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {courses?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <Input placeholder="Titre du devoir" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
             <textarea placeholder="Description (optionnel)" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-xl px-3 py-2 text-sm border bg-background resize-none" />
@@ -105,7 +105,7 @@ export default function TeacherAssignmentsPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucun devoir pour le moment</CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {assignments.map((a: any) => (
+          {assignments.map((a) => (
             <Card key={a.id}>
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0"><FileText className="h-5 w-5 text-primary" /></div>

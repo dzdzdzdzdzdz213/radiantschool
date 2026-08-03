@@ -37,7 +37,7 @@ export default function TeacherVipClassesPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucune classe VIP</CardContent></Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((c: any) => (
+          {courses.map((c) => (
             <Card key={c.id} className="border-amber-200/50">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-2">

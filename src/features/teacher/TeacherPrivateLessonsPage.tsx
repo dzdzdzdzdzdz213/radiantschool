@@ -53,9 +53,9 @@ export default function TeacherPrivateLessonsPage() {
   );
 
   const allItems = [
-    ...(inquiries ?? []).map((i: any) => ({ ...i, type: 'inquiry', studentName: `${i.first_name} ${i.last_name}`, studentContact: i.email || i.phone })),
-    ...(privateLessons ?? []).map((p: any) => ({ ...p, type: 'lesson', studentName: `${p.student?.user?.first_name} ${p.student?.user?.last_name}`, studentContact: p.student?.user?.email || p.student?.user?.phone, status: p.status })),
-  ].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    ...(inquiries ?? []).map((i) => ({ ...i, type: 'inquiry' as const, studentName: `${i.first_name} ${i.last_name}`, studentContact: i.email || i.phone, dateText: i.preferred_date })),
+    ...(privateLessons ?? []).map((p) => ({ ...p, type: 'lesson' as const, studentName: `${p.student?.user?.first_name} ${p.student?.user?.last_name}`, studentContact: p.student?.user?.email || p.student?.user?.phone, status: p.status, dateText: p.date })),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return (
     <div className="space-y-6">
@@ -70,7 +70,7 @@ export default function TeacherPrivateLessonsPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucune demande pour le moment</CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {allItems.map((item: any) => (
+          {allItems.map((item) => (
             <Card key={`${item.type}-${item.id}`}>
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary shrink-0">
@@ -79,9 +79,9 @@ export default function TeacherPrivateLessonsPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm">{item.studentName}</p>
                   <p className="text-xs text-muted-foreground">{item.studentContact}</p>
-                  {item.preferred_date && (
+                  {item.dateText && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {item.preferred_date} · {item.start_time?.slice(0,5)}-{item.end_time?.slice(0,5)}
+                      {item.dateText} · {item.start_time?.slice(0,5)}-{item.end_time?.slice(0,5)}
                     </p>
                   )}
                 </div>

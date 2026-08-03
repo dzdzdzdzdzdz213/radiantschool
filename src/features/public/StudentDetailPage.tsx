@@ -107,7 +107,7 @@ export default function StudentDetailPage() {
             <div className="text-sm text-muted-foreground">{t('common.loading', lang)}</div>
           ) : (
             <div className="space-y-2">
-              {enrollments?.length > 0 ? enrollments.map((e: any) => (
+              {enrollments?.length > 0 ? enrollments.map((e) => (
                 <div key={e.id} className="rounded-lg bg-page p-3 text-sm">
                   <p className="font-medium">{e.course?.name}</p>
                   <p className="text-muted-foreground">{e.course?.type} · {formatCurrency(e.course?.price)}</p>
@@ -122,7 +122,7 @@ export default function StudentDetailPage() {
             <div className="text-sm text-muted-foreground">{t('common.loading', lang)}</div>
           ) : (
             <div className="space-y-2">
-              {payments?.length > 0 ? payments.map((p: any) => (
+              {payments?.length > 0 ? payments.map((p) => (
                 <div key={p.id} className="rounded-lg bg-page p-3 text-sm">
                   <p className="font-medium">{formatCurrency(p.amount)}</p>
                   <p className="text-muted-foreground">{p.payment_method} · {formatDate(p.created_at)}</p>

@@ -86,7 +86,6 @@ const StudentDetailPage = lazy(() => loadPage(() => import('@/features/public/St
 const CoursesPage = lazy(() => loadPage(() => import('@/features/public/CoursesPage')));
 const CourseDetailPage = lazy(() => loadPage(() => import('@/features/public/CourseDetailPage')));
 const AdminAttendanceOversightPage = lazy(() => loadPage(() => import('@/features/admin/attendance/AdminAttendanceOversightPage')));
-const PaymentsPage = lazy(() => loadPage(() => import('@/features/assistant/payments/PaymentsPage')));
 const InvoicesPage = lazy(() => loadPage(() => import('@/features/assistant/invoices/InvoicesPage')));
 const ReportsPage = lazy(() => loadPage(() => import('@/features/assistant/reports/ReportsPage')));
 const MessagesPage = lazy(() => loadPage(() => import('@/features/shared/MessagesPage')));
@@ -282,7 +281,6 @@ export const router = createBrowserRouter([
       { path: 'courses', Component: CoursesPage },
       { path: 'courses/:id', Component: CourseDetailPage },
       { path: 'attendance', Component: AdminAttendanceOversightPage },
-      { path: 'payments', Component: PaymentsPage },
       { path: 'invoices', Component: InvoicesPage },
       { path: 'reports', Component: ReportsPage },
       { path: 'messages', Component: MessagesPage },
@@ -316,7 +314,6 @@ export const router = createBrowserRouter([
       { path: 'search', Component: AssistantSearchPage },
       { path: 'settings', Component: AssistantSettingsPage },
       { path: 'attendance', Component: AssistantAttendancePage },
-      { path: 'payments', Component: PaymentsPage },
       { path: 'invoices', Component: InvoicesPage },
       { path: 'messages', Component: MessagesPage },
       { path: 'schedule', Component: SchedulePage },

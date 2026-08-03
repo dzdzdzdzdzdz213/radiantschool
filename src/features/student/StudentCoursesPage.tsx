@@ -68,8 +68,8 @@ export default function StudentCoursesPage() {
   });
 
   const formatTime = (t?: string) => t ? t.slice(0, 5) : '';
-  const activeCount = enrollments?.filter((e: any) => e.status === 'active').length ?? 0;
-  const pendingCount = enrollments?.filter((e: any) => e.status === 'pending_approval').length ?? 0;
+  const activeCount = enrollments?.filter((e) => e.status === 'active').length ?? 0;
+  const pendingCount = enrollments?.filter((e) => e.status === 'pending_approval').length ?? 0;
 
   return (
     <div className="space-y-6">

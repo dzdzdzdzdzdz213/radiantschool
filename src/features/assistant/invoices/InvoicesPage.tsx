@@ -42,7 +42,7 @@ export default function InvoicesPage() {
     setShowModal(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: NonNullable<NonNullable<typeof data>['data']>[number]) => {
     setEditingId(item.id);
     setForm({
       student_id: item.student_id ?? '',
@@ -72,7 +72,7 @@ export default function InvoicesPage() {
             setEditingId(null);
             setForm({ student_id: '', total_amount: '', due_date: '' });
           },
-          onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+          onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
         },
       );
     } else {
@@ -85,7 +85,7 @@ export default function InvoicesPage() {
             setShowModal(false);
             setForm({ student_id: '', total_amount: '', due_date: '' });
           },
-          onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+          onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
         },
       );
     }
@@ -98,7 +98,7 @@ export default function InvoicesPage() {
       <ConfirmDialog
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
-        onConfirm={() => { if (confirmDelete) deleteInvoice.mutate(confirmDelete.id, { onSuccess: () => toast(t('success.deleted', lang, t('nav.invoices', lang)), 'success'), onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'), onSettled: () => setConfirmDelete(null) }); }}
+        onConfirm={() => { if (confirmDelete) deleteInvoice.mutate(confirmDelete.id, { onSuccess: () => toast(t('success.deleted', lang, t('nav.invoices', lang)), 'success'), onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'), onSettled: () => setConfirmDelete(null) }); }}
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteInvoice.isPending}
       />

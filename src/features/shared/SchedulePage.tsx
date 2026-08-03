@@ -86,8 +86,8 @@ export default function SchedulePage() {
 
   const allSchedules = useMemo(() => {
     if (!courses) return [];
-    return courses.flatMap((c: any) =>
-      (c.schedules || []).map((s: any) => ({
+    return courses.flatMap((c) =>
+      (c.schedules || []).map((s: { start_time: string; end_time: string }) => ({
         ...s,
         courseName: c.name,
         courseType: c.type,
@@ -154,7 +154,7 @@ export default function SchedulePage() {
 
             {weekDates.map((date, idx) => {
               const day = DAYS[idx];
-              const daySchedules = allSchedules.filter((s: any) => s.day_of_week === day);
+              const daySchedules = allSchedules.filter((s) => s.day_of_week === day);
               const todayFlag = isToday(date);
 
               return (
@@ -192,7 +192,7 @@ export default function SchedulePage() {
                       />
                     ))}
 
-                    {daySchedules.map((s: any) => {
+                    {daySchedules.map((s) => {
                       const top = ((s.startMin - HOURS[0] * 60) / 60) * HOUR_HEIGHT;
                       const height = Math.max(((s.endMin - s.startMin) / 60) * HOUR_HEIGHT, 36);
 

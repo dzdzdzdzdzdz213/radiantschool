@@ -100,8 +100,8 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
 
-  const teacherCount = new Set((courses ?? []).map((c: any) => c.teacher?.id)).size;
-  const levelCount = new Set((courses ?? []).map((c: any) => c.level?.name)).size;
+  const teacherCount = new Set((courses ?? []).map((c) => c.teacher?.id)).size;
+  const levelCount = new Set((courses ?? []).map((c) => c.level?.name)).size;
 
   return (
     <div className="min-h-screen" style={{ color: 'var(--fg)' }}>

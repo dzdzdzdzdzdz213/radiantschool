@@ -15,7 +15,7 @@ export default function StudentPrivateLessonsPage() {
 
       const { data } = await supabase
         .from('private_lessons')
-        .select('*, teacher:users!teacher_id(first_name, last_name), course:courses(name)')
+        .select('*, teacher:users!teacher_id(first_name, last_name)')
         .eq('student_id', profile.id)
         .order('created_at', { ascending: false });
       return data ?? [];
@@ -35,7 +35,7 @@ export default function StudentPrivateLessonsPage() {
         </CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {lessons.map((l: any) => (
+          {lessons.map((l) => (
             <Card key={l.id}>
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary shrink-0">
@@ -46,7 +46,6 @@ export default function StudentPrivateLessonsPage() {
                     <p className="font-semibold text-sm">
                       {l.teacher ? `${l.teacher.first_name} ${l.teacher.last_name}` : 'Professeur'}
                     </p>
-                    {l.course && <span className="text-xs text-muted-foreground">· {l.course.name}</span>}
                   </div>
                   {l.date && (
                     <p className="text-xs text-muted-foreground mt-1">

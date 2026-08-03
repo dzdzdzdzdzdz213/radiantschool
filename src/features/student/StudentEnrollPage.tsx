@@ -52,7 +52,7 @@ export default function StudentEnrollPage() {
       qc.invalidateQueries({ queryKey: ['student-dashboard'] });
       toast('Demande d\'inscription envoyée ! En attente de validation.', 'success');
     },
-    onError: (err: any) => toast(err?.message || 'Erreur lors de l\'inscription', 'error'),
+    onError: (err) => toast(err?.message || 'Erreur lors de l\'inscription', 'error'),
   });
 
   const activeCount = (myEnrollments ?? []).filter(e => e.status === 'active' || e.status === 'pending_approval').length;
@@ -73,7 +73,7 @@ export default function StudentEnrollPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-40 rounded-xl bg-muted/30 animate-pulse" />)}</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courses?.map((course: any) => {
+          {courses?.map((course) => {
             const status = getEnrollmentStatus(course.id);
             const full = course.capacity > 0 && (course.current_enrollments ?? 0) >= course.capacity;
             const borderClass = status === 'active' ? 'border-green-300' : status === 'pending_approval' ? 'border-amber-300' : '';

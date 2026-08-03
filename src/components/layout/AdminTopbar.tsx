@@ -53,7 +53,7 @@ function NotificationSheet() {
     enabled: !!profile?.id,
   });
 
-  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
     <Sheet>
@@ -77,7 +77,7 @@ function NotificationSheet() {
             {notifications.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-8">{t('dashboard.no_notifications', lang)}</p>
             )}
-            {notifications.map((n: any) => (
+            {notifications.map((n) => (
               <div key={n.id} className="rounded-xl bg-sidebar-accent p-3">
                 <p className="text-sm font-medium">{n.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>

@@ -64,7 +64,7 @@ export default function CreateUserPage() {
       qc.invalidateQueries({ queryKey: ['users'] });
       navigate('/admin/users');
     },
-    onError: (err: any) => { if (err?.message !== 'VALIDATION_FAILED') toast(err?.message ?? t('common.error', lang), 'error'); },
+    onError: (err: Error) => { if (err?.message !== 'VALIDATION_FAILED') toast(err?.message ?? t('common.error', lang), 'error'); },
   });
 
   return (

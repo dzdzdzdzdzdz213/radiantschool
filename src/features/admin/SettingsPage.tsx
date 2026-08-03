@@ -11,8 +11,33 @@ import { Select, SelectItem } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Database } from '@/types/database';
 
 const WILAYAS = ['Alger', 'Oran', 'Constantine'];
+
+interface CenterSettingsRow {
+  id: number;
+  name: string | null;
+  address: string | null;
+  phone: string | null;
+  wilaya: string | null;
+  notifications_enabled: boolean | null;
+  sms_enabled: boolean | null;
+  auto_invoice: boolean | null;
+  currency: string | null;
+}
+
+interface SettingsPayload {
+  name: string;
+  address: string;
+  phone: string;
+  wilaya: string;
+  notifications_enabled: boolean;
+  sms_enabled: boolean;
+  auto_invoice: boolean;
+  currency: string;
+  id?: number;
+}
 
 export default function SettingsPage() {
   const { lang } = useLang();
@@ -33,8 +58,8 @@ export default function SettingsPage() {
   const { data: settingsData, isLoading: settingsLoading } = useQuery({
     queryKey: ['admin_settings'],
     queryFn: async () => {
-      const { data } = await (supabase as any).from('center_settings').select('*').maybeSingle();
-      return data ?? null;
+      const { data } = await supabase.from('center_settings').select('*').maybeSingle();
+      return (data ?? null) as unknown as CenterSettingsRow | null;
     },
   });
 
@@ -61,7 +86,7 @@ export default function SettingsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload: Record<string, any> = {
+      const payload: SettingsPayload = {
         name: centerName,
         address,
         phone,
@@ -72,11 +97,11 @@ export default function SettingsPage() {
         currency,
       };
       if (settingsId) payload.id = settingsId;
-      const { error } = await (supabase as any).from('center_settings').upsert(payload);
+      const { error } = await supabase.from('center_settings').upsert(payload as unknown as Database['public']['Tables']['center_settings']['Insert']);
       if (error) throw error;
     },
     onSuccess: () => { toast(t('success.saved', lang, t('nav.settings', lang)), 'success'); },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err: Error) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const handleSave = () => {

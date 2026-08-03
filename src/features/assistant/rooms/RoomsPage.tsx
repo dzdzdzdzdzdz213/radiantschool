@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database';
 import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -32,7 +33,7 @@ export default function RoomsPage() {
   const { data: rooms, isLoading, isError } = useQuery({
     queryKey: ['assistant_rooms'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('rooms')
         .select('*, courses!courses_room_id_fkey(id, name, status)')
         .order('name');
@@ -49,7 +50,7 @@ export default function RoomsPage() {
   const [form, setForm] = useState({ name: '', capacity: '', floor: '', status: 'active', equipment: '' });
 
   const filteredRooms = useMemo(() => {
-    return (rooms ?? []).filter((r: any) => {
+    return (rooms ?? []).filter((r) => {
       const q = search.toLowerCase();
       const matchesSearch = !q || r.name.toLowerCase().includes(q) || String(r.floor).includes(q);
       const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
@@ -63,7 +64,7 @@ export default function RoomsPage() {
     setShowModal(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: NonNullable<typeof rooms>[number]) => {
     setEditingId(item.id);
     setForm({
       name: item.name ?? '',
@@ -81,18 +82,18 @@ export default function RoomsPage() {
       const capacity = parseInt(form.capacity, 10);
       if (isNaN(capacity) || capacity <= 0) throw new Error(t('rooms.capacity_invalid', lang));
       const equipment = form.equipment.trim() ? form.equipment.split(',').map((e: string) => e.trim()).filter(Boolean) : [];
-      const payload: Record<string, any> = {
+      const payload: Database['public']['Tables']['rooms']['Insert'] = {
         name: form.name.trim(),
         capacity,
         floor: form.floor ? parseInt(form.floor, 10) : null,
-        status: form.status,
+        status: form.status as never,
         equipment,
       };
       if (editingId) {
-        const { error } = await (supabase as any).from('rooms').update(payload).eq('id', editingId);
+        const { error } = await supabase.from('rooms').update(payload).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any).from('rooms').insert(payload);
+        const { error } = await supabase.from('rooms').insert(payload);
         if (error) throw error;
       }
     },
@@ -103,31 +104,31 @@ export default function RoomsPage() {
       setEditingId(null);
       setForm({ name: '', capacity: '', floor: '', status: 'active', equipment: '' });
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await (supabase as any).from('rooms').delete().eq('id', id);
+      const { error } = await supabase.from('rooms').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_rooms'] });
       toast(t('success.deleted', lang, t('rooms.room', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const { error } = await (supabase as any).from('rooms').update({ status }).eq('id', id);
+      const { error } = await supabase.from('rooms').update({ status: status as never }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_rooms'] });
       toast(t('success.updated', lang, t('rooms.room', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
@@ -225,7 +226,7 @@ export default function RoomsPage() {
           <div className="col-span-full text-center py-12 text-muted-foreground">
             <MapPin className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
           </div>
-        ) : filteredRooms.map((room: any) => (
+        ) : filteredRooms.map((room) => (
           <Card key={room.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -261,9 +262,9 @@ export default function RoomsPage() {
               </div>
 
               {/* Equipment */}
-              {room.equipment && room.equipment.length > 0 ? (
+              {(Array.isArray(room.equipment) ? room.equipment as string[] : []).length > 0 ? (
                 <div className="flex flex-wrap gap-1">
-                  {room.equipment.map((eq: string) => (
+                  {(Array.isArray(room.equipment) ? room.equipment as string[] : []).map((eq: string) => (
                     <span key={eq} className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{eq}</span>
                   ))}
                 </div>
@@ -274,7 +275,7 @@ export default function RoomsPage() {
               {/* Courses assigned */}
               {room.courses && room.courses.length > 0 && (
                 <div className="space-y-1">
-                  {room.courses.slice(0, 3).map((c: any) => (
+                  {room.courses.slice(0, 3).map((c) => (
                     <div key={c.id} className="flex items-center justify-between text-xs">
                       <span className="truncate">{c.name}</span>
                       <Badge variant={c.status === 'active' ? 'success' : 'outline'} className="text-[9px] shrink-0">{c.status}</Badge>

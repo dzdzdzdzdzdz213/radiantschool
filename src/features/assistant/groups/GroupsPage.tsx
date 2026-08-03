@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database';
 import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t, type Lang } from '@/i18n';
@@ -45,7 +46,7 @@ function ScheduleChips({ schedules, lang }: { schedules: any[]; lang: string }) 
   const langKey = lang === 'ar' ? 'ar' : lang === 'fr' ? 'fr' : 'en';
   return (
     <div className="flex flex-wrap gap-1 mt-1.5">
-      {schedules.map((s: any) => (
+      {schedules.map((s) => (
         <span key={s.id} className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
           <Clock className="h-2.5 w-2.5" />
           {DAY_LABELS[langKey]?.[s.day_of_week] ?? s.day_of_week} {s.start_time?.slice(0, 5)}–{s.end_time?.slice(0, 5)}
@@ -72,9 +73,9 @@ export default function GroupsPage() {
   const { data: groups, isLoading, isError } = useQuery({
     queryKey: ['assistant_groups'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('courses')
-        .select('id, name, type, capacity, current_enrollments, status, description, price, start_date, end_date, level_id, subject_id, room:rooms(id, name), level:levels(name, category), subject:subjects(name), teacher:users!teacher_id(first_name, last_name), schedules:course_schedules(id, day_of_week, start_time, end_time)')
+        .select('id, name, type, capacity, current_enrollments, status, description, price, start_date, end_date, level_id, subject_id, room:rooms(id, name), level:levels(name, category), subject:subjects(name), teacher:users!teacher_id(id, first_name, last_name), schedules:course_schedules(id, day_of_week, start_time, end_time)')
         .order('name');
       return data ?? [];
     },
@@ -84,7 +85,7 @@ export default function GroupsPage() {
   const { data: levels } = useLevels();
   const { data: rooms } = useRooms();
   const { data: allUsers } = useUsers();
-  const teachers = (allUsers ?? []).filter((u: any) => u.role === 'teacher');
+  const teachers = (allUsers ?? []).filter((u) => u.role === 'teacher');
 
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
@@ -102,7 +103,7 @@ export default function GroupsPage() {
   const filteredLevels = catFilter !== 'all' ? (levelsByCat[catFilter] ?? []) : (levels ?? []);
 
   const filteredGroups = useMemo(() => {
-    const result = (groups ?? []).filter((c: any) => {
+    const result = (groups ?? []).filter((c) => {
       const q = search.toLowerCase();
       const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.subject?.name?.toLowerCase().includes(q) || c.level?.name?.toLowerCase().includes(q) || c.teacher ? getFullName(c.teacher?.first_name, c.teacher?.last_name).toLowerCase().includes(q) : false;
       const matchesCat = catFilter === 'all' || c.level?.category === catFilter;
@@ -130,9 +131,9 @@ export default function GroupsPage() {
     setShowModal(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: NonNullable<typeof groups>[number]) => {
     setEditingId(item.id);
-    setForm({ name: item.name ?? '', type: item.type ?? 'normal', description: item.description ?? '', price: item.price?.toString() ?? '', capacity: item.capacity?.toString() ?? '', start_date: item.start_date ?? '', end_date: item.end_date ?? '', subject_id: item.subject_id?.toString() ?? '', level_id: item.level_id?.toString() ?? '', teacher_id: item.teacher_id ?? '', room_id: item.room_id?.toString() ?? '' });
+    setForm({ name: item.name ?? '', type: item.type ?? 'normal', description: item.description ?? '', price: item.price?.toString() ?? '', capacity: item.capacity?.toString() ?? '', start_date: item.start_date ?? '', end_date: item.end_date ?? '', subject_id: item.subject_id?.toString() ?? '', level_id: item.level_id?.toString() ?? '', teacher_id: item.teacher?.id ?? '', room_id: item.room?.id?.toString() ?? '' });
     setShowModal(true);
   };
 
@@ -148,25 +149,25 @@ export default function GroupsPage() {
       if (isNaN(price) || price <= 0) throw new Error(t('groups.price_invalid', lang));
       const capacity = parseInt(form.capacity, 10);
       if (isNaN(capacity) || capacity <= 0) throw new Error(t('groups.capacity_invalid', lang));
-      const payload: Record<string, any> = {
+      const payload: Database['public']['Tables']['courses']['Insert'] = {
         name: form.name.trim(),
         description: form.description.trim(),
         capacity,
         price,
         start_date: form.start_date,
         end_date: form.end_date,
-        type: form.type,
+        type: form.type as Database['public']['Enums']['course_type'],
+        subject_id: parseInt(form.subject_id, 10),
+        level_id: parseInt(form.level_id, 10),
+        teacher_id: form.teacher_id,
+        room_id: form.room_id ? parseInt(form.room_id, 10) : null,
       };
       if (!editingId) payload.status = 'active';
-      payload.subject_id = parseInt(form.subject_id, 10);
-      payload.level_id = parseInt(form.level_id, 10);
-      payload.teacher_id = form.teacher_id;
-      payload.room_id = form.room_id ? parseInt(form.room_id, 10) : undefined;
       if (editingId) {
-        const { error } = await (supabase as any).from('courses').update(payload).eq('id', editingId);
+        const { error } = await supabase.from('courses').update(payload).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any).from('courses').insert(payload);
+        const { error } = await supabase.from('courses').insert(payload);
         if (error) throw error;
       }
     },
@@ -177,31 +178,31 @@ export default function GroupsPage() {
       setEditingId(null);
       setForm({ name: '', type: 'normal', description: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '' });
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await (supabase as any).from('courses').delete().eq('id', id);
+      const { error } = await supabase.from('courses').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_groups'] });
       toast(t('success.deleted', lang, t('nav.groups', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const { error } = await (supabase as any).from('courses').update({ status }).eq('id', id);
+      const { error } = await supabase.from('courses').update({ status: status as never }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_groups'] });
       toast(t('success.updated', lang, t('groups.status', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
@@ -213,9 +214,9 @@ export default function GroupsPage() {
     queryKey: ['group_roster', rosterGroupId],
     queryFn: async () => {
       if (!rosterGroupId) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('course_enrollments')
-        .select('id, enrollment_date, status, student:users!student_id(id, first_name, last_name, email)')
+        .select('id, enrollment_date, status, student:students!student_id(user:users!students_id_fkey(id, first_name, last_name, email))')
         .eq('course_id', rosterGroupId)
         .order('enrollment_date', { ascending: false });
       return data ?? [];
@@ -252,11 +253,11 @@ export default function GroupsPage() {
                 <p className="text-sm text-muted-foreground text-center py-6">{t('groups.no_students', lang)}</p>
               ) : (
                 <div className="space-y-1">
-                  {rosterStudents?.map((e: any) => (
+                  {rosterStudents?.map((e) => (
                     <div key={e.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
                       <div>
-                        <p className="text-sm font-medium">{e.student ? getFullName(e.student.first_name, e.student.last_name) : '—'}</p>
-                        <p className="text-xs text-muted-foreground">{e.student?.email}</p>
+                        <p className="text-sm font-medium">{e.student ? getFullName(e.student.user?.first_name, e.student.user?.last_name) : '—'}</p>
+                        <p className="text-xs text-muted-foreground">{e.student?.user?.email}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={e.status === 'active' ? 'success' : 'outline'} className="text-[10px]">{e.status}</Badge>
@@ -292,13 +293,13 @@ export default function GroupsPage() {
         </Select>
         <Select value={levelFilter} onValueChange={v => setLevelFilter(v)} className="min-w-[140px]">
           <SelectItem value="all">{t('groups.all_classes', lang)}</SelectItem>
-          {filteredLevels.map((l: any) => (
+          {filteredLevels.map((l) => (
             <SelectItem key={l.id} value={String(l.id)}>{l.name}{l.stream ? ` - ${l.stream}` : ''}</SelectItem>
           ))}
         </Select>
         <Select value={subjectFilter} onValueChange={v => setSubjectFilter(v)} className="min-w-[130px]">
           <SelectItem value="all">{t('groups.all_subjects', lang)}</SelectItem>
-          {(subjects ?? []).map((s: any) => (
+          {(subjects ?? []).map((s) => (
             <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
           ))}
         </Select>
@@ -357,7 +358,7 @@ export default function GroupsPage() {
                 <Select value={form.level_id} onValueChange={v => setForm(f => ({ ...f, level_id: v }))} placeholder={t('common.select', lang)}>
                   {(levels ?? [])
                     .sort((a: any, b: any) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
-                    .map((l: any) => {
+                    .map((l) => {
                       const catLabel = l.category === 'primary' ? t('landing.category_primaire', lang) : l.category === 'middle' ? t('landing.category_cem', lang) : t('landing.category_lycee', lang);
                       return (
                         <SelectItem key={l.id} value={String(l.id)}>
@@ -370,7 +371,7 @@ export default function GroupsPage() {
               <div className="space-y-2">
                 <Label>{t('common.subject', lang)} *</Label>
                 <Select value={form.subject_id} onValueChange={v => setForm(f => ({ ...f, subject_id: v }))} placeholder={t('common.select', lang)}>
-                  {(subjects ?? []).map((s: any) => (
+                  {(subjects ?? []).map((s) => (
                     <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                   ))}
                 </Select>
@@ -378,7 +379,7 @@ export default function GroupsPage() {
               <div className="space-y-2">
                 <Label>{t('common.teacher', lang)} *</Label>
                 <Select value={form.teacher_id} onValueChange={v => setForm(f => ({ ...f, teacher_id: v }))} placeholder={t('common.select', lang)}>
-                  {teachers.map((t: any) => (
+                  {teachers.map((t) => (
                     <SelectItem key={t.id} value={t.id}>{getFullName(t.first_name, t.last_name)}</SelectItem>
                   ))}
                 </Select>
@@ -387,7 +388,7 @@ export default function GroupsPage() {
                 <Label>{t('common.room', lang)}</Label>
                 <Select value={form.room_id} onValueChange={v => setForm(f => ({ ...f, room_id: v }))} placeholder={t('common.select', lang)}>
                   <SelectItem value="">—</SelectItem>
-                  {(rooms ?? []).map((r: any) => (
+                  {(rooms ?? []).map((r) => (
                     <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
                   ))}
                 </Select>
@@ -410,7 +411,7 @@ export default function GroupsPage() {
           <div className="col-span-full text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
           </div>
-        ) : filteredGroups.map((g: any) => (
+        ) : filteredGroups.map((g) => (
           <Card key={g.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">

@@ -40,7 +40,7 @@ export default function TeacherAttendancePage() {
         <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang as Lang)}</div>
       ) : (
         <div className="space-y-4">
-          {sessions?.map((s: any) => (
+          {sessions?.map((s) => (
             <div key={s.id} className="rounded-xl border bg-card p-4">
               <p className="font-medium">{s.course?.name}</p>
               <p className="text-sm text-muted-foreground">{s.start_time} - {s.end_time} · {s.room?.name}</p>

@@ -46,7 +46,7 @@ export default function SettingsPage() {
       { userId: profile.id, settings: { first_name: firstName, last_name: lastName, email, phone } },
       {
         onSuccess: () => { refreshProfile(); },
-        onError: (err: any) => toast(err?.message ?? t('errors.update_error', lang, t('settings.profile', lang)), 'error'),
+        onError: (err) => toast(err?.message ?? t('errors.update_error', lang, t('settings.profile', lang)), 'error'),
       },
     );
   };
@@ -58,7 +58,7 @@ export default function SettingsPage() {
       if (profile?.id) {
         updateSettings.mutate(
           { userId: profile.id, settings: { [`notif_${key}`]: value } },
-          { onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error') },
+          { onError: (err) => toast(err?.message ?? t('common.error', lang), 'error') },
         );
       }
     }, 500);

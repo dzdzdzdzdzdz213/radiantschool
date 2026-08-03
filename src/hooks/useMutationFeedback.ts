@@ -56,7 +56,7 @@ export function useUpdateUserSettings() {
       if (error) throw error;
     },
     onSuccess: (_data, variables) => {
-      qc.setQueryData(['profile_settings', variables.userId], (old: any) => old ? { ...old, ...variables.settings } : old);
+      qc.setQueryData(['profile_settings', variables.userId], (old) => old ? { ...old, ...variables.settings } : old);
       toast('Paramètres mis à jour', 'success');
     },
   });
@@ -79,7 +79,7 @@ export function useUpdatePassword() {
     onSuccess: () => {
       toast('Mot de passe mis à jour avec succès', 'success');
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast(err?.message ?? 'Erreur lors du changement de mot de passe', 'error');
     },
   });
@@ -104,7 +104,7 @@ export function useSendMessage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['messages'] });
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast(err?.message ?? 'Erreur lors de l\'envoi du message', 'error');
     },
   });
@@ -129,7 +129,7 @@ export function useDownloadFile() {
     onSuccess: () => {
       toast('Téléchargement terminé', 'success');
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast(err?.message ?? 'Erreur lors du téléchargement', 'error');
     },
   });
@@ -149,7 +149,7 @@ export function useMarkNotificationsRead() {
       toast('Notifications marquées comme lues', 'success');
       qc.invalidateQueries({ queryKey: ['notifications'] });
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast(err?.message ?? 'Erreur', 'error');
     },
   });
@@ -169,7 +169,7 @@ export function useDeleteNotification() {
       toast('Notification supprimée', 'success');
       qc.invalidateQueries({ queryKey: ['notifications'] });
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast(err?.message ?? 'Erreur', 'error');
     },
   });
@@ -199,7 +199,7 @@ export function useSubmitReview() {
       qc.invalidateQueries({ queryKey: ['reviews'] });
       qc.invalidateQueries({ queryKey: ['student_my_reviews'] });
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast(err?.message ?? 'Erreur lors de l\'envoi de l\'avis', 'error');
     },
   });

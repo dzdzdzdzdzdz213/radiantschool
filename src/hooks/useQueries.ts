@@ -22,10 +22,29 @@ export function useCourses() {
 export function useCourse(id: number) {
   return useQuery({
     queryKey: ['course', id],
-    queryFn: (): Promise<any> => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)'),
+    queryFn: () => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)') as Promise<CourseDetailRow>,
     enabled: !!id,
     staleTime: 120_000,
   });
+}
+
+export interface CourseDetailRow {
+  id: number;
+  name: string;
+  type: string;
+  capacity: number;
+  current_enrollments: number | null;
+  status: string;
+  price: number | null;
+  start_date: string;
+  end_date: string;
+  image_url: string | null;
+  description: string | null;
+  subject: { name: string } | null;
+  level: { name: string; category: string; stream: string } | null;
+  teacher: { first_name: string; last_name: string } | null;
+  room: { name: string } | null;
+  schedules: { id: number; day_of_week: string; start_time: string; end_time: string }[];
 }
 
 export function useCourseEnrollments(courseId: number) {

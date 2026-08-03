@@ -66,7 +66,7 @@ export default function TeacherRevenuePage() {
         <Card>
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Calendar className="h-4 w-4" />Historique des paiements</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {payroll.map((p: any) => {
+            {payroll.map((p) => {
               const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
               return (
                 <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">

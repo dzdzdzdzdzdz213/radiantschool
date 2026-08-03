@@ -21,14 +21,14 @@ export function useAttendance(date?: string, search: string = '') {
   return useQuery({
     queryKey: ['assistant_attendance', today, search],
     queryFn: async () => {
-      let query = (supabase as any)
+      let query = supabase
         .from('attendance')
         .select('id, date, status, method, created_at, student:students!student_id(user:users!students_id_fkey(first_name, last_name, id)), course_schedule:course_schedules!inner(course:courses(name))')
         .eq('date', today);
       const { data } = await query
         .order('created_at', { ascending: false });
-      let items = (data ?? []).map((r: any) => ({
-        id: r.id,
+      let items = (data ?? []).map((r) => ({
+        id: String(r.id),
         studentId: r.student?.user?.id ?? '',
         studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         courseName: r.course_schedule?.course?.name ?? '',
@@ -36,7 +36,7 @@ export function useAttendance(date?: string, search: string = '') {
         status: r.status,
         method: r.method ?? 'manual',
         checkIn: r.created_at,
-      })) as AttendanceRecord[];
+      })) as unknown as AttendanceRecord[];
       if (search) {
         const q = search.toLowerCase();
         items = items.filter(i => i.studentName.toLowerCase().includes(q));
@@ -69,6 +69,6 @@ export function useCorrectAttendance() {
       qc.invalidateQueries({ queryKey: ['assistant_attendance'] });
       toast(t('success.updated', lang, t('nav.attendance', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('errors.update_error', lang, t('nav.attendance', lang)), 'error'),
+    onError: (err) => toast(err?.message ?? t('errors.update_error', lang, t('nav.attendance', lang)), 'error'),
   });
 }

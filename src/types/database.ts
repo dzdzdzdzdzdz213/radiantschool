@@ -2973,6 +2973,14 @@ export type Database = {
         }
         Relationships: []
       }
+      v_daily_attendance: {
+        Row: {
+          date: string | null
+          present_count: number | null
+          total_count: number | null
+        }
+        Relationships: []
+      }
       v_monthly_financials: {
         Row: {
           avg_transaction: number | null
@@ -3031,6 +3039,15 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      v_teacher_workload: {
+        Row: {
+          course_count: number | null
+          teacher_id: string | null
+          teacher_name: string | null
+          total_hours: number | null
+        }
+        Relationships: []
       }
       v_upcoming_schedule: {
         Row: {

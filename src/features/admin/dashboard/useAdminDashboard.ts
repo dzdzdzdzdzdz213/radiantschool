@@ -46,6 +46,17 @@ export interface AnalyticsMetric {
   trend: 'up' | 'down' | 'neutral';
 }
 
+interface RecentUserRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  level: string | null;
+  status: string;
+  created_at: string;
+}
+
 export function useAdminDashboard() {
   const kpi = useDashboardKPI();
   const revenue = useRevenueChartData();
@@ -139,7 +150,7 @@ export function useAdminDashboard() {
     unpaidInvoices: kpi.data?.unpaid_invoices ?? 0,
   };
 
-  const registrations: RecentRegistration[] = (registrationsQuery.data?.data ?? []).map((r: any) => ({
+  const registrations: RecentRegistration[] = ((registrationsQuery.data?.data ?? []) as unknown as RecentUserRow[]).map((r: RecentUserRow) => ({
     id: r.id,
     firstName: r.first_name ?? '',
     lastName: r.last_name ?? '',

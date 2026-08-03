@@ -20,7 +20,7 @@ export default function MessagesPage() {
   const [selectedMsg, setSelectedMsg] = useState<any>(null);
   const [reply, setReply] = useState('');
 
-  const filtered = (messages ?? []).filter((m: any) => m.sender_id === profile?.id || m.receiver_id === profile?.id);
+  const filtered = (messages ?? []).filter((m) => m.sender_id === profile?.id || m.receiver_id === profile?.id);
 
   const sendMutation = useMutation({
     mutationFn: async () => {
@@ -39,7 +39,7 @@ export default function MessagesPage() {
       toast(t('success.sent', lang, 'Message'), 'success');
       setReply('');
     },
-    onError: (err: any) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
   });
 
   return (
@@ -57,7 +57,7 @@ export default function MessagesPage() {
               <p className="text-sm">{t('common.no_data', lang)}</p>
             </div>
           ) : (
-            filtered.map((m: any) => {
+            filtered.map((m) => {
               const isSent = m.sender_id === profile?.id;
               const other = isSent ? m.receiver : m.sender;
               return (

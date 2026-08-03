@@ -32,10 +32,10 @@ export default function CalendarPage() {
         return DAY_NAMES[(d.getDay() + 6) % 7];
       });
       const uniqueDays = [...new Set(dayNames)];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('course_schedules')
         .select('id, start_time, end_time, day_of_week, course:courses(name)')
-        .in('day_of_week', uniqueDays);
+        .in('day_of_week', uniqueDays as never);
       return data ?? [];
     },
   });
@@ -48,7 +48,7 @@ export default function CalendarPage() {
   const getDayEvents = (day: number) => {
     const date = new Date(currentYear, currentMonth, day);
     const dayName = DAY_NAMES[(date.getDay() + 6) % 7];
-    return (events ?? []).filter((e: any) => e.day_of_week === dayName);
+    return (events ?? []).filter((e) => e.day_of_week === dayName);
   };
 
   return (
@@ -83,7 +83,7 @@ export default function CalendarPage() {
                 return (
                   <div key={day} className={`bg-card p-1.5 min-h-[80px] border-t border-accent ${isToday ? 'ring-2 ring-primary ring-inset' : ''}`}>
                     <span className={`text-xs font-medium ${isToday ? 'text-primary' : ''}`}>{day}</span>
-                    {dayEvents.slice(0, 2).map((e: any) => (
+                    {dayEvents.slice(0, 2).map((e) => (
                       <div key={e.id} className="mt-1 rounded bg-primary/10 px-1 py-0.5 text-[9px] leading-tight text-primary truncate">
                         {e.course?.name ?? ''}
                       </div>

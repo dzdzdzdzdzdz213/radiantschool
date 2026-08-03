@@ -59,7 +59,7 @@ export default function StudentSchedulePage() {
                   <CardTitle className="text-sm capitalize">{frDay}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {daySchedules.map((s: any) => (
+                  {daySchedules.map((s) => (
                     <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                       <div className="text-center min-w-[50px]">
                         <p className="text-sm font-bold">{s.start_time?.slice(0, 5)}</p>

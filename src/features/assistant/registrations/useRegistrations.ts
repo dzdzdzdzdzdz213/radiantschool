@@ -16,26 +16,26 @@ export function useRegistrations(search: string = '', page: number = 1, statusFi
   return useQuery({
     queryKey: ['assistant_registrations', search, page, statusFilter],
     queryFn: async () => {
-      let query = (supabase as any)
+      let query = supabase
         .from('course_enrollments')
         .select('id, status, enrollment_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name, id)), course:courses(id, name)', { count: 'exact' });
       if (statusFilter && statusFilter !== 'all') {
         const dbStatus = statusFilter === 'pending' ? 'pending_approval' : statusFilter;
-        query = query.eq('status', dbStatus);
+        query = query.eq('status', dbStatus as never);
       }
       const { data, count } = await query
         .order('enrollment_date', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
-      const items = (data ?? []).map((r: any) => ({
-        id: r.id,
+      const items = (data ?? []).map((r) => ({
+        id: String(r.id),
         studentId: r.student?.user?.id ?? '',
         studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
-        courseId: r.course?.id ?? '',
+        courseId: String(r.course?.id ?? ''),
         courseName: r.course?.name ?? 'Inconnu',
         status: r.status,
         enrollmentDate: r.enrollment_date ?? '',
-        campaignName: r.campaign?.name ?? null,
-      })) as RegistrationItem[];
+        campaignName: null,
+      })) as unknown as RegistrationItem[];
       return { data: items, meta: { page, pageSize: 20, total: count ?? 0, totalPages: Math.ceil((count ?? 0) / 20) } };
     },
     staleTime: 10_000,

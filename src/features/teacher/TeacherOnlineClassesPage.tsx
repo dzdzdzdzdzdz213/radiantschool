@@ -65,7 +65,7 @@ export default function TeacherOnlineClassesPage() {
       qc.invalidateQueries({ queryKey: ['teacher-online-classes'] });
       setNewForm({ course_id: '', title: '', meeting_url: '', platform: '', description: '' });
     },
-    onError: (e: any) => toast(e?.message ?? 'Erreur', 'error'),
+    onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
   });
 
   const updateMutation = useMutation({
@@ -83,7 +83,7 @@ export default function TeacherOnlineClassesPage() {
       qc.invalidateQueries({ queryKey: ['teacher-online-classes'] });
       setEditingId(null);
     },
-    onError: (e: any) => toast(e?.message ?? 'Erreur', 'error'),
+    onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -95,7 +95,7 @@ export default function TeacherOnlineClassesPage() {
       toast('Cours en ligne supprimé', 'success');
       qc.invalidateQueries({ queryKey: ['teacher-online-classes'] });
     },
-    onError: (e: any) => toast(e?.message ?? 'Erreur', 'error'),
+    onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
   });
 
   function startEdit(oc: any) {
@@ -119,7 +119,7 @@ export default function TeacherOnlineClassesPage() {
               className="h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Choisir un cours...</option>
-              {courses?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {courses?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <Input
               placeholder="Titre (optionnel)"
@@ -163,7 +163,7 @@ export default function TeacherOnlineClassesPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucun cours en ligne programmé</CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {onlineClasses.map((oc: any) => (
+          {onlineClasses.map((oc) => (
             <Card key={oc.id}>
               <CardContent className="p-4">
                 {editingId === oc.id ? (

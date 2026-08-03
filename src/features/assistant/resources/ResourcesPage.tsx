@@ -14,10 +14,12 @@ import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useAuth } from '@/hooks/useAuth';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function ResourcesPage() {
   const { lang } = useLang();
+  const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +29,7 @@ export default function ResourcesPage() {
   const { data: resources, isLoading, isError } = useQuery({
     queryKey: ['assistant_resources', search],
     queryFn: async () => {
-      let query = (supabase as any)
+      let query = supabase
         .from('resources')
         .select('id, title, file_url, type, created_at')
         .order('created_at', { ascending: false });
@@ -56,30 +58,32 @@ export default function ResourcesPage() {
           filePath = `assistant-resources/${Date.now()}.webp`;
         } catch { /* keep original file */ }
       }
-      const { error: uploadError } = await (supabase as any).storage.from('resources').upload(filePath, uploadFile, { contentType: uploadFile.type });
+      const { error: uploadError } = await supabase.storage.from('resources').upload(filePath, uploadFile, { contentType: uploadFile.type });
       if (uploadError) throw uploadError;
-      const { data: urlData } = (supabase as any).storage.from('resources').getPublicUrl(filePath);
-      const { error: dbError } = await (supabase as any).from('resources').insert({
+      const { data: urlData } = supabase.storage.from('resources').getPublicUrl(filePath);
+      const { error: dbError } = await supabase.from('resources').insert({
         title: isImage ? `${file.name.replace(/\.[^.]+$/, '')}.webp` : file.name,
-        type: isImage ? 'image/webp' : file.type,
+        type: isImage ? 'image' : file.type.startsWith('video/') ? 'video' : file.type.startsWith('application/pdf') ? 'pdf' : file.type.startsWith('image/') ? 'image' : 'link',
         file_url: urlData.publicUrl,
+        course_id: 0,
+        uploaded_by: profile?.id ?? '',
       });
       if (dbError) throw dbError;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_resources'] }); toast(t('success.created', lang, t('resources.file', lang)), 'success'); },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('resources').delete().eq('id', id);
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('resources').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_resources'] }); toast(t('success.deleted', lang, t('resources.resource', lang)), 'success'); },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   return (
     <div className="space-y-6">
@@ -121,7 +125,7 @@ export default function ResourcesPage() {
               )) : (resources ?? []).length === 0 ? (
                 <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               ) : (
-                (resources ?? []).map((r: any) => (
+                (resources ?? []).map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -133,7 +137,7 @@ export default function ResourcesPage() {
                     <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">{formatDateTime(r.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_url, filename: r.title })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_url ?? '', filename: r.title })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.title })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>

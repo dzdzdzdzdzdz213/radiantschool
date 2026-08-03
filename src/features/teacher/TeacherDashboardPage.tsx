@@ -99,7 +99,7 @@ export default function TeacherDashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {todaySchedule.map((s: any) => (
+                  {todaySchedule.map((s) => (
                     <div key={s.id} className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="flex flex-col items-center min-w-[56px]">
                         <span className="text-base font-bold leading-tight">{s.start_time?.slice(0, 5)}</span>
@@ -145,7 +145,7 @@ export default function TeacherDashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {recentEnrollments.map((e: any) => (
+                  {recentEnrollments.map((e) => (
                     <div key={e.id} className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/10 text-xs font-bold text-violet-600">
                         {e.student?.user?.first_name?.[0]}{e.student?.user?.last_name?.[0]}
@@ -181,7 +181,7 @@ export default function TeacherDashboardPage() {
             </div>
             <div className="p-5">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {upcomingCourses.map((c: any) => (
+                {upcomingCourses.map((c) => (
                   <div key={c.id} className="group p-4 rounded-xl border bg-muted/20 hover:bg-muted/40 hover:shadow-md transition-all duration-200">
                     <div className="flex items-start justify-between mb-2">
                       <p className="font-semibold text-sm truncate group-hover:text-primary transition-colors">{c.name}</p>

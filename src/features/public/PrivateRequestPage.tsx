@@ -41,10 +41,9 @@ export default function PrivateRequestPage() {
     async () => {
       if (!profile?.id || !courseId || !course?.teacher?.id) return;
       const price = course.price ? Number(course.price) : 0;
-      const { error } = await (supabase as any).from('private_lessons').insert({
+      const { error } = await supabase.from('private_lessons').insert({
         student_id: profile.id,
         teacher_id: course.teacher.id,
-        course_id: Number(courseId),
         price,
         status: 'pending',
         created_at: new Date().toISOString(),
@@ -65,7 +64,7 @@ export default function PrivateRequestPage() {
   const inquiryMutation = useMutation({
     mutationFn: async () => {
       if (!courseId) return;
-      const { error } = await (supabase as any).from('private_lesson_inquiries').insert({
+      const { error } = await supabase.from('private_lesson_inquiries').insert({
         course_id: Number(courseId),
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
@@ -82,7 +81,7 @@ export default function PrivateRequestPage() {
       toast('Votre demande a été envoyée. Nous vous contacterons rapidement.', 'success');
       setForm({ first_name: '', last_name: '', email: '', phone: '', date: '', start_time: '', end_time: '', notes: '' });
     },
-    onError: (err: any) => {
+    onError: (err) => {
       toast(err?.message ?? 'Une erreur est survenue', 'error');
     },
   });

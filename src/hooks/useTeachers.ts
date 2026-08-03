@@ -29,7 +29,7 @@ export function useTeachersBySubject(subjectName: string | null) {
       }
       const teachers = Array.from(teacherMap.values());
       const enriched = await Promise.all(
-        teachers.map(async (t: any) => {
+        teachers.map(async (t) => {
           const { count: courseCount } = await supabase
             .from('courses')
             .select('*', { count: 'exact', head: true })

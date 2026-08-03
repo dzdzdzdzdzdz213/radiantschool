@@ -13,7 +13,7 @@ export function usePublicCourses() {
           id, name, type, capacity, current_enrollments, price, status, start_date, end_date, image_url,
           subject:subjects(name),
           level:levels(name, category, stream, year),
-          teacher:users!teacher_id(first_name, last_name, accepts_private_lessons),
+          teacher:users!teacher_id(id, first_name, last_name, accepts_private_lessons),
           room:rooms(name),
           schedules:course_schedules(id, day_of_week, start_time, end_time)
         `)
@@ -43,21 +43,33 @@ export function usePublicCourses() {
  * teacher count, average rating, success rate, years active, and more.
  * Stale after 5 min.
  */
+export interface PublicStats {
+  studentCount: number;
+  teacherCount: number;
+  avgRating: number;
+  successRate: number;
+  yearsActive: number;
+  totalEvaluations: number;
+  maxCapacity: number;
+  typeCount: number;
+  levelCount: number;
+}
+
 export function usePublicStats() {
   return useQuery({
     queryKey: ['public-stats'],
-    queryFn: async () => {
+    queryFn: async (): Promise<PublicStats> => {
       const [statsRes, courseRes, typeRes] = await Promise.all([
-        (supabase.rpc as any)('get_public_stats'),
+        (supabase.rpc as (name: string, args?: Record<string, unknown>) => { data: unknown } | PromiseLike<{ data: unknown }>)('get_public_stats'),
         supabase.from('courses').select('capacity').eq('status', 'active'),
         supabase.from('courses').select('type').eq('status', 'active'),
       ]);
-      const stats = statsRes.data ?? {};
-      const studentCount = (stats as any).student_count ?? 0;
-      const teacherCount = (stats as any).teacher_count ?? 0;
-      const avgRating = (stats as any).avg_rating ?? 0;
-      const successRate = (stats as any).success_rate ?? 0;
-      const totalEvaluations = (stats as any).total_evaluations ?? 0;
+      const stats = (statsRes.data ?? {}) as Record<string, number>;
+      const studentCount = stats.student_count ?? 0;
+      const teacherCount = stats.teacher_count ?? 0;
+      const avgRating = stats.avg_rating ?? 0;
+      const successRate = stats.success_rate ?? 0;
+      const totalEvaluations = stats.total_evaluations ?? 0;
       const { data: levelCategories } = await supabase.from('levels').select('category').not('category', 'is', null);
       const levelCount = new Set((levelCategories ?? []).map(r => r.category)).size;
       const firstCourse = await supabase.from('courses').select('start_date').eq('status', 'active').order('start_date', { ascending: true }).limit(1).maybeSingle();

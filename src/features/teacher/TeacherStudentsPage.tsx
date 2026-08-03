@@ -37,7 +37,7 @@ export default function TeacherStudentsPage() {
     if (u && !uniqueStudents.has(u.id)) uniqueStudents.set(u.id, { ...u, course: (e as any).course, enrolledAt: (e as any).enrollment_date });
   }
 
-  const filtered = Array.from(uniqueStudents.values()).filter((s: any) =>
+  const filtered = Array.from(uniqueStudents.values()).filter((s) =>
     `${s.first_name} ${s.last_name} ${s.email}`.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -62,7 +62,7 @@ export default function TeacherStudentsPage() {
       ) : (
         <Card>
           <CardContent className="p-0">
-            {filtered.map((s: any) => (
+            {filtered.map((s) => (
               <div key={s.id} className="flex items-center gap-4 p-4 border-b last:border-0 hover:bg-muted/30 transition-colors">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary shrink-0">
                   {s.first_name?.[0]}{s.last_name?.[0]}

@@ -46,10 +46,10 @@ export default function CourseDetailPage() {
           <h2 className="mb-4 font-semibold">{t('common.info', lang)}</h2>
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div><dt className="text-muted-foreground">{t('common.type', lang)}</dt><dd className="font-medium">{course.type}</dd></div>
-            <div><dt className="text-muted-foreground">{t('classes.teacher', lang)}</dt><dd className="font-medium">{getFullName(course.teacher?.first_name, course.teacher?.last_name)}</dd></div>
+            <div><dt className="text-muted-foreground">{t('classes.teacher', lang)}</dt><dd className="font-medium">{getFullName(course.teacher?.first_name ?? '', course.teacher?.last_name ?? '')}</dd></div>
             <div><dt className="text-muted-foreground">{t('classes.room', lang)}</dt><dd className="font-medium">{course.room?.name || t('courses.room_not_assigned', lang)}</dd></div>
-            <div><dt className="text-muted-foreground">{t('classes.capacity', lang)}</dt><dd className="font-medium">{course.current_enrollments}/{course.capacity}</dd></div>
-            <div><dt className="text-muted-foreground">{t('common.price', lang)}</dt><dd className="font-medium">{formatCurrency(course.price)}</dd></div>
+            <div><dt className="text-muted-foreground">{t('classes.capacity', lang)}</dt><dd className="font-medium">{course.current_enrollments ?? 0}/{course.capacity}</dd></div>
+            <div><dt className="text-muted-foreground">{t('common.price', lang)}</dt><dd className="font-medium">{formatCurrency(course.price ?? 0)}</dd></div>
             <div><dt className="text-muted-foreground">{t('courses.period', lang)}</dt><dd className="font-medium">{formatDate(course.start_date)} - {formatDate(course.end_date)}</dd></div>
           </dl>
         </div>
@@ -57,7 +57,7 @@ export default function CourseDetailPage() {
           <h2 className="mb-4 font-semibold">{t('nav.schedule', lang)}</h2>
           {(course.schedules ?? []).length > 0 ? (
             <div className="space-y-2">
-              {(course.schedules ?? []).map((s: any) => (
+              {(course.schedules ?? []).map((s) => (
                 <div key={s.id} className="rounded-lg bg-page p-3 text-sm">
                   <p className="font-medium">{getDayLabel(s.day_of_week)}</p>
                   <p className="text-muted-foreground">{formatTime(s.start_time)} - {formatTime(s.end_time)}</p>
@@ -83,7 +83,7 @@ export default function CourseDetailPage() {
               </tr>
             </thead>
             <tbody>
-              {enrollments.map((e: any) => (
+              {enrollments.map((e) => (
                 <tr key={e.id} className="border-b text-sm last:border-0">
                   <td className="px-5 py-3 font-medium">{getFullName(e.student?.user?.first_name ?? '', e.student?.user?.last_name ?? '')}</td>
                   <td className="px-5 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(e.status)}`}>{e.status}</span></td>

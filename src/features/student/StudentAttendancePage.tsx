@@ -45,7 +45,7 @@ export default function StudentAttendancePage() {
           ) : !records?.length ? (
             <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>
           ) : (
-            records.map((r: any) => (
+            records.map((r) => (
               <div key={r.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 text-sm">
                 <span>{r.session?.course?.name} — {r.session?.date}</span>
                 <span className={`font-semibold ${r.status === 'present' ? 'text-green-600' : r.status === 'late' ? 'text-amber-600' : 'text-red-600'}`}>{r.status}</span>

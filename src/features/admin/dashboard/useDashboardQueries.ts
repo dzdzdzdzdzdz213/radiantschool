@@ -1,6 +1,58 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
+interface RevenuePayment {
+  created_at: string;
+  amount: number;
+}
+
+interface OccupancyCourse {
+  name: string;
+  current_enrollments: number;
+  capacity: number;
+  room_id: number | null;
+  room: { name: string } | null;
+}
+
+interface TodayScheduleItem {
+  id: number;
+  start_time: string;
+  end_time: string;
+  course: { name: string } | null;
+  room: { name: string } | null;
+  teacher: { first_name: string; last_name: string } | null;
+}
+
+interface ActivityEnrollment {
+  enrollment_date: string;
+  student: { user: { first_name: string; last_name: string } } | null;
+  course: { name: string } | null;
+}
+
+interface ActivityPayment {
+  created_at: string;
+  amount: number;
+  student: { user: { first_name: string; last_name: string } } | null;
+}
+
+interface ActivityAttendance {
+  date: string;
+  status: string;
+  student: { user: { first_name: string; last_name: string } } | null;
+  schedule: { course: { name: string } } | null;
+}
+
+interface NearFullCourse {
+  id: number;
+  name: string;
+  current_enrollments: number;
+  capacity: number;
+}
+
+interface OverdueInvoice {
+  due_date: string;
+}
+
 export function useDashboardKPI() {
   return useQuery({
     queryKey: ['dashboard_kpi'],
@@ -21,8 +73,9 @@ export function useRevenueChartData() {
         sort: [{ column: 'created_at', direction: 'asc' }],
       });
       if (!r.data?.length) return [];
+      const payments = (r.data ?? []) as unknown as RevenuePayment[];
       const dailyMap = new Map<string, number>();
-      r.data.forEach((p: any) => {
+      payments.forEach((p: RevenuePayment) => {
         const day = p.created_at.split('T')[0];
         dailyMap.set(day, (dailyMap.get(day) || 0) + p.amount);
       });
@@ -42,7 +95,7 @@ export function useRevenueChartData() {
 export function useOccupancyData() {
   return useQuery({
     queryKey: ['occupancy'],
-    queryFn: () => api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'name, current_enrollments, capacity, room_id, room:rooms(name)').then(r => r.data.filter((c: any) => c.room_id != null)),
+    queryFn: () => api.list('courses', { filters: [{ column: 'status', operator: 'eq', value: 'active' }] }, 'name, current_enrollments, capacity, room_id, room:rooms(name)').then(r => ((r.data ?? []) as unknown as OccupancyCourse[]).filter((c: OccupancyCourse) => c.room_id != null)),
     staleTime: 60_000,
     gcTime: 5 * 60 * 1000,
   });
@@ -53,7 +106,7 @@ export function useTodaySchedule() {
   const today = dayNames[new Date().getDay()];
   return useQuery({
     queryKey: ['today_schedule', today],
-    queryFn: () => api.list('course_schedules', { filters: [{ column: 'day_of_week', operator: 'eq', value: today }], sort: [{ column: 'start_time', direction: 'asc' }] }, 'id, start_time, end_time, course:courses(name), room:rooms(name), teacher:users(first_name, last_name)').then(r => r.data),
+    queryFn: () => api.list('course_schedules', { filters: [{ column: 'day_of_week', operator: 'eq', value: today }], sort: [{ column: 'start_time', direction: 'asc' }] }, 'id, start_time, end_time, course:courses(name), room:rooms(name), teacher:users(first_name, last_name)').then(r => (r.data ?? []) as unknown as TodayScheduleItem[]),
     staleTime: 30_000,
     gcTime: 5 * 60 * 1000,
   });
@@ -68,10 +121,13 @@ export function useRecentActivity() {
         api.list('payments', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'amount, created_at, student:students!student_id(user:users!students_id_fkey(first_name,last_name))'),
         api.list('attendance', { sort: [{ column: 'created_at', direction: 'desc' }] }, 'date, status, student:students!student_id(user:users!students_id_fkey(first_name,last_name)), schedule:course_schedules!inner(course:courses(name))'),
       ]);
+      const enrollments = (enrRes.data ?? []) as unknown as ActivityEnrollment[];
+      const payments = (payRes.data ?? []) as unknown as ActivityPayment[];
+      const attendance = (attRes.data ?? []) as unknown as ActivityAttendance[];
       const items: { time: string; icon: string; title: string; description: string }[] = [
-        ...(enrRes.data?.slice(0, 5).map((e: any) => ({ time: e.enrollment_date, icon: '📝', title: `${e.student?.user?.first_name ?? ''} ${e.student?.user?.last_name ?? ''}`, description: `Inscrit en ${e.course?.name ?? ''}` })) ?? []),
-        ...(payRes.data?.slice(0, 5).map((p: any) => ({ time: p.created_at, icon: '💰', title: `${p.student?.user?.first_name ?? ''} ${p.student?.user?.last_name ?? ''}`, description: `Paiement ${p.amount.toLocaleString()} DA` })) ?? []),
-        ...(attRes.data?.slice(0, 5).map((a: any) => ({ time: a.date, icon: a.status === 'present' ? '✅' : a.status === 'late' ? '⏰' : '❌', title: `${a.student?.user?.first_name ?? ''} ${a.student?.user?.last_name ?? ''}`, description: `${a.status === 'present' ? 'Présent' : a.status === 'late' ? 'Retard' : 'Absent'} — ${a.schedule?.course?.name ?? ''}` })) ?? []),
+        ...(enrollments.slice(0, 5).map((e: ActivityEnrollment) => ({ time: e.enrollment_date, icon: '📝', title: `${e.student?.user?.first_name ?? ''} ${e.student?.user?.last_name ?? ''}`, description: `Inscrit en ${e.course?.name ?? ''}` }))),
+        ...(payments.slice(0, 5).map((p: ActivityPayment) => ({ time: p.created_at, icon: '💰', title: `${p.student?.user?.first_name ?? ''} ${p.student?.user?.last_name ?? ''}`, description: `Paiement ${p.amount.toLocaleString()} DA` }))),
+        ...(attendance.slice(0, 5).map((a: ActivityAttendance) => ({ time: a.date, icon: a.status === 'present' ? '✅' : a.status === 'late' ? '⏰' : '❌', title: `${a.student?.user?.first_name ?? ''} ${a.student?.user?.last_name ?? ''}`, description: `${a.status === 'present' ? 'Présent' : a.status === 'late' ? 'Retard' : 'Absent'} — ${a.schedule?.course?.name ?? ''}` }))),
       ];
       items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
       return items.slice(0, 10);
@@ -99,8 +155,8 @@ export function useAdminAlerts() {
           sort: [{ column: 'created_at', direction: 'desc' }],
         }),
       ]);
-      const nearFull = (coursesRes.data ?? []).filter((c: any) => c.capacity > 0 && (c.current_enrollments / c.capacity) >= 0.8);
-      const overdueInvoices = overdueRes.data?.filter((i: any) => new Date(i.due_date) < new Date()) ?? [];
+      const nearFull = ((coursesRes.data ?? []) as unknown as NearFullCourse[]).filter((c: NearFullCourse) => c.capacity > 0 && (c.current_enrollments / c.capacity) >= 0.8);
+      const overdueInvoices = ((overdueRes.data ?? []) as unknown as OverdueInvoice[]).filter((i: OverdueInvoice) => new Date(i.due_date) < new Date());
       return {
         pendingApprovals: pendingRes.meta.total,
         overdueInvoices,

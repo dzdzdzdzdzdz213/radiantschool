@@ -117,7 +117,7 @@ export default function StaffLoginPage() {
       return;
     }
 
-    const { data: userData } = await (supabase as any)
+    const { data: userData } = await supabase
       .from('users')
       .select('role, status')
       .eq('email', email)

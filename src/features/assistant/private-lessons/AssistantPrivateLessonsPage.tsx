@@ -21,19 +21,19 @@ export default function AssistantPrivateLessonsPage() {
   const { data: lessons, isLoading, isError } = useQuery({
     queryKey: ['assistant_private_lessons', search],
     queryFn: async () => {
-      let q = (supabase as any)
+      let q = supabase
         .from('private_lessons')
-        .select('id, date, start_time, end_time, price, status, notes, created_at, student:users!student_id(first_name, last_name), teacher:users!teacher_id(first_name, last_name), course:courses(name)')
+        .select('id, date, start_time, end_time, price, status, notes, created_at, student:users!student_id(first_name, last_name), teacher:users!teacher_id(first_name, last_name)')
         .order('created_at', { ascending: false });
       const { data, error } = await q;
       if (error) throw error;
-      let items = (data ?? []).map((l: any) => ({
+      let items = (data ?? []).map((l) => ({
         ...l,
         studentName: `${l.student?.first_name ?? ''} ${l.student?.last_name ?? ''}`,
         teacherName: `${l.teacher?.first_name ?? ''} ${l.teacher?.last_name ?? ''}`,
-        courseName: l.course?.name ?? '',
+        courseName: '',
       }));
-      if (search) items = items.filter((i: any) =>
+      if (search) items = items.filter((i) =>
         i.studentName.toLowerCase().includes(search.toLowerCase()) ||
         i.teacherName.toLowerCase().includes(search.toLowerCase()) ||
         i.courseName.toLowerCase().includes(search.toLowerCase())
@@ -45,20 +45,20 @@ export default function AssistantPrivateLessonsPage() {
 
   const acceptMutation = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await (supabase as any).from('private_lessons').update({ status: 'accepted' }).eq('id', id);
+      const { error } = await supabase.from('private_lessons').update({ status: 'accepted' }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { toast('Demande acceptée', 'success'); qc.invalidateQueries({ queryKey: ['assistant_private_lessons'] }); },
-    onError: (e: any) => toast(e?.message ?? 'Erreur', 'error'),
+    onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
   });
 
   const rejectMutation = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await (supabase as any).from('private_lessons').update({ status: 'rejected' }).eq('id', id);
+      const { error } = await supabase.from('private_lessons').update({ status: 'rejected' }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { toast('Demande refusée', 'success'); qc.invalidateQueries({ queryKey: ['assistant_private_lessons'] }); },
-    onError: (e: any) => toast(e?.message ?? 'Erreur', 'error'),
+    onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
   });
 
   return (
@@ -99,12 +99,12 @@ export default function AssistantPrivateLessonsPage() {
               {!isLoading && (lessons ?? []).length === 0 && (
                 <TableRow><TableCell colSpan={8} className="text-center py-10" style={{ color: 'var(--fg-muted)' }}>Aucune demande</TableCell></TableRow>
               )}
-              {(lessons ?? []).map((l: any) => (
+              {(lessons ?? []).map((l) => (
                 <TableRow key={l.id}>
                   <TableCell className="font-medium">{l.studentName}</TableCell>
                   <TableCell>{l.teacherName}</TableCell>
                   <TableCell>{l.courseName}</TableCell>
-                  <TableCell>{formatDate(l.date)}</TableCell>
+                  <TableCell>{formatDate(l.date ?? '')}</TableCell>
                   <TableCell>{formatTime(l.start_time)} — {formatTime(l.end_time)}</TableCell>
                   <TableCell>{Number(l.price ?? 0).toLocaleString()} DA</TableCell>
                   <TableCell>

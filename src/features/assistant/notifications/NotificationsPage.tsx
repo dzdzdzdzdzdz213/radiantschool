@@ -13,11 +13,13 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useToast } from '@/hooks/useToast';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useAuth } from '@/hooks/useAuth';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function NotificationsPage() {
   const { lang } = useLang();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -26,7 +28,7 @@ export default function NotificationsPage() {
   const { data: notifications, isLoading, isError } = useQuery({
     queryKey: ['assistant_notifications'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
@@ -38,7 +40,8 @@ export default function NotificationsPage() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from('notifications').insert({ user_id: null, title, message, type: 'announcement', is_read: false, created_at: new Date().toISOString() });
+      if (!profile?.id) throw new Error(t('errors.load_error', lang, t('nav.notifications', lang)));
+      const { error } = await supabase.from('notifications').insert({ user_id: profile.id, title, message, type: 'info', category: 'system', is_read: false, created_at: new Date().toISOString() });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -46,21 +49,21 @@ export default function NotificationsPage() {
       setTitle(''); setMessage(''); setShowForm(false);
       toast(t('success.sent', lang, t('nav.notifications', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('errors.send_error', lang, t('nav.notifications', lang)), 'error'),
+    onError: (err) => toast(err?.message ?? t('errors.send_error', lang, t('nav.notifications', lang)), 'error'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('notifications').delete().eq('id', id);
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('notifications').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_notifications'] });
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   return (
     <div className="space-y-6">
@@ -116,7 +119,7 @@ export default function NotificationsPage() {
               )) : (notifications ?? []).length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
               ) : (
-                (notifications ?? []).map((n: any) => (
+                (notifications ?? []).map((n) => (
                   <TableRow key={n.id}>
                     <TableCell><span className="text-sm font-medium">{n.title}</span></TableCell>
                     <TableCell className="hidden sm:table-cell text-sm text-muted-foreground truncate max-w-[200px]">{n.message}</TableCell>

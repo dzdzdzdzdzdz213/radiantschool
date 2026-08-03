@@ -27,7 +27,7 @@ export default function StudentPaymentsPage() {
     enabled: !!profile?.id,
   });
 
-  const total = (payments ?? []).reduce((s, p: any) => s + Number(p.amount), 0);
+  const total = (payments ?? []).reduce((s, p) => s + Number(p.amount), 0);
 
   return (
     <div className="space-y-6">
@@ -41,13 +41,13 @@ export default function StudentPaymentsPage() {
           ) : !payments?.length ? (
             <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>
           ) : (
-            payments.map((p: any) => (
+            payments.map((p) => (
               <div key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 text-sm">
                 <div>
                   <p className="font-semibold">{formatCurrency(p.amount)}</p>
                   <p className="text-xs text-muted-foreground">{p.payment_method} · {formatDate(p.created_at)}</p>
                 </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${p.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{p.status}</span>
+                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700">Payé</span>
               </div>
             ))
           )}

@@ -26,7 +26,7 @@ export default function SchedulesPage() {
       endDate.setDate(endDate.getDate() + 6);
       const startStr = startDate.toISOString().split('T')[0];
       const endStr = endDate.toISOString().split('T')[0];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('course_schedules')
         .select('id, day_of_week, start_time, end_time, course:courses!inner(name), teacher:users!teacher_id(first_name, last_name), room:rooms(name)')
         .filter('courses.start_date', 'lte', endStr)
@@ -91,7 +91,7 @@ export default function SchedulesPage() {
                 {(schedules?.[day] ?? []).length === 0 ? (
                   <p className="text-[10px] text-muted-foreground text-center py-4">—</p>
                 ) : (
-                  schedules?.[day]?.slice(0, 4).map((s: any) => (
+                  schedules?.[day]?.slice(0, 4).map((s) => (
                     <div key={s.id} className="rounded-lg bg-accent/50 p-2 text-[11px]">
                       <p className="font-medium truncate">{s.course?.name ?? ''}</p>
                       <p className="text-muted-foreground truncate">{s.teacher ? `${s.teacher.first_name} ${s.teacher.last_name}`.slice(0, 20) : ''}</p>

@@ -12,10 +12,12 @@ import { formatDateTime } from '@/lib/utils';
 import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function EmailsPage() {
   const { lang } = useLang();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const qc = useQueryClient();
   const [showComposer, setShowComposer] = useState(false);
   const [to, setTo] = useState('');
@@ -25,10 +27,12 @@ export default function EmailsPage() {
   const { data: sentEmails, isLoading: emailsLoading, isError: emailsError } = useQuery({
     queryKey: ['assistant_sent_emails'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      if (!profile?.id) return [];
+      const { data } = await supabase
         .from('notifications')
         .select('*')
-        .eq('type', 'email')
+        .eq('user_id', profile.id)
+        .eq('category', 'system')
         .order('created_at', { ascending: false })
         .limit(50);
       return data ?? [];
@@ -47,12 +51,13 @@ export default function EmailsPage() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from('notifications').insert({
-        user_id: null,
+      if (!profile?.id) throw new Error(t('errors.send_error', lang, t('nav.emails', lang)));
+      const { error } = await supabase.from('notifications').insert({
+        user_id: profile.id,
         title: subject,
         message: body,
-        type: 'email',
-        category: 'email',
+        type: 'info',
+        category: 'system',
         created_at: new Date().toISOString(),
       });
       if (error) throw error;
@@ -62,7 +67,7 @@ export default function EmailsPage() {
       toast(t('success.sent', lang, t('nav.emails', lang)), 'success');
       setTo(''); setSubject(''); setBody(''); setShowComposer(false);
     },
-    onError: (err: any) => toast(err?.message ?? t('errors.send_error', lang, t('nav.emails', lang)), 'error'),
+    onError: (err) => toast(err?.message ?? t('errors.send_error', lang, t('nav.emails', lang)), 'error'),
   });
 
   return (
@@ -128,7 +133,7 @@ export default function EmailsPage() {
                   <TableRow key={i}>{[1, 2, 3, 4].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
                 )) : (sentEmails ?? []).length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
-                ) : (sentEmails ?? []).map((e: any) => (
+                ) : (sentEmails ?? []).map((e) => (
                   <TableRow key={e.id}>
                     <TableCell className="text-sm">{e.user_id ?? '—'}</TableCell>
                     <TableCell className="text-sm">{e.title ?? '—'}</TableCell>

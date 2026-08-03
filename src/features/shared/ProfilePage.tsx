@@ -59,7 +59,7 @@ export default function ProfilePage() {
     queryKey: ['profile_settings', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return {};
-      const { data } = await (supabase as any).from('users').select('email_notifications, push_notifications, sms_notifications, accepts_private_lessons').eq('id', profile.id).single();
+      const { data } = await supabase.from('users').select('email_notifications, push_notifications, sms_notifications, accepts_private_lessons').eq('id', profile.id).single();
       return data ?? {};
     },
     enabled: !!profile?.id,
@@ -111,7 +111,7 @@ export default function ProfilePage() {
       if (error) throw error;
     },
     onSuccess: () => { toast(t('success.updated', lang, 'Profil'), 'success'); setEditing(false); refreshProfile(); },
-    onError: (err: any) => { toast(err?.message ?? t('errors.unknown', lang), 'error'); },
+    onError: (err) => { toast(err?.message ?? t('errors.unknown', lang), 'error'); },
   });
 
   if (!profile) return <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>;

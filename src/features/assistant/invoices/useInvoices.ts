@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database';
 
 export interface InvoiceRecord {
   id: string;
@@ -13,42 +14,50 @@ export interface InvoiceRecord {
 }
 
 interface InvoiceRow {
-  id: string;
+  id: number;
   student_id: string | null;
   invoice_number: string | null;
   total_amount: number | null;
   paid_amount: number | null;
-  status: string | null;
+  status: Database['public']['Enums']['invoice_status'] | null;
   due_date: string | null;
   student: { user: { first_name: string | null; last_name: string | null } | null } | null;
 }
 
-interface UserRow {
-  id: string;
+export interface InvoiceInput {
+  student_id?: string;
+  amount?: number;
+  total_amount?: number;
+  paid_amount?: number;
+  due_date: string;
+  description?: string;
+  notes?: string;
+  status?: string;
 }
 
 export function useInvoices(search: string = '', page: number = 1, statusFilter: string = '') {
   return useQuery({
     queryKey: ['assistant_invoices', search, page, statusFilter],
     queryFn: async () => {
-      const base = supabase.from('invoices') as any;
-      let query = base
+      let query = supabase
+        .from('invoices')
         .select('id, student_id, invoice_number, total_amount, paid_amount, status, due_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name))', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range((page - 1) * 20, page * 20 - 1);
-      if (statusFilter) query = query.eq('status', statusFilter);
+      if (statusFilter) query = query.eq('status', statusFilter as never);
       if (search) {
         const like = `%${search}%`;
-        const usersBase = supabase.from('users') as any;
-        const { data: matchingUsers } = await usersBase
+        const { data: matchingUsers } = await supabase
+          .from('users')
           .select('id')
           .or(`first_name.ilike.${like},last_name.ilike.${like}`);
-        const ids = (matchingUsers ?? []).map((u: UserRow) => u.id);
-        query = query.in('student_id', ids.length ? ids : [null]);
+        const ids = (matchingUsers ?? []).map((u) => u.id);
+        query = query.in('student_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
       }
       const { data, count } = await query;
-      const items = (data ?? []).map((r: InvoiceRow) => ({
-        id: r.id,
+      const rows = (data ?? []) as unknown as InvoiceRow[];
+      const items = rows.map((r) => ({
+        id: String(r.id),
         student_id: r.student_id ?? null,
         invoiceNumber: r.invoice_number ?? '',
         studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
@@ -66,8 +75,8 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
 export function useCreateInvoice() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
-      const { data: result, error } = await supabase.from('invoices').insert(data as any).select().single();
+    mutationFn: async (data: InvoiceInput) => {
+      const { data: result, error } = await supabase.from('invoices').insert(data as unknown as Database['public']['Tables']['invoices']['Insert']).select().single();
       if (error) throw error;
       return result;
     },
@@ -78,8 +87,8 @@ export function useCreateInvoice() {
 export function useUpdateInvoice() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const { error } = await supabase.from('invoices').update(data as any).eq('id', id as any);
+    mutationFn: async ({ id, data }: { id: string; data: Partial<InvoiceInput> }) => {
+      const { error } = await supabase.from('invoices').update(data as unknown as Database['public']['Tables']['invoices']['Update']).eq('id', Number(id));
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_invoices'] }); },
@@ -90,7 +99,7 @@ export function useDeleteInvoice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('invoices').update({ deleted_at: new Date().toISOString() } as any).eq('id', id as any);
+      const { error } = await supabase.from('invoices').update({ deleted_at: new Date().toISOString() }).eq('id', Number(id));
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_invoices'] }); },

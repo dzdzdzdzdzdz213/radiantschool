@@ -35,7 +35,7 @@ export default function ReportsPage() {
     queryKey: ['assistant_report_revenue'],
     enabled: selected === 'revenue',
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('v_daily_revenue').select('*').order('date', { ascending: false }).limit(30);
       return data ?? [];
     },
@@ -45,7 +45,7 @@ export default function ReportsPage() {
     queryKey: ['assistant_report_attendance'],
     enabled: selected === 'attendance',
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('v_daily_attendance').select('*').order('date', { ascending: false }).limit(30);
       return data ?? [];
     },
@@ -55,8 +55,8 @@ export default function ReportsPage() {
     queryKey: ['assistant_report_registrations'],
     enabled: selected === 'registrations',
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from('course_enrollments').select('id, enrollment_date, course:courses(name), student:students!student_id(first_name, last_name)').order('enrollment_date', { ascending: false }).limit(30);
+      const { data } = await supabase
+        .from('course_enrollments').select('id, enrollment_date, course:courses(name), student:students!student_id(user:users!students_id_fkey(first_name, last_name))').order('enrollment_date', { ascending: false }).limit(30);
       return data ?? [];
     },
   });
@@ -65,8 +65,8 @@ export default function ReportsPage() {
     queryKey: ['assistant_report_payments'],
     enabled: selected === 'payments',
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from('payments').select('id, amount, payment_method, status, created_at, student:students!student_id(first_name, last_name)').order('created_at', { ascending: false }).limit(30);
+      const { data } = await supabase
+        .from('payments').select('id, amount, payment_method, created_at, student:students!student_id(user:users!students_id_fkey(first_name, last_name))').order('created_at', { ascending: false }).limit(30);
       return data ?? [];
     },
   });
@@ -75,7 +75,7 @@ export default function ReportsPage() {
     queryKey: ['assistant_report_teacher_workload'],
     enabled: selected === 'teacher_workload',
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('v_teacher_workload').select('*').order('total_hours', { ascending: false });
       return data ?? [];
     },
@@ -96,43 +96,43 @@ export default function ReportsPage() {
     }
     if (selected === 'revenue') {
       if (!revenue || revenue.length === 0) return <p className="text-sm text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>;
-      return revenue.slice(0, 10).map((r: any) => (
+      return revenue.slice(0, 10).map((r) => (
         <div key={r.date} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
-          <span className="text-sm">{formatDate(r.date)}</span>
+          <span className="text-sm">{formatDate(r.date ?? '')}</span>
           <span className="text-sm font-semibold">{formatCurrency(r.amount ?? 0)}</span>
         </div>
       ));
     }
     if (selected === 'attendance') {
       if (!attendance || attendance.length === 0) return <p className="text-sm text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>;
-      return attendance.slice(0, 10).map((r: any) => (
+      return attendance.slice(0, 10).map((r) => (
         <div key={r.date} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
-          <span className="text-sm">{formatDate(r.date)}</span>
+          <span className="text-sm">{formatDate(r.date ?? '')}</span>
           <span className="text-sm">{r.present_count ?? 0} présentes / {r.total_count ?? 0}</span>
         </div>
       ));
     }
     if (selected === 'registrations') {
       if (!registrations || registrations.length === 0) return <p className="text-sm text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>;
-      return registrations.map((r: any) => (
+      return registrations.map((r) => (
         <div key={r.id} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
-          <span className="text-sm">{r.student ? `${r.student.first_name} ${r.student.last_name}` : '—'} · {r.course?.name}</span>
+          <span className="text-sm">{r.student?.user ? `${r.student.user.first_name} ${r.student.user.last_name}` : '—'} · {r.course?.name}</span>
           <span className="text-xs text-muted-foreground">{formatDate(r.enrollment_date)}</span>
         </div>
       ));
     }
     if (selected === 'payments') {
       if (!payments || payments.length === 0) return <p className="text-sm text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>;
-      return payments.map((p: any) => (
+      return payments.map((p) => (
         <div key={p.id} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
-          <span className="text-sm">{p.student ? `${p.student.first_name} ${p.student.last_name}` : '—'} · {p.payment_method}</span>
+          <span className="text-sm">{p.student?.user ? `${p.student.user.first_name} ${p.student.user.last_name}` : '—'} · {p.payment_method}</span>
           <span className="text-sm font-semibold">{formatCurrency(p.amount ?? 0)}</span>
         </div>
       ));
     }
     if (selected === 'teacher_workload') {
       if (!teacherWorkload || teacherWorkload.length === 0) return <p className="text-sm text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>;
-      return teacherWorkload.map((r: any) => (
+      return teacherWorkload.map((r) => (
         <div key={r.teacher_id} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
           <span className="text-sm">{r.teacher_name ?? 'Enseignant'}</span>
           <span className="text-sm">{r.total_hours ?? 0}h / {r.course_count ?? 0} cours</span>

@@ -130,13 +130,13 @@ export function useAssistantDashboard(lang: string = 'fr') {
         .eq('status', 'pending_approval')
         .order('enrollment_date', { ascending: false })
         .limit(10);
-      return (data ?? []).map((r: any) => ({
-        id: r.id,
+      return (data ?? []).map((r) => ({
+        id: String(r.id),
         studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         courseName: r.course?.name ?? 'Inconnu',
         requestedAt: r.enrollment_date,
         status: r.status,
-      })) as PendingRegistration[];
+      })) as unknown as PendingRegistration[];
     },
     staleTime: 30_000,
     gcTime: 5 * 60 * 1000,
@@ -152,13 +152,13 @@ export function useAssistantDashboard(lang: string = 'fr') {
         .lt('due_date', today)
         .order('due_date', { ascending: true })
         .limit(10);
-      return (data ?? []).map((r: any) => ({
-        id: r.id,
+      return (data ?? []).map((r) => ({
+        id: String(r.id),
         studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         amount: (r.total_amount ?? 0) - (r.paid_amount ?? 0),
         dueDate: r.due_date,
         daysOverdue: Math.floor((Date.now() - new Date(r.due_date).getTime()) / 86400000),
-      })) as OverduePayment[];
+      })) as unknown as OverduePayment[];
     },
     staleTime: 30_000,
     gcTime: 5 * 60 * 1000,
@@ -176,13 +176,13 @@ export function useAssistantDashboard(lang: string = 'fr') {
         .lte('start_time', currentTime)
         .gte('end_time', currentTime)
         .limit(20);
-      return (data ?? []).map((r: any) => ({
-        id: r.id,
+      return (data ?? []).map((r) => ({
+        id: String(r.id),
         name: r.teacher ? `${r.teacher.first_name ?? ''} ${r.teacher.last_name ?? ''}` : 'Inconnu',
         course: r.course?.name ?? '',
         room: r.room?.name ?? '',
         time: `${r.start_time?.slice(0, 5) ?? ''} - ${r.end_time?.slice(0, 5) ?? ''}`,
-      }));
+      })) as unknown as ActiveTeacher[];
     },
     enabled: true,
     refetchInterval: 60_000,
@@ -198,12 +198,12 @@ export function useAssistantDashboard(lang: string = 'fr') {
         .eq('method', 'rfid')
         .order('created_at', { ascending: false })
         .limit(10);
-      return (data ?? []).map((r: any) => ({
-        id: r.id,
+      return (data ?? []).map((r) => ({
+        id: String(r.id),
         studentName: r.student ? `${r.student.user?.first_name ?? ''} ${r.student.user?.last_name ?? ''}` : 'Inconnu',
         scannedAt: r.created_at ? new Date(r.created_at).toLocaleTimeString(localeMap[lang], { hour: '2-digit', minute: '2-digit' }) : '',
         status: r.status === 'present' ? 'success' : 'failed',
-      })) as RfidRecord[];
+      })) as unknown as RfidRecord[];
     },
     staleTime: 30_000,
     gcTime: 5 * 60 * 1000,
@@ -222,15 +222,6 @@ export function useAssistantDashboard(lang: string = 'fr') {
           title: `${kpi.pendingRegistrations} inscription${kpi.pendingRegistrations > 1 ? 's' : ''} en attente`,
           description: 'Ces inscriptions nécessitent une validation manuelle',
           action: { label: 'Voir', path: '/assistant/registrations' },
-        });
-      }
-      if (kpi.pendingPayments > 0) {
-        alerts.push({
-          id: 'pending-pay',
-          severity: 'critical',
-          title: `${kpi.pendingPayments} facture${kpi.pendingPayments > 1 ? 's' : ''} impayée${kpi.pendingPayments > 1 ? 's' : ''}`,
-          description: 'Paiements en attente de traitement',
-          action: { label: 'Voir', path: '/assistant/payments' },
         });
       }
       if (kpi.absentStudents > 3) {
@@ -262,7 +253,6 @@ export function useAssistantDashboard(lang: string = 'fr') {
     { label: 'Créer une classe', icon: 'GraduationCap', path: '/assistant/groups', description: 'Ajouter un groupe' },
     { label: 'Inscrire un élève', icon: 'UserPlus', path: '/assistant/students/new', description: 'Nouvelle inscription' },
     { label: 'Créer une facture', icon: 'FileText', path: '/assistant/invoices/new', description: 'Générer une facture' },
-    { label: 'Enregistrer un paiement', icon: 'DollarSign', path: '/assistant/payments/new', description: 'Saisir un règlement' },
     { label: 'Prendre les présences', icon: 'ClipboardCheck', path: '/assistant/attendance', description: 'Relevé du jour' },
     { label: 'Scanner RFID', icon: 'ClipboardCheck', path: '/assistant/rfid', description: 'Scan par badge' },
     { label: 'Assigner un groupe', icon: 'Users', path: '/assistant/groups', description: 'Affecter un élève' },

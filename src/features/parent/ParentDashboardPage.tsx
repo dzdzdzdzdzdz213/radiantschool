@@ -127,12 +127,12 @@ export default function ParentDashboardPage() {
         .from('student_parent')
         .select('student_id, relationship, student:students!student_id(id, user:users!students_id_fkey(id, first_name, last_name, photo_url))')
         .eq('parent_id', profile.id);
-      return (links ?? []).map((l: any) => ({ ...l.student?.user, relationship: l.relationship })).filter(Boolean);
+      return (links ?? []).map((l) => ({ ...l.student?.user, relationship: l.relationship })).filter(Boolean);
     },
     enabled: !!profile?.id,
   });
 
-  const childIds = (children ?? []).map((c: any) => c.id);
+  const childIds = (children ?? []).map((c) => c.id);
 
   const { data: summaries } = useQuery({
     queryKey: ['parent-children-summary', childIds.join(',')],
@@ -149,20 +149,20 @@ export default function ParentDashboardPage() {
       ]);
 
       const enrollmentsByStudent: Record<string, any[]> = {};
-      (enrRes.data ?? []).forEach((e: any) => {
+      (enrRes.data ?? []).forEach((e) => {
         if (!enrollmentsByStudent[e.student_id]) enrollmentsByStudent[e.student_id] = [];
         enrollmentsByStudent[e.student_id].push(e.course);
       });
 
       const attendanceByStudent: Record<string, { present: number; total: number }> = {};
-      (attRes.data ?? []).forEach((a: any) => {
+      (attRes.data ?? []).forEach((a) => {
         if (!attendanceByStudent[a.student_id]) attendanceByStudent[a.student_id] = { present: 0, total: 0 };
         attendanceByStudent[a.student_id].total++;
         if (a.status === 'present') attendanceByStudent[a.student_id].present++;
       });
 
       const nextClassByStudent: Record<string, { name: string; time: string }> = {};
-      (schedRes.data ?? []).forEach((s: any) => {
+      (schedRes.data ?? []).forEach((s) => {
         const sid = s.course?.course_enrollments?.[0]?.student_id;
         if (sid && !nextClassByStudent[sid]) {
           nextClassByStudent[sid] = { name: s.course?.name ?? '', time: s.start_time?.slice(0, 5) ?? '' };
@@ -170,7 +170,7 @@ export default function ParentDashboardPage() {
       });
 
       return childIds.map((id: string): ChildSummary => {
-        const child = (children ?? []).find((c: any) => c.id === id);
+        const child = (children ?? []).find((c) => c.id === id);
         const courses = enrollmentsByStudent[id] ?? [];
         const att = attendanceByStudent[id];
         return {
@@ -207,7 +207,7 @@ export default function ParentDashboardPage() {
       if (!childIds.length) return [];
       const { data } = await supabase
         .from('private_lessons')
-        .select('*, student:users!student_id(first_name, last_name), teacher:users!teacher_id(first_name, last_name), course:courses(name)')
+        .select('*, student:users!student_id(first_name, last_name), teacher:users!teacher_id(first_name, last_name)')
         .in('student_id', childIds)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -301,13 +301,12 @@ export default function ParentDashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {privateLessons.map((pl: any) => (
+                  {privateLessons.map((pl) => (
                     <div key={pl.id} className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{pl.student?.first_name} {pl.student?.last_name}</p>
                         <p className="text-xs text-muted-foreground truncate">
                           {pl.teacher?.first_name} {pl.teacher?.last_name}
-                          {pl.course ? ` · ${pl.course.name}` : ''}
                         </p>
                       </div>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${

@@ -28,12 +28,12 @@ export default function TeacherReportsPage() {
         const sessionIds = sessions?.map(s => s.id) ?? [];
         if (sessionIds.length) {
           const { data: records } = await supabase.from('attendance_records').select('status').in('session_id', sessionIds);
-          presentCount = (records ?? []).filter((a: any) => a.status === 'present').length;
+          presentCount = (records ?? []).filter((a) => a.status === 'present').length;
           totalAtt = (records ?? []).length;
         }
       }
 
-      const uniqueStudents = new Set(enrollments.map((e: any) => e.student_id));
+      const uniqueStudents = new Set(enrollments.map((e) => e.student_id));
       const totalCapacity = courses.reduce((s: number, c: any) => s + Number(c.capacity), 0);
       const totalEnrolled = courses.reduce((s: number, c: any) => s + (c.current_enrollments ?? 0), 0);
       const avgScore = evals.length ? (evals.reduce((s: number, e: any) => s + Number(e.average_score ?? 0), 0) / evals.length).toFixed(1) : '—';

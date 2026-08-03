@@ -16,7 +16,7 @@ export default function StudentOnlineClassesPage() {
         .select('course_id')
         .eq('student_id', profile.id)
         .eq('status', 'active');
-      const courseIds = (enrollments ?? []).map((e: any) => e.course_id);
+      const courseIds = (enrollments ?? []).map((e) => e.course_id);
       if (!courseIds.length) return [];
 
       const { data } = await supabase
@@ -39,7 +39,7 @@ export default function StudentOnlineClassesPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucun cours en ligne pour le moment</CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {onlineClasses.map((oc: any) => (
+          {onlineClasses.map((oc) => (
             <Card key={oc.id}>
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 shrink-0">

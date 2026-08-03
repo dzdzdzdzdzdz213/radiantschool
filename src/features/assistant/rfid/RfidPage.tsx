@@ -20,7 +20,7 @@ export default function RfidPage() {
   const { data: recentScans, isError: recentError } = useQuery({
     queryKey: ['assistant_rfid_recent'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('rfid_scans')
         .select('id, rfid_code, status, scanned_at, student:users!student_id(first_name, last_name)')
         .order('scanned_at', { ascending: false })
@@ -32,7 +32,7 @@ export default function RfidPage() {
   const { data: allScans, isLoading: historyLoading, isError: historyError } = useQuery({
     queryKey: ['assistant_rfid_history'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('rfid_scans')
         .select('id, rfid_code, status, scanned_at, student:users!student_id(first_name, last_name)')
         .order('scanned_at', { ascending: false })
@@ -46,12 +46,12 @@ export default function RfidPage() {
 
   const scanMutation = useMutation({
     mutationFn: async (code: string) => {
-      const { data: student } = await (supabase as any)
+      const { data: student } = await supabase
         .from('students')
         .select('id')
         .eq('rfid_tag', code)
         .maybeSingle();
-      const { error } = await (supabase as any).from('rfid_scans').insert({
+      const { error } = await supabase.from('rfid_scans').insert({
         rfid_code: code,
         student_id: student?.id ?? null,
         scanned_at: new Date().toISOString(),
@@ -64,7 +64,7 @@ export default function RfidPage() {
       toast(t('success.scanned', lang), 'success');
       setScanInput('');
     },
-    onError: (err: any) => toast(err?.message ?? t('rfid.scan_error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('rfid.scan_error', lang), 'error'),
   });
 
   const handleScan = (e: React.KeyboardEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {
@@ -131,10 +131,10 @@ export default function RfidPage() {
             <div className="space-y-3">
               {(recentScans ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">{t('common.no_data', lang)}</p>
-              ) : (recentScans ?? []).map((s: any) => (
+              ) : (recentScans ?? []).map((s) => (
                 <div key={s.id} className="flex items-center justify-between rounded-xl bg-accent/50 p-3">
                   <div>
-                    <p className="text-sm font-medium">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_tag}</p>
+                    <p className="text-sm font-medium">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_code}</p>
                     <p className="text-xs text-muted-foreground">{formatDateTime(s.scanned_at)}</p>
                   </div>
                 </div>
@@ -161,9 +161,9 @@ export default function RfidPage() {
                 <TableRow key={i}>{[1, 2, 3].map(c => <TableCell key={c}><div className="h-5 bg-muted rounded animate-pulse" /></TableCell>)}</TableRow>
               )) : (allScans ?? []).length === 0 ? (
                 <TableRow><TableCell colSpan={2} className="text-center py-8 text-muted-foreground">{t('common.no_data', lang)}</TableCell></TableRow>
-              ) : (allScans ?? []).map((s: any) => (
+              ) : (allScans ?? []).map((s) => (
                 <TableRow key={s.id}>
-                  <TableCell className="text-sm">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_tag}</TableCell>
+                  <TableCell className="text-sm">{s.student ? `${s.student.first_name} ${s.student.last_name}` : s.rfid_code}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{formatDateTime(s.scanned_at)}</TableCell>
                 </TableRow>
               ))}

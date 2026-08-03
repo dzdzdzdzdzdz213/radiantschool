@@ -33,7 +33,7 @@ export default function TeacherCoursesPage() {
     staleTime: 1000 * 60 * 2,
   });
 
-  const filtered = (courses ?? []).filter((c: any) =>
+  const filtered = (courses ?? []).filter((c) =>
     [c.name, c.subject?.name, c.level?.name, c.level?.stream].filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase())
   );
 
@@ -63,7 +63,7 @@ export default function TeacherCoursesPage() {
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((c: any) => (
+          {filtered.map((c) => (
             <div key={c.id} className="rounded-xl border bg-card p-5 hover:shadow-md transition-all">
               <div className="flex items-start justify-between mb-3">
                 <p className="font-semibold truncate">{c.name}</p>

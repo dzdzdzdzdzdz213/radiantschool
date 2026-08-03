@@ -23,7 +23,7 @@ export default function CampaignsPage() {
   const { data: campaigns, isLoading, isError } = useQuery({
     queryKey: ['assistant_campaigns'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('campaigns')
         .select('*')
         .order('start_date', { ascending: false });
@@ -34,7 +34,7 @@ export default function CampaignsPage() {
   useErrorToast(isError, lang, t('nav.campaigns', lang));
 
   const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ name: '', description: '', start_date: '', end_date: '' });
 
   const openCreateModal = () => {
@@ -43,7 +43,7 @@ export default function CampaignsPage() {
     setShowModal(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: NonNullable<typeof campaigns>[number]) => {
     setEditingId(item.id);
     setForm({
       name: item.name ?? '',
@@ -61,10 +61,10 @@ export default function CampaignsPage() {
       if (new Date(form.end_date) <= new Date(form.start_date)) throw new Error(t('campaigns.date_order', lang));
       const payload = { name: form.name.trim(), description: form.description.trim() || null, start_date: form.start_date, end_date: form.end_date };
       if (editingId) {
-        const { error } = await (supabase as any).from('campaigns').update(payload).eq('id', editingId);
+        const { error } = await supabase.from('campaigns').update(payload).eq('id', editingId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any).from('campaigns').insert({ ...payload, is_active: true });
+        const { error } = await supabase.from('campaigns').insert({ ...payload, is_active: true });
         if (error) throw error;
       }
     },
@@ -75,22 +75,22 @@ export default function CampaignsPage() {
       setEditingId(null);
       setForm({ name: '', description: '', start_date: '', end_date: '' });
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('campaigns').delete().eq('id', id);
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('campaigns').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_campaigns'] });
       toast(t('success.deleted', lang, t('campaigns.campaign', lang)), 'success');
     },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   return (
     <div className="space-y-6">
@@ -154,7 +154,7 @@ export default function CampaignsPage() {
           <div className="col-span-full text-center py-12 text-muted-foreground">
             <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" /><p>{t('common.no_data', lang)}</p>
           </div>
-        ) : (campaigns ?? []).map((c: any) => (
+        ) : (campaigns ?? []).map((c) => (
           <Card key={c.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">

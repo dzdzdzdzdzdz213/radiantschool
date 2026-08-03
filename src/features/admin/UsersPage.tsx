@@ -51,7 +51,7 @@ export default function UsersPage() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['users-paginated'] }); toast(t('success.updated', lang, 'Statut'), 'success'); setDropdownId(null); },
-    onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+    onError: (err: Error) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
   const handleSearch = (val: string) => { setSearch(val); setPage(1); };

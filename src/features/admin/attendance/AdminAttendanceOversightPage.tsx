@@ -10,6 +10,48 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 
+interface TeacherBrief {
+  id: string;
+  first_name: string;
+  last_name: string;
+}
+
+interface OversightSession {
+  id: number;
+  date: string;
+  title: string | null;
+  check_in_opened_at: string | null;
+  check_in_closed_at: string | null;
+  price_calculated: number | null;
+  course: {
+    id: number;
+    name: string;
+    type: string;
+    teacher_id: string;
+    teacher: { first_name: string; last_name: string };
+  } | null;
+}
+
+interface OversightPrivateRecord {
+  id: number;
+  date: string;
+  status: string;
+  check_in_time: string | null;
+  check_in_closed_at: string | null;
+  method: string | null;
+  course_schedule: {
+    id: number;
+    course_id: number;
+    course: {
+      id: number;
+      name: string;
+      type: string;
+      teacher_id: string;
+      teacher: { first_name: string; last_name: string };
+    };
+  };
+}
+
 function useCountdown(target: string | null): string {
   const [display, setDisplay] = useState('');
   useEffect(() => {
@@ -41,8 +83,8 @@ export default function AdminAttendanceOversightPage() {
   const { data: teachers, isError: teachersError } = useQuery({
     queryKey: ['teachers_list'],
     queryFn: async () => {
-      const { data } = await (supabase as any).from('users').select('id, first_name, last_name').eq('role', 'teacher').order('first_name');
-      return data ?? [];
+      const { data } = await supabase.from('users').select('id, first_name, last_name').eq('role', 'teacher').order('first_name');
+      return (data ?? []) as unknown as TeacherBrief[];
     },
   });
   useErrorToast(teachersError, lang, t('nav.users', lang));
@@ -50,14 +92,14 @@ export default function AdminAttendanceOversightPage() {
   const { data: groupSessions, isLoading: groupLoading, isError: groupError } = useQuery({
     queryKey: ['admin_oversight_group', teacherFilter],
     queryFn: async () => {
-      let q = (supabase as any)
+      let q = supabase
         .from('attendance_sessions')
         .select('id, date, title, check_in_opened_at, check_in_closed_at, price_calculated, course:courses!inner(id, name, type, teacher_id, teacher:users!teacher_id(first_name, last_name))')
         .order('date', { ascending: false })
         .limit(100);
-      if (teacherFilter) q = q.eq('course.teacher_id', teacherFilter);
+      if (teacherFilter) q = q.eq('course.teacher_id' as never, teacherFilter);
       const { data } = await q;
-      return data ?? [];
+      return (data ?? []) as unknown as OversightSession[];
     },
   });
   useErrorToast(groupError, lang, t('nav.attendance', lang));
@@ -65,23 +107,23 @@ export default function AdminAttendanceOversightPage() {
   const { data: privateRecords, isLoading: privateLoading, isError: privateError } = useQuery({
     queryKey: ['admin_oversight_private', teacherFilter],
     queryFn: async () => {
-      let q = (supabase as any)
+      let q = supabase
         .from('attendance')
         .select('id, date, status, check_in_time, check_in_closed_at, method, course_schedule:course_schedules!inner(id, course_id, course:courses!inner(id, name, type, teacher_id, teacher:users!teacher_id(first_name, last_name)))')
         .order('date', { ascending: false })
         .limit(100);
-      if (teacherFilter) q = q.eq('course_schedule.course.teacher_id', teacherFilter);
+      if (teacherFilter) q = q.eq('course_schedule.course.teacher_id' as never, teacherFilter);
       const { data } = await q;
-      return data ?? [];
+      return (data ?? []) as unknown as OversightPrivateRecord[];
     },
   });
   useErrorToast(privateError, lang, t('nav.attendance', lang));
 
-  const openSessions = (groupSessions ?? []).filter((s: any) => s.check_in_opened_at && !s.check_in_closed_at);
-  const closedSessions = (groupSessions ?? []).filter((s: any) => s.check_in_closed_at);
-  const pendingSessions = (groupSessions ?? []).filter((s: any) => !s.check_in_opened_at);
+  const openSessions = (groupSessions ?? []).filter((s: OversightSession) => s.check_in_opened_at && !s.check_in_closed_at);
+  const closedSessions = (groupSessions ?? []).filter((s: OversightSession) => s.check_in_closed_at);
+  const pendingSessions = (groupSessions ?? []).filter((s: OversightSession) => !s.check_in_opened_at);
 
-  const filteredPrivate = (privateRecords ?? []).filter((r: any) => {
+  const filteredPrivate = (privateRecords ?? []).filter((r: OversightPrivateRecord) => {
     const t = r.course_schedule?.course?.type;
     if (typeFilter === 'group' && t !== 'normal') return false;
     if (typeFilter === 'private' && t !== 'private') return false;
@@ -90,8 +132,8 @@ export default function AdminAttendanceOversightPage() {
   });
 
   const searchTerm = search.toLowerCase();
-  const matchSearch = (s: any) => !searchTerm || s.course?.name?.toLowerCase().includes(searchTerm) || `${s.course?.teacher?.first_name} ${s.course?.teacher?.last_name}`.toLowerCase().includes(searchTerm);
-  const matchSearchR = (r: any) => !searchTerm || r.course_schedule?.course?.name?.toLowerCase().includes(searchTerm) || `${r.course_schedule?.course?.teacher?.first_name} ${r.course_schedule?.course?.teacher?.last_name}`.toLowerCase().includes(searchTerm);
+  const matchSearch = (s: OversightSession) => !searchTerm || s.course?.name?.toLowerCase().includes(searchTerm) || `${s.course?.teacher?.first_name} ${s.course?.teacher?.last_name}`.toLowerCase().includes(searchTerm);
+  const matchSearchR = (r: OversightPrivateRecord) => !searchTerm || r.course_schedule?.course?.name?.toLowerCase().includes(searchTerm) || `${r.course_schedule?.course?.teacher?.first_name} ${r.course_schedule?.course?.teacher?.last_name}`.toLowerCase().includes(searchTerm);
 
   const displayedOpen = openSessions.filter(matchSearch);
   const displayedClosed = closedSessions.filter(matchSearch);
@@ -143,7 +185,7 @@ export default function AdminAttendanceOversightPage() {
           <Input placeholder={t('common.search_course', lang)} value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-9" />
         </div>
         <Select value={teacherFilter} onValueChange={setTeacherFilter} placeholder="Tous les enseignants">
-          {(teachers ?? []).map((t: any) => (
+          {(teachers ?? []).map((t: TeacherBrief) => (
             <SelectItem key={t.id} value={t.id}>{t.first_name} {t.last_name}</SelectItem>
           ))}
         </Select>
@@ -171,7 +213,7 @@ export default function AdminAttendanceOversightPage() {
                 <th className="text-right py-3 px-4 font-medium">Prix</th>
               </tr></thead>
               <tbody>
-                {displayedOpen.map((s: any) => (
+                {displayedOpen.map((s: OversightSession) => (
                   <tr key={s.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{s.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{s.course?.teacher?.first_name} {s.course?.teacher?.last_name}</td>
@@ -202,7 +244,7 @@ export default function AdminAttendanceOversightPage() {
                 <th className="text-right py-3 px-4 font-medium">Prix calculé</th>
               </tr></thead>
               <tbody>
-                {displayedClosed.slice(0, 50).map((s: any) => (
+                {displayedClosed.slice(0, 50).map((s: OversightSession) => (
                   <tr key={s.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{s.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{s.course?.teacher?.first_name} {s.course?.teacher?.last_name}</td>
@@ -212,7 +254,7 @@ export default function AdminAttendanceOversightPage() {
                     <td className="py-3 px-4 text-right font-mono">{s.price_calculated ? `${s.price_calculated} DA` : <span className="text-muted-foreground">—</span>}</td>
                   </tr>
                 ))}
-                {displayedPrivate.slice(0, 50).map((r: any) => (
+                {displayedPrivate.slice(0, 50).map((r: OversightPrivateRecord) => (
                   <tr key={r.id} className="border-b last:border-0">
                     <td className="py-3 px-4 font-medium">{r.course_schedule?.course?.name}</td>
                     <td className="py-3 px-4 text-muted-foreground">{r.course_schedule?.course?.teacher?.first_name} {r.course_schedule?.course?.teacher?.last_name}</td>
@@ -242,7 +284,7 @@ export default function AdminAttendanceOversightPage() {
   );
 }
 
-function TimerCountdown({ target }: { target: string }) {
+function TimerCountdown({ target }: { target: string | null }) {
   const display = useCountdown(target);
   const expired = display === '00:00';
   return <span className={expired ? 'text-red-500 font-bold' : ''}>{display}</span>;

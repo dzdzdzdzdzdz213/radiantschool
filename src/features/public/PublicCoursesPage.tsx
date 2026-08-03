@@ -23,13 +23,13 @@ export default function PublicCoursesPage() {
   const [search, setSearch] = useState('');
 
   const allCourses = courses ?? [];
-  const filteredByCat = cat === 'all' ? allCourses : allCourses.filter((c: any) => c.level?.category === cat);
+  const filteredByCat = cat === 'all' ? allCourses : allCourses.filter((c) => c.level?.category === cat);
   const streamFiltered = selStream
-    ? filteredByCat.filter((c: any) => c.level?.name === selStream.year && c.level?.stream === selStream.stream)
+    ? filteredByCat.filter((c) => c.level?.name === selStream.year && c.level?.stream === selStream.stream)
     : filteredByCat;
-  const typeFiltered = typeFilter === 'all' ? streamFiltered : streamFiltered.filter((c: any) => c.type === typeFilter);
+  const typeFiltered = typeFilter === 'all' ? streamFiltered : streamFiltered.filter((c) => c.type === typeFilter);
   const filteredCourses = search
-    ? typeFiltered.filter((c: any) =>
+    ? typeFiltered.filter((c) =>
         [c.name, c.subject?.name, c.level?.name, c.level?.stream, c.teacher?.first_name, c.teacher?.last_name]
           .filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase())
       )
@@ -139,7 +139,7 @@ export default function PublicCoursesPage() {
               <div className="h-10 w-full rounded-xl" style={{ backgroundColor: 'var(--border)' }} />
             </div>
           ))}
-          {filteredCourses.map((c: any) => {
+          {filteredCourses.map((c) => {
             const catInfo = categories.find(x => x.key === (c.level?.category ?? 'all')) ?? categories[0];
             const CIcon = catInfo.icon;
             const isVip = c.type === 'vip';

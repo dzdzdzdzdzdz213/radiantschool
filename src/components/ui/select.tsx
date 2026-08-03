@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { forwardRef, useState, Children } from 'react';
+import { forwardRef, useState, Children, isValidElement, type ReactNode, type ReactElement } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -48,18 +48,20 @@ export function Select({ value, onValueChange, placeholder, children, className 
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
 
-  const items: any[] = [];
+  const items: ReactElement[] = [];
   let triggerLabel = placeholder ?? t('common.select', lang);
 
-  const processChildren = (child: any) => {
+  const processChildren = (child: ReactNode): void => {
     if (!child) return;
     if (Array.isArray(child)) { child.forEach(processChildren); return; }
-    if (child.type === SelectItem || child.type?.displayName === 'SelectItem') {
-      const itemValue = child.props.value;
-      items.push(child);
-      if (itemValue === value) triggerLabel = child.props.children;
+    if (!isValidElement(child)) return;
+    const el = child as ReactElement<{ value?: string; children?: ReactNode }>;
+    if (el.type === SelectItem || (el.type as { displayName?: string } | null)?.displayName === 'SelectItem') {
+      const itemValue = el.props.value;
+      items.push(el);
+      if (itemValue === value) triggerLabel = String(el.props.children ?? '');
     }
-    if (child.props?.children) processChildren(child.props.children);
+    if (el.props?.children) processChildren(el.props.children);
   };
   processChildren(children);
 

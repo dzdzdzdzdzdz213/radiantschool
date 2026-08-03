@@ -39,7 +39,7 @@ export default function TeacherReviewsPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucune évaluation pour le moment</CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {reviews.map((r: any) => {
+          {reviews.map((r) => {
             const score = r.average_score ?? (r.teaching_quality + r.communication + r.punctuality + r.organization) / 4;
             return (
               <Card key={r.id}>

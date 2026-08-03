@@ -73,7 +73,7 @@ export default function ParentsPage() {
           setShowModal(false);
           setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
         },
-        onError: (err: any) => toast(err?.message ?? t('common.error', lang), 'error'),
+        onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
       },
     );
   };

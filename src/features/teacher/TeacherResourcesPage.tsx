@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { FileText, Download, Film, File as FileIcon, Image } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
-const typeIcons: Record<string, any> = { pdf: FileText, video: Film, image: Image, doc: FileText };
+const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = { pdf: FileText, video: Film, image: Image, doc: FileText };
 const typeColors: Record<string, string> = { pdf: 'text-red-600 bg-red-100', video: 'text-purple-600 bg-purple-100', image: 'text-green-600 bg-green-100', doc: 'text-blue-600 bg-blue-100' };
 
 export default function TeacherResourcesPage() {
@@ -36,9 +36,9 @@ export default function TeacherResourcesPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucune ressource</CardContent></Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {resources.map((r: any) => {
-            const Icon = typeIcons[r.file_type] ?? FileIcon;
-            const color = typeColors[r.file_type] ?? 'text-gray-600 bg-gray-100';
+          {resources.map((r) => {
+            const Icon = typeIcons[r.type] ?? FileIcon;
+            const color = typeColors[r.type] ?? 'text-gray-600 bg-gray-100';
             return (
               <Card key={r.id} className="hover:shadow-md transition-all">
                 <CardContent className="p-4">
@@ -47,10 +47,10 @@ export default function TeacherResourcesPage() {
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{r.name}</p>
-                      <p className="text-xs text-muted-foreground">{r.course?.name} · {r.file_type}</p>
+                      <p className="font-semibold text-sm truncate">{r.title}</p>
+                      <p className="text-xs text-muted-foreground">{r.course?.name} · {r.type}</p>
                     </div>
-                    <a href={r.file_path} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></a>
+                    <a href={r.file_url ?? '#'} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80"><Download className="h-4 w-4" /></a>
                   </div>
                 </CardContent>
               </Card>

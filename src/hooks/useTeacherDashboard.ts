@@ -22,7 +22,7 @@ export function useTeacherDashboard(teacherId: string | undefined) {
           .in('course_id', (await supabase.from('courses').select('id').eq('teacher_id', teacherId).in('status', ['active'])).data?.map(c => c.id) ?? []),
       ]);
 
-      const uniqueStudents = new Set((studentsRes.data ?? []).map((r: any) => r.student_id));
+      const uniqueStudents = new Set((studentsRes.data ?? []).map((r) => r.student_id));
 
       const courseIdList = (coursesRes.data ?? []).map(c => c.id);
       let attendanceToday = 0;

@@ -57,7 +57,7 @@ export default function TeacherAnnouncementsPage() {
       setShowForm(false);
       setForm({ title: '', content: '', course_id: '' });
     },
-    onError: (err: any) => toast(err?.message ?? 'Erreur', 'error'),
+    onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -79,7 +79,7 @@ export default function TeacherAnnouncementsPage() {
           <CardContent className="p-4 space-y-4">
             <select value={form.course_id} onChange={e => setForm({ ...form, course_id: e.target.value })} className="w-full h-10 rounded-xl px-3 text-sm border bg-background">
               <option value="">Toutes les formations</option>
-              {courses?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {courses?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <Input placeholder="Titre" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
             <textarea placeholder="Contenu" value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={4} className="w-full rounded-xl px-3 py-2 text-sm border bg-background resize-none" />
@@ -97,7 +97,7 @@ export default function TeacherAnnouncementsPage() {
         <Card><CardContent className="py-12 text-center text-muted-foreground">Aucune annonce</CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {announcements.map((a: any) => (
+          {announcements.map((a) => (
             <Card key={a.id}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
