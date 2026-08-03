@@ -2,17 +2,19 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getAppCurrency } from '@/lib/currency';
 
 /** Merges Tailwind class names with proper conflict resolution. */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Formats a number as DZD currency. */
+/** Formats a number as currency using the configured center currency. */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('fr-DZ', {
+  const code = getAppCurrency();
+  return new Intl.NumberFormat(code === 'DZD' ? 'fr-DZ' : 'fr-FR', {
     style: 'currency',
-    currency: 'DZD',
+    currency: code,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);

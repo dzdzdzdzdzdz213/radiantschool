@@ -11,6 +11,8 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import { useRealtime } from '@/hooks/useRealtime';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
+import { setAppCurrency } from '@/lib/currency';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const queryClient = new QueryClient({
@@ -85,6 +87,21 @@ function RealtimeActivator() {
   return null;
 }
 
+function CurrencyLoader() {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('center_settings').select('currency').maybeSingle();
+      if (cancelled) return;
+      if (data?.currency) setAppCurrency(data.currency);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return null;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -93,6 +110,7 @@ export default function App() {
         <LangProvider>
           <AuthProvider>
             <RealtimeActivator />
+            <CurrencyLoader />
             <ToastProvider>
               <AnimatedBackground />
               <div className="app-root">

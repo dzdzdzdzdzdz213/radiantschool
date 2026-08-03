@@ -192,6 +192,29 @@ export function useAssistantDashboard(lang: string = 'fr') {
     refetchInterval: 60_000,
   });
 
+  const todayScheduleQuery = useQuery({
+    queryKey: ['assistant_today_schedule', today],
+    queryFn: async () => {
+      const dayName = (['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const)[new Date().getDay()];
+      const { data } = await supabase
+        .from('course_schedules')
+        .select('id, start_time, end_time, course:courses(name), room:rooms(name), teacher:users(first_name, last_name)')
+        .eq('day_of_week', dayName)
+        .order('start_time', { ascending: true })
+        .limit(10);
+      return (data ?? []).map((r) => ({
+        id: String(r.id),
+        courseName: r.course?.name ?? '',
+        teacherName: r.teacher ? `${r.teacher.first_name ?? ''} ${r.teacher.last_name ?? ''}` : '',
+        roomName: r.room?.name ?? '',
+        startTime: r.start_time?.slice(0, 5) ?? '',
+        endTime: r.end_time?.slice(0, 5) ?? '',
+      })) as unknown as ScheduleItem[];
+    },
+    staleTime: 30_000,
+    gcTime: 5 * 60 * 1000,
+  });
+
   const rfidQuery = useQuery({
     queryKey: ['attendance', 'rfid-today', today],
     queryFn: async () => {
@@ -266,13 +289,12 @@ export function useAssistantDashboard(lang: string = 'fr') {
     { label: 'Uploader ressource', icon: 'FileText', path: '/assistant/resources', description: 'Partager un document' },
   ];
 
-  const scheduleQuery = activeTeachersQuery;
-  const scheduleData = scheduleQuery.data ?? [];
-  const scheduleLoading = scheduleQuery.isLoading;
+  const scheduleData = todayScheduleQuery.data ?? [];
+  const scheduleLoading = todayScheduleQuery.isLoading;
   const rfidData = rfidQuery.data ?? [];
 
-  const isLoading = kpiQuery.isLoading || pendingRegistrationsQuery.isLoading || overduePaymentsQuery.isLoading || activeTeachersQuery.isLoading || scheduleQuery.isLoading || rfidQuery.isLoading || alertsQuery.isLoading;
-  const isError = kpiQuery.isError || pendingRegistrationsQuery.isError || overduePaymentsQuery.isError || activeTeachersQuery.isError || scheduleQuery.isError || rfidQuery.isError || alertsQuery.isError;
+  const isLoading = kpiQuery.isLoading || pendingRegistrationsQuery.isLoading || overduePaymentsQuery.isLoading || activeTeachersQuery.isLoading || todayScheduleQuery.isLoading || rfidQuery.isLoading || alertsQuery.isLoading;
+  const isError = kpiQuery.isError || pendingRegistrationsQuery.isError || overduePaymentsQuery.isError || activeTeachersQuery.isError || todayScheduleQuery.isError || rfidQuery.isError || alertsQuery.isError;
 
   return {
     kpi: kpiQuery.data ?? {

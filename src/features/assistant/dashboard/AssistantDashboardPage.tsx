@@ -105,14 +105,7 @@ export default function AssistantDashboardPage() {
         <PendingRegistrations data={pendingRegistrations} loading={isLoading} />
         <OverduePayments data={overduePayments} loading={isLoading} />
         <ActiveTeachers data={activeTeachers} loading={isLoading} />
-        <TodaySchedule data={scheduleData.map((s) => ({
-          id: s.id,
-          courseName: s.course,
-          teacherName: s.name,
-          roomName: s.room,
-          startTime: s.time.split(' - ')[0] ?? '',
-          endTime: s.time.split(' - ')[1] ?? '',
-        }))} loading={scheduleLoading} />
+        <TodaySchedule data={scheduleData} loading={scheduleLoading} />
         <RfidSummary data={rfidData} totalScans={kpi.rfidScansToday} loading={isLoading} />
       </div>
     </motion.div>

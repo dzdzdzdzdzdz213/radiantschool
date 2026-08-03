@@ -3,6 +3,7 @@ import { Loader } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { setAppCurrency } from '@/lib/currency';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Input } from '@/components/ui/input';
@@ -100,7 +101,7 @@ export default function SettingsPage() {
       const { error } = await supabase.from('center_settings').upsert(payload as unknown as Database['public']['Tables']['center_settings']['Insert']);
       if (error) throw error;
     },
-    onSuccess: () => { toast(t('success.saved', lang, t('nav.settings', lang)), 'success'); },
+    onSuccess: () => { setAppCurrency(currency); toast(t('success.saved', lang, t('nav.settings', lang)), 'success'); },
     onError: (err: Error) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
