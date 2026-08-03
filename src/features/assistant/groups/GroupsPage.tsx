@@ -126,16 +126,21 @@ export default function GroupsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ name: '', type: 'normal', description: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '' });
+  const [schedules, setSchedules] = useState<{ day_of_week: string; start_time: string; end_time: string }[]>([]);
+
+  const EMPTY_FORM = { name: '', type: 'normal', description: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '' };
 
   const openCreateModal = () => {
     setEditingId(null);
-    setForm({ name: '', type: 'normal', description: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '' });
+    setForm(EMPTY_FORM);
+    setSchedules([]);
     setShowModal(true);
   };
 
   const openEditModal = (item: NonNullable<typeof groups>[number]) => {
     setEditingId(item.id);
     setForm({ name: item.name ?? '', type: item.type ?? 'normal', description: item.description ?? '', price: item.price?.toString() ?? '', capacity: item.capacity?.toString() ?? '', start_date: item.start_date ?? '', end_date: item.end_date ?? '', subject_id: item.subject_id?.toString() ?? '', level_id: item.level_id?.toString() ?? '', teacher_id: item.teacher?.id ?? '', room_id: item.room?.id?.toString() ?? '' });
+    setSchedules((item.schedules ?? []).map((s) => ({ day_of_week: s.day_of_week, start_time: s.start_time?.slice(0, 5), end_time: s.end_time?.slice(0, 5) })));
     setShowModal(true);
   };
 
@@ -147,6 +152,7 @@ export default function GroupsPage() {
       if (!form.teacher_id) throw new Error(t('groups.teacher_required', lang));
       if (!form.start_date) throw new Error(t('groups.start_date_required', lang));
       if (!form.end_date) throw new Error(t('groups.end_date_required', lang));
+      if (schedules.length === 0) throw new Error(t('groups.schedule_required', lang));
       const price = parseFloat(form.price);
       if (isNaN(price) || price <= 0) throw new Error(t('groups.price_invalid', lang));
       const capacity = parseInt(form.capacity, 10);
@@ -165,20 +171,34 @@ export default function GroupsPage() {
         room_id: form.room_id ? parseInt(form.room_id, 10) : null,
       };
       if (!editingId) payload.status = 'active';
+      const scheduleRows = schedules.map((s) => ({
+        day_of_week: s.day_of_week as Database['public']['Enums']['day_of_week'],
+        start_time: s.start_time,
+        end_time: s.end_time,
+      }));
+      let courseId: number;
       if (editingId) {
         const { error } = await supabase.from('courses').update(payload).eq('id', editingId);
         if (error) throw error;
+        await supabase.from('course_schedules').delete().eq('course_id', editingId);
+        courseId = editingId;
       } else {
-        const { error } = await supabase.from('courses').insert(payload);
+        const { data, error } = await supabase.from('courses').insert(payload).select('id').single();
         if (error) throw error;
+        courseId = data.id;
       }
+      const { error: schedError } = await supabase.from('course_schedules').insert(
+        scheduleRows.map((s) => ({ ...s, course_id: courseId, teacher_id: form.teacher_id, room_id: form.room_id ? parseInt(form.room_id, 10) : null }))
+      );
+      if (schedError) throw schedError;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['assistant_groups'] });
       toast(t(editingId ? 'success.updated' : 'success.created', lang, t('nav.groups', lang)), 'success');
       setShowModal(false);
       setEditingId(null);
-      setForm({ name: '', type: 'normal', description: '', price: '', capacity: '', start_date: '', end_date: '', subject_id: '', level_id: '', teacher_id: '', room_id: '' });
+      setForm(EMPTY_FORM);
+      setSchedules([]);
     },
     onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
@@ -393,6 +413,27 @@ export default function GroupsPage() {
                     <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
                   ))}
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('nav.schedule', lang)} *</Label>
+                {schedules.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Select value={s.day_of_week} onValueChange={v => setSchedules(prev => prev.map((p, j) => j === i ? { ...p, day_of_week: v } : p))} className="min-w-[110px]">
+                      {Object.keys(DAY_LABELS.fr).map((d) => (
+                        <SelectItem key={d} value={d}>{DAY_LABELS[lang === 'ar' ? 'ar' : lang === 'fr' ? 'fr' : 'en'][d]}</SelectItem>
+                      ))}
+                    </Select>
+                    <Input type="time" className="w-28" value={s.start_time} onChange={e => setSchedules(prev => prev.map((p, j) => j === i ? { ...p, start_time: e.target.value } : p))} />
+                    <Input type="time" className="w-28" value={s.end_time} onChange={e => setSchedules(prev => prev.map((p, j) => j === i ? { ...p, end_time: e.target.value } : p))} />
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setSchedules(prev => prev.filter((_, j) => j !== i))}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => setSchedules(prev => [...prev, { day_of_week: 'monday', start_time: '09:00', end_time: '10:00' }])}>
+                  <Plus className="h-3.5 w-3.5" />
+                  {t('groups.add_schedule', lang)}
+                </Button>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
