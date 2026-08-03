@@ -50,7 +50,6 @@ export default function StudentLayout() {
     { label: t('nav.dashboard', lang), path: '/student/dashboard', icon: 'LayoutDashboard' },
     { label: t('nav.my_courses', lang), path: '/student/courses', icon: 'BookOpen' },
     { label: t('nav.schedule', lang), path: '/student/schedule', icon: 'Calendar' },
-    { label: t('nav.calendar', lang), path: '/student/calendar', icon: 'Calendar' },
     { label: t('nav.attendance', lang), path: '/student/attendance', icon: 'ClipboardCheck' },
     { label: t('nav.payments', lang), path: '/student/payments', icon: 'DollarSign' },
     { label: t('nav.invoices', lang), path: '/student/invoices', icon: 'FileText' },

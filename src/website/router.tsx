@@ -199,7 +199,6 @@ const studentRoutes: RouteObject[] = [
       { path: 'enroll', Component: StudentEnrollPage },
       { path: 'courses', Component: StudentCoursesPage },
       { path: 'schedule', Component: StudentSchedulePage },
-      { path: 'calendar', Component: StudentSchedulePage },
       { path: 'attendance', Component: StudentAttendancePage },
       { path: 'payments', Component: StudentPaymentsPage },
       { path: 'invoices', Component: StudentPaymentsPage },
