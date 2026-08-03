@@ -7,7 +7,7 @@ Defined in `src/lib/permissions.ts`.
 ```
 admin:      ['*']
 assistant:  users:read, courses:read/create/update/delete,
-            payments:read/create, attendance:read/create,
+            payments:read, attendance:read/create,
             reports:read/export
 teacher:    courses:read, attendance:read, users:read
 student:    courses:read, attendance:read, payments:read
@@ -22,7 +22,7 @@ Resource-action pairs are defined as a const object:
 const PERMISSIONS = {
   users: { read: 'users:read' as const },
   courses: { read: 'courses:read' as const, create: 'courses:create' as const, ... },
-  payments: { read: 'payments:read' as const, create: 'payments:create' as const },
+  payments: { read: 'payments:read' as const },
   attendance: { read: 'attendance:read' as const, create: 'attendance:create' as const },
   reports: { read: 'reports:read' as const, export: 'reports:export' as const },
 } as const;
@@ -48,12 +48,12 @@ Row-Level Security is enforced server-side on all 30+ tables via a Supabase migr
 
 ### Policy Patterns
 
-| Data scope | Pattern |
-|---|---|
-| **Global** (users, levels, subjects) | Admins full access; others filtered by role |
-| **Own** (own profile, own notifications) | `user_id = auth.uid()` |
-| **Related** (children data for parents) | Via `student_parent` join |
-| **Teaching** (courses, schedules) | `teacher_id = auth.uid()` |
-| **Enrolled** (course data for students) | Via `course_enrollments` join |
+| Data scope                               | Pattern                                     |
+| ---------------------------------------- | ------------------------------------------- |
+| **Global** (users, levels, subjects)     | Admins full access; others filtered by role |
+| **Own** (own profile, own notifications) | `user_id = auth.uid()`                      |
+| **Related** (children data for parents)  | Via `student_parent` join                   |
+| **Teaching** (courses, schedules)        | `teacher_id = auth.uid()`                   |
+| **Enrolled** (course data for students)  | Via `course_enrollments` join               |
 
 Client-side permissions complement RLS for UI rendering (show/hide buttons, sections). RLS is the definitive enforcement layer.

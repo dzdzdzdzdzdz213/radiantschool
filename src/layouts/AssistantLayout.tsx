@@ -62,7 +62,6 @@ export default function AssistantLayout() {
     { label: t('nav.private_lessons', lang), path: '/assistant/private-lessons', icon: 'UserPlus' },
     { label: t('nav.schedule', lang), path: '/assistant/schedule', icon: 'Calendar' },
     { label: t('nav.rooms', lang), path: '/assistant/rooms', icon: 'MapPin' },
-    { label: t('nav.payments', lang), path: '/assistant/payments', icon: 'DollarSign' },
     { label: t('nav.invoices', lang), path: '/assistant/invoices', icon: 'FileText' },
     { label: t('nav.notifications', lang), path: '/assistant/notifications', icon: 'Bell' },
     { label: t('nav.emails', lang), path: '/assistant/emails', icon: 'MessageSquare' },

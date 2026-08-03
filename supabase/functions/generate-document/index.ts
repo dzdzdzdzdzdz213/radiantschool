@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders, handleCors } from '../_shared/cors.ts';
 
 function certificateHtml(student: Record<string, any>, enrollment: any, today: string) {
   return `<!DOCTYPE html>
@@ -65,18 +66,21 @@ function receiptHtml(payment: Record<string, any>, student: Record<string, any>,
 }
 
 serve(async (req) => {
+  const cors = handleCors(req);
+  if (cors) return cors;
+
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-  if (req.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+  if (req.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    if (authError || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
 
     const { type, entity_id } = await req.json();
-    if (!type || !entity_id) return new Response(JSON.stringify({ error: 'type and entity_id required' }), { status: 400 });
+    if (!type || !entity_id) return new Response(JSON.stringify({ error: 'type and entity_id required' }), { status: 400, headers: corsHeaders });
 
     const today = new Date().toLocaleDateString('fr-FR');
     let html: string;
@@ -84,7 +88,7 @@ serve(async (req) => {
 
     if (type === 'certificate') {
       const { data: student } = await supabase.from('users').select('*').eq('id', entity_id).single();
-      if (!student) return new Response(JSON.stringify({ error: 'Student not found' }), { status: 404 });
+      if (!student) return new Response(JSON.stringify({ error: 'Student not found' }), { status: 404, headers: corsHeaders });
 
       const { data: enrollments } = await supabase
         .from('course_enrollments')
@@ -97,13 +101,13 @@ serve(async (req) => {
       fileName = `documents/certificates/${entity_id}.html`;
     } else if (type === 'receipt') {
       const { data: payment } = await supabase.from('payments').select('*, student:students!student_id(user:users!students_id_fkey(id, first_name, last_name))').eq('id', entity_id).single();
-      if (!payment) return new Response(JSON.stringify({ error: 'Payment not found' }), { status: 404 });
+      if (!payment) return new Response(JSON.stringify({ error: 'Payment not found' }), { status: 404, headers: corsHeaders });
 
-      const student = (payment as any).student?.user || {};
-      html = receiptHtml(payment, student, today);
+      const student = (payment as { student?: { user?: Record<string, unknown> } }).student?.user || {};
+      html = receiptHtml(payment as Record<string, unknown>, student, today);
       fileName = `documents/receipts/${entity_id}.html`;
     } else {
-      return new Response(JSON.stringify({ error: 'Invalid type. Use certificate or receipt' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Invalid type. Use certificate or receipt' }), { status: 400, headers: corsHeaders });
     }
 
     await supabase.storage.from('documents').upload(fileName, new TextEncoder().encode(html), {
@@ -113,9 +117,9 @@ serve(async (req) => {
     const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(fileName);
 
     return new Response(JSON.stringify({ success: true, url: publicUrl }), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
+      status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
   }
 });

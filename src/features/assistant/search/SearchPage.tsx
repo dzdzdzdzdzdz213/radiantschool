@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Users, BookOpen, FileText, DollarSign, ArrowRight } from 'lucide-react';
+import { Search, Users, BookOpen, FileText, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -11,7 +11,6 @@ const searchCategories = [
   { key: 'students', label: '', icon: Users, basePath: '/assistant/students' },
   { key: 'courses', label: '', icon: BookOpen, basePath: '/assistant/groups' },
   { key: 'invoices', label: '', icon: FileText, basePath: '/assistant/invoices' },
-  { key: 'payments', label: '', icon: DollarSign, basePath: '/assistant/payments' },
 ] as const;
 
 export default function SearchPage() {
@@ -23,7 +22,6 @@ export default function SearchPage() {
     students: t('nav.students', lang),
     courses: t('nav.courses', lang),
     invoices: t('nav.invoices', lang),
-    payments: t('nav.payments', lang),
   };
 
   return (

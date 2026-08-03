@@ -143,8 +143,6 @@ export const PERMISSIONS = {
   },
   payments: {
     read: 'payments:read',
-    create: 'payments:create',
-    refund: 'payments:refund',
   },
   attendance: {
     read: 'attendance:read',

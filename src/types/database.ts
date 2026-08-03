@@ -35,6 +35,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "admins_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       announcements: {
@@ -101,6 +108,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "announcements_teacher_id_fkey_users"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       approvals: {
@@ -147,6 +161,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -212,6 +233,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_submissions_student_id_fkey_users"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -285,6 +313,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assignments_teacher_id_fkey_users"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       assistants: {
@@ -308,13 +343,20 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assistants_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       attendance: {
         Row: {
           check_in_closed_at: string | null
           check_in_time: string | null
-          course_schedule_id: number
+          course_schedule_id: number | null
           created_at: string
           date: string
           id: number
@@ -327,7 +369,7 @@ export type Database = {
         Insert: {
           check_in_closed_at?: string | null
           check_in_time?: string | null
-          course_schedule_id: number
+          course_schedule_id?: number | null
           created_at?: string
           date: string
           id?: number
@@ -340,7 +382,7 @@ export type Database = {
         Update: {
           check_in_closed_at?: string | null
           check_in_time?: string | null
-          course_schedule_id?: number
+          course_schedule_id?: number | null
           created_at?: string
           date?: string
           id?: number
@@ -371,6 +413,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
           {
             foreignKeyName: "attendance_student_id_fkey"
@@ -427,6 +476,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -512,6 +568,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "attendance_sessions_validated_by_fkey"
+            columns: ["validated_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       audit_logs: {
@@ -558,6 +621,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -796,6 +866,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "certificates_student_id_fkey_users"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       contact_messages: {
@@ -873,6 +950,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
           {
             foreignKeyName: "conversations_student_id_fkey"
@@ -1040,6 +1124,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_course_schedules_teacher"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       courses: {
@@ -1143,6 +1234,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_courses_teacher"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       evaluations: {
@@ -1205,6 +1303,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "evaluations_student_id_fkey_users"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
             foreignKeyName: "evaluations_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
@@ -1224,6 +1329,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_teacher_id_fkey_users"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -1470,58 +1582,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      notification_outbox: {
-        Row: {
-          channel: string
-          created_at: string | null
-          error: string | null
-          id: number
-          message: string
-          priority: string | null
-          sent_at: string | null
-          status: string | null
-          title: string
-          user_id: string
-        }
-        Insert: {
-          channel: string
-          created_at?: string | null
-          error?: string | null
-          id?: never
-          message: string
-          priority?: string | null
-          sent_at?: string | null
-          status?: string | null
-          title: string
-          user_id: string
-        }
-        Update: {
-          channel?: string
-          created_at?: string | null
-          error?: string | null
-          id?: never
-          message?: string
-          priority?: string | null
-          sent_at?: string | null
-          status?: string | null
-          title?: string
-          user_id?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "notification_outbox_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -1569,6 +1648,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -1648,6 +1734,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "online_classes_teacher_id_fkey_users"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       parents: {
@@ -1670,6 +1763,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parents_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -1740,6 +1840,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
           {
             foreignKeyName: "payments_student_id_fkey"
@@ -1819,6 +1926,7 @@ export type Database = {
       }
       private_lessons: {
         Row: {
+          course_id: number | null
           created_at: string
           date: string | null
           end_time: string | null
@@ -1831,6 +1939,7 @@ export type Database = {
           teacher_id: string
         }
         Insert: {
+          course_id?: number | null
           created_at?: string
           date?: string | null
           end_time?: string | null
@@ -1843,6 +1952,7 @@ export type Database = {
           teacher_id: string
         }
         Update: {
+          course_id?: number | null
           created_at?: string
           date?: string | null
           end_time?: string | null
@@ -1855,6 +1965,20 @@ export type Database = {
           teacher_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "private_lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "private_lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "v_course_occupancy"
+            referencedColumns: ["course_id"]
+          },
           {
             foreignKeyName: "private_lessons_student_id_fkey"
             columns: ["student_id"]
@@ -1877,6 +2001,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "private_lessons_student_id_fkey_users"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
             foreignKeyName: "private_lessons_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
@@ -1896,6 +2027,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "private_lessons_teacher_id_fkey_users"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -1934,6 +2072,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -2005,6 +2150,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "resources_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       rfid_scans: {
@@ -2053,6 +2205,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfid_scans_student_id_fkey_users"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -2179,6 +2338,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
           {
             foreignKeyName: "students_level_id_fkey"
@@ -2474,11 +2640,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "teacher_reviews_student_id_fkey_users"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
             foreignKeyName: "teacher_reviews_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_reviews_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -2517,6 +2697,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teachers_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -2606,6 +2793,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
           {
             foreignKeyName: "transactions_student_id_fkey"
@@ -2779,87 +2973,12 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      vip_classes: {
-        Row: {
-          created_at: string
-          date: string | null
-          end_time: string | null
-          id: number
-          notes: string | null
-          price: number | null
-          start_time: string | null
-          status: string
-          student_id: string
-          teacher_id: string
-        }
-        Insert: {
-          created_at?: string
-          date?: string | null
-          end_time?: string | null
-          id?: number
-          notes?: string | null
-          price?: number | null
-          start_time?: string | null
-          status?: string
-          student_id: string
-          teacher_id: string
-        }
-        Update: {
-          created_at?: string
-          date?: string | null
-          end_time?: string | null
-          id?: number
-          notes?: string | null
-          price?: number | null
-          start_time?: string | null
-          status?: string
-          student_id?: string
-          teacher_id?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "vip_classes_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: "users_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vip_classes_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "v_student_performance"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "vip_classes_student_id_fkey_users"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vip_classes_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vip_classes_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "v_teacher_payroll"
+            referencedRelation: "v_teacher_workload"
             referencedColumns: ["teacher_id"]
-          },
-          {
-            foreignKeyName: "vip_classes_teacher_id_fkey_users"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -2965,19 +3084,19 @@ export type Database = {
         }
         Relationships: []
       }
-      v_daily_revenue: {
-        Row: {
-          amount: number | null
-          date: string | null
-          transaction_count: number | null
-        }
-        Relationships: []
-      }
       v_daily_attendance: {
         Row: {
           date: string | null
           present_count: number | null
           total_count: number | null
+        }
+        Relationships: []
+      }
+      v_daily_revenue: {
+        Row: {
+          amount: number | null
+          date: string | null
+          transaction_count: number | null
         }
         Relationships: []
       }
@@ -3016,6 +3135,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "students_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
         ]
       }
       v_teacher_payroll: {
@@ -3037,6 +3163,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teachers_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: true
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
           },
         ]
       }
@@ -3076,7 +3209,6 @@ export type Database = {
           teacher_name: string
         }[]
       }
-      bytea_to_text: { Args: { data: string }; Returns: string }
       check_consecutive_absences: { Args: never; Returns: undefined }
       dispatch_notification: {
         Args: {
@@ -3094,9 +3226,7 @@ export type Database = {
         Args: { date_from: string; date_to: string }
         Returns: Json
       }
-      get_dashboard_stats:
-        | { Args: never; Returns: Json }
-        | { Args: { stat?: string }; Returns: Json }
+      get_dashboard_stats: { Args: { stat?: string }; Returns: Json }
       get_invoices: {
         Args: { p_search?: string }
         Returns: {
@@ -3155,131 +3285,6 @@ export type Database = {
         Args: { p_teacher_id: string }
         Returns: Json
       }
-      http: {
-        Args: { request: Database["public"]["CompositeTypes"]["http_request"] }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-        SetofOptions: {
-          from: "http_request"
-          to: "http_response"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      http_delete:
-        | {
-            Args: { uri: string }
-            Returns: Database["public"]["CompositeTypes"]["http_response"]
-            SetofOptions: {
-              from: "*"
-              to: "http_response"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-        | {
-            Args: { content: string; content_type: string; uri: string }
-            Returns: Database["public"]["CompositeTypes"]["http_response"]
-            SetofOptions: {
-              from: "*"
-              to: "http_response"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-      http_get:
-        | {
-            Args: { uri: string }
-            Returns: Database["public"]["CompositeTypes"]["http_response"]
-            SetofOptions: {
-              from: "*"
-              to: "http_response"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-        | {
-            Args: { data: Json; uri: string }
-            Returns: Database["public"]["CompositeTypes"]["http_response"]
-            SetofOptions: {
-              from: "*"
-              to: "http_response"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-      http_head: {
-        Args: { uri: string }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-        SetofOptions: {
-          from: "*"
-          to: "http_response"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      http_header: {
-        Args: { field: string; value: string }
-        Returns: Database["public"]["CompositeTypes"]["http_header"]
-        SetofOptions: {
-          from: "*"
-          to: "http_header"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      http_list_curlopt: {
-        Args: never
-        Returns: {
-          curlopt: string
-          value: string
-        }[]
-      }
-      http_patch: {
-        Args: { content: string; content_type: string; uri: string }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-        SetofOptions: {
-          from: "*"
-          to: "http_response"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      http_post:
-        | {
-            Args: { content: string; content_type: string; uri: string }
-            Returns: Database["public"]["CompositeTypes"]["http_response"]
-            SetofOptions: {
-              from: "*"
-              to: "http_response"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-        | {
-            Args: { data: Json; uri: string }
-            Returns: Database["public"]["CompositeTypes"]["http_response"]
-            SetofOptions: {
-              from: "*"
-              to: "http_response"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-      http_put: {
-        Args: { content: string; content_type: string; uri: string }
-        Returns: Database["public"]["CompositeTypes"]["http_response"]
-        SetofOptions: {
-          from: "*"
-          to: "http_response"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      http_reset_curlopt: { Args: never; Returns: boolean }
-      http_set_curlopt: {
-        Args: { curlopt: string; value: string }
-        Returns: boolean
-      }
       is_admin: { Args: never; Returns: boolean }
       is_assistant: { Args: never; Returns: boolean }
       is_parent: { Args: never; Returns: boolean }
@@ -3304,11 +3309,23 @@ export type Database = {
         }
         Returns: Json
       }
+      process_payment_tx: {
+        Args: {
+          p_amount: number
+          p_course_id?: number
+          p_invoice_ids?: number[]
+          p_payment_method: string
+          p_payment_type: string
+          p_recorded_by: string
+          p_student_id: string
+        }
+        Returns: Json
+      }
       register_child: {
         Args: {
           p_first_name: string
           p_last_name: string
-          p_level_category: string
+          p_level_category?: string
           p_parent_id: string
         }
         Returns: undefined
@@ -3390,23 +3407,8 @@ export type Database = {
         }
       }
       search_users_count: { Args: { search_query: string }; Returns: number }
-      text_to_bytea: { Args: { data: string }; Returns: string }
       time_to_minutes: { Args: { t: string }; Returns: number }
       unregister_user: { Args: { p_id: string }; Returns: undefined }
-      urlencode:
-        | { Args: { data: Json }; Returns: string }
-        | {
-            Args: { string: string }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.urlencode(string => bytea), public.urlencode(string => varchar). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
-        | {
-            Args: { string: string }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.urlencode(string => bytea), public.urlencode(string => varchar). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
       validate_attendance_session: {
         Args: { p_session_id: number; p_validated_by: string }
         Returns: Json
@@ -3462,23 +3464,7 @@ export type Database = {
       waiting_list_status: "waiting" | "notified" | "enrolled" | "expired"
     }
     CompositeTypes: {
-      http_header: {
-        field: string | null
-        value: string | null
-      }
-      http_request: {
-        method: unknown
-        uri: string | null
-        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
-        content_type: string | null
-        content: string | null
-      }
-      http_response: {
-        status: number | null
-        content_type: string | null
-        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
-        content: string | null
-      }
+      [_ in never]: never
     }
   }
 }

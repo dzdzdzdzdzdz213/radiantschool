@@ -1,6 +1,4 @@
-import { Link } from 'react-router-dom';
-import { AlertCircle, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AlertCircle, Mail, Phone } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -31,11 +29,7 @@ export default function OverduePayments({ data, loading }: OverduePaymentsProps)
           <AlertCircle className="h-4 w-4 text-red-500" />
           {t('nav.payments', lang)}
         </h3>
-        <Button variant="ghost" size="sm" asChild className="gap-1">
-          <Link to="/assistant/payments">
-            {t('common.view_all', lang)} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </Button>
+        <span className="text-xs text-muted-foreground">{data.length} {t('status.late', lang).toLowerCase()}</span>
       </div>
       <div className="space-y-2">
         {data.length === 0 ? (
@@ -49,12 +43,21 @@ export default function OverduePayments({ data, loading }: OverduePaymentsProps)
                   {formatCurrency(pay.amount)} • {formatDate(pay.dueDate)} • {pay.daysOverdue}j {t('status.late', lang)}
                 </p>
               </div>
-              <Link
-                to={`/assistant/payments?id=${pay.id}`}
-                className="shrink-0 text-xs font-medium text-primary hover:underline ml-2"
-              >
-                {t('common.send', lang)}
-              </Link>
+              <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                {pay.email && (
+                  <a
+                    href={`mailto:${pay.email}?subject=${encodeURIComponent('Relance paiement — ' + pay.studentName)}&body=${encodeURIComponent(`Bonjour,\n\nLe paiement de ${formatCurrency(pay.amount)} (échéance ${formatDate(pay.dueDate)}) est en attente.\n\nCordialement,`)}`}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    <Mail className="h-3 w-3" /> {t('common.send', lang)}
+                  </a>
+                )}
+                {pay.phone && (
+                  <a href={`tel:${pay.phone}`} className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                    <Phone className="h-3 w-3" /> {pay.phone}
+                  </a>
+                )}
+              </div>
             </div>
           ))
         )}

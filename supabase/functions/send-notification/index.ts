@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@4.4.3';
 import { authorizeRequest, jsonError } from '../_shared/auth.ts';
+import { corsHeaders, handleCors } from '../_shared/cors.ts';
 import { validateRequest } from '../_shared/validation.ts';
 
 const notificationSchema = z.object({
@@ -15,6 +16,9 @@ const notificationSchema = z.object({
 });
 
 serve(async (req) => {
+  const cors = handleCors(req);
+  if (cors) return cors;
+
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -22,7 +26,7 @@ serve(async (req) => {
 
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405, headers: { 'Content-Type': 'application/json' },
+      status: 405, headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -48,7 +52,7 @@ serve(async (req) => {
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), {
-        status: 404, headers: { 'Content-Type': 'application/json' },
+        status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
@@ -100,12 +104,12 @@ serve(async (req) => {
       email_sent: emailSent,
       email_error: emailErrorMsg,
     }), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
+      status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
 
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
+      status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 });

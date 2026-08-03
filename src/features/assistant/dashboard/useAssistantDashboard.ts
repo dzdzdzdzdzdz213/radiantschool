@@ -46,6 +46,8 @@ export interface OverduePayment {
   amount: number;
   dueDate: string;
   daysOverdue: number;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export interface RoomStatus {
@@ -147,7 +149,7 @@ export function useAssistantDashboard(lang: string = 'fr') {
     queryFn: async () => {
       const { data } = await supabase
         .from('invoices')
-        .select('id, total_amount, paid_amount, due_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name))')
+        .select('id, total_amount, paid_amount, due_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name, email, phone))')
         .in('status', ['unpaid', 'partially_paid'])
         .lt('due_date', today)
         .order('due_date', { ascending: true })
@@ -158,6 +160,8 @@ export function useAssistantDashboard(lang: string = 'fr') {
         amount: (r.total_amount ?? 0) - (r.paid_amount ?? 0),
         dueDate: r.due_date,
         daysOverdue: Math.floor((Date.now() - new Date(r.due_date).getTime()) / 86400000),
+        email: r.student?.user?.email ?? null,
+        phone: r.student?.user?.phone ?? null,
       })) as unknown as OverduePayment[];
     },
     staleTime: 30_000,

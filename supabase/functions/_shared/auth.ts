@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders } from './cors.ts';
 
 export type Role = 'admin' | 'assistant' | 'teacher' | 'student' | 'parent';
 
@@ -22,7 +23,7 @@ export interface AuthFailure {
 export function jsonError(status: number, error: string): Response {
   return new Response(JSON.stringify({ error }), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
   });
 }
 

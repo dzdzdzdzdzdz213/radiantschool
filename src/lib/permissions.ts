@@ -5,7 +5,7 @@ const rolePermissions: Record<UserRole, string[]> = {
   assistant: [
     'users:read',
     'courses:read', 'courses:create', 'courses:update',
-    'payments:read', 'payments:create',
+    'payments:read',
     'attendance:read', 'attendance:create',
     'reports:read', 'reports:export',
   ],

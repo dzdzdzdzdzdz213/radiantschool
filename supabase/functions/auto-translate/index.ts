@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@4.4.3';
 import { authorizeRequest, jsonError } from '../_shared/auth.ts';
+import { corsHeaders, handleCors } from '../_shared/cors.ts';
 import { validateRequest } from '../_shared/validation.ts';
 
 const translateSchema = z.object({
@@ -10,9 +11,12 @@ const translateSchema = z.object({
 });
 
 serve(async (req) => {
+  const cors = handleCors(req);
+  if (cors) return cors;
+
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405, headers: { 'Content-Type': 'application/json' },
+      status: 405, headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -48,11 +52,11 @@ serve(async (req) => {
     const translated = data[0].map((r: unknown[]) => r[0]).join('') || text;
 
     return new Response(JSON.stringify({ translated, source: text }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   } catch {
     return new Response(JSON.stringify({ error: 'Translation failed' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
+      status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 });
