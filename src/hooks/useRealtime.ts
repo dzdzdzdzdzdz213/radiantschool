@@ -6,7 +6,6 @@ const WATCHED_TABLES = [
   'attendance',
   'notifications',
   'messages',
-  'conversations',
   'course_enrollments',
   'payments',
 ] as const;

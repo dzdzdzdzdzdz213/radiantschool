@@ -20,7 +20,7 @@ export interface AttendanceRecord {
 export function useAttendance(date?: string, search: string = '') {
   const today = date ?? new Date().toISOString().split('T')[0];
   return useQuery({
-    queryKey: ['assistant_attendance', today, search],
+    queryKey: ['attendance', 'assistant', today, search],
     queryFn: async () => {
       let query = supabase
         .from('attendance')
@@ -54,7 +54,7 @@ export function useRecordAttendance() {
     mutationFn: async (data: { student_id: string; date: string; status: string; course_schedule_id?: string; method?: string }) => {
       return api.create('attendance', data);
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_attendance'] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['attendance', 'assistant'] }); },
   });
 }
 
@@ -67,7 +67,7 @@ export function useCorrectAttendance() {
       return api.update('attendance', id, data);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['assistant_attendance'] });
+      qc.invalidateQueries({ queryKey: ['attendance', 'assistant'] });
       toast(t('success.updated', lang, t('nav.attendance', lang)), 'success');
     },
     onError: (err) => toast(err?.message ?? t('errors.update_error', lang, t('nav.attendance', lang)), 'error'),

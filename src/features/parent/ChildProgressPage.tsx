@@ -34,7 +34,7 @@ export default function ChildProgressPage() {
   });
 
   const { data: attendance } = useQuery({
-    queryKey: ['child-attendance', childId],
+    queryKey: ['attendance', 'child', childId],
     queryFn: async () => {
       const { data } = await supabase.from('attendance').select('status, date').eq('student_id', childId!).order('date', { ascending: false }).limit(30);
       return data ?? [];

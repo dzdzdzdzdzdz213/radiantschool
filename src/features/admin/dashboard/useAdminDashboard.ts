@@ -83,7 +83,7 @@ export function useAdminDashboard() {
 
   // Résumé des présences du jour
   const attendanceSummaryQuery = useQuery({
-    queryKey: ['attendance_summary_today'],
+    queryKey: ['attendance', 'summary-today'],
     queryFn: async () => {
       const today = new Date().toISOString().split('T')[0];
       const { data } = await supabase

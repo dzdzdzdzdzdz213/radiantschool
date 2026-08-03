@@ -90,7 +90,7 @@ export default function AdminAttendanceOversightPage() {
   useErrorToast(teachersError, lang, t('nav.users', lang));
 
   const { data: groupSessions, isLoading: groupLoading, isError: groupError } = useQuery({
-    queryKey: ['admin_oversight_group', teacherFilter],
+    queryKey: ['attendance', 'admin-oversight-group', teacherFilter],
     queryFn: async () => {
       let q = supabase
         .from('attendance_sessions')

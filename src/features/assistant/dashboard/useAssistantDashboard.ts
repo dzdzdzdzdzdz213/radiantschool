@@ -193,7 +193,7 @@ export function useAssistantDashboard(lang: string = 'fr') {
   });
 
   const rfidQuery = useQuery({
-    queryKey: ['assistant_rfid_today', today],
+    queryKey: ['attendance', 'rfid-today', today],
     queryFn: async () => {
       const { data } = await supabase
         .from('attendance')

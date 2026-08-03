@@ -11,7 +11,7 @@ export default function StudentAttendancePage() {
   const { lang } = useLang();
 
   const { data: records, isLoading } = useQuery({
-    queryKey: ['student-attendance', profile?.id],
+    queryKey: ['attendance', 'student', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
       const { data } = await supabase
