@@ -11,21 +11,15 @@ function PageHeader({ name }: { name: string }) {
   const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const today = new Date().toLocaleDateString(localeMap[lang] ?? 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-      <div className="relative overflow-hidden rounded-2xl border border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-500 via-violet-600 to-purple-700" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.08),transparent_50%)]" />
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle,currentColor 1px,transparent 1px)', backgroundSize: '24px 24px' }} />
-        <div className="relative z-10 p-6 sm:p-8">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
-              <p className="mt-0.5 text-sm text-white/70">{today}</p>
-            </div>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="cahier-margin rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{today}</p>
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
           </div>
         </div>
       </div>

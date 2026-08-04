@@ -33,30 +33,26 @@
 }
 
 :root {
-  --bg: #f7f5ff;
+  --bg: #f6f4ef;
   --bg-card: #ffffff;
-  --fg: #120c2b;
-  --fg-muted: #6e6885;
-  --primary: #6c5ce7;
-  --primary-light: rgba(108, 92, 231, 0.08);
-  --primary-mid: rgba(108, 92, 231, 0.14);
-  --accent: #fd79a8;
-  --accent-light: rgba(253, 121, 168, 0.08);
-  --border: rgba(108, 92, 231, 0.12);
-  --ring: rgba(108, 92, 231, 0.2);
-  --shadow-sm:
-    0px 1px 3px rgba(108, 92, 231, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md:
-    0px 4px 14px rgba(108, 92, 231, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-lg:
-    0px 8px 32px rgba(108, 92, 231, 0.12), 0px 4px 8px rgba(0, 0, 0, 0.04);
-  --shadow-xl:
-    0px 16px 56px rgba(108, 92, 231, 0.15), 0px 8px 16px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0px 0px 28px rgba(108, 92, 231, 0.3);
-  --radius: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 22px;
+  --fg: #1c2126;
+  --fg-muted: #6b7280;
+  --primary: #0e6b5c;
+  --primary-light: rgba(14, 107, 92, 0.08);
+  --primary-mid: rgba(14, 107, 92, 0.14);
+  --accent: #c05621;
+  --accent-light: rgba(192, 86, 33, 0.08);
+  --border: rgba(28, 33, 38, 0.12);
+  --ring: rgba(14, 107, 92, 0.18);
+  --shadow-sm: 0px 1px 2px rgba(28, 33, 38, 0.06);
+  --shadow-md: 0px 4px 12px rgba(28, 33, 38, 0.08);
+  --shadow-lg: 0px 8px 24px rgba(28, 33, 38, 0.1);
+  --shadow-xl: 0px 16px 40px rgba(28, 33, 38, 0.12);
+  --shadow-glow: 0px 0px 24px rgba(14, 107, 92, 0.2);
+  --radius: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
 
   --background: var(--bg);
   --foreground: var(--fg);
@@ -65,46 +61,46 @@
   --popover: var(--bg-card);
   --popover-foreground: var(--fg);
   --primary-foreground: #ffffff;
-  --secondary: #edeaff;
-  --secondary-foreground: #2d1f69;
-  --muted: #edeaff;
-  --muted-foreground: #6e6885;
+  --secondary: #e9e5dc;
+  --secondary-foreground: #2d3a35;
+  --muted: #efede6;
+  --muted-foreground: #6b7280;
   --accent-foreground: #ffffff;
-  --destructive: #ff4757;
+  --destructive: #b42318;
   --destructive-foreground: #ffffff;
-  --success: #00d2a0;
-  --warning: #ffa502;
-  --info: #45aaf2;
-  --input: rgba(108, 92, 231, 0.1);
+  --success: #0e9f6e;
+  --warning: #b45309;
+  --info: #2563eb;
+  --input: rgba(28, 33, 38, 0.1);
   --sidebar-bg: #ffffff;
-  --sidebar-fg: #120c2b;
-  --sidebar-border: rgba(108, 92, 231, 0.1);
-  --sidebar-accent: #edeaff;
-  --sidebar-accent-fg: #2d1f69;
-  --chart-1: #6c5ce7;
-  --chart-2: #fd79a8;
-  --chart-3: #fdcb6e;
-  --chart-4: #00cec9;
-  --chart-5: #e17055;
+  --sidebar-fg: #1c2126;
+  --sidebar-border: rgba(28, 33, 38, 0.1);
+  --sidebar-accent: #f0eee7;
+  --sidebar-accent-fg: #2d3a35;
+  --chart-1: #0e6b5c;
+  --chart-2: #c05621;
+  --chart-3: #d9a406;
+  --chart-4: #2b6cb0;
+  --chart-5: #9d174d;
 }
 
 [data-theme="dark"] {
-  --bg: #0a0815;
-  --bg-card: #141029;
-  --fg: #f0ecff;
-  --fg-muted: #8b84a0;
-  --primary: #a29bfe;
-  --primary-light: rgba(162, 155, 254, 0.08);
-  --primary-mid: rgba(162, 155, 254, 0.14);
-  --accent: #fd79a8;
-  --accent-light: rgba(253, 121, 168, 0.08);
-  --border: rgba(162, 155, 254, 0.1);
-  --ring: rgba(162, 155, 254, 0.18);
-  --shadow-sm: 0px 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0px 4px 12px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0px 8px 28px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0px 16px 48px rgba(0, 0, 0, 0.55);
-  --shadow-glow: 0px 0px 24px rgba(162, 155, 254, 0.2);
+  --bg: #10141a;
+  --bg-card: #171c24;
+  --fg: #e8ecef;
+  --fg-muted: #9aa3ad;
+  --primary: #2f9e88;
+  --primary-light: rgba(47, 158, 136, 0.1);
+  --primary-mid: rgba(47, 158, 136, 0.16);
+  --accent: #d97a45;
+  --accent-light: rgba(217, 122, 69, 0.1);
+  --border: rgba(232, 236, 239, 0.1);
+  --ring: rgba(47, 158, 136, 0.2);
+  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0px 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0px 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0px 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0px 0px 20px rgba(47, 158, 136, 0.18);
 
   --background: var(--bg);
   --foreground: var(--fg);
@@ -112,28 +108,28 @@
   --card-foreground: var(--fg);
   --popover: var(--bg-card);
   --popover-foreground: var(--fg);
-  --primary-foreground: #0a0815;
-  --secondary: #1e1840;
-  --secondary-foreground: #d5ceff;
-  --muted: #1e1840;
-  --muted-foreground: #8b84a0;
+  --primary-foreground: #0c1210;
+  --secondary: #222a33;
+  --secondary-foreground: #d5dce2;
+  --muted: #1f2730;
+  --muted-foreground: #9aa3ad;
   --accent-foreground: #ffffff;
-  --destructive: #ff6b81;
+  --destructive: #f04438;
   --destructive-foreground: #ffffff;
-  --success: #00d2a0;
-  --warning: #ffa502;
-  --info: #45aaf2;
-  --input: rgba(162, 155, 254, 0.1);
-  --sidebar-bg: #141029;
-  --sidebar-fg: #f0ecff;
-  --sidebar-border: rgba(162, 155, 254, 0.08);
-  --sidebar-accent: #1e1840;
-  --sidebar-accent-fg: #d5ceff;
-  --chart-1: #a29bfe;
-  --chart-2: #fd79a8;
-  --chart-3: #fdcb6e;
-  --chart-4: #00cec9;
-  --chart-5: #e17055;
+  --success: #12b76a;
+  --warning: #f79009;
+  --info: #3b82f6;
+  --input: rgba(232, 236, 239, 0.1);
+  --sidebar-bg: #171c24;
+  --sidebar-fg: #e8ecef;
+  --sidebar-border: rgba(232, 236, 239, 0.08);
+  --sidebar-accent: #222a33;
+  --sidebar-accent-fg: #d5dce2;
+  --chart-1: #2f9e88;
+  --chart-2: #d97a45;
+  --chart-3: #e6b64b;
+  --chart-4: #4f8fd9;
+  --chart-5: #d96a8f;
 }
 
 html {
@@ -143,6 +139,7 @@ html {
 body {
   margin: 0;
   font-family:
+    "Public Sans",
     "Inter",
     -apple-system,
     BlinkMacSystemFont,
@@ -156,6 +153,13 @@ body {
   color: var(--fg);
   line-height: 1.6;
   font-size: 14px;
+}
+
+/* Display serif — used sparingly for page titles and hero names. */
+.font-display {
+  font-family: "Fraunces", "Public Sans", Georgia, serif;
+  font-variation-settings: "opsz" 40;
+  letter-spacing: -0.02em;
 }
 
 .app-root {
@@ -215,16 +219,20 @@ button {
 
 /* ─────── TYPOGRAPHY UTILITIES ─────── */
 .text-display {
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(24px, 5vw, 30px);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 40;
 }
 .text-h1 {
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(18px, 4vw, 24px);
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  font-variation-settings: "opsz" 40;
 }
 .text-h2 {
   font-size: clamp(15px, 3vw, 18px);
@@ -356,7 +364,7 @@ button {
   background-clip: text;
 }
 
-/* ─────── CRAZY BUTTONS ─────── */
+/* ─────── BUTTONS ─────── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -364,11 +372,7 @@ button {
   gap: 8px;
   padding: 0 24px;
   height: 42px;
-  background: linear-gradient(
-    135deg,
-    var(--primary),
-    color-mix(in srgb, var(--primary) 80%, var(--accent))
-  );
+  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: var(--radius-lg);
@@ -379,54 +383,18 @@ button {
   text-decoration: none;
   white-space: nowrap;
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 1;
-}
-.btn-primary::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    transparent,
-    rgba(255, 255, 255, 0.12),
-    transparent
-  );
-  transform: translateX(-100%) skewX(-15deg);
-  transition: transform 0.5s ease;
-}
-.btn-primary:hover::before {
-  transform: translateX(100%) skewX(-15deg);
-}
-.btn-primary::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    var(--primary),
-    var(--accent),
-    #00cec9,
-    var(--primary)
-  );
-  background-size: 300% 300%;
-  animation: borderGlowSpin 3s linear infinite;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  filter: blur(4px);
-}
-.btn-primary:hover::after {
-  opacity: 0.6;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .btn-primary:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 30px rgba(108, 92, 231, 0.35);
+  background: color-mix(in srgb, var(--primary) 88%, #000);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 .btn-primary:active {
-  transform: scale(0.95) translateY(0);
+  transform: scale(0.98);
 }
 
 .btn-secondary {
@@ -534,20 +502,24 @@ select:focus {
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .card:hover {
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-md);
   border-color: var(--primary-mid);
-  transform: translateY(-4px) scale(1.005);
 }
 
 .card-hover-lift {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .card-hover-lift:hover {
-  transform: translateY(-4px) scale(1.005);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
   border-color: var(--primary-mid);
 }
 
@@ -1252,11 +1224,50 @@ html {
   color: var(--foreground);
 }
 
+/* ─────── CAHIER MARGIN (signature) ───────
+   Red exercise-book margin rule, like the margin of a school
+   notebook. Used on page headers and emphasized cards. */
+.cahier-margin {
+  position: relative;
+}
+.cahier-margin::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+/* Ruled-paper underline for eyebrows and section labels. */
+.rule-underline {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 6px;
+}
+.rule-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0 40%,
+    var(--accent) 40% 45%,
+    var(--border) 45% 100%
+  );
+  border-radius: 2px;
+}
+
 /* ─────── SMOOTH ALL TRANSITIONS ─────── */
 *,
 *::before,
 *::after {
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-timing-function: ease;
 }
 
 /* ─────── ANIMATED MESH GRADIENT ─────── */
