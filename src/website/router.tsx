@@ -95,6 +95,11 @@ const SettingsPage = lazy(() => loadPage(() => import('@/features/admin/Settings
 const HelpPage = lazy(() => loadPage(() => import('@/features/shared/HelpPage')));
 const AuditLogPage = lazy(() => loadPage(() => import('@/features/admin/audit/AuditLogPage')));
 const PayrollPage = lazy(() => loadPage(() => import('@/features/admin/payroll/PayrollPage')));
+const AccountingPage = lazy(() => loadPage(() => import('@/features/admin/accounting/AccountingPage')));
+const CrmPipelinePage = lazy(() => loadPage(() => import('@/features/assistant/crm/CrmPipelinePage')));
+const CrmLeadsPage = lazy(() => loadPage(() => import('@/features/assistant/crm/CrmLeadsPage')));
+const CrmLeadDetailPage = lazy(() => loadPage(() => import('@/features/assistant/crm/CrmLeadDetailPage')));
+const CrmFollowupsPage = lazy(() => loadPage(() => import('@/features/assistant/crm/CrmFollowupsPage')));
 const ChildProgressPage = lazy(() => loadPage(() => import('@/features/parent/ChildProgressPage')));
 const ComingSoonPage = lazy(() => loadPage(() => import('@/components/ui/ComingSoonPage')));
 
@@ -289,6 +294,7 @@ export const router = createBrowserRouter([
       { path: 'help', Component: HelpPage },
       { path: 'audit-log', Component: AuditLogPage },
       { path: 'payroll', Component: PayrollPage },
+      { path: 'accounting', Component: AccountingPage },
     ],
   },
   {
@@ -309,6 +315,10 @@ export const router = createBrowserRouter([
       { path: 'emails', Component: AssistantEmailsPage },
       { path: 'resources', Component: AssistantResourcesPage },
       { path: 'campaigns', Component: AssistantCampaignsPage },
+      { path: 'crm', Component: CrmPipelinePage },
+      { path: 'crm/leads', Component: CrmLeadsPage },
+      { path: 'crm/leads/:id', Component: CrmLeadDetailPage },
+      { path: 'crm/followups', Component: CrmFollowupsPage },
       { path: 'calendar', Component: AssistantCalendarPage },
       { path: 'search', Component: AssistantSearchPage },
       { path: 'settings', Component: AssistantSettingsPage },
