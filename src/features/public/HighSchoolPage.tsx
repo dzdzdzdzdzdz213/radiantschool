@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Calculator, FlaskConical, Pen, Globe, BookText,
   History, Brain, GraduationCap, ArrowLeft, Sigma,
-  Building2, Cog, CircuitBoard, TestTube,
+  Building2, Cog, CircuitBoard, TestTube, Laptop,
 } from 'lucide-react';
 import SelectionHero from '@/components/formations/SelectionHero';
 import YearCard from '@/components/formations/YearCard';
@@ -13,26 +13,31 @@ import SubjectCard from '@/components/formations/SubjectCard';
 import { Link } from 'react-router-dom';
 
 const YEAR_OPTIONS = [
-  { id: '1as', title: '1ère AS', subtitle: 'Tronc Commun', gradient: 'from-blue-600 to-indigo-700', icon: <BookOpen className="h-6 w-6" /> },
+  { id: '1as', title: '1ère AS', subtitle: 'Filières dès la 1ère', gradient: 'from-blue-600 to-indigo-700', icon: <BookOpen className="h-6 w-6" /> },
   { id: '2as', title: '2ème AS', subtitle: 'Lettres ou Sciences', gradient: 'from-indigo-600 to-violet-700', icon: <BookOpen className="h-6 w-6" /> },
   { id: '3as', title: '3ème AS', subtitle: 'Baccalauréat', gradient: 'from-violet-600 to-purple-800', icon: <GraduationCap className="h-6 w-6" /> },
 ] as const;
 
 const STREAMS: Record<string, { id: string; title: string; description: string; icon: React.ReactNode; gradient: string }[]> = {
   '1as': [
-    { id: 'tc-sciences', title: 'Tronc Commun Sciences', description: 'Bases scientifiques pour préparer votre orientation', icon: <FlaskConical className="h-6 w-6" />, gradient: 'from-emerald-500 to-teal-600' },
-    { id: 'tc-lettres', title: 'Tronc Commun Lettres', description: 'Bases littéraires pour préparer votre orientation', icon: <BookText className="h-6 w-6" />, gradient: 'from-amber-500 to-orange-600' },
+    { id: 'mathematiques', title: 'Mathématiques', description: 'Filière mathématiques dès la 1ère AS', icon: <Sigma className="h-6 w-6" />, gradient: 'from-cyan-500 to-blue-600' },
+    { id: 'scientifique', title: 'Sciences Expérimentales', description: 'Filière sciences dès la 1ère AS', icon: <FlaskConical className="h-6 w-6" />, gradient: 'from-emerald-500 to-teal-600' },
+    { id: 'informatique', title: 'Informatique', description: 'Nouvelle filière informatique', icon: <Laptop className="h-6 w-6" />, gradient: 'from-sky-500 to-indigo-600' },
+    { id: 'gestion-economie', title: 'Gestion et Économie', description: 'Économie et management', icon: <Calculator className="h-6 w-6" />, gradient: 'from-violet-500 to-purple-600' },
+    { id: 'lettres', title: 'Littéraire', description: 'Lettres & Philosophie', icon: <BookText className="h-6 w-6" />, gradient: 'from-fuchsia-500 to-pink-600' },
   ],
   '2as': [
-    { id: 'scientifique', title: 'Scientifique', description: 'Sciences Expérimentales', icon: <FlaskConical className="h-6 w-6" />, gradient: 'from-emerald-500 to-teal-600' },
+    { id: 'scientifique', title: 'Sciences Expérimentales', description: 'Sciences Expérimentales', icon: <FlaskConical className="h-6 w-6" />, gradient: 'from-emerald-500 to-teal-600' },
     { id: 'mathematiques', title: 'Mathématiques', description: 'Mathématiques pures', icon: <Sigma className="h-6 w-6" />, gradient: 'from-cyan-500 to-blue-600' },
+    { id: 'informatique', title: 'Informatique', description: 'Nouvelle filière informatique', icon: <Laptop className="h-6 w-6" />, gradient: 'from-sky-500 to-indigo-600' },
     { id: 'maths-tech', title: 'Maths Techniques', description: 'Génie et technologies', icon: <Cog className="h-6 w-6" />, gradient: 'from-sky-500 to-indigo-600' },
     { id: 'gestion-economie', title: 'Gestion et Économie', description: 'Économie et management', icon: <Calculator className="h-6 w-6" />, gradient: 'from-violet-500 to-purple-600' },
     { id: 'lettres', title: 'Littéraire', description: 'Lettres & Philosophie', icon: <BookText className="h-6 w-6" />, gradient: 'from-fuchsia-500 to-pink-600' },
   ],
   '3as': [
-    { id: 'scientifique', title: 'Scientifique', description: 'Sciences Expérimentales', icon: <FlaskConical className="h-6 w-6" />, gradient: 'from-emerald-500 to-teal-600' },
+    { id: 'scientifique', title: 'Sciences Expérimentales', description: 'Sciences Expérimentales', icon: <FlaskConical className="h-6 w-6" />, gradient: 'from-emerald-500 to-teal-600' },
     { id: 'mathematiques', title: 'Mathématiques', description: 'Mathématiques pures', icon: <Sigma className="h-6 w-6" />, gradient: 'from-cyan-500 to-blue-600' },
+    { id: 'informatique', title: 'Informatique', description: 'Nouvelle filière informatique', icon: <Laptop className="h-6 w-6" />, gradient: 'from-sky-500 to-indigo-600' },
     { id: 'lettres', title: 'Littéraire', description: 'Lettres & Philosophie', icon: <BookText className="h-6 w-6" />, gradient: 'from-fuchsia-500 to-pink-600' },
     { id: 'gestion-economie', title: 'Gestion et Économie', description: 'Économie et management', icon: <Calculator className="h-6 w-6" />, gradient: 'from-violet-500 to-purple-600' },
   ],
@@ -55,20 +60,13 @@ const SUBJECTS_BY_STREAM: Record<string, { name: string; icon: React.ReactNode; 
     { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
     { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
   ],
-  'tc-sciences': [
+  'informatique': [
     { name: 'Mathématiques', icon: <Calculator className="h-5 w-5" />, color: '#4f46e5' },
     { name: 'Physique', icon: <FlaskConical className="h-5 w-5" />, color: '#7c3aed' },
-    { name: 'Sciences', icon: <Brain className="h-5 w-5" />, color: '#059669' },
+    { name: 'Informatique', icon: <Laptop className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
     { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
-  ],
-  'tc-lettres': [
-    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
-    { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
-    { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
-    { name: 'Histoire', icon: <History className="h-5 w-5" />, color: '#dc2626' },
-    { name: 'Philosophie', icon: <BookText className="h-5 w-5" />, color: '#7c3aed' },
   ],
   'lettres': [
     { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
@@ -227,7 +225,7 @@ export default function HighSchoolPage() {
                   </div>
 
                   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    {streams.filter(s => ['scientifique', 'mathematiques', 'maths-tech', 'gestion-economie'].includes(s.id)).map((stream, i) => (
+                    {streams.filter(s => ['scientifique', 'mathematiques', 'informatique', 'maths-tech', 'gestion-economie'].includes(s.id)).map((stream, i) => (
                       <StreamCard
                         key={stream.id}
                         title={stream.title}

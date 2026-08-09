@@ -18,34 +18,29 @@ const YEARS = [
 const SUBJECTS_BY_YEAR: Record<string, { name: string; icon: React.ReactNode; color: string }[]> = {
   '1ere': [
     { name: 'Mathématiques', icon: <Calculator className="h-5 w-5" />, color: '#4f46e5' },
-    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
-    { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
   ],
   '2eme': [
     { name: 'Mathématiques', icon: <Calculator className="h-5 w-5" />, color: '#4f46e5' },
-    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
-    { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
   ],
   '3eme': [
     { name: 'Mathématiques', icon: <Calculator className="h-5 w-5" />, color: '#4f46e5' },
-    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
     { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
   ],
   '4eme': [
     { name: 'Mathématiques', icon: <Calculator className="h-5 w-5" />, color: '#4f46e5' },
-    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
     { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
+    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Sciences', icon: <FlaskConical className="h-5 w-5" />, color: '#7c3aed' },
   ],
   '5eme': [
     { name: 'Mathématiques', icon: <Calculator className="h-5 w-5" />, color: '#4f46e5' },
-    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Arabe', icon: <BookText className="h-5 w-5" />, color: '#059669' },
     { name: 'Anglais', icon: <Globe className="h-5 w-5" />, color: '#d97706' },
+    { name: 'Français', icon: <Pen className="h-5 w-5" />, color: '#0891b2' },
     { name: 'Sciences', icon: <FlaskConical className="h-5 w-5" />, color: '#7c3aed' },
   ],
 };
@@ -56,9 +51,9 @@ export default function PrimaryPage() {
 
   return (
     <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
-      <SelectionHero
+<SelectionHero
         title="Primaire"
-        subtitle="Du CP à la 5ème année — Construisez des bases solides en mathématiques, français, arabe et anglais."
+        subtitle="De la 1ère à la 5ème année — anglais dès la 3ème année, français dès la 4ème année, programmes allégés."
         gradient="from-emerald-600 via-teal-600 to-cyan-700"
       />
 
