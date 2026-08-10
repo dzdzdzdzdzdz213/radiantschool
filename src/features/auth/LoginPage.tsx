@@ -34,7 +34,7 @@ export default function LoginPage() {
     if (profile) {
       const allowed = ['student', 'parent'];
       if (!allowed.includes(profile.role)) {
-        supabase.auth.signOut();
+        navigate(getDefaultRoute(profile.role), { replace: true });
         return;
       }
       navigate(getDefaultRoute(profile.role), { replace: true });
