@@ -23,7 +23,7 @@ export function useAiAssistant() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const send = useCallback(async (message: string) => {
+  const send = useCallback(async (message: string, lang: string = 'fr') => {
     const text = message.trim();
     if (!text || loading) return;
 
@@ -48,6 +48,7 @@ export function useAiAssistant() {
           body: JSON.stringify({
             message: text,
             conversation_id: conversationId,
+            lang,
           }),
         },
       );
@@ -89,35 +90,53 @@ export function useAiAssistant() {
   return { messages, send, reset, loading, error };
 }
 
-export const AI_SUGGESTIONS: Record<string, string[]> = {
-  admin: [
-    'Aperçu de l\u2019école : élèves, revenus, impayés',
-    'Analyse des revenus par mois et par cours',
-    'Quels cours sont presque pleins ?',
-    'Élèves absents plus de 3 fois ce mois',
-  ],
-  assistant: [
-    'Aperçu de l\u2019école aujourd\u2019hui',
-    'Factures en retard à relancer',
-    'Chercher un élève',
-  ],
-  teacher: [
-    'Mes élèves et leur assiduité',
-    'Performance de mes cours',
-  ],
-  student: [
-    'Ma progression : cours, présences, factures',
-    'Mes prochains paiements',
-  ],
-  parent: [
-    'Comment fonctionne la plateforme ?',
-  ],
+export const AI_SUGGESTIONS: Record<string, Record<string, string[]>> = {
+  admin: {
+    fr: [
+      'Aperçu de l\u2019école : élèves, revenus, impayés',
+      'Analyse des revenus par mois et par cours',
+      'Quels cours sont presque pleins ?',
+      'Élèves absents plus de 3 fois ce mois',
+    ],
+    en: [
+      'School overview: students, revenue, unpaid',
+      'Revenue analysis by month and course',
+      'Which courses are nearly full?',
+      'Students absent more than 3 times this month',
+    ],
+    ar: [
+      'نظرة عامة على المدرسة: الطلاب، الإيرادات، غير المدفوع',
+      'تحليل الإيرادات حسب الشهر والدورة',
+      'ما هي الدورات الممتلئة تقريباً؟',
+      'الطلاب الغائبين أكثر من 3 مرات هذا الشهر',
+    ],
+  },
+  assistant: {
+    fr: ['Aperçu de l\u2019école aujourd\u2019hui', 'Factures en retard à relancer', 'Chercher un élève'],
+    en: ['School overview today', 'Overdue invoices to follow up', 'Search for a student'],
+    ar: ['نظرة عامة على المدرسة اليوم', 'فواتير متأخرة للمتابعة', 'البحث عن طالب'],
+  },
+  teacher: {
+    fr: ['Mes élèves et leur assiduité', 'Performance de mes cours'],
+    en: ['My students and their attendance', 'My course performance'],
+    ar: ['طلابي ومواظبتهم', 'أداء دوراتي'],
+  },
+  student: {
+    fr: ['Ma progression : cours, présences, factures', 'Mes prochains paiements'],
+    en: ['My progress: courses, attendance, invoices', 'My upcoming payments'],
+    ar: ['تقدمي: الدورات، الحضور، الفواتير', 'مدفوعاتي القادمة'],
+  },
+  parent: {
+    fr: ['Comment fonctionne la plateforme ?'],
+    en: ['How does the platform work?'],
+    ar: ['كيف تعمل المنصة؟'],
+  },
 };
 
-export const AI_ROLE_LABEL: Record<string, string> = {
-  admin: 'Radiant AI — Assistant Direction',
-  assistant: 'Radiant AI — Assistant Opérations',
-  teacher: 'Radiant AI — Assistant Enseignant',
-  student: 'Radiant AI — Assistant Élève',
-  parent: 'Radiant AI — Assistant Parent',
+export const AI_ROLE_LABEL: Record<string, Record<string, string>> = {
+  admin: { fr: 'Radiant AI — Assistant Direction', en: 'Radiant AI — Admin Assistant', ar: 'راديانت AI — مساعد الإدارة' },
+  assistant: { fr: 'Radiant AI — Assistant Opérations', en: 'Radiant AI — Operations Assistant', ar: 'راديانت AI — مساعد العمليات' },
+  teacher: { fr: 'Radiant AI — Assistant Enseignant', en: 'Radiant AI — Teacher Assistant', ar: 'راديانت AI — مساعد المعلم' },
+  student: { fr: 'Radiant AI — Assistant Élève', en: 'Radiant AI — Student Assistant', ar: 'راديانت AI — مساعد الطالب' },
+  parent: { fr: 'Radiant AI — Assistant Parent', en: 'Radiant AI — Parent Assistant', ar: 'راديانت AI — مساعد ولي الأمر' },
 };
