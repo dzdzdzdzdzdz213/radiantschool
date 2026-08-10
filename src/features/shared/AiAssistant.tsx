@@ -110,6 +110,13 @@ export default function AiAssistant() {
             >
               <RotateCcw className="h-4 w-4" />
             </button>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+              className="relative rounded-full p-2 transition-colors hover:bg-white/15 active:bg-white/25"
+            >
+              <X className="h-4.5 w-4.5" />
+            </button>
           </div>
 
           <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-4 [scrollbar-width:thin]">
