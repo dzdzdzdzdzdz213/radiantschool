@@ -17,6 +17,7 @@ import QuickActions from '@/features/admin/dashboard/components/QuickActions';
 import RecentRegistrationsTable from '@/features/admin/dashboard/components/RecentRegistrationsTable';
 import AttendanceWidget from '@/features/admin/dashboard/components/AttendanceWidget';
 import AnalyticsWidget from '@/features/admin/dashboard/components/AnalyticsWidget';
+import AiInsightsCard from '@/features/admin/dashboard/components/AiInsightsCard';
 
 function PageHeader({ name }: { name: string }) {
   const { lang } = useLang();
@@ -150,6 +151,7 @@ export default function AdminDashboardPage() {
           <QuickActions />
         </div>
         <div className="space-y-6">
+          <AiInsightsCard />
           <AttendanceWidget data={attendanceSummary} />
           <AnalyticsWidget metrics={analyticsMetrics} title={t('dashboard.stat.analytics', lang)} />
         </div>

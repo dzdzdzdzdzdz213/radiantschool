@@ -14,6 +14,70 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          account_name: string
+          account_number: string | null
+          account_type: Database["public"]["Enums"]["acct_account_type"]
+          created_at: string
+          disabled: boolean
+          id: number
+          is_group: boolean
+          parent_id: number | null
+          report_type: Database["public"]["Enums"]["acct_report_type"]
+          root_type: Database["public"]["Enums"]["acct_root_type"]
+          updated_at: string
+        }
+        Insert: {
+          account_name: string
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["acct_account_type"]
+          created_at?: string
+          disabled?: boolean
+          id?: number
+          is_group?: boolean
+          parent_id?: number | null
+          report_type?: Database["public"]["Enums"]["acct_report_type"]
+          root_type: Database["public"]["Enums"]["acct_root_type"]
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["acct_account_type"]
+          created_at?: string
+          disabled?: boolean
+          id?: number
+          is_group?: boolean
+          parent_id?: number | null
+          report_type?: Database["public"]["Enums"]["acct_report_type"]
+          root_type?: Database["public"]["Enums"]["acct_root_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "v_income_statement"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "v_trial_balance"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admins: {
         Row: {
           created_at: string
@@ -41,6 +105,188 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "v_teacher_workload"
             referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
+      ai_audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          error: string | null
+          id: number
+          ip: string | null
+          latency_ms: number | null
+          model: string | null
+          request: Json | null
+          response_summary: string | null
+          status: string
+          tokens_in: number | null
+          tokens_out: number | null
+          tool_name: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          error?: string | null
+          id?: never
+          ip?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          request?: Json | null
+          response_summary?: string | null
+          status?: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_name?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          error?: string | null
+          id?: never
+          ip?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          request?: Json | null
+          response_summary?: string | null
+          status?: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_name?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
+      ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
+      ai_insights: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: number
+          insight_type: string
+          is_resolved: boolean
+          payload: Json | null
+          resolved_at: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          id?: never
+          insight_type: string
+          is_resolved?: boolean
+          payload?: Json | null
+          resolved_at?: string | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: never
+          insight_type?: string
+          is_resolved?: boolean
+          payload?: Json | null
+          resolved_at?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: number
+          role: string
+          tool_calls: Json | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: never
+          role: string
+          tool_calls?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: never
+          role?: string
+          tool_calls?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1243,6 +1489,358 @@ export type Database = {
           },
         ]
       }
+      crm_activities: {
+        Row: {
+          body: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: number | null
+          deleted_at: string | null
+          due_at: string | null
+          id: number
+          lead_id: number
+          subject: string | null
+          type: Database["public"]["Enums"]["crm_activity_type"]
+        }
+        Insert: {
+          body?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: number | null
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: number
+          lead_id: number
+          subject?: string | null
+          type?: Database["public"]["Enums"]["crm_activity_type"]
+        }
+        Update: {
+          body?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: number | null
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: number
+          lead_id?: number
+          subject?: string | null
+          type?: Database["public"]["Enums"]["crm_activity_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
+            foreignKeyName: "crm_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "v_followups_due"
+            referencedColumns: ["deal_id"]
+          },
+          {
+            foreignKeyName: "crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_followups_due"
+            referencedColumns: ["lead_id"]
+          },
+        ]
+      }
+      crm_deals: {
+        Row: {
+          amount: number
+          child_name: string | null
+          closed_at: string | null
+          closed_reason: string | null
+          course_id: number | null
+          created_at: string
+          deleted_at: string | null
+          expected_close_date: string | null
+          id: number
+          last_activity_at: string | null
+          lead_id: number
+          level_id: number | null
+          owner_id: string | null
+          stage_changed_at: string
+          stage_id: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          child_name?: string | null
+          closed_at?: string | null
+          closed_reason?: string | null
+          course_id?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          expected_close_date?: string | null
+          id?: number
+          last_activity_at?: string | null
+          lead_id: number
+          level_id?: number | null
+          owner_id?: string | null
+          stage_changed_at?: string
+          stage_id?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          child_name?: string | null
+          closed_at?: string | null
+          closed_reason?: string | null
+          course_id?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          expected_close_date?: string | null
+          id?: number
+          last_activity_at?: string | null
+          lead_id?: number
+          level_id?: number | null
+          owner_id?: string | null
+          stage_changed_at?: string
+          stage_id?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deals_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "v_course_occupancy"
+            referencedColumns: ["course_id"]
+          },
+          {
+            foreignKeyName: "crm_deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_followups_due"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "crm_deals_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
+            foreignKeyName: "crm_deals_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "crm_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "v_crm_pipeline"
+            referencedColumns: ["stage_id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          address: string | null
+          campaign_id: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          email: string | null
+          first_name: string
+          id: number
+          last_activity_at: string | null
+          last_name: string | null
+          notes: string | null
+          owner_id: string | null
+          phone: string | null
+          source: Database["public"]["Enums"]["crm_lead_source"]
+          student_id: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          campaign_id?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          first_name: string
+          id?: number
+          last_activity_at?: string | null
+          last_name?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          source?: Database["public"]["Enums"]["crm_lead_source"]
+          student_id?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          campaign_id?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          first_name?: string
+          id?: number
+          last_activity_at?: string | null
+          last_name?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          source?: Database["public"]["Enums"]["crm_lead_source"]
+          student_id?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
+            foreignKeyName: "crm_leads_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+          {
+            foreignKeyName: "crm_leads_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
+      crm_stages: {
+        Row: {
+          color: string
+          created_at: string
+          id: number
+          is_lost: boolean
+          is_won: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: number
+          is_lost?: boolean
+          is_won?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: number
+          is_lost?: boolean
+          is_won?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       evaluations: {
         Row: {
           average_score: number | null
@@ -1339,6 +1937,71 @@ export type Database = {
           },
         ]
       }
+      general_ledger: {
+        Row: {
+          account_id: number
+          against_account: string | null
+          created_at: string
+          credit: number
+          debit: number
+          id: number
+          journal_entry_id: number
+          posting_date: string
+          remarks: string | null
+        }
+        Insert: {
+          account_id: number
+          against_account?: string | null
+          created_at?: string
+          credit?: number
+          debit?: number
+          id?: number
+          journal_entry_id: number
+          posting_date: string
+          remarks?: string | null
+        }
+        Update: {
+          account_id?: number
+          against_account?: string | null
+          created_at?: string
+          credit?: number
+          debit?: number
+          id?: number
+          journal_entry_id?: number
+          posting_date?: string
+          remarks?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "general_ledger_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "general_ledger_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_income_statement"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "general_ledger_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_trial_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "general_ledger_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_items: {
         Row: {
           course_id: number | null
@@ -1393,6 +2056,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "v_receivables_aging"
             referencedColumns: ["id"]
           },
         ]
@@ -1457,6 +2127,128 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_student_performance"
             referencedColumns: ["student_id"]
+          },
+        ]
+      }
+      journal_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: number
+          posting_date: string
+          reference_id: number | null
+          reference_type: string | null
+          remarks: string | null
+          status: Database["public"]["Enums"]["acct_entry_status"]
+          title: string
+          total_credit: number
+          total_debit: number
+          updated_at: string
+          voucher_type: Database["public"]["Enums"]["acct_voucher_type"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          posting_date?: string
+          reference_id?: number | null
+          reference_type?: string | null
+          remarks?: string | null
+          status?: Database["public"]["Enums"]["acct_entry_status"]
+          title: string
+          total_credit?: number
+          total_debit?: number
+          updated_at?: string
+          voucher_type?: Database["public"]["Enums"]["acct_voucher_type"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          posting_date?: string
+          reference_id?: number | null
+          reference_type?: string | null
+          remarks?: string | null
+          status?: Database["public"]["Enums"]["acct_entry_status"]
+          title?: string
+          total_credit?: number
+          total_debit?: number
+          updated_at?: string
+          voucher_type?: Database["public"]["Enums"]["acct_voucher_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
+      journal_entry_lines: {
+        Row: {
+          account_id: number
+          created_at: string
+          credit: number
+          debit: number
+          description: string | null
+          id: number
+          journal_entry_id: number
+        }
+        Insert: {
+          account_id: number
+          created_at?: string
+          credit?: number
+          debit?: number
+          description?: string | null
+          id?: number
+          journal_entry_id: number
+        }
+        Update: {
+          account_id?: number
+          created_at?: string
+          credit?: number
+          debit?: number
+          description?: string | null
+          id?: number
+          journal_entry_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_income_statement"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_trial_balance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entry_lines_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2738,6 +3530,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transaction_allocations_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "v_receivables_aging"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transaction_allocations_transaction_id_fkey"
             columns: ["transaction_id"]
             isOneToOne: false
@@ -3044,490 +3843,6 @@ export type Database = {
           },
         ]
       }
-      accounts: {
-        Row: {
-          account_name: string
-          account_number: string | null
-          account_type: Database["public"]["Enums"]["acct_account_type"]
-          created_at: string
-          disabled: boolean
-          id: number
-          is_group: boolean
-          parent_id: number | null
-          report_type: Database["public"]["Enums"]["acct_report_type"]
-          root_type: Database["public"]["Enums"]["acct_root_type"]
-          updated_at: string
-        }
-        Insert: {
-          account_name: string
-          account_number?: string | null
-          account_type?: Database["public"]["Enums"]["acct_account_type"]
-          created_at?: string
-          disabled?: boolean
-          id?: number
-          is_group?: boolean
-          parent_id?: number | null
-          report_type?: Database["public"]["Enums"]["acct_report_type"]
-          root_type: Database["public"]["Enums"]["acct_root_type"]
-          updated_at?: string
-        }
-        Update: {
-          account_name?: string
-          account_number?: string | null
-          account_type?: Database["public"]["Enums"]["acct_account_type"]
-          created_at?: string
-          disabled?: boolean
-          id?: number
-          is_group?: boolean
-          parent_id?: number | null
-          report_type?: Database["public"]["Enums"]["acct_report_type"]
-          root_type?: Database["public"]["Enums"]["acct_root_type"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "accounts_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_activities: {
-        Row: {
-          body: string | null
-          completed_at: string | null
-          created_at: string
-          created_by: string | null
-          deal_id: number | null
-          deleted_at: string | null
-          due_at: string | null
-          id: number
-          lead_id: number
-          subject: string | null
-          type: Database["public"]["Enums"]["crm_activity_type"]
-        }
-        Insert: {
-          body?: string | null
-          completed_at?: string | null
-          created_at?: string
-          created_by?: string | null
-          deal_id?: number | null
-          deleted_at?: string | null
-          due_at?: string | null
-          id?: number
-          lead_id: number
-          subject?: string | null
-          type: Database["public"]["Enums"]["crm_activity_type"]
-        }
-        Update: {
-          body?: string | null
-          completed_at?: string | null
-          created_at?: string
-          created_by?: string | null
-          deal_id?: number | null
-          deleted_at?: string | null
-          due_at?: string | null
-          id?: number
-          lead_id?: number
-          subject?: string | null
-          type?: Database["public"]["Enums"]["crm_activity_type"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_activities_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_activities_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "crm_deals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_activities_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "crm_leads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_deals: {
-        Row: {
-          amount: number
-          child_name: string | null
-          closed_at: string | null
-          closed_reason: string | null
-          course_id: number | null
-          created_at: string
-          deleted_at: string | null
-          expected_close_date: string | null
-          id: number
-          last_activity_at: string | null
-          lead_id: number
-          level_id: number | null
-          owner_id: string | null
-          stage_changed_at: string
-          stage_id: number
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          amount?: number
-          child_name?: string | null
-          closed_at?: string | null
-          closed_reason?: string | null
-          course_id?: number | null
-          created_at?: string
-          deleted_at?: string | null
-          expected_close_date?: string | null
-          id?: number
-          last_activity_at?: string | null
-          lead_id: number
-          level_id?: number | null
-          owner_id?: string | null
-          stage_changed_at?: string
-          stage_id?: number
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          child_name?: string | null
-          closed_at?: string | null
-          closed_reason?: string | null
-          course_id?: number | null
-          created_at?: string
-          deleted_at?: string | null
-          expected_close_date?: string | null
-          id?: number
-          last_activity_at?: string | null
-          lead_id?: number
-          level_id?: number | null
-          owner_id?: string | null
-          stage_changed_at?: string
-          stage_id?: number
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_deals_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_deals_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "crm_leads"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_deals_level_id_fkey"
-            columns: ["level_id"]
-            isOneToOne: false
-            referencedRelation: "levels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_deals_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_deals_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "crm_stages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_leads: {
-        Row: {
-          address: string | null
-          campaign_id: number | null
-          created_at: string
-          created_by: string | null
-          deleted_at: string | null
-          email: string | null
-          first_name: string
-          id: number
-          last_activity_at: string | null
-          last_name: string | null
-          notes: string | null
-          owner_id: string | null
-          phone: string | null
-          source: Database["public"]["Enums"]["crm_lead_source"]
-          student_id: string | null
-          updated_at: string
-          whatsapp: string | null
-        }
-        Insert: {
-          address?: string | null
-          campaign_id?: number | null
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          email?: string | null
-          first_name: string
-          id?: number
-          last_activity_at?: string | null
-          last_name?: string | null
-          notes?: string | null
-          owner_id?: string | null
-          phone?: string | null
-          source?: Database["public"]["Enums"]["crm_lead_source"]
-          student_id?: string | null
-          updated_at?: string
-          whatsapp?: string | null
-        }
-        Update: {
-          address?: string | null
-          campaign_id?: number | null
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          email?: string | null
-          first_name?: string
-          id?: number
-          last_activity_at?: string | null
-          last_name?: string | null
-          notes?: string | null
-          owner_id?: string | null
-          phone?: string | null
-          source?: Database["public"]["Enums"]["crm_lead_source"]
-          student_id?: string | null
-          updated_at?: string
-          whatsapp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_leads_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_leads_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_leads_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_leads_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_stages: {
-        Row: {
-          color: string
-          created_at: string
-          id: number
-          is_lost: boolean
-          is_won: boolean
-          name: string
-          sort_order: number
-          updated_at: string
-        }
-        Insert: {
-          color?: string
-          created_at?: string
-          id?: number
-          is_lost?: boolean
-          is_won?: boolean
-          name: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          id?: number
-          is_lost?: boolean
-          is_won?: boolean
-          name?: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      general_ledger: {
-        Row: {
-          account_id: number
-          against_account: string | null
-          created_at: string
-          credit: number
-          debit: number
-          id: number
-          journal_entry_id: number
-          posting_date: string
-          remarks: string | null
-        }
-        Insert: {
-          account_id: number
-          against_account?: string | null
-          created_at?: string
-          credit?: number
-          debit?: number
-          id?: number
-          journal_entry_id: number
-          posting_date: string
-          remarks?: string | null
-        }
-        Update: {
-          account_id?: number
-          against_account?: string | null
-          created_at?: string
-          credit?: number
-          debit?: number
-          id?: number
-          journal_entry_id?: number
-          posting_date?: string
-          remarks?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "general_ledger_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "general_ledger_journal_entry_id_fkey"
-            columns: ["journal_entry_id"]
-            isOneToOne: false
-            referencedRelation: "journal_entries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      journal_entries: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          id: number
-          posting_date: string
-          reference_id: number | null
-          reference_type: string | null
-          remarks: string | null
-          status: Database["public"]["Enums"]["acct_entry_status"]
-          title: string
-          total_credit: number
-          total_debit: number
-          updated_at: string
-          voucher_type: Database["public"]["Enums"]["acct_voucher_type"]
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          id?: number
-          posting_date: string
-          reference_id?: number | null
-          reference_type?: string | null
-          remarks?: string | null
-          status?: Database["public"]["Enums"]["acct_entry_status"]
-          title: string
-          total_credit?: number
-          total_debit?: number
-          updated_at?: string
-          voucher_type: Database["public"]["Enums"]["acct_voucher_type"]
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          id?: number
-          posting_date?: string
-          reference_id?: number | null
-          reference_type?: string | null
-          remarks?: string | null
-          status?: Database["public"]["Enums"]["acct_entry_status"]
-          title?: string
-          total_credit?: number
-          total_debit?: number
-          updated_at?: string
-          voucher_type?: Database["public"]["Enums"]["acct_voucher_type"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "journal_entries_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      journal_entry_lines: {
-        Row: {
-          account_id: number
-          created_at: string
-          credit: number
-          debit: number
-          description: string | null
-          id: number
-          journal_entry_id: number
-        }
-        Insert: {
-          account_id: number
-          created_at?: string
-          credit?: number
-          debit?: number
-          description?: string | null
-          id?: number
-          journal_entry_id: number
-        }
-        Update: {
-          account_id?: number
-          created_at?: string
-          credit?: number
-          debit?: number
-          description?: string | null
-          id?: number
-          journal_entry_id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "journal_entry_lines_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "journal_entry_lines_journal_entry_id_fkey"
-            columns: ["journal_entry_id"]
-            isOneToOne: false
-            referencedRelation: "journal_entries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       dashboard_kpi: {
@@ -3568,6 +3883,19 @@ export type Database = {
         }
         Relationships: []
       }
+      v_crm_pipeline: {
+        Row: {
+          color: string | null
+          deal_count: number | null
+          is_lost: boolean | null
+          is_won: boolean | null
+          name: string | null
+          open_amount: number | null
+          sort_order: number | null
+          stage_id: number | null
+        }
+        Relationships: []
+      }
       v_daily_attendance: {
         Row: {
           date: string | null
@@ -3584,6 +3912,92 @@ export type Database = {
         }
         Relationships: []
       }
+      v_followups_due: {
+        Row: {
+          body: string | null
+          completed_at: string | null
+          created_by: string | null
+          deal_id: number | null
+          deal_title: string | null
+          due_at: string | null
+          email: string | null
+          id: number | null
+          lead_id: number | null
+          lead_name: string | null
+          phone: string | null
+          subject: string | null
+          type: Database["public"]["Enums"]["crm_activity_type"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
+      v_income_statement: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          amount: number | null
+          id: number | null
+          root_type: Database["public"]["Enums"]["acct_root_type"] | null
+        }
+        Relationships: []
+      }
+      v_ledger: {
+        Row: {
+          account_id: number | null
+          account_name: string | null
+          account_number: string | null
+          against_account: string | null
+          created_at: string | null
+          credit: number | null
+          debit: number | null
+          entry_status: Database["public"]["Enums"]["acct_entry_status"] | null
+          id: number | null
+          posting_date: string | null
+          reference_id: number | null
+          reference_type: string | null
+          remarks: string | null
+          root_type: Database["public"]["Enums"]["acct_root_type"] | null
+          title: string | null
+          voucher_type: Database["public"]["Enums"]["acct_voucher_type"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "general_ledger_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "general_ledger_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_income_statement"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "general_ledger_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_trial_balance"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_monthly_financials: {
         Row: {
           avg_transaction: number | null
@@ -3597,6 +4011,36 @@ export type Database = {
           transfer_revenue: number | null
         }
         Relationships: []
+      }
+      v_receivables_aging: {
+        Row: {
+          balance: number | null
+          days_overdue: number | null
+          due_date: string | null
+          id: number | null
+          invoice_number: string | null
+          paid_amount: number | null
+          status: Database["public"]["Enums"]["invoice_status"] | null
+          student_id: string | null
+          student_name: string | null
+          total_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_student_performance"
+            referencedColumns: ["student_id"]
+          },
+        ]
       }
       v_student_performance: {
         Row: {
@@ -3666,6 +4110,43 @@ export type Database = {
         }
         Relationships: []
       }
+      v_trial_balance: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          balance: number | null
+          id: number | null
+          is_group: boolean | null
+          parent_id: number | null
+          report_type: Database["public"]["Enums"]["acct_report_type"] | null
+          root_type: Database["public"]["Enums"]["acct_root_type"] | null
+          total_balance_credit: number | null
+          total_debit: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "v_income_statement"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "v_trial_balance"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_upcoming_schedule: {
         Row: {
           capacity: number | null
@@ -3682,99 +4163,18 @@ export type Database = {
         }
         Relationships: []
       }
-      v_crm_pipeline: {
-        Row: {
-          color: string | null
-          deal_count: number | null
-          is_lost: boolean | null
-          is_won: boolean | null
-          name: string | null
-          open_amount: number | null
-          sort_order: number | null
-          stage_id: number | null
-        }
-        Relationships: []
-      }
-      v_followups_due: {
-        Row: {
-          body: string | null
-          completed_at: string | null
-          created_by: string | null
-          deal_id: number | null
-          deal_title: string | null
-          due_at: string | null
-          email: string | null
-          id: number | null
-          lead_id: number | null
-          lead_name: string | null
-          phone: string | null
-          subject: string | null
-          type: Database["public"]["Enums"]["crm_activity_type"] | null
-        }
-        Relationships: []
-      }
-      v_income_statement: {
-        Row: {
-          account_name: string | null
-          account_number: string | null
-          amount: number | null
-          id: number | null
-          root_type: Database["public"]["Enums"]["acct_root_type"] | null
-        }
-        Relationships: []
-      }
-      v_ledger: {
-        Row: {
-          account_id: number | null
-          account_name: string | null
-          account_number: string | null
-          against_account: string | null
-          created_at: string | null
-          credit: number | null
-          debit: number | null
-          entry_status: Database["public"]["Enums"]["acct_entry_status"] | null
-          id: number | null
-          posting_date: string | null
-          reference_id: number | null
-          reference_type: string | null
-          remarks: string | null
-          root_type: Database["public"]["Enums"]["acct_root_type"] | null
-          title: string | null
-          voucher_type: Database["public"]["Enums"]["acct_voucher_type"] | null
-        }
-        Relationships: []
-      }
-      v_receivables_aging: {
-        Row: {
-          balance: number | null
-          days_overdue: number | null
-          due_date: string | null
-          invoice_number: string | null
-          paid_amount: number | null
-          status: Database["public"]["Enums"]["invoice_status"] | null
-          student_id: string | null
-          student_name: string | null
-          total_amount: number | null
-        }
-        Relationships: []
-      }
-      v_trial_balance: {
-        Row: {
-          account_name: string | null
-          account_number: string | null
-          balance: number | null
-          id: number | null
-          is_group: boolean | null
-          parent_id: number | null
-          report_type: Database["public"]["Enums"]["acct_report_type"] | null
-          root_type: Database["public"]["Enums"]["acct_root_type"] | null
-          total_balance_credit: number | null
-          total_debit: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
+      ai_get_gemini_key: { Args: never; Returns: string }
+      ai_tool_attendance_alerts: { Args: never; Returns: Json }
+      ai_tool_course_performance: { Args: never; Returns: Json }
+      ai_tool_course_search: { Args: { query: string }; Returns: Json }
+      ai_tool_my_student_progress: { Args: never; Returns: Json }
+      ai_tool_revenue: { Args: never; Returns: Json }
+      ai_tool_school_overview: { Args: never; Returns: Json }
+      ai_tool_student_search: { Args: { query: string }; Returns: Json }
+      ai_tool_teacher_students: { Args: never; Returns: Json }
+      ai_tool_unpaid_invoices: { Args: never; Returns: Json }
       auto_close_expired_sessions: {
         Args: never
         Returns: {
@@ -3783,6 +4183,10 @@ export type Database = {
           session_id: number
           teacher_name: string
         }[]
+      }
+      cancel_journal_entry: {
+        Args: { p_journal_id: number }
+        Returns: undefined
       }
       check_consecutive_absences: { Args: never; Returns: undefined }
       dispatch_notification: {
@@ -3860,6 +4264,10 @@ export type Database = {
         Args: { p_teacher_id: string }
         Returns: Json
       }
+      gl_cancel_reference: {
+        Args: { p_reference_id: number; p_reference_type: string }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
       is_assistant: { Args: never; Returns: boolean }
       is_parent: { Args: never; Returns: boolean }
@@ -3874,6 +4282,21 @@ export type Database = {
         Args: { check_course_id: number }
         Returns: boolean
       }
+      post_invoice_gl: { Args: { p_invoice_id: number }; Returns: number }
+      post_journal_entry: {
+        Args: {
+          p_lines?: Json
+          p_posting_date: string
+          p_reference_id?: number
+          p_reference_type?: string
+          p_remarks?: string
+          p_title: string
+          p_voucher_type?: Database["public"]["Enums"]["acct_voucher_type"]
+        }
+        Returns: number
+      }
+      post_payment_gl: { Args: { p_payment_id: number }; Returns: number }
+      post_payroll_gl: { Args: { p_payroll_id: number }; Returns: number }
       process_payment: {
         Args: {
           p_amount: number
@@ -3988,25 +4411,17 @@ export type Database = {
         Args: { p_session_id: number; p_validated_by: string }
         Returns: Json
       }
-      cancel_journal_entry: { Args: { p_journal_id: number }; Returns: undefined }
-      post_invoice_gl: { Args: { p_invoice_id: number }; Returns: number }
-      post_journal_entry: {
-        Args: {
-          p_lines: Json
-          p_posting_date: string
-          p_reference_id?: number
-          p_reference_type?: string
-          p_remarks?: string
-          p_title: string
-          p_voucher_type: Database["public"]["Enums"]["acct_voucher_type"]
-        }
-        Returns: number
-      }
-      post_payment_gl: { Args: { p_payment_id: number }; Returns: number }
-      post_payroll_gl: { Args: { p_payroll_id: number }; Returns: number }
     }
     Enums: {
-      acct_account_type: "bank" | "cash" | "receivable" | "payable" | "income" | "expense" | "equity" | "temporary"
+      acct_account_type:
+        | "bank"
+        | "cash"
+        | "receivable"
+        | "payable"
+        | "income"
+        | "expense"
+        | "equity"
+        | "temporary"
       acct_entry_status: "draft" | "posted" | "cancelled"
       acct_report_type: "balance_sheet" | "profit_loss"
       acct_root_type: "asset" | "liability" | "income" | "expense" | "equity"
@@ -4227,6 +4642,14 @@ export const Constants = {
         "credit_note",
         "debit_note",
       ],
+      approval_status: ["pending", "approved", "rejected"],
+      attendance_method: ["rfid", "manual"],
+      attendance_status: ["present", "absent", "late"],
+      backup_status: ["in_progress", "completed", "failed"],
+      backup_type: ["automatic", "manual"],
+      contract_type: ["fixed", "hourly", "percentage"],
+      course_status: ["active", "inactive", "full", "cancelled", "pending"],
+      course_type: ["normal", "vip", "private"],
       crm_activity_type: ["note", "call", "email", "meeting", "task"],
       crm_lead_source: [
         "website",
@@ -4237,14 +4660,6 @@ export const Constants = {
         "phone",
         "other",
       ],
-      approval_status: ["pending", "approved", "rejected"],
-      attendance_method: ["rfid", "manual"],
-      attendance_status: ["present", "absent", "late"],
-      backup_status: ["in_progress", "completed", "failed"],
-      backup_type: ["automatic", "manual"],
-      contract_type: ["fixed", "hourly", "percentage"],
-      course_status: ["active", "inactive", "full", "cancelled", "pending"],
-      course_type: ["normal", "vip", "private"],
       day_of_week: [
         "monday",
         "tuesday",
