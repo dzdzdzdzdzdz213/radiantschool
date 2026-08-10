@@ -83,10 +83,6 @@ export default function AiAssistant() {
               className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-fuchsia-500 text-white shadow-xl shadow-purple-500/40 transition-transform hover:scale-105 active:scale-95"
             >
               <Bot className="h-7 w-7" />
-              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
-              </span>
             </button>
           </div>
         </div>
@@ -100,10 +96,6 @@ export default function AiAssistant() {
             <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,.5) 0%, transparent 40%)' }} />
             <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur">
               <Sparkles className="h-5.5 w-5.5" />
-              <span className="absolute -right-1 -top-1 flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
-                <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-purple-600 bg-emerald-400" />
-              </span>
             </div>
             <div className="relative flex-1 leading-tight">
               <p className="font-display text-[15px] font-semibold">{title}</p>
