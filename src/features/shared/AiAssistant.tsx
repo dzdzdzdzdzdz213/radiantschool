@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bot, Send, X, Sparkles, RotateCcw, ShieldCheck } from 'lucide-react';
+import { Bot, Send, X, Sparkles, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAiAssistant, AI_SUGGESTIONS, AI_ROLE_LABEL } from '@/hooks/useAiAssistant';
 import { useLang } from '@/contexts/LangContext';
@@ -108,8 +108,7 @@ export default function AiAssistant() {
             <div className="relative flex-1 leading-tight">
               <p className="font-display text-[15px] font-semibold">{title}</p>
               <p className="flex items-center gap-1 text-[11px] text-white/80">
-                <ShieldCheck className="h-3 w-3" />
-                {t('ai.gemini_driven', lang)}
+                {lang === 'ar' ? 'مساعد ذكي' : lang === 'en' ? 'AI Assistant' : 'Piloté par l’IA'}
               </p>
             </div>
             <button
