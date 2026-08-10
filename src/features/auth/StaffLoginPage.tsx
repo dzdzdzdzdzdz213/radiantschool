@@ -117,11 +117,16 @@ export default function StaffLoginPage() {
       return;
     }
 
-    const { data: userData } = await supabase
+    const { data: userData, error: userErr } = await supabase
       .from('users')
       .select('role, status')
       .eq('email', email)
-      .single();
+      .maybeSingle();
+
+    if (userErr) {
+      setError('Erreur de chargement du profil. Veuillez réessayer.');
+      return;
+    }
 
     if (!userData) {
       setError('Aucun compte associé. Veuillez vérifier votre email ou contacter l\'administration.');

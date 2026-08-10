@@ -3,6 +3,22 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import '@/index.css';
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg?.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    } catch {
+      /* SW unavailable */
+    }
+  });
+}
+
 const hash = window.location.hash;
 const isAuthCallback = window.location.pathname.includes('/auth/callback');
 
