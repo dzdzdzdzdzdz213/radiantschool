@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { usePublicCourses, usePublicStats } from '@/hooks/usePublicData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { asset } from '@/lib/assets';
 import { t, LANGUAGES } from '@/i18n';
-import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, GraduationCap, Sparkles, Star, Award, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart, type LucideIcon } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, ArrowRight, BookOpen, Users, Sparkles, Star, Shield, MapPin, Phone, Mail, BarChart3, RefreshCw, Heart, type LucideIcon } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
@@ -42,30 +42,6 @@ const ease = [0.16, 1, 0.3, 1] as const;
     own voice/details (year founded, real name, real anecdote).
 */
 
-function CountUp({ end = 0 }: { end?: number }) {
-  const [c, setC] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    let timer: ReturnType<typeof setInterval> | undefined;
-    const obs = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      let val = 0;
-      const step = Math.ceil(end / 60);
-      timer = setInterval(() => {
-        val += step;
-        if (val >= end) { setC(end); clearInterval(timer); } else setC(val);
-      }, 20);
-      obs.disconnect();
-    }, { threshold: 0.3 });
-    if (ref.current) obs.observe(ref.current);
-    return () => {
-      obs.disconnect();
-      if (timer) clearInterval(timer);
-    };
-  }, [end]);
-  return <span ref={ref}>{c}</span>;
-}
-
 const NAV = [
   { href: '/formations', key: 'nav.formations', label: undefined as string | undefined },
   { href: '#about', key: 'nav.apropos', label: 'Qui sommes-nous' },
@@ -99,16 +75,26 @@ export default function LandingPage() {
   const { lang, setLang } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const teacherCount = new Set((courses ?? []).map((c) => c.teacher?.id)).size;
-  const levelCount = new Set((courses ?? []).map((c) => c.level?.name)).size;
 
   return (
     <div className="min-h-screen" style={{ color: 'var(--fg)' }}>
-      <style>{`.font-handwritten { font-family: 'Caveat', cursive; }`}</style>
+      <style>{`.font-handwritten { font-family: 'Caveat', cursive; }
+.hero-nav { background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; }
+.hero-nav a, .hero-nav button { color: #F3EAD9 !important; }
+.hero-nav a:hover, .hero-nav button:hover { color: #ffffff !important; }`}</style>
 
       {/* HEADER */}
-      <header className="glass-header fixed top-0 left-0 right-0 z-50">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(scrolled || menuOpen || langOpen) ? 'glass-header' : 'hero-nav'}`}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center">
             <img src={asset('logo-transparent.webp')} alt="Radiant Academy" className="h-9 w-auto" />
@@ -185,129 +171,84 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* HERO — Animated mesh gradient */}
-      <section className="hero-dark relative min-h-screen flex items-center pt-24 overflow-hidden">
-        {/* Animated mesh background */}
-        <div className="absolute inset-0 mesh-bg" />
-        <div className="absolute inset-0 bg-black/40" />
+      {/* HERO — Classical academic, full-bleed artwork */}
+      <section
+        id="home"
+        className="relative min-h-svh w-full flex items-end lg:items-center overflow-hidden"
+        style={{ backgroundColor: '#191008' }}
+      >
+        {/* Full-bleed artwork (cover, centered on the figures) */}
+        <img
+          src={asset('images/hero-classic.webp')}
+          alt="Peinture académique classique éclairée à la flamme — deux figures savantes au centre de l'œuvre"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
 
-        {/* Floating orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="orb-1 absolute top-[15%] left-[20%] w-96 h-96 rounded-full bg-purple-500/10 blur-[50px]" />
-          <div className="orb-2 absolute top-[50%] right-[15%] w-80 h-80 rounded-full bg-pink-500/10 blur-[40px]" />
-          <div className="orb-3 absolute bottom-[20%] left-[35%] w-72 h-72 rounded-full bg-blue-500/10 blur-[40px]" />
-        </div>
+        {/* Cinematic overlay — left darker for readability, center/right artwork stays visible */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(90deg, rgba(14,9,4,0.82) 0%, rgba(14,9,4,0.45) 34%, rgba(14,9,4,0.10) 60%, rgba(14,9,4,0) 78%),' +
+              'linear-gradient(0deg, rgba(14,9,4,0.55) 0%, rgba(14,9,4,0.15) 30%, transparent 55%)',
+          }}
+        />
 
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-
-        <div className="mx-auto max-w-7xl px-6 py-16 w-full relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-20">
-            <div className="flex-1 text-center lg:text-left max-w-xl">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }} className="mb-8 inline-flex gap-2 rounded-full glass px-4 py-2">
-                <Sparkles className="h-3.5 w-3.5 text-purple-300" />
-                <span className="text-xs font-semibold text-white/80">{t('hero.badge', lang)}</span>
-              </motion.div>
-
-              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease }}>
-                <span className="block text-base sm:text-lg font-medium tracking-wider mb-3 uppercase text-white/50" style={{ letterSpacing: '0.15em' }}>{t('hero.title1', lang)}</span>
-                <span className="block text-6xl sm:text-7xl lg:text-8xl font-black leading-[0.88] tracking-tighter hero-title">{t('hero.title2', lang)}</span>
-              </motion.h1>
-
-              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2, ease }} className="mt-6 text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0 text-white/50">
-                {t('hero.subtitle', lang)}
+        {/* Content — left column, stays clear of the central figures */}
+        <div className="relative z-10 w-full">
+          <div className="mx-auto max-w-7xl px-6 pb-16 pt-32 lg:py-0 lg:pb-20">
+            <div className="max-w-[34rem]">
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease }}
+                className="mb-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]"
+              >
+                <span className="inline-block h-px w-10 bg-[#D4AF37]/70" />
+                Radiant Academy
               </motion.p>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3, ease }} className="mt-10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                <Link to="/formations" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 px-10 text-sm font-bold text-white shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.97] w-full sm:w-auto">
-                  {t('hero.cta1', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
-                </Link>
-                <Link to="/enroll" className="inline-flex h-14 items-center rounded-2xl border-2 border-white/10 px-10 text-sm font-semibold text-white/80 hover:bg-white/5 hover:border-white/20 hover:text-white transition-all duration-300 active:scale-[0.97] w-full sm:w-auto">
-                  {t('hero.cta2', lang)}
-                </Link>
-              </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1, ease }}
+                className="font-display text-[clamp(2.2rem,5.2vw,4.4rem)] font-semibold leading-[1.1] tracking-tight text-[#F3EAD9]"
+                style={{ textShadow: '0 2px 30px rgba(10,6,3,0.7)' }}
+              >
+                <span className="text-[#D4AF37]">«</span>{' '}{t('footer.tagline', lang)}{' '}<span className="text-[#D4AF37]">»</span>
+              </motion.p>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35, ease }} className="mt-8 flex items-center gap-3 justify-center lg:justify-start">
-                <div className="flex -space-x-3">
-                  {[asset('avatars/parent1.jpg'), asset('avatars/parent2.jpg'), asset('avatars/parent3.jpg'), asset('avatars/parent4.jpg')].map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-black/50" />
-                  ))}
-                </div>
-                <p className="text-xs font-medium text-left text-white/50">
-                  Rejoint par <span className="text-white font-bold">{stats?.studentCount ?? '200'}+</span> familles à Alger
-                </p>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45, ease }} className="mt-10 sm:mt-14">
-                <div className="flex items-center justify-center lg:justify-start gap-0 divide-x divide-white/10">
-                  {[
-                    { value: courses?.length ?? 0, suffix: '+', key: 'stat.formations' },
-                    { value: stats?.levelCount ?? levelCount, suffix: '', key: 'stat.niveaux' },
-                    { value: teacherCount, suffix: '+', key: 'stat.professeurs' },
-                  ].map((s, i) => (
-                    <div key={s.key} className="flex-1 min-w-[100px] px-4 sm:px-7 py-2 text-center lg:text-left">
-                      <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-none">
-                        <CountUp end={s.value} />{s.suffix}
-                      </span>
-                      <p className="mt-1 text-[11px] sm:text-xs font-medium text-white/40 uppercase tracking-widest">{t(s.key, lang)}</p>
-                    </div>
-                  ))}
-                </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3, ease }}
+                className="mt-10"
+              >
+                <Link
+                  to="/formations"
+                  className="group inline-flex h-12 w-full sm:w-auto items-center justify-center gap-2.5 rounded-full border border-[#D4AF37]/60 bg-[#D4AF37]/10 px-8 text-sm font-semibold text-[#F3EAD9] backdrop-blur-sm transition-all duration-300 hover:bg-[#D4AF37] hover:text-[#191008] active:scale-[0.97]"
+                >
+                  Discover More
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
               </motion.div>
             </div>
-
-            {/* Hero image */}
-            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.2, ease }} className="flex-1 flex justify-center lg:justify-end">
-              <div className="relative w-80 sm:w-[26rem] h-80 sm:h-[26rem]">
-                <div className="relative w-full h-full rounded-[32px] overflow-hidden shadow-2xl shadow-black/30">
-                  <img
-                    src={asset('images/hero-classroom.jpg')}
-                    alt="Élèves et professeurs de Radiant Academy en cours"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                </div>
-
-                {/* Floating badge */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.6, ease }}
-                  className="absolute -bottom-6 -left-6 glass-card rounded-2xl p-4 flex items-center gap-3"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-500">
-                    <Award className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">98% Réussite</p>
-                    <p className="text-xs text-white/50">Aux examens 2025</p>
-                  </div>
-                </motion.div>
-
-                {/* Floating rating */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.7, ease }}
-                  className="absolute -top-4 -right-4 glass-card rounded-2xl p-3 flex items-center gap-2"
-                >
-                  <div className="flex gap-0.5">
-                    {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                  </div>
-                  <span className="text-sm font-bold text-white">4.9</span>
-                </motion.div>
-
-                {/* Decorative orb */}
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-purple-500/20 blur-[60px] orb-1" />
-              </div>
-            </motion.div>
           </div>
         </div>
       </section>
 
       {/* QUI SOMMES-NOUS */}
-      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal>
-        <div className="mx-auto max-w-7xl">
+      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto', color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.07)' } as React.CSSProperties}>
+        <img
+          src={asset('images/section-teacher.webp')}
+          alt="Peinture classique d'un enseignant — l'équipe de Radiant Academy"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(180deg, rgba(9,7,12,0.9) 0%, rgba(9,7,12,0.66) 30%, rgba(9,7,12,0.66) 65%, rgba(9,7,12,0.94) 100%)' }}
+        />
+        <div className="mx-auto max-w-7xl relative">
           <div className="grid gap-16 lg:grid-cols-2 items-center mb-24">
             {/* Story */}
             <div>
@@ -331,30 +272,6 @@ export default function LandingPage() {
                   <p className="font-handwritten text-3xl leading-none mb-1" style={{ color: 'var(--primary)' }}>Amina B.</p>
                   <p className="text-xs" style={{ color: 'var(--fg-muted)' }}>Fondatrice — prof de mathématiques depuis 12 ans</p>
                 </div>
-              </div>
-            </div>
-
-            {/* Photo collage */}
-            <div className="relative h-[420px] hidden lg:block">
-              <img
-                src={asset('images/about-main.jpg')} loading="lazy"
-                alt="L'équipe de Radiant Academy"
-                className="absolute top-0 right-0 w-72 h-80 object-cover rounded-2xl"
-                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}
-              />
-              <img
-                src={asset('images/about-secondary.jpg')} loading="lazy"
-                alt="Un cours de soutien scolaire"
-                className="absolute bottom-0 left-0 w-56 h-64 object-cover rounded-2xl"
-                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '4px solid var(--bg)' }}
-              />
-              <div
-                className="absolute bottom-16 right-10 rounded-lg p-3 w-40"
-                style={{ backgroundColor: '#fff', boxShadow: '0 16px 40px rgba(0,0,0,0.18)', transform: 'rotate(4deg)' }}
-              >
-                <p className="font-handwritten text-lg leading-tight text-center" style={{ color: '#1f2937' }}>
-                  Merci pour cette année ❤️ — un parent
-                </p>
               </div>
             </div>
           </div>
@@ -394,13 +311,21 @@ export default function LandingPage() {
       {/* FORMATIONS — Premium Educational Experience */}
 
 
-      {/* WHY US */}
-      <section id="why" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto' }}>
-        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 50% 40% at 50% 0%, color-mix(in srgb, var(--primary) 4%, transparent), transparent)` }} />
+      {/* WHY US + STATS — one continuous space photo */}
+      <section id="why" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto', color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.06)' } as React.CSSProperties}>
+        <img
+          src={asset('images/section-space.webp')}
+          alt="Nébuleuse spatiale — le cosmos comme toile de fond"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(180deg, rgba(9,7,12,0.9) 0%, rgba(9,7,12,0.6) 35%, rgba(9,7,12,0.6) 65%, rgba(9,7,12,0.92) 100%)' }}
+        />
         <div className="mx-auto max-w-7xl relative">
           <div className="text-center mb-16">
-            <div className="badge inline-flex mb-5">{t('section.pourquoi.badge', lang)}</div>
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">{t('section.pourquoi.title', lang)}</h2>
+            <div className="inline-flex mb-5 gap-2 rounded-full glass px-4 py-2 text-white/80"><Sparkles className="h-3.5 w-3.5" />{t('section.pourquoi.badge', lang)}</div>
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white">{t('section.pourquoi.title', lang)}</h2>
             <div className="divider-gradient mt-5" />
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -431,45 +356,41 @@ export default function LandingPage() {
               );
             })}
           </div>
-        </div>
-      </section>
 
-      {/* STATS BANNER */}
-      <section className="relative py-20 px-6 overflow-hidden">
-        <div className="absolute inset-0 mesh-bg" />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[20%] left-[10%] w-72 h-72 rounded-full bg-purple-500/10 blur-[60px]" />
-          <div className="absolute bottom-[20%] right-[10%] w-80 h-80 rounded-full bg-pink-500/10 blur-[60px]" />
-        </div>
-        <div className="mx-auto max-w-5xl relative z-10">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">{t('section.pourquoi.title', lang)}</h2>
-            <p className="mt-3 text-white/40 text-sm">Des chiffres qui parlent d'eux-mêmes</p>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {[
-              { value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
-              { value: `${stats?.studentCount ?? 0}`, suffix: '+', label: 'Étudiants', sub: 'Inscrits', color: '#a855f7' },
-              { value: `${stats?.successRate ?? 0}`, suffix: '%', label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
-              { value: `${stats?.yearsActive ?? 0}`, suffix: '+', label: "Années", sub: "D'expérience", color: '#3b82f6' },
-            ].map((s, i) => (
-              <div key={i} className="text-center">
-                <p className="text-4xl sm:text-5xl font-black tracking-tight leading-none" style={{ color: s.color }}>
-                  {s.value}{s.suffix ?? ''}
-                </p>
-                <p className="mt-2 text-sm font-bold text-white">{s.label}</p>
-                <p className="text-[11px] text-white/35 mt-0.5">{s.sub}</p>
-              </div>
-            ))}
+          {/* Stats — same photo, continuous */}
+          <div className="mt-24 border-t border-white/10 pt-14">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">{t('section.pourquoi.title', lang)}</h2>
+              <p className="mt-3 text-white/40 text-sm">Des chiffres qui parlent d'eux-mêmes</p>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+              {[
+                { value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
+                { value: `${stats?.studentCount ?? 0}`, suffix: '+', label: 'Étudiants', sub: 'Inscrits', color: '#a855f7' },
+                { value: `${stats?.successRate ?? 0}`, suffix: '%', label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
+                { value: `${stats?.yearsActive ?? 0}`, suffix: '+', label: "Années", sub: "D'expérience", color: '#3b82f6' },
+              ].map((s, i) => (
+                <div key={i} className="text-center">
+                  <p className="text-4xl sm:text-5xl font-black tracking-tight leading-none" style={{ color: s.color }}>
+                    {s.value}{s.suffix ?? ''}
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-white">{s.label}</p>
+                  <p className="text-[11px] text-white/35 mt-0.5">{s.sub}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA — Animated gradient */}
+      {/* CTA — Ready to join? */}
       <section className="relative overflow-hidden py-36 px-6">
-        <div className="absolute inset-0 mesh-bg" />
-        <div className="absolute inset-0 bg-black/20" />
+        <img
+          src={asset('images/section-alch.webp')}
+          alt="Peinture d'alchimiste éclairée à la flamme — fond de la section d'inscription"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/55" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="orb-1 absolute top-[30%] left-[20%] w-96 h-96 rounded-full bg-white/5 blur-[40px]" />
           <div className="orb-2 absolute bottom-[30%] right-[20%] w-80 h-80 rounded-full bg-white/5 blur-[40px]" />
@@ -482,12 +403,11 @@ export default function LandingPage() {
               {t('cta.badge', lang)}
             </div>
             <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.02]">{t('cta.title', lang)}</h2>
-            <p className="mt-6 text-white/60 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">{t('cta.subtitle', lang)}</p>
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
-              <Link to="/enroll" className="inline-flex h-14 items-center gap-2.5 rounded-2xl bg-white px-10 text-sm font-bold text-purple-700 shadow-2xl transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-1 active:scale-[0.97]">
-                {t('cta.button', lang)} <ArrowRight className="h-4 w-4 rtl-flip" />
+              <Link to="/enroll" className="group inline-flex h-14 items-center gap-2.5 rounded-2xl border border-[#D4AF37]/60 bg-[#D4AF37]/10 px-10 text-sm font-bold text-[#F3EAD9] backdrop-blur-sm transition-all duration-300 hover:bg-[#D4AF37] hover:text-[#191008] hover:shadow-[0_20px_60px_rgba(212,175,55,0.25)] active:scale-[0.97]">
+                {t('cta.button', lang)} <ArrowRight className="h-4 w-4 rtl-flip transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
-              <Link to="/formations" className="inline-flex h-14 items-center rounded-2xl border-2 border-white/20 px-10 text-sm font-semibold text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white hover:border-white/30 active:scale-[0.97]">
+              <Link to="/formations" className="inline-flex h-14 items-center rounded-2xl border border-[#D4AF37]/30 bg-white/5 px-10 text-sm font-semibold text-[#F3EAD9]/80 backdrop-blur-sm transition-all duration-300 hover:bg-[#D4AF37]/15 hover:text-[#F3EAD9] hover:border-[#D4AF37]/50 active:scale-[0.97]">
                 {t('cta.secondary', lang)}
               </Link>
             </div>
@@ -496,10 +416,16 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer id="contact" className="relative" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 left-1/4 w-64 h-64 rounded-full blur-3xl opacity-[0.03]" style={{ background: `radial-gradient(circle, var(--primary), transparent)` }} />
-        </div>
+      <footer id="contact" className="relative overflow-hidden" style={{ '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.6)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.05)' } as React.CSSProperties}>
+        <img
+          src={asset('images/section-alchv2.webp')}
+          alt="Peinture classique d'alchimiste au travail — science et étude"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(180deg, rgba(9,7,12,0.94) 0%, rgba(9,7,12,0.8) 40%, rgba(9,7,12,0.85) 100%)' }}
+        />
         <div className="mx-auto max-w-7xl px-6 pt-20 pb-10 relative">
           <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-12">
             {/* Brand */}
@@ -563,9 +489,9 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Map */}
-          <div className="mt-16 rounded-2xl overflow-hidden sm:flex" style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
-            <div className="sm:w-2/5 p-7 flex flex-col justify-center gap-4" style={{ backgroundColor: 'var(--bg-card)' }}>
+          {/* Location */}
+          <div className="mt-16 rounded-2xl sm:flex items-stretch" style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
+            <div className="flex-1 p-7 flex flex-col justify-center gap-4" style={{ backgroundColor: 'var(--bg-card)' }}>
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ backgroundColor: `color-mix(in srgb, var(--accent) 10%, transparent)` }}>
                 <MapPin className="h-6 w-6" style={{ color: 'var(--accent)' }} />
               </div>
@@ -575,20 +501,15 @@ export default function LandingPage() {
                   Radiant Academy<br />Bordj El Bahri, Alger<br />Algérie
                 </p>
               </div>
-              <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="btn-primary self-start mt-1 h-10 px-5 text-xs gap-2 rounded-xl">
-                {t('landing.open_maps', lang)} <ArrowRight className="h-3.5 w-3.5 rtl-flip" />
+              <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#D4AF37]/60 bg-[#D4AF37]/10 px-5 text-xs font-semibold text-[#F3EAD9] backdrop-blur-sm transition-all duration-300 hover:bg-[#D4AF37] hover:text-[#191008] active:scale-[0.97]">
+                {t('landing.open_maps', lang)} <ArrowRight className="h-3.5 w-3.5 rtl-flip transition-transform duration-300 group-hover:translate-x-1" />
               </a>
             </div>
-            <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="sm:w-3/5 h-56 block group overflow-hidden relative" style={{ borderTop: '1px solid var(--border)', textDecoration: 'none' }}>
-              <img
-                src="https://staticmap.openstreetmap.de/staticmap.php?center=36.75,3.12&zoom=15&size=600x400&maptype=mapnik"
-                alt="Radiant Academy - Bordj El Bahri, Alger"
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30">
-                <span className="text-white text-sm font-medium flex items-center gap-2"><MapPin className="h-4 w-4" />{t('landing.open_maps', lang)}</span>
+            <a href="https://www.google.com/maps/search/Radiant+Academy+Bordj+El+Bahri+Alger/" target="_blank" rel="noopener noreferrer" className="sm:w-2/5 block group overflow-hidden relative" style={{ borderTop: '1px solid var(--border)', textDecoration: 'none' }}>
+              <div className="w-full h-56 sm:h-full flex items-center justify-center transition-colors duration-300 group-hover:bg-white/5">
+                <span className="text-sm font-medium flex items-center gap-2 px-6 text-center" style={{ color: 'var(--fg-muted)' }}>
+                  <MapPin className="h-4 w-4 shrink-0" style={{ color: 'var(--accent)' }} />{t('landing.open_maps', lang)}
+                </span>
               </div>
             </a>
           </div>

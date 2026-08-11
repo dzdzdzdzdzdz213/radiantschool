@@ -4399,6 +4399,17 @@ export type Database = {
         }
         Returns: Json
       }
+      record_invoice_payment: {
+        Args: {
+          p_amount: number
+          p_invoice_id: number
+          p_notes?: string
+          p_payment_date?: string
+          p_payment_method: string
+          p_payment_type?: string
+        }
+        Returns: Json
+      }
       register_child: {
         Args: {
           p_first_name: string

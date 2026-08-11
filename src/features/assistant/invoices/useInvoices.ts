@@ -105,3 +105,39 @@ export function useDeleteInvoice() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_invoices'] }); },
   });
 }
+
+export interface RecordPaymentInput {
+  invoice_id: number;
+  amount: number;
+  payment_method: Database['public']['Enums']['payment_method'];
+  payment_date: string;
+  notes?: string;
+}
+
+export interface RecordPaymentResult {
+  payment_id?: number;
+  receipt_number?: string;
+  invoice_status?: string;
+  remaining?: number;
+}
+
+export function useRecordInvoicePayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: RecordPaymentInput): Promise<RecordPaymentResult> => {
+      const { data: result, error } = await supabase.rpc('record_invoice_payment', {
+        p_invoice_id: data.invoice_id,
+        p_amount: data.amount,
+        p_payment_method: data.payment_method,
+        p_payment_date: data.payment_date,
+        p_notes: data.notes ?? undefined,
+      });
+      if (error) throw error;
+      return (result ?? {}) as RecordPaymentResult;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['assistant_invoices'] });
+      qc.invalidateQueries({ queryKey: ['assistant_report_payments'] });
+    },
+  });
+}

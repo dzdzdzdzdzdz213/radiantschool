@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { Search, Plus, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, X, Pencil, Trash2, Banknote } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
+import { Select, SelectItem } from '@/components/ui/select';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice } from './useInvoices';
+import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice, useRecordInvoicePayment, type InvoiceRecord } from './useInvoices';
 import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -16,6 +17,8 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const PAYMENT_METHODS = ['cash', 'bank_transfer', 'card', 'check'] as const;
 
 export default function InvoicesPage() {
   const { lang } = useLang();
@@ -28,6 +31,7 @@ export default function InvoicesPage() {
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
   const deleteInvoice = useDeleteInvoice();
+  const recordPayment = useRecordInvoicePayment();
 
   useErrorToast(isError, lang, t('nav.invoices', lang));
 
@@ -92,6 +96,33 @@ export default function InvoicesPage() {
   };
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [payInvoice, setPayInvoice] = useState<InvoiceRecord | null>(null);
+  const [payForm, setPayForm] = useState({ amount: '', method: 'cash', date: '', notes: '' });
+
+  const openPayModal = (inv: InvoiceRecord) => {
+    const remaining = inv.totalAmount - inv.paidAmount;
+    setPayInvoice(inv);
+    setPayForm({ amount: remaining > 0 ? remaining.toString() : '', method: 'cash', date: new Date().toISOString().slice(0, 10), notes: '' });
+  };
+
+  const handleRecordPayment = () => {
+    if (!payInvoice) return;
+    const amount = parseFloat(payForm.amount);
+    if (!amount || amount <= 0 || !payForm.date) {
+      toast(t('invoices.fill_fields', lang), 'error');
+      return;
+    }
+    recordPayment.mutate(
+      { invoice_id: Number(payInvoice.id), amount, payment_method: payForm.method as never, payment_date: payForm.date, notes: payForm.notes || undefined },
+      {
+        onSuccess: (res) => {
+          toast(res.receipt_number ? `${t('payments.recorded', lang)} — ${res.receipt_number}` : t('payments.recorded', lang), 'success');
+          setPayInvoice(null);
+        },
+        onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
+      },
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -136,6 +167,47 @@ export default function InvoicesPage() {
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>
                 <Button onClick={handleSave} disabled={createInvoice.isPending || updateInvoice.isPending}>
                   {(createInvoice.isPending || updateInvoice.isPending) ? t('common.loading', lang) : (editingId ? t('common.save', lang) : t('invoices.create', lang))}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      {payInvoice && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setPayInvoice(null)} />
+          <Card className="relative w-full max-w-lg mx-4 my-auto">
+            <CardHeader className="flex items-center justify-between">
+              <CardTitle className="text-sm">{t('payments.record_title', lang)}</CardTitle>
+              <button onClick={() => setPayInvoice(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between text-sm bg-muted/40 rounded-lg px-3 py-2">
+                <span className="font-medium">{payInvoice.invoiceNumber} · {payInvoice.studentName}</span>
+                <span className="text-muted-foreground">{t('payments.remaining', lang)} : <span className="font-semibold text-foreground">{formatCurrency(payInvoice.totalAmount - payInvoice.paidAmount)}</span></span>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('common.amount', lang)}</Label>
+                <Input type="number" min="0" value={payForm.amount} onChange={e => setPayForm(f => ({ ...f, amount: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('payments.method', lang)}</Label>
+                <Select value={payForm.method} onValueChange={v => setPayForm(f => ({ ...f, method: v }))} placeholder={t('payments.method', lang)}>
+                  {PAYMENT_METHODS.map(m => <SelectItem key={m} value={m}>{t(`payments.method_${m === 'bank_transfer' ? 'transfer' : m}`, lang)}</SelectItem>)}
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('payments.date', lang)}</Label>
+                <Input type="date" value={payForm.date} onChange={e => setPayForm(f => ({ ...f, date: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('payments.notes', lang)}</Label>
+                <Input value={payForm.notes} onChange={e => setPayForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setPayInvoice(null)}>{t('common.cancel', lang)}</Button>
+                <Button onClick={handleRecordPayment} disabled={recordPayment.isPending}>
+                  {recordPayment.isPending ? t('common.loading', lang) : t('payments.record', lang)}
                 </Button>
               </div>
             </CardContent>
@@ -195,6 +267,7 @@ export default function InvoicesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openPayModal(inv)} disabled={remaining <= 0 || inv.status === 'cancelled'} title={t('payments.record', lang)}><Banknote className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(inv)}><Pencil className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive" onClick={() => setConfirmDelete({ id: inv.id, name: inv.invoiceNumber })} disabled={deleteInvoice.isPending}><Trash2 className="h-4 w-4" /></Button>
                         </div>
