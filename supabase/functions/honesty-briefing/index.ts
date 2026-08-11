@@ -1,9 +1,16 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Honesty Box Briefing: clusters anonymous submissions with Gemini.
 // Admin/assistant only. Submissions are displayed WITHOUT sender identity.
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
+};
 
 async function authorize(req: Request, supabase: ReturnType<typeof createClient>) {
   const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
@@ -19,10 +26,10 @@ async function authorize(req: Request, supabase: ReturnType<typeof createClient>
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204 });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: corsHeaders });
   }
 
   const supabase = createClient(
@@ -33,7 +40,7 @@ Deno.serve(async (req) => {
   try {
     const auth = await authorize(req, supabase);
     if (!auth.ok) {
-      return new Response(JSON.stringify({ error: auth.error }), { status: auth.status });
+      return new Response(JSON.stringify({ error: auth.error }), { status: auth.status, headers: corsHeaders });
     }
 
     const { data: rows, error: fetchErr } = await supabase
@@ -46,7 +53,7 @@ Deno.serve(async (req) => {
     if (fetchErr) throw fetchErr;
 
     if (!rows || rows.length === 0) {
-      return new Response(JSON.stringify({ ok: true, clustered: 0, themes: [] }), { status: 200 });
+      return new Response(JSON.stringify({ ok: true, clustered: 0, themes: [] }), { status: 200, headers: corsHeaders });
     }
 
     const { data: key } = await supabase.rpc("ai_get_gemini_key");
@@ -99,12 +106,12 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ ok: true, clustered: rows.length, themes: parsed.themes ?? [] }), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 });
