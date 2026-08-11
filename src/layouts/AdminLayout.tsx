@@ -64,6 +64,7 @@ export default function AdminLayout() {
     { label: t('nav.reports', lang), path: '/admin/reports', icon: 'BarChart3' },
     { label: t('nav.messages', lang), path: '/admin/messages', icon: 'MessageSquare' },
     { label: t('nav.audit_log', lang), path: '/admin/audit-log', icon: 'History' },
+    { label: t('honesty.title', lang), path: '/admin/honesty', icon: 'ShieldCheck' },
     { label: t('nav.profile', lang), path: '/admin/profile', icon: 'UserCircle' },
     { label: t('nav.settings', lang), path: '/admin/settings', icon: 'Settings' },
   ];

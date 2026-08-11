@@ -2002,6 +2002,45 @@ export type Database = {
           },
         ]
       }
+      honesty_box: {
+        Row: {
+          ai_notes: string | null
+          category: string | null
+          content: string
+          created_at: string
+          deleted_at: string | null
+          id: number
+          role: string
+          sender_id: string
+          severity: number | null
+          status: string
+        }
+        Insert: {
+          ai_notes?: string | null
+          category?: string | null
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: never
+          role: string
+          sender_id: string
+          severity?: number | null
+          status?: string
+        }
+        Update: {
+          ai_notes?: string | null
+          category?: string | null
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: never
+          role?: string
+          sender_id?: string
+          severity?: number | null
+          status?: string
+        }
+        Relationships: []
+      }
       invoice_items: {
         Row: {
           course_id: number | null
@@ -4172,6 +4211,16 @@ export type Database = {
       ai_tool_my_student_progress: { Args: never; Returns: Json }
       ai_tool_revenue: { Args: never; Returns: Json }
       ai_tool_school_overview: { Args: never; Returns: Json }
+      ai_tool_send_message: {
+        Args: {
+          body?: string
+          email?: string
+          registration?: string
+          student_id?: string
+          subject?: string
+        }
+        Returns: Json
+      }
       ai_tool_student_search: { Args: { query: string }; Returns: Json }
       ai_tool_teacher_students: { Args: never; Returns: Json }
       ai_tool_unpaid_invoices: { Args: never; Returns: Json }
@@ -4267,6 +4316,37 @@ export type Database = {
       gl_cancel_reference: {
         Args: { p_reference_id: number; p_reference_type: string }
         Returns: undefined
+      }
+      guardian_pulse_run: { Args: never; Returns: string }
+      honesty_delete: { Args: { p_id: number }; Returns: undefined }
+      honesty_list: {
+        Args: never
+        Returns: {
+          ai_notes: string
+          category: string
+          content: string
+          created_at: string
+          id: number
+          role: string
+          severity: number
+          status: string
+        }[]
+      }
+      honesty_my_submissions: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: number
+          status: string
+        }[]
+      }
+      honesty_set_status: {
+        Args: { p_id: number; p_status: string }
+        Returns: undefined
+      }
+      honesty_submit: {
+        Args: { p_content: string; p_role: string }
+        Returns: number
       }
       is_admin: { Args: never; Returns: boolean }
       is_assistant: { Args: never; Returns: boolean }

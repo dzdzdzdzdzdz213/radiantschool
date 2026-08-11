@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
+import HonestyBoxWidget from '@/features/shared/HonestyBoxWidget';
 
 const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 
@@ -144,6 +145,8 @@ export default function StudentDashboardPage() {
           </div>
         </motion.div>
       )}
+
+      <HonestyBoxWidget />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency, getFullName } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import HonestyBoxWidget from '@/features/shared/HonestyBoxWidget';
 
 interface ChildSummary {
   id: string;
@@ -318,6 +319,8 @@ export default function ParentDashboardPage() {
           </div>
         </motion.div>
       </div>
+
+      <HonestyBoxWidget />
     </div>
   );
 }
