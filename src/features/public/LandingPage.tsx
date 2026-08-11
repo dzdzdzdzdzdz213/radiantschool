@@ -182,6 +182,8 @@ export default function LandingPage() {
           src={asset('images/hero-classic.webp')}
           alt="Peinture académique classique éclairée à la flamme — deux figures savantes au centre de l'œuvre"
           className="absolute inset-0 h-full w-full object-cover object-center"
+          fetchPriority="high"
+          decoding="async"
         />
 
         {/* Cinematic overlay — left darker for readability, center/right artwork stays visible */}
@@ -243,6 +245,8 @@ export default function LandingPage() {
           src={asset('images/section-teacher.webp')}
           alt="Peinture classique d'un enseignant — l'équipe de Radiant Academy"
           className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
         <div
           className="absolute inset-0 pointer-events-none"
@@ -317,6 +321,8 @@ export default function LandingPage() {
           src={asset('images/section-space.webp')}
           alt="Nébuleuse spatiale — le cosmos comme toile de fond"
           className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
         <div
           className="absolute inset-0 pointer-events-none"
@@ -389,6 +395,8 @@ export default function LandingPage() {
           src={asset('images/section-alch.webp')}
           alt="Peinture d'alchimiste éclairée à la flamme — fond de la section d'inscription"
           className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-black/55" />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -421,6 +429,8 @@ export default function LandingPage() {
           src={asset('images/section-alchv2.webp')}
           alt="Peinture classique d'alchimiste au travail — science et étude"
           className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
         />
         <div
           className="absolute inset-0 pointer-events-none"
