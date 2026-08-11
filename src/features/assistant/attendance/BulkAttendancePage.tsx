@@ -46,12 +46,18 @@ export default function BulkAttendancePage() {
   const { data: courses } = useQuery({
     queryKey: ['active-courses'],
     queryFn: async () => {
+      const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()];
       const { data } = await supabase
         .from('courses')
-        .select('id, name, subject:subjects(name)')
+        .select('id, name, subject:subjects(name), course_schedules(id, day_of_week)')
         .eq('status', 'active')
         .order('name');
-      return (data ?? []).map(c => ({ id: c.id, name: c.name, subject: c.subject?.name ?? '' }));
+      return (data ?? []).map(c => ({
+        id: c.id,
+        name: c.name,
+        subject: c.subject?.name ?? '',
+        scheduleId: c.course_schedules?.find(s => s.day_of_week === dayName)?.id ?? c.course_schedules?.[0]?.id ?? undefined,
+      }));
     },
     staleTime: 60_000,
   });
@@ -102,7 +108,9 @@ export default function BulkAttendancePage() {
         .eq('date', date)
         .maybeSingle();
 
+      const scheduleId = courses?.find(c => c.id === selectedCourseId)?.scheduleId;
       const payload: Partial<Database['public']['Tables']['attendance']['Insert']> = { status: status as Database['public']['Enums']['attendance_status'], recorded_by: profile?.id ?? null, method: 'manual' as const };
+      if (scheduleId) payload.course_schedule_id = scheduleId;
       if (existing.data) {
         const { error } = await supabase
           .from('attendance')
