@@ -1,49 +1,54 @@
 {
-    "framework": "vite",
-    "buildCommand": "npm run build",
-    "outputDirectory": "dist",
-    "rewrites": [
-        { "source": "/(.*)", "destination": "/index.html" }
-    ],
-    "headers": [
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
         {
-            "source": "/(.*)",
-            "headers": [
-                { "key": "X-Frame-Options", "value": "DENY" },
-                { "key": "X-Content-Type-Options", "value": "nosniff" },
-                { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-                { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
-                { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-                { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
-                { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-                { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
-                { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-                { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://kaoxcbqhuwhtadpgccjp.supabase.co https://*.googleapis.com https://*.gstatic.com https://*.openstreetmap.de; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://kaoxcbqhuwhtadpgccjp.supabase.co wss://kaoxcbqhuwhtadpgccjp.supabase.co; frame-src https://www.google.com https://*.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" }
-            ]
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
         },
         {
-            "source": "/staff/(.*)",
-            "headers": [
-                { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-            ]
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
         },
         {
-            "source": "/admin/(.*)",
-            "headers": [
-                { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-            ]
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         },
         {
-            "source": "/assistant/(.*)",
-            "headers": [
-                { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-            ]
-        },
-        {
-            "source": "/teacher/(.*)",
-            "headers": [
-                { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-            ]
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://kaoxcbqhuwhtadpgccjp.supabase.co https://*.googleapis.com https://*.gstatic.com https://*.openstreetmap.de; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://kaoxcbqhuwhtadpgccjp.supabase.co wss://kaoxcbqhuwhtadpgccjp.supabase.co; frame-src https://www.google.com https://*.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
         }
-    ]
+      ]
+    },
+    {
+      "source": "/staff/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/assistant/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/teacher/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    }
+  ]
 }
