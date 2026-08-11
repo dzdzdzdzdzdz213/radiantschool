@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Send, ShieldCheck, Loader2 } from 'lucide-react';
+import { Send, ShieldCheck, Loader2, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
@@ -16,6 +17,34 @@ export default function HonestyBoxWidget() {
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const { data: isEnrolled } = useQuery({
+    queryKey: ['honesty-enrolled', profile?.id, profile?.role],
+    queryFn: async () => {
+      if (!profile?.id) return false;
+      if (profile.role === 'parent') {
+        const { data: links } = await supabase
+          .from('student_parent')
+          .select('student_id')
+          .eq('parent_id', profile.id);
+        const childIds = (links ?? []).map((l) => l.student_id);
+        if (!childIds.length) return false;
+        const { count } = await supabase
+          .from('course_enrollments')
+          .select('id', { count: 'exact', head: true })
+          .in('student_id', childIds)
+          .eq('status', 'active');
+        return (count ?? 0) > 0;
+      }
+      const { count } = await supabase
+        .from('course_enrollments')
+        .select('id', { count: 'exact', head: true })
+        .eq('student_id', profile.id)
+        .eq('status', 'active');
+      return (count ?? 0) > 0;
+    },
+    enabled: !!profile?.id && (profile?.role === 'parent' || profile?.role === 'student'),
+  });
 
   async function handleSubmit() {
     if (content.trim().length < 10) {
@@ -35,6 +64,8 @@ export default function HonestyBoxWidget() {
           toast(t('honesty.limit', lang), 'error');
         } else if (msg.includes('between')) {
           toast(t('honesty.placeholder', lang), 'warning');
+        } else if (msg.includes('enrolled')) {
+          toast(t('honesty.enrolled_only', lang), 'warning');
         } else {
           toast(msg, 'error');
         }
@@ -63,7 +94,12 @@ export default function HonestyBoxWidget() {
           </div>
           <p className="text-xs text-muted-foreground mb-4">{t('honesty.subtitle', lang)}</p>
 
-          {sent ? (
+          {isEnrolled === false ? (
+            <div className="rounded-xl bg-muted border border-border p-4 text-center">
+              <Lock className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">{t('honesty.enrolled_only', lang)}</p>
+            </div>
+          ) : sent ? (
             <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-center">
               <ShieldCheck className="h-6 w-6 mx-auto mb-2 text-emerald-500" />
               <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{t('honesty.submitted', lang)}</p>
