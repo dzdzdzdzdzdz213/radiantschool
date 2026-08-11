@@ -140,7 +140,7 @@ export default function ParentDashboardPage() {
       const [enrRes, attRes, schedRes] = await Promise.all([
         supabase.from('course_enrollments').select('student_id, course:courses(id, name)').in('student_id', childIds).eq('status', 'active'),
         supabase.from('attendance').select('student_id, status').in('student_id', childIds),
-        supabase.from('course_schedules').select('id, start_time, end_time, course:courses!inner(id, name), course:courses!inner(course_enrollments!inner(student_id))').eq('day_of_week', today).in('course.course_enrollments.student_id', childIds).order('start_time', { ascending: true }),
+        supabase.from('course_schedules').select('id, start_time, end_time, course:courses!inner(id, name, course_enrollments!inner(student_id))').eq('day_of_week', today).in('course.course_enrollments.student_id', childIds).order('start_time', { ascending: true }),
       ]);
 
       const enrollmentsByStudent: Record<string, NonNullable<NonNullable<(typeof enrRes.data)>[number]['course']>[]> = {};

@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const results = { sent: 0, skipped: 0, errors: [] as string[] };
+    const results = { sent: 0, skipped: 0, errors: [] as string[], email_sent: true, email_errors: [] as string[] };
 
     const { data: student } = await supabase
       .from("users")
@@ -150,6 +150,16 @@ Deno.serve(async (req) => {
         const notifBody = await notifRes.text();
         if (!notifRes.ok) {
           throw new Error(`send-notification ${notifRes.status}: ${notifBody.slice(0, 300)}`);
+        }
+        let parsed: any = {};
+        try {
+          parsed = JSON.parse(notifBody);
+        } catch {
+          // ignore
+        }
+        results.email_sent = (results.email_sent ?? true) && parsed?.email_sent === true;
+        if (parsed?.email_error) {
+          results.email_errors.push(`parent ${parent.id}: ${parsed.email_error}`);
         }
         results.sent++;
       } catch (e) {
