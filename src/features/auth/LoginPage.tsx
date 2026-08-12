@@ -111,7 +111,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex flex-1 flex-col items-center justify-center p-6 sm:p-10 z-10">
+      <div className="relative flex flex-1 flex-col items-center justify-center p-6 sm:p-10 z-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
