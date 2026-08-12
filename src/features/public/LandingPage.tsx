@@ -34,7 +34,7 @@ const ease = [0.16, 1, 0.3, 1] as const;
   - Add a real i18n key for 'nav.apropos' in your i18n files (French/
     Arabic/English). Until then it falls back to the hardcoded label
     below so nothing breaks.
-  - Swap every placeholder photo path (/team/*.jpg, /images/*.jpg)
+  - Swap every placeholder photo path (/team/*.webp, /images/*.webp)
     for real photos of your actual teachers/students. Placeholder
     photos are the fastest way to make a "human" section feel fake —
     real faces are what actually does the work here.
@@ -51,10 +51,10 @@ const NAV = [
 
 // Placeholder team data — replace photos + bios with your real team.
 const TEAM = [
-  { name: 'Amina B.', role: 'Fondatrice — Prof de Mathématiques', years: '12 ans d\'expérience', photo: asset('team/amina.jpg') },
-  { name: 'Yacine K.', role: 'Prof de Physique', years: '8 ans d\'expérience', photo: asset('team/yacine.jpg') },
-  { name: 'Sarah M.', role: 'Prof de Français', years: '6 ans d\'expérience', photo: asset('team/sarah.jpg') },
-  { name: 'Riad T.', role: 'Coordinateur pédagogique', years: '10 ans d\'expérience', photo: asset('team/riad.jpg') },
+  { name: 'Amina B.', role: 'Fondatrice — Prof de Mathématiques', years: '12 ans d\'expérience', photo: asset('team/amina.webp') },
+  { name: 'Yacine K.', role: 'Prof de Physique', years: '8 ans d\'expérience', photo: asset('team/yacine.webp') },
+  { name: 'Sarah M.', role: 'Prof de Français', years: '6 ans d\'expérience', photo: asset('team/sarah.webp') },
+  { name: 'Riad T.', role: 'Coordinateur pédagogique', years: '10 ans d\'expérience', photo: asset('team/riad.webp') },
 ];
 
 export default function LandingPage() {
@@ -271,7 +271,7 @@ export default function LandingPage() {
               </p>
 
               <div className="flex items-center gap-4 rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-                <img src={asset('team/founder.jpg')} loading="lazy" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
+                <img src={asset('team/founder.webp')} loading="lazy" alt="Fondatrice de Radiant Academy" className="h-16 w-16 rounded-full object-cover shrink-0" style={{ border: '2px solid var(--bg)', boxShadow: '0 0 0 1px var(--border)' }} />
                 <div>
                   <p className="font-handwritten text-3xl leading-none mb-1" style={{ color: 'var(--primary)' }}>Amina B.</p>
                   <p className="text-xs" style={{ color: 'var(--fg-muted)' }}>Fondatrice — prof de mathématiques depuis 12 ans</p>
