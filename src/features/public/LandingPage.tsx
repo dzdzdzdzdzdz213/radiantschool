@@ -531,6 +531,9 @@ export default function LandingPage() {
               <Link to="/mentions-legales" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Mentions légales</Link>
               <Link to="/cgv" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">CGV</Link>
               <Link to="/confidentialite" className="transition-all duration-200 hover:text-[var(--fg)] hover:underline underline-offset-4">Confidentialité</Link>
+              <Link to="/mentions-legales" className="flex items-center gap-2 transition-all duration-200 hover:opacity-80">
+                <img src={asset('images/dz.webp')} alt="dz" className="h-6 w-auto rounded-md object-cover" loading="lazy" />
+              </Link>
             </div>
           </div>
         </div>
