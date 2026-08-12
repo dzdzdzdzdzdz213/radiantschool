@@ -98,22 +98,6 @@ export default function LoginPage() {
                 Connectez-vous pour suivre vos formations, consulter vos résultats et rester informé de tout.
               </p>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease, delay: 0.15 }}
-              className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40"
-            >
-              <img
-                src={asset('alex-hero.jpg')}
-                alt="Radiant Academy"
-                className="h-64 w-full object-cover sm:h-80"
-                loading="eager"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-              <p className="absolute bottom-4 left-4 text-sm font-semibold text-white/90">Radiant Learning — Alex</p>
-            </motion.div>
           </div>
 
         <motion.p
@@ -236,7 +220,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 rounded-2xl text-sm font-bold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 border-0 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300"
+                className="w-full h-12 rounded-2xl text-sm font-bold border border-[#D4AF37]/60 bg-[#D4AF37]/10 backdrop-blur-sm text-[#F3EAD9] hover:bg-[#D4AF37] hover:text-[#191008] transition-all duration-300 shadow-lg shadow-black/25"
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {isLoading ? t('common.loading', lang) : t('auth.sign_in', lang)}
