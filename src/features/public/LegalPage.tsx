@@ -72,14 +72,13 @@ export default function LegalPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-background">
-      {/* Full-page photo */}
-      <div className="fixed inset-0 -z-10">
-        <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-full w-full object-cover" loading="lazy" />
+    <div className="relative min-h-screen w-full overflow-hidden bg-black">
+      <div className="absolute inset-0">
+        <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-black/60" />
       </div>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-12">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-12">
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm mb-8 text-white/80 transition-colors hover:text-white">
           <ArrowLeft className="h-4 w-4" /> Retour à l'accueil
         </Link>
