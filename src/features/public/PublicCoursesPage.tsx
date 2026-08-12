@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePublicCourses } from '@/hooks/usePublicData';
@@ -6,6 +6,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus } from 'lucide-react';
 import { getCourseImageUrl } from '@/lib/storage';
+import { asset } from '@/lib/assets';
 
 const categories = [
   { key: 'all', label: 'Tous', icon: BookOpen, btnGradient: 'linear-gradient(135deg, var(--primary), var(--accent))' },
@@ -48,8 +49,10 @@ export default function PublicCoursesPage() {
   for (const g of streamsByYear) g.streams.sort();
 
   return (
-    <div className="min-h-screen relative" style={{ color: 'var(--fg)' }}>
-      {/* Background handled globally by AnimatedBackground */}
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#0a0f14', color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--bg-card': 'rgba(255,255,255,0.07)', '--border': 'rgba(255,255,255,0.12)' } as CSSProperties}>
+      {/* Newton painting, full-bleed */}
+      <img src={asset('images/courses-newton.webp')} alt="Peinture de Newton — la science comme fibre" fetchPriority="high" decoding="async" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(8,12,18,0.9) 0%, rgba(8,12,18,0.78) 40%, rgba(8,12,18,0.92) 100%)' }} />
       <div className="mx-auto max-w-7xl px-6 py-12 relative">
         <Link to="/" className="inline-flex items-center gap-2 text-sm mb-8" style={{ color: 'var(--fg-muted)' }}>
           <ArrowLeft className="h-4 w-4" />
