@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { BookOpen, Calendar, DollarSign, FileText, Clock, MapPin, GraduationCap, type LucideIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { asset } from '@/lib/assets';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -107,12 +106,6 @@ export default function StudentDashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader name={profile.firstName ?? ''} />
-
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}>
-        <div className="cahier-margin overflow-hidden rounded-2xl border border-border shadow-sm">
-          <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-auto w-full object-cover" loading="lazy" />
-        </div>
-      </motion.div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statsData.map((s, i) => (

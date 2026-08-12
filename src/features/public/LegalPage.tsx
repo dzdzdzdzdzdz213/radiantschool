@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { asset } from '@/lib/assets';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 
@@ -71,6 +72,10 @@ export default function LegalPage() {
           <ArrowLeft className="h-4 w-4" /> Retour à l'accueil
         </Link>
         <h1 className="text-3xl font-bold tracking-tight mb-10 text-foreground">{content.title}</h1>
+
+        <div className="mb-10 overflow-hidden rounded-2xl border border-border shadow-sm">
+          <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-auto w-full object-cover" loading="lazy" />
+        </div>
 
         <div className="space-y-8">
           {content.sections.map((s, i) => (
