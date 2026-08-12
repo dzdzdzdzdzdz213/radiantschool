@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { getDefaultRoute } from '@/lib/permissions';
-import { Eye, EyeOff, ArrowLeft, Loader2, BookOpen, Users, Sparkles, GraduationCap, Shield, Heart } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { asset } from '@/lib/assets';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
@@ -63,13 +63,6 @@ export default function LoginPage() {
     }
   };
 
-  const features = [
-    { icon: BookOpen, title: 'Formations', desc: 'Suivez vos cours en temps réel', color: 'from-blue-500 to-cyan-500' },
-    { icon: Users, title: 'Communauté', desc: 'Échangez avec vos enseignants', color: 'from-violet-500 to-purple-500' },
-    { icon: GraduationCap, title: 'Progression', desc: 'Suivez vos résultats et objectifs', color: 'from-amber-500 to-orange-500' },
-    { icon: Heart, title: 'Bien-être', desc: 'Un suivi personnalisé et humain', color: 'from-pink-500 to-rose-500' },
-  ];
-
   return (
     <div className="login-page relative flex min-h-screen overflow-hidden bg-black">
       {/* Animated mesh gradient background */}
@@ -95,41 +88,43 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="relative z-10 space-y-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease }}
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl glass">
-                <Sparkles className="h-6 w-6 text-white" />
+          <div className="relative z-10 space-y-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease }}
+            >
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl glass">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-lg font-bold tracking-tight text-white">Radiant Academy</span>
               </div>
-              <span className="text-lg font-bold tracking-tight text-white">Radiant Academy</span>
-            </div>
-            <h2 className="text-4xl font-black tracking-tight leading-[1.1] text-white">
-              Votre espace<br />
-              <span className="text-white">éducatif</span>
-            </h2>
-            <p className="mt-4 text-white/50 text-sm max-w-sm leading-relaxed">
-              Connectez-vous pour suivre vos formations, consulter vos résultats et rester informé de tout.
-            </p>
-          </motion.div>
+              <h2 className="text-4xl font-black tracking-tight leading-[1.1] text-white">
+                Votre espace<br />
+                <span className="text-white">éducatif</span>
+              </h2>
+              <p className="mt-4 text-white/50 text-sm max-w-sm leading-relaxed">
+                Connectez-vous pour suivre vos formations, consulter vos résultats et rester informé de tout.
+              </p>
+            </motion.div>
 
-          <div className="space-y-3 stagger-children">
-            {features.map((f, i) => (
-              <div key={i} className="flex items-center gap-4 glass-card rounded-2xl p-4 cursor-default">
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${f.color} shadow-lg`}>
-                  <f.icon className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-white">{f.title}</p>
-                  <p className="text-xs text-white/50">{f.desc}</p>
-                </div>
-              </div>
-            ))}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease, delay: 0.15 }}
+              className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40"
+            >
+              <img
+                src={asset('alex-hero.jpg')}
+                alt="Radiant Academy"
+                className="h-64 w-full object-cover sm:h-80"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <p className="absolute bottom-4 left-4 text-sm font-semibold text-white/90">Radiant Learning — Alex</p>
+            </motion.div>
           </div>
-        </div>
 
         <motion.p
           initial={{ opacity: 0 }}

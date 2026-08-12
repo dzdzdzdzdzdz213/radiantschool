@@ -1,30 +1,47 @@
-import { BookOpen, Calendar, Users, Clock, MapPin, GraduationCap, type LucideIcon } from 'lucide-react';
+import { Sparkles, BookOpen, Calendar, Users, Clock, MapPin, GraduationCap, type LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTeacherDashboard } from '@/hooks/useTeacherDashboard';
 import { motion } from 'framer-motion';
-import BrandHero from '@/components/BrandHero';
-import PhotoBackdrop from '@/components/PhotoBackdrop';
+
+function PageHeader({ name }: { name: string }) {
+  const { lang } = useLang();
+  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
+  const today = new Date().toLocaleDateString(localeMap[lang] ?? 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="cahier-margin rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{today}</p>
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function StatCard({ icon: Icon, label, value, color, delay }: { icon: LucideIcon; label: string; value: string | number; color: string; delay: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
-      <PhotoBackdrop>
-        <div className="group relative overflow-hidden">
-          <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${color}`} />
-          <div className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
-                <Icon className="h-5 w-5 text-white" />
-              </div>
+      <div className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+        <div className={`h-1 bg-gradient-to-r ${color}`} />
+        <div className="p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
+              <Icon className="h-5 w-5 text-muted-foreground" />
             </div>
-            <p className="mt-3 text-2xl font-bold tracking-tight text-white drop-shadow">{value}</p>
-            <p className="mt-0.5 text-xs font-medium text-white/70">{label}</p>
           </div>
+          <p className="mt-3 text-2xl font-bold tracking-tight">{value}</p>
+          <p className="mt-0.5 text-xs font-medium text-muted-foreground">{label}</p>
         </div>
-      </PhotoBackdrop>
+      </div>
     </motion.div>
   );
 }
@@ -48,7 +65,7 @@ export default function TeacherDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <BrandHero name={profile?.firstName ?? ''} />
+      <PageHeader name={profile?.firstName ?? ''} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statsData.map((s, i) => (
