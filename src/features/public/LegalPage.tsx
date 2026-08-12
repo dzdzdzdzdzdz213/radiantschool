@@ -73,8 +73,8 @@ export default function LegalPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full overflow-hidden">
-        <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-auto w-full object-cover" />
+      <div className="relative h-screen w-full overflow-hidden">
+        <img src={asset('images/dz.webp')} alt="Radiant Academy" className="absolute inset-0 h-full w-full object-cover" />
       </div>
 
       <div className="mx-auto w-full max-w-3xl px-6 py-12">
