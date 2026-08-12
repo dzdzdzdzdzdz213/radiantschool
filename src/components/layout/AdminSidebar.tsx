@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,
   FileText, Calendar, BarChart3, MessageSquare, UserCircle, Settings,
   Bell, Search, X, MapPin, ChevronLeft, GraduationCap, Star, UserPlus,
-  Award, Megaphone, Video, Clock, History, Target, ShieldCheck,
+  Award, Megaphone, Video, Clock, History, Target, ShieldCheck, Radio,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { asset } from '@/lib/assets';
@@ -17,7 +17,7 @@ const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,
   FileText, Calendar, BarChart3, MessageSquare, UserCircle, Settings,
   Bell, Search, GraduationCap, Star, UserPlus,
-  Award, Megaphone, Video, Clock, History, Target, ShieldCheck,
+  Award, Megaphone, Video, Clock, History, Target, ShieldCheck, Radio,
 };
 
 export interface NavItem {
@@ -121,10 +121,10 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4" style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' }}>
           <Link to={items[0]?.path ?? '/'} className="flex items-center gap-2.5 overflow-hidden">
             <img
-              src={asset('logo-transparent.webp')}
+              src={asset('logo-alex.webp')}
               alt="Radiant Learning"
-              className="h-8 w-8 shrink-0 rounded-lg object-contain"
-              style={{ filter: 'brightness(0) invert(1)' }}
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
+              style={{ boxShadow: '0 0 0 2px rgba(255,255,255,0.35)' }}
             />
             {!collapsed && (
               <motion.span

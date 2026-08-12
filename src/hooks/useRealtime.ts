@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-const WATCHED_TABLES = [
+export const WATCHED_TABLES = [
   'announcements',
   'assignment_submissions',
   'assignments',

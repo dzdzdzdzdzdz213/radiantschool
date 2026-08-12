@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLang } from '@/contexts/LangContext';
 import { getRoleLabel, getInitials } from '@/lib/utils';
 import { getAvatarUrl } from '@/lib/storage';
+import { asset } from '@/lib/assets';
 import { t, LANGUAGES } from '@/i18n';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -215,6 +216,13 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         >
           <ExternalLink className="h-3.5 w-3.5" />
           Site
+        </button>
+
+        <button
+          onClick={() => navigate('/')}
+          className="inline-flex items-center gap-2 rounded-xl px-2 py-1 text-left transition-colors lg:hidden"
+        >
+          <img src={asset('logo-alex.webp')} alt="Radiant Learning" className="h-7 w-7 rounded-full object-cover" />
         </button>
 
         {profile?.role === 'assistant' && (

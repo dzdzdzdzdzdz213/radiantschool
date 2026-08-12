@@ -94,6 +94,7 @@ const ProfilePage = lazy(() => loadPage(() => import('@/features/shared/ProfileP
 const SettingsPage = lazy(() => loadPage(() => import('@/features/admin/SettingsPage')));
 const HelpPage = lazy(() => loadPage(() => import('@/features/shared/HelpPage')));
 const AuditLogPage = lazy(() => loadPage(() => import('@/features/admin/audit/AuditLogPage')));
+const LiveLogPage = lazy(() => loadPage(() => import('@/features/admin/audit/LiveLogPage')));
 const PayrollPage = lazy(() => loadPage(() => import('@/features/admin/payroll/PayrollPage')));
 const AccountingPage = lazy(() => loadPage(() => import('@/features/admin/accounting/AccountingPage')));
 const CrmPipelinePage = lazy(() => loadPage(() => import('@/features/assistant/crm/CrmPipelinePage')));
@@ -294,6 +295,7 @@ export const router = createBrowserRouter([
       { path: 'settings', Component: SettingsPage },
       { path: 'help', Component: HelpPage },
       { path: 'audit-log', Component: AuditLogPage },
+      { path: 'live-log', Component: LiveLogPage },
       { path: 'payroll', Component: PayrollPage },
       { path: 'accounting', Component: AccountingPage },
       { path: 'honesty', Component: HonestyBoxPage },
