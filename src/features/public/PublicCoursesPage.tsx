@@ -9,10 +9,10 @@ import { getCourseImageUrl } from '@/lib/storage';
 import { asset } from '@/lib/assets';
 
 const categories = [
-  { key: 'all', label: 'Tous', icon: BookOpen, btnGradient: 'linear-gradient(135deg, var(--primary), var(--accent))' },
-  { key: 'primary', label: 'Primaire', icon: BookText, btnGradient: 'linear-gradient(135deg, #059669, #0d9488)' },
-  { key: 'middle', label: 'CEM', icon: Building2, btnGradient: 'linear-gradient(135deg, #ea580c, #e11d48)' },
-  { key: 'high_school', label: 'Lycée', icon: GraduationCap, btnGradient: 'linear-gradient(135deg, #2563eb, #7c3aed)' },
+  { key: 'all', label: 'Tous', icon: BookOpen },
+  { key: 'primary', label: 'Primaire', icon: BookText },
+  { key: 'middle', label: 'CEM', icon: Building2 },
+  { key: 'high_school', label: 'Lycée', icon: GraduationCap },
 ] as const;
 
 export default function PublicCoursesPage() {
@@ -69,8 +69,8 @@ export default function PublicCoursesPage() {
           <div className="flex justify-center gap-3">
             {categories.map(c => (
               <button key={c.key} onClick={() => { setCat(c.key); setSelStream(null); }}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${cat === c.key ? 'text-white shadow-lg scale-105' : 'hover:scale-105'}`}
-                style={cat === c.key ? { background: c.btnGradient } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${cat === c.key ? 'shadow-lg scale-105 text-[#191008] bg-[#D4AF37]' : 'hover:scale-105'}`}
+                style={cat === c.key ? {} : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
               >
                 <c.icon className="h-4 w-4" />
                 {c.label}
@@ -81,8 +81,8 @@ export default function PublicCoursesPage() {
           {streamsByYear.length > 0 && (
             <div className="flex flex-col items-center gap-5 w-full max-w-3xl">
               <button onClick={() => setSelStream(null)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${!selStream ? 'text-white' : 'hover:scale-105'}`}
-                style={!selStream ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${!selStream ? 'text-[#191008] bg-[#D4AF37]' : 'hover:scale-105'}`}
+                style={!selStream ? {} : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
               >Toutes les filières</button>
               {streamsByYear.map(g => (
                 <div key={g.year} className="w-full">
@@ -92,8 +92,8 @@ export default function PublicCoursesPage() {
                       const active = selStream?.year === g.year && selStream?.stream === s;
                       return (
                         <button key={s} onClick={() => setSelStream(active ? null : { year: g.year, stream: s })}
-                          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${active ? 'text-white' : 'hover:scale-105'}`}
-                          style={active ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
+                          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${active ? 'text-[#191008] bg-[#D4AF37]' : 'hover:scale-105'}`}
+                          style={active ? {} : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
                         >{s}</button>
                       );
                     })}
@@ -106,8 +106,8 @@ export default function PublicCoursesPage() {
           <div className="flex justify-center gap-2">
             {(['all', 'normal', 'vip'] as const).map(t => (
               <button key={t} onClick={() => setTypeFilter(t)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${typeFilter === t ? 'text-white' : 'hover:scale-105'}`}
-                style={typeFilter === t ? { background: 'var(--primary)' } : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${typeFilter === t ? 'text-[#191008] bg-[#D4AF37]' : 'hover:scale-105'}`}
+                style={typeFilter === t ? {} : { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg-muted)' }}
               >{t === 'all' ? 'Tous les types' : t === 'vip' ? 'VIP' : 'Normal'}</button>
             ))}
           </div>
@@ -117,15 +117,15 @@ export default function PublicCoursesPage() {
             <input
               type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Rechercher une formation..."
-              className="w-full h-11 rounded-xl pl-11 pr-4 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--primary)]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg)', caretColor: 'var(--primary)' }}
+              className="w-full h-11 rounded-xl pl-11 pr-4 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[#D4AF37]/60" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--fg)', caretColor: '#D4AF37' }}
             />
           </div>
         </div>
 
         {!isLoading && filteredCourses.length === 0 && (
           <div className="text-center py-24 animate-up" style={{ color: 'var(--fg-muted)' }}>
-            <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl mb-6" style={{ backgroundColor: 'var(--primary-light)' }}>
-              <GraduationCap className="h-12 w-12" style={{ color: 'var(--primary)' }} />
+            <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl mb-6" style={{ backgroundColor: `color-mix(in srgb, #D4AF37 10%, transparent)` }}>
+              <GraduationCap className="h-12 w-12" style={{ color: '#D4AF37' }} />
             </div>
             <p className="text-2xl font-bold mb-2" style={{ color: 'var(--fg)' }}>Aucune formation trouvée</p>
             <p className="text-sm max-w-xs mx-auto">Essayez de modifier vos filtres ou votre recherche</p>
@@ -153,10 +153,10 @@ export default function PublicCoursesPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
-              className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary/20"
+              className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-[#D4AF37]/30"
               style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
             >
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/5 to-accent/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-[#D4AF37]/10 to-[#D4AF37]/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="relative">
                 {c.image_url && (
                   <div className="aspect-video rounded-xl overflow-hidden mb-4 -mx-1 -mt-1">
@@ -175,8 +175,8 @@ export default function PublicCoursesPage() {
                     </div>
                     <h3 className="text-lg font-bold mt-0.5 truncate">{c.name}</h3>
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ml-3" style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)` }}>
-                    <CIcon className="h-5 w-5" style={{ color: 'var(--primary)' }} />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ml-3" style={{ backgroundColor: `color-mix(in srgb, #D4AF37 12%, transparent)` }}>
+                    <CIcon className="h-5 w-5" style={{ color: '#D4AF37' }} />
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm mb-4" style={{ color: 'var(--fg-muted)' }}>
@@ -191,20 +191,20 @@ export default function PublicCoursesPage() {
                 <div className="flex gap-2">
                   {!isVip && (
                     <Link to="/enroll"
-                      className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
-                      style={{ background: catInfo.btnGradient }}
+                      className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-[#191008] transition-all duration-200 active:scale-[0.97]"
+                      style={{ background: '#D4AF37' }}
                     >S'inscrire</Link>
                   )}
                   {isVip && (
                     <Link to="/enroll"
-                      className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97]"
-                      style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+                      className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-[#191008] transition-all duration-200 active:scale-[0.97]"
+                      style={{ background: '#D4AF37' }}
                     >Réserver VIP</Link>
                   )}
                   {c.teacher?.accepts_private_lessons !== false && (
                     <Link to={`/private-request/${c.id}`}
                       className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl px-4 text-xs font-semibold transition-all duration-200 active:scale-[0.97]"
-                      style={{ backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)`, color: 'var(--primary)', border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
+                      style={{ backgroundColor: `color-mix(in srgb, #D4AF37 10%, transparent)`, color: '#D4AF37', border: '1px solid color-mix(in srgb, #D4AF37 25%, transparent)' }}
                     ><UserPlus className="h-3.5 w-3.5" />Particulier</Link>
                   )}
                 </div>
