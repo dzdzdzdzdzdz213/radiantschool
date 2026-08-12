@@ -66,7 +66,7 @@ export default function LoginPage() {
   return (
     <div className="login-page relative flex min-h-screen overflow-hidden bg-black">
       {/* Full-bleed artwork */}
-      <img src={asset('images/hero-classic.webp')} alt="" fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+      <img src={asset('images/login-alex.webp')} alt="Peinture classique d'Alexandre le Grand" fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(9,7,12,0.88) 0%, rgba(9,7,12,0.72) 40%, rgba(9,7,12,0.55) 100%)' }} />
 
       {/* Left panel — brand (desktop) */}
