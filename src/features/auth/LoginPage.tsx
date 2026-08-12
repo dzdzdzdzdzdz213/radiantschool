@@ -65,19 +65,9 @@ export default function LoginPage() {
 
   return (
     <div className="login-page relative flex min-h-screen overflow-hidden bg-black">
-      {/* Animated mesh gradient background */}
-      <div className="absolute inset-0 mesh-bg" />
-      <div className="absolute inset-0 bg-black/30" />
-
-      {/* Floating orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="orb-1 absolute top-[10%] left-[15%] w-72 h-72 rounded-full bg-purple-500/20 blur-[40px]" />
-        <div className="orb-2 absolute top-[60%] right-[10%] w-96 h-96 rounded-full bg-pink-500/15 blur-[40px]" />
-        <div className="orb-3 absolute bottom-[15%] left-[40%] w-64 h-64 rounded-full bg-blue-500/20 blur-[30px]" />
-      </div>
-
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+      {/* Full-bleed artwork */}
+      <img src={asset('images/hero-classic.webp')} alt="" fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(9,7,12,0.88) 0%, rgba(9,7,12,0.72) 40%, rgba(9,7,12,0.55) 100%)' }} />
 
       {/* Left panel — brand (desktop) */}
       <div className="relative hidden lg:flex lg:w-[45%] flex-col justify-between p-10 text-white z-10">
