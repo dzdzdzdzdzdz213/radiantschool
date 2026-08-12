@@ -75,38 +75,38 @@ export default function LegalPage() {
     <div className="relative min-h-screen w-full bg-black">
       <div className="fixed inset-0">
         <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/20" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-10">
-        <Link to="/" className="inline-flex w-fit items-center gap-1.5 text-sm text-white/85 transition-colors hover:text-white">
-          <ArrowLeft className="h-4 w-4" /> Retour à l'accueil
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-8">
+        <Link to="/" className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/25 bg-black/30 px-3.5 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/50">
+          <ArrowLeft className="h-3.5 w-3.5" /> Retour à l'accueil
         </Link>
 
-        <div className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm">
+        <div className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-black/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
           {content.icon} Radiant Academy
         </div>
-        <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight text-white drop-shadow-lg sm:text-4xl">{content.title}</h1>
-        <p className="mt-2 text-sm text-white/75 sm:text-base">{content.tagline}</p>
+        <h1 className="font-display mt-2 text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] sm:text-4xl">{content.title}</h1>
+        <p className="mt-1 text-sm text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-base">{content.tagline}</p>
 
-        <div className="mt-8 grid flex-1 content-start gap-4">
+        <div className="mt-6 grid flex-1 content-start gap-3">
           {content.sections.map((s) => (
-            <div key={s.h2} className="rounded-2xl border border-white/10 p-5">
-              <div className="mb-2.5 flex items-center gap-2.5">
+            <div key={s.h2} className="rounded-2xl border border-white/15 bg-black/20 p-4 backdrop-blur-[2px]">
+              <div className="mb-1.5 flex items-center gap-2.5">
                 <span className="h-5 w-1 rounded-full" style={{ background: 'var(--primary)' }} />
-                <h2 className="font-display text-lg font-semibold tracking-tight text-white drop-shadow">{s.h2}</h2>
+                <h2 className="font-display text-base font-semibold tracking-tight text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-lg">{s.h2}</h2>
               </div>
-              <p className="text-sm leading-relaxed text-white/80 drop-shadow">{s.p}</p>
+              <p className="text-xs leading-relaxed text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] sm:text-sm">{s.p}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/15 pt-5 sm:flex-row">
-          <p className="text-xs text-white/60">Radiant Academy &copy; {new Date().getFullYear()} — {t('footer.rights', lang)}</p>
-          <div className="flex gap-6">
-            <Link to="/mentions-legales" className="text-xs text-white/70 transition-colors hover:text-white">Mentions légales</Link>
-            <Link to="/cgv" className="text-xs text-white/70 transition-colors hover:text-white">CGV</Link>
-            <Link to="/confidentialite" className="text-xs text-white/70 transition-colors hover:text-white">Confidentialité</Link>
+        <div className="mt-6 flex flex-col items-center justify-between gap-3 border-t border-white/20 pt-4 sm:flex-row">
+          <p className="text-[11px] text-white/80">Radiant Academy &copy; {new Date().getFullYear()} — {t('footer.rights', lang)}</p>
+          <div className="flex gap-3">
+            <Link to="/mentions-legales" className="rounded-full border border-white/25 bg-black/30 px-3.5 py-1.5 text-[11px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/50">Mentions légales</Link>
+            <Link to="/cgv" className="rounded-full border border-white/25 bg-black/30 px-3.5 py-1.5 text-[11px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/50">CGV</Link>
+            <Link to="/confidentialite" className="rounded-full border border-white/25 bg-black/30 px-3.5 py-1.5 text-[11px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/50">Confidentialité</Link>
           </div>
         </div>
       </div>
