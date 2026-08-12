@@ -72,43 +72,40 @@ export default function LegalPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-black">
-      <div className="absolute inset-0">
-        <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-black/60" />
+    <div className="min-h-screen bg-background">
+      <div className="w-full overflow-hidden">
+        <img src={asset('images/dz.webp')} alt="Radiant Academy" className="h-auto w-full object-cover" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-12">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm mb-8 text-white/80 transition-colors hover:text-white">
+      <div className="mx-auto w-full max-w-3xl px-6 py-12">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm mb-8 transition-colors hover:opacity-75" style={{ color: 'var(--primary)' }}>
           <ArrowLeft className="h-4 w-4" /> Retour à l'accueil
         </Link>
 
-        <div className="rounded-3xl border border-white/15 bg-black/45 p-8 shadow-2xl backdrop-blur-xl sm:p-12">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/90">
-            {content.icon} Radiant Academy
-          </div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">{content.title}</h1>
-          <p className="mt-2 text-sm text-white/70 sm:text-base">{content.tagline}</p>
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {content.icon} Radiant Academy
+        </div>
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{content.title}</h1>
+        <p className="mt-2 text-sm text-muted-foreground sm:text-base">{content.tagline}</p>
 
-          <div className="mt-8 space-y-6">
-            {content.sections.map((s) => (
-              <div key={s.h2} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <div className="mb-2 flex items-center gap-2.5">
-                  <span className="h-5 w-1 rounded-full" style={{ background: 'var(--primary)' }} />
-                  <h2 className="font-display text-lg font-semibold tracking-tight text-white">{s.h2}</h2>
-                </div>
-                <p className="text-sm leading-relaxed text-white/70">{s.p}</p>
+        <div className="mt-8 space-y-5">
+          {content.sections.map((s) => (
+            <div key={s.h2} className="cahier-margin rounded-2xl border border-border bg-card p-6 sm:p-8">
+              <div className="mb-2 flex items-center gap-2.5">
+                <span className="h-5 w-1 rounded-full" style={{ background: 'var(--primary)' }} />
+                <h2 className="font-display text-lg font-semibold tracking-tight text-foreground">{s.h2}</h2>
               </div>
-            ))}
-          </div>
+              <p className="text-sm leading-relaxed text-muted-foreground">{s.p}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/40 px-6 py-4 backdrop-blur-lg sm:flex-row">
-          <p className="text-xs text-white/60">Radiant Academy &copy; {new Date().getFullYear()} — {t('footer.rights', lang)}</p>
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-border bg-card px-6 py-5 sm:flex-row">
+          <p className="text-xs text-muted-foreground">Radiant Academy &copy; {new Date().getFullYear()} — {t('footer.rights', lang)}</p>
           <div className="flex gap-6">
-            <Link to="/mentions-legales" className={`text-xs transition-colors hover:text-white ${page === 'mentions-legales' ? 'font-semibold text-white' : 'text-white/60'}`}>Mentions légales</Link>
-            <Link to="/cgv" className={`text-xs transition-colors hover:text-white ${page === 'cgv' ? 'font-semibold text-white' : 'text-white/60'}`}>CGV</Link>
-            <Link to="/confidentialite" className={`text-xs transition-colors hover:text-white ${page === 'confidentialite' ? 'font-semibold text-white' : 'text-white/60'}`}>Confidentialité</Link>
+            <Link to="/mentions-legales" className="text-xs text-muted-foreground transition-colors hover:text-foreground">Mentions légales</Link>
+            <Link to="/cgv" className="text-xs text-muted-foreground transition-colors hover:text-foreground">CGV</Link>
+            <Link to="/confidentialite" className="text-xs text-muted-foreground transition-colors hover:text-foreground">Confidentialité</Link>
           </div>
         </div>
       </div>
