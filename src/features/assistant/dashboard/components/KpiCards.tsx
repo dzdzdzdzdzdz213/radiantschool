@@ -3,6 +3,7 @@ import { Users, DollarSign, ClipboardCheck, FileText, Bell, Clock, UserPlus, Gra
 import { cn, formatCurrency } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import PhotoBackdrop from '@/components/PhotoBackdrop';
 import type { AssistantKpi } from '../useAssistantDashboard';
 
 interface KpiCardsProps {
@@ -54,23 +55,25 @@ export default function KpiCards({ kpi, loading }: KpiCardsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.03 }}
-            className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 hover:shadow-md transition-shadow"
+            className="hover:shadow-md transition-shadow"
           >
-            <div className="flex items-start justify-between">
-              <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground">{cfg.label}</p>
-                <p className="text-2xl font-bold tracking-tight">{cfg.format(value)}</p>
+            <PhotoBackdrop className="p-5">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-white/80">{cfg.label}</p>
+                  <p className="text-2xl font-bold tracking-tight text-white drop-shadow">{cfg.format(value)}</p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+                  <Icon className={cn('h-5 w-5', cfg.color)} />
+                </div>
               </div>
-              <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', cfg.bg)}>
-                <Icon className={cn('h-5 w-5', cfg.color)} />
+              <div className="mt-3 flex items-center gap-1">
+                <span className={cn('text-xs font-medium', value > 0 ? 'text-emerald-400' : 'text-white/60')}>
+                  {value > 0 ? `+${value}` : '0'}
+                </span>
+                <span className="text-xs text-white/60">{t('common.yesterday', lang)}</span>
               </div>
-            </div>
-            <div className="mt-3 flex items-center gap-1">
-              <span className={cn('text-xs font-medium', value > 0 ? 'text-emerald-600' : 'text-muted-foreground')}>
-                {value > 0 ? `+${value}` : '0'}
-              </span>
-              <span className="text-xs text-muted-foreground">{t('common.yesterday', lang)}</span>
-            </div>
+            </PhotoBackdrop>
           </motion.div>
         );
       })}

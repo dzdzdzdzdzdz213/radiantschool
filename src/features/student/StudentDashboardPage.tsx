@@ -7,6 +7,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency } from '@/lib/utils';
 import BrandHero from '@/components/BrandHero';
+import PhotoBackdrop from '@/components/PhotoBackdrop';
 import HonestyBoxWidget from '@/features/shared/HonestyBoxWidget';
 
 const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
@@ -14,18 +15,20 @@ const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'frid
 function StatCard({ icon: Icon, label, value, color, delay }: { icon: LucideIcon; label: string; value: string | number; color: string; delay: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
-      <div className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-        <div className={`h-1 bg-gradient-to-r ${color}`} />
-        <div className="p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
-              <Icon className="h-5 w-5 text-muted-foreground" />
+      <PhotoBackdrop>
+        <div className="group relative overflow-hidden">
+          <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${color}`} />
+          <div className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+                <Icon className="h-5 w-5 text-white" />
+              </div>
             </div>
+            <p className="mt-3 text-2xl font-bold tracking-tight text-white drop-shadow">{value}</p>
+            <p className="mt-0.5 text-xs font-medium text-white/70">{label}</p>
           </div>
-          <p className="mt-3 text-2xl font-bold tracking-tight">{value}</p>
-          <p className="mt-0.5 text-xs font-medium text-muted-foreground">{label}</p>
         </div>
-      </div>
+      </PhotoBackdrop>
     </motion.div>
   );
 }
