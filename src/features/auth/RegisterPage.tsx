@@ -7,6 +7,7 @@ import { t, type Lang } from '@/i18n';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
+import { asset } from '@/lib/assets';
 
 const NAME_FIELDS = ['firstName', 'lastName', 'childFirstName', 'childLastName', 'guardianName'];
 const PHONE_FIELDS = ['phone', 'guardianPhone'];
@@ -231,8 +232,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+    <div className="register-page relative flex min-h-screen items-center justify-center p-4 overflow-hidden bg-black" style={{ color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--bg': '#0c0704', '--bg-card': 'rgba(19,14,10,0.72)', '--border': 'rgba(255,255,255,0.12)', '--primary-light': 'rgba(212,175,55,0.15)' } as React.CSSProperties}>
+      <img src={asset('images/login-alex.webp')} alt="Peinture classique d'Alexandre le Grand" fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(9,7,12,0.82) 0%, rgba(9,7,12,0.66) 50%, rgba(9,7,12,0.88) 100%)' }} />
+      <div className="w-full max-w-lg relative">
         <Link to="/" className="mb-4 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 hover:bg-[var(--primary-light)]" style={{ color: 'var(--fg-muted)' }}>
           <ArrowLeft className="h-3.5 w-3.5" /> {t('common.back', lang)}
         </Link>
