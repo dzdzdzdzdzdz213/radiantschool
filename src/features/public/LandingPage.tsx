@@ -240,7 +240,7 @@ export default function LandingPage() {
       </section>
 
       {/* QUI SOMMES-NOUS */}
-      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto', color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.07)' } as React.CSSProperties}>
+      <section id="about" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ backgroundColor: '#120c0a', contentVisibility: 'auto', color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.07)' } as React.CSSProperties}>
         <img
           src={asset('images/section-teacher.webp')}
           alt="Peinture classique d'un enseignant — l'équipe de Radiant Academy"
@@ -316,7 +316,7 @@ export default function LandingPage() {
 
 
       {/* WHY US + STATS — one continuous space photo */}
-      <section id="why" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ contentVisibility: 'auto', color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.06)' } as React.CSSProperties}>
+      <section id="why" className="scroll-mt-20 py-28 px-6 relative overflow-hidden" data-reveal style={{ backgroundColor: '#080512', contentVisibility: 'auto', color: 'var(--fg)', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.65)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.06)' } as React.CSSProperties}>
         <img
           src={asset('images/section-space.webp')}
           alt="Nébuleuse spatiale — le cosmos comme toile de fond"
@@ -390,7 +390,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA — Ready to join? */}
-      <section className="relative overflow-hidden py-36 px-6">
+      <section className="relative overflow-hidden py-36 px-6" style={{ backgroundColor: '#0c0704' }}>
         <img
           src={asset('images/section-alch.webp')}
           alt="Peinture d'alchimiste éclairée à la flamme — fond de la section d'inscription"
@@ -424,7 +424,7 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer id="contact" className="relative overflow-hidden" style={{ '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.6)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.05)' } as React.CSSProperties}>
+      <footer id="contact" className="relative overflow-hidden" style={{ backgroundColor: '#0c0704', '--fg': '#f3ead9', '--fg-muted': 'rgba(243,234,217,0.6)', '--border': 'rgba(255,255,255,0.12)', '--bg-card': 'rgba(255,255,255,0.05)' } as React.CSSProperties}>
         <img
           src={asset('images/section-alchv2.webp')}
           alt="Peinture classique d'alchimiste au travail — science et étude"

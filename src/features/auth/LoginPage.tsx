@@ -234,10 +234,10 @@ export default function LoginPage() {
               className="relative my-5"
             >
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
+                <div className="w-full border-t border-[#D4AF37]/30" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-black/50 backdrop-blur-sm px-3 text-white/30">{t('common.or', lang)}</span>
+                <span className="px-3 font-medium tracking-wide text-[#D4AF37]/80" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>{t('common.or', lang)}</span>
               </div>
             </motion.div>
 

@@ -274,10 +274,10 @@ export default function RegisterPage() {
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t" style={{ borderColor: 'var(--border)' }} />
+                <div className="w-full border-t border-[#D4AF37]/40" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-2" style={{ backgroundColor: 'var(--bg)', color: 'var(--fg-muted)' }}>{t('common.or', lang)}</span>
+                <span className="px-3 font-medium tracking-widest uppercase" style={{ backgroundColor: 'var(--bg)', color: '#B8962E' }}>{t('common.or', lang)}</span>
               </div>
             </div>
 
@@ -401,10 +401,10 @@ export default function RegisterPage() {
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t" style={{ borderColor: 'var(--border)' }} />
+                  <div className="w-full border-t border-[#D4AF37]/40" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-2" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--fg-muted)' }}>{t('common.or', lang)}</span>
+                  <span className="px-3 font-medium tracking-widest uppercase" style={{ backgroundColor: 'var(--bg-card)', color: '#B8962E' }}>{t('common.or', lang)}</span>
                 </div>
               </div>
 
