@@ -20,9 +20,10 @@ if ('serviceWorker' in navigator) {
 
 const hash = window.location.hash;
 const isAuthCallback = window.location.pathname.includes('/auth/callback');
+const isRecovery = hash.includes('type=recovery');
 
 if (hash && hash.includes('access_token=') && !isAuthCallback) {
-  window.location.replace('/auth/callback' + hash);
+  window.location.replace((isRecovery ? '/reset-password' : '/auth/callback') + hash);
 } else {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
