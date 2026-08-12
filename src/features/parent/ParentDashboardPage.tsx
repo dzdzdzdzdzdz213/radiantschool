@@ -7,6 +7,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { formatCurrency, getFullName } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import BrandHero from '@/components/BrandHero';
 import HonestyBoxWidget from '@/features/shared/HonestyBoxWidget';
 
 interface ChildSummary {
@@ -18,27 +19,6 @@ interface ChildSummary {
   activeCourses: number;
   upcomingClass: string | null;
   nextClassTime: string | null;
-}
-
-function PageHeader({ name }: { name: string }) {
-  const { lang } = useLang();
-  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
-  const today = new Date().toLocaleDateString(localeMap[lang], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}>
-      <div className="cahier-margin rounded-2xl border border-border bg-card p-6 sm:p-8">
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Users className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{today}</p>
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{t('dashboard.greeting', lang, name)}</h1>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
 }
 
 function StatCard({ icon: Icon, label, value, color, delay }: { icon: LucideIcon; label: string; value: string | number; color: string; delay: number }) {
@@ -219,7 +199,7 @@ export default function ParentDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader name={profile?.firstName ?? ''} />
+      <BrandHero name={profile?.firstName ?? ''} />
 
       <div className="grid gap-4 sm:grid-cols-3">
         {statsData.map((s, i) => (
