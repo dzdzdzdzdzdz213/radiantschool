@@ -43,6 +43,7 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
         .from('invoices')
         .select('id, student_id, invoice_number, total_amount, paid_amount, status, due_date, student:students!student_id(user:users!students_id_fkey(first_name, last_name))', { count: 'exact' })
         .order('created_at', { ascending: false })
+        .is('deleted_at', null)
         .range((page - 1) * 20, page * 20 - 1);
       if (statusFilter) query = query.eq('status', statusFilter as never);
       if (search) {
