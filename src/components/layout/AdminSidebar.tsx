@@ -121,10 +121,9 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4" style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #000))' }}>
           <Link to={items[0]?.path ?? '/'} className="flex items-center gap-2.5 overflow-hidden">
             <img
-              src={asset('logo-alex.webp')}
+              src={asset('logo-transparent.webp')}
               alt="Radiant Learning"
-              className="h-8 w-8 shrink-0 rounded-full object-cover"
-              style={{ boxShadow: '0 0 0 2px rgba(255,255,255,0.35)' }}
+              className="h-7 w-auto shrink-0 brightness-0 invert"
             />
             {!collapsed && (
               <motion.span

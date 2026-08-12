@@ -222,7 +222,7 @@ export default function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           onClick={() => navigate('/')}
           className="inline-flex items-center gap-2 rounded-xl px-2 py-1 text-left transition-colors lg:hidden"
         >
-          <img src={asset('logo-alex.webp')} alt="Radiant Learning" className="h-7 w-7 rounded-full object-cover" />
+          <img src={asset('logo-transparent.webp')} alt="Radiant Learning" className="h-6 w-auto brightness-0 invert" />
         </button>
 
         {profile?.role === 'assistant' && (
