@@ -3,10 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Database } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useLang } from '@/contexts/LangContext';
 import { useToast } from '@/hooks/useToast';
 import { t } from '@/i18n';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, Clock, CheckCheck, Search } from 'lucide-react';
@@ -17,13 +16,6 @@ interface StudentRow {
   lastName: string;
   status: 'present' | 'absent' | 'late' | null;
   enrollmentId?: number;
-}
-
-interface CourseOption {
-  id: number;
-  name: string;
-  subject: string;
-  scheduleId?: number;
 }
 
 const STATUS_ORDER = ['present', 'late', 'absent'] as const;
@@ -41,7 +33,6 @@ function localToday(): string {
 }
 
 export default function BulkAttendancePage() {
-  const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -62,8 +53,9 @@ export default function BulkAttendancePage() {
         id: c.id,
         name: c.name,
         subject: c.subject?.name ?? '',
-        scheduleId: c.course_schedules?.find(s => s.day_of_week === dayName)?.id ?? c.course_schedules?.[0]?.id ?? undefined,
-      }));
+        hasSchedules: (c.course_schedules?.length ?? 0) > 0,
+        scheduleId: c.course_schedules?.find(s => s.day_of_week === dayName)?.id,
+      })).filter(c => c.scheduleId !== undefined || !c.hasSchedules);
     },
     staleTime: 60_000,
   });

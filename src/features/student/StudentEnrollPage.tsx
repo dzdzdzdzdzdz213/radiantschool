@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { BookOpen, Check, Clock, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 
 export default function StudentEnrollPage() {
   const { profile } = useAuth();
@@ -88,7 +89,7 @@ export default function StudentEnrollPage() {
                     <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0">{course.type}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span>{course.price?.toLocaleString()} DA</span>
+                    <span>{course.price != null ? formatCurrency(course.price) : '—'}</span>
                     {course.capacity > 0 && <span className="text-muted-foreground">{course.current_enrollments ?? 0}/{course.capacity}</span>}
                   </div>
                   <button

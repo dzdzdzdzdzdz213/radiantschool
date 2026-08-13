@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { api, type FilterParams } from '@/lib/api';
+import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
 export function useUsers() {
@@ -22,7 +22,7 @@ export function useCourses() {
 export function useCourse(id: number) {
   return useQuery({
     queryKey: ['course', id],
-    queryFn: () => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*)') as Promise<CourseDetailRow>,
+    queryFn: () => api.get('courses', id, '*, subject:subjects(name), teacher:users(first_name, last_name), room:rooms(name), level:levels(name, category, stream), schedules:course_schedules(*, room:rooms(name))') as Promise<CourseDetailRow>,
     enabled: !!id,
     staleTime: 120_000,
   });
@@ -43,8 +43,9 @@ export interface CourseDetailRow {
   subject: { name: string } | null;
   level: { name: string; category: string; stream: string } | null;
   teacher: { first_name: string; last_name: string } | null;
+  teacher_id: string;
   room: { name: string } | null;
-  schedules: { id: number; day_of_week: string; start_time: string; end_time: string }[];
+  schedules: { id: number; day_of_week: string; start_time: string; end_time: string; teacher_id: string; room: { name: string } | null }[];
 }
 
 export function useCourseEnrollments(courseId: number) {

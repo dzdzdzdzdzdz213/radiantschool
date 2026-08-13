@@ -42,6 +42,15 @@ export default function MessagesPage() {
     onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
   });
 
+  const markReadMutation = useMutation({
+    mutationFn: async (id: number) => {
+      if (!profile?.id) return;
+      const { error } = await supabase.from('messages').update({ is_read: true }).eq('id', id).neq('sender_id', profile.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['messages'] }),
+  });
+
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
       <div className="w-80 rounded-xl border bg-card shadow-sm">
@@ -64,7 +73,7 @@ export default function MessagesPage() {
                 <div
                   key={m.id}
                   className={`cursor-pointer border-b p-4 text-sm hover:bg-page ${!m.is_read && !isSent ? 'bg-notification' : ''}`}
-                  onClick={() => { setSelectedMsg(m); setReply(''); }}
+                  onClick={() => { setSelectedMsg(m); setReply(''); if (!m.is_read && !isSent) markReadMutation.mutate(m.id); }}
                 >
                   <p className="font-medium">{other ? getFullName(other.first_name, other.last_name) : t('common.not_found', lang)}</p>
                   <p className="truncate text-muted-foreground">{m.subject || t('common.no_data', lang)}</p>

@@ -40,14 +40,16 @@ export default function TeacherPrivateLessonsPage() {
 
   const acceptMutation = useMutationWithFeedback(
     async (id: number) => {
-      await supabase.from('private_lessons').update({ status: 'accepted' }).eq('id', id);
+      const { error } = await supabase.from('private_lessons').update({ status: 'accepted' }).eq('id', id);
+      if (error) throw error;
     },
     { successMessage: 'Demande acceptée', invalidateQueries: [['teacher-private-lessons']] }
   );
 
   const rejectMutation = useMutationWithFeedback(
     async (id: number) => {
-      await supabase.from('private_lessons').update({ status: 'rejected' }).eq('id', id);
+      const { error } = await supabase.from('private_lessons').update({ status: 'rejected' }).eq('id', id);
+      if (error) throw error;
     },
     { successMessage: 'Demande refusée', invalidateQueries: [['teacher-private-lessons']] }
   );

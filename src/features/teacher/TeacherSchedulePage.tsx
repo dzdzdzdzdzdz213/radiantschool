@@ -26,7 +26,7 @@ export default function TeacherSchedulePage() {
 
   const week = useMemo(() => {
     const start = new Date();
-    start.setDate(start.getDate() - start.getDay() + 1);
+    start.setDate(start.getDate() - start.getDay() + 6);
     return { start, end: new Date(start.getTime() + 6 * 86400000) };
   }, []);
 
@@ -51,7 +51,7 @@ export default function TeacherSchedulePage() {
         .lte('date', toIso(week.end))
         .order('date');
       return (data ?? []).filter(
-        (s) => s.schedule_id !== null && scheduleIds.includes(s.schedule_id as number)
+        (s) => (s.schedule_id !== null && scheduleIds.includes(s.schedule_id as number)) || s.course?.teacher_id === profile.id
       ) as SessionRow[];
     },
     enabled: !!profile?.id,

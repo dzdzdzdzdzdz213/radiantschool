@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { formatCurrency } from '@/lib/utils';
 
 interface RevenuePayment {
   created_at: string;
@@ -82,7 +83,7 @@ export function useRevenueChartData() {
       const result: { date: string; amount: number }[] = [];
       const end = new Date();
       for (let d = new Date(thirtyDaysAgo); d <= end; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
         result.push({ date: dateStr, amount: dailyMap.get(dateStr) || 0 });
       }
       return result;
@@ -126,7 +127,7 @@ export function useRecentActivity() {
       const attendance = (attRes.data ?? []) as unknown as ActivityAttendance[];
       const items: { time: string; icon: string; title: string; description: string }[] = [
         ...(enrollments.slice(0, 5).map((e: ActivityEnrollment) => ({ time: e.enrollment_date, icon: '📝', title: `${e.student?.user?.first_name ?? ''} ${e.student?.user?.last_name ?? ''}`, description: `Inscrit en ${e.course?.name ?? ''}` }))),
-        ...(payments.slice(0, 5).map((p: ActivityPayment) => ({ time: p.created_at, icon: '💰', title: `${p.student?.user?.first_name ?? ''} ${p.student?.user?.last_name ?? ''}`, description: `Paiement ${p.amount.toLocaleString()} DA` }))),
+        ...(payments.slice(0, 5).map((p: ActivityPayment) => ({ time: p.created_at, icon: '💰', title: `${p.student?.user?.first_name ?? ''} ${p.student?.user?.last_name ?? ''}`, description: `Paiement ${formatCurrency(p.amount)}` }))),
         ...(attendance.slice(0, 5).map((a: ActivityAttendance) => ({ time: a.date, icon: a.status === 'present' ? '✅' : a.status === 'late' ? '⏰' : '❌', title: `${a.student?.user?.first_name ?? ''} ${a.student?.user?.last_name ?? ''}`, description: `${a.status === 'present' ? 'Présent' : a.status === 'late' ? 'Retard' : 'Absent'} — ${a.schedule?.course?.name ?? ''}` }))),
       ];
       items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
@@ -156,7 +157,9 @@ export function useAdminAlerts() {
         }),
       ]);
       const nearFull = ((coursesRes.data ?? []) as unknown as NearFullCourse[]).filter((c: NearFullCourse) => c.capacity > 0 && (c.current_enrollments / c.capacity) >= 0.8);
-      const overdueInvoices = ((overdueRes.data ?? []) as unknown as OverdueInvoice[]).filter((i: OverdueInvoice) => new Date(i.due_date) < new Date());
+      const today = new Date();
+      const localTodayStr = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+      const overdueInvoices = ((overdueRes.data ?? []) as unknown as OverdueInvoice[]).filter((i: OverdueInvoice) => i.due_date < localTodayStr);
       return {
         pendingApprovals: pendingRes.meta.total,
         overdueInvoices,

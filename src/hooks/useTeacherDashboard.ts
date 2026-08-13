@@ -27,7 +27,8 @@ export function useTeacherDashboard(teacherId: string | undefined) {
         supabase.from('courses').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId).in('status', ['active']),
         supabase.from('course_schedules').select('id', { count: 'exact', head: true }).eq('teacher_id', teacherId),
         supabase.from('course_enrollments').select('student_id')
-          .in('course_id', (await supabase.from('courses').select('id').eq('teacher_id', teacherId).in('status', ['active'])).data?.map(c => c.id) ?? []),
+          .in('course_id', (await supabase.from('courses').select('id').eq('teacher_id', teacherId).in('status', ['active'])).data?.map(c => c.id) ?? [])
+          .eq('status', 'active'),
       ]);
 
       const uniqueStudents = new Set((studentsRes.data ?? []).map((r) => r.student_id));
@@ -35,15 +36,15 @@ export function useTeacherDashboard(teacherId: string | undefined) {
       const courseIdList = (coursesRes.data ?? []).map(c => c.id);
       let attendanceToday = 0;
       if (courseIdList.length > 0) {
-        const { data: sessions } = await supabase
-          .from('attendance_sessions')
+        const { data: schedules } = await supabase
+          .from('course_schedules')
           .select('id')
-          .in('course_id', courseIdList)
-          .eq('date', localToday());
-        const sessionIds = (sessions ?? []).map(s => s.id);
-        if (sessionIds.length > 0) {
-          const { count } = await supabase.from('attendance_records').select('id', { count: 'exact', head: true })
-            .in('session_id', sessionIds);
+          .eq('teacher_id', teacherId);
+        const scheduleIds = (schedules ?? []).map(s => s.id);
+        if (scheduleIds.length > 0) {
+          const { count } = await supabase.from('attendance').select('id', { count: 'exact', head: true })
+            .in('course_schedule_id', scheduleIds)
+            .eq('date', localToday());
           attendanceToday = count ?? 0;
         }
       }

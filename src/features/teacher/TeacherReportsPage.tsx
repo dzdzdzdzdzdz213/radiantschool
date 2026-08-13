@@ -16,7 +16,8 @@ export default function TeacherReportsPage() {
       const courses = courseRes.data ?? [];
 
       const enrollRes = await supabase.from('course_enrollments').select('student_id')
-        .in('course_id', courseIds.length ? courseIds : [-1]);
+        .in('course_id', courseIds.length ? courseIds : [-1])
+        .eq('status', 'active');
       const enrollments = enrollRes.data ?? [];
 
       const evalRes = await supabase.from('evaluations').select('average_score').eq('teacher_id', profile.id);
@@ -24,10 +25,10 @@ export default function TeacherReportsPage() {
 
       let presentCount = 0, totalAtt = 0;
       if (courseIds.length) {
-        const { data: sessions } = await supabase.from('attendance_sessions').select('id').in('course_id', courseIds);
-        const sessionIds = sessions?.map(s => s.id) ?? [];
-        if (sessionIds.length) {
-          const { data: records } = await supabase.from('attendance_records').select('status').in('session_id', sessionIds);
+        const { data: schedules } = await supabase.from('course_schedules').select('id').eq('teacher_id', profile.id);
+        const scheduleIds = schedules?.map(s => s.id) ?? [];
+        if (scheduleIds.length) {
+          const { data: records } = await supabase.from('attendance').select('status').in('course_schedule_id', scheduleIds);
           presentCount = (records ?? []).filter((a) => a.status === 'present').length;
           totalAtt = (records ?? []).length;
         }

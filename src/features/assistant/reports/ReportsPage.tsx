@@ -32,58 +32,63 @@ export default function ReportsPage() {
   };
   const [selected, setSelected] = useState('revenue');
 
-  const { data: revenue, isLoading: revenueLoading } = useQuery({
+  const { data: revenue, isLoading: revenueLoading, isError: revenueError } = useQuery({
     queryKey: ['assistant_report_revenue'],
     enabled: selected === 'revenue',
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('v_daily_revenue').select('*').order('date', { ascending: false }).limit(30);
+      if (error) throw error;
       return data ?? [];
     },
   });
 
-  const { data: attendance, isLoading: attendanceLoading } = useQuery({
+  const { data: attendance, isLoading: attendanceLoading, isError: attendanceError } = useQuery({
     queryKey: ['assistant_report_attendance'],
     enabled: selected === 'attendance',
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('v_daily_attendance').select('*').order('date', { ascending: false }).limit(30);
+      if (error) throw error;
       return data ?? [];
     },
   });
 
-  const { data: registrations, isLoading: registrationsLoading } = useQuery({
+  const { data: registrations, isLoading: registrationsLoading, isError: registrationsError } = useQuery({
     queryKey: ['assistant_report_registrations'],
     enabled: selected === 'registrations',
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('course_enrollments').select('id, enrollment_date, course:courses(name), student:students!student_id(user:users!students_id_fkey(first_name, last_name))').order('enrollment_date', { ascending: false }).limit(30);
+      if (error) throw error;
       return data ?? [];
     },
   });
 
-  const { data: payments, isLoading: paymentsLoading } = useQuery({
+  const { data: payments, isLoading: paymentsLoading, isError: paymentsError } = useQuery({
     queryKey: ['assistant_report_payments'],
     enabled: selected === 'payments',
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('payments').select('id, amount, payment_method, created_at, student:students!student_id(user:users!students_id_fkey(first_name, last_name))').order('created_at', { ascending: false }).limit(30);
+      if (error) throw error;
       return data ?? [];
     },
   });
 
-  const { data: teacherWorkload, isLoading: workloadLoading } = useQuery({
+  const { data: teacherWorkload, isLoading: workloadLoading, isError: workloadError } = useQuery({
     queryKey: ['assistant_report_teacher_workload'],
     enabled: selected === 'teacher_workload',
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('v_teacher_workload').select('*').order('total_hours', { ascending: false });
+      if (error) throw error;
       return data ?? [];
     },
   });
 
   const isLoading = revenueLoading || attendanceLoading || registrationsLoading || paymentsLoading || workloadLoading;
-  const isError = false;
+  const isError = revenueError || attendanceError || registrationsError || paymentsError || workloadError;
 
   useErrorToast(isError, lang, t('reports.data', lang));
 
@@ -99,13 +104,17 @@ export default function ReportsPage() {
       toast(t('common.no_data', lang), 'error');
       return;
     }
-    downloadCSV(rows, `rapport_${selected}_${new Date().toISOString().slice(0, 10)}`);
+    const now = new Date();
+    downloadCSV(rows, `rapport_${selected}_${new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0]}`);
     toast(t('reports.export_success', lang), 'success');
   };
 
   const renderContent = () => {
     if (isLoading) {
       return <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 bg-muted rounded-xl animate-pulse" />)}</div>;
+    }
+    if (isError) {
+      return <p className="text-sm text-red-500 text-center py-8">Erreur lors du chargement des données</p>;
     }
     if (selected === 'revenue') {
       if (!revenue || revenue.length === 0) return <p className="text-sm text-muted-foreground text-center py-8">{t('common.no_data', lang)}</p>;

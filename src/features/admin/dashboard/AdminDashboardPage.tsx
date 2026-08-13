@@ -85,10 +85,10 @@ export default function AdminDashboardPage() {
   }
 
   const analyticsMetrics: AnalyticsMetric[] = [
-    { label: t('dashboard.stat.revenue', lang), value: formatCurrency(kpi.totalRevenue / Math.max(kpi.activeStudents, 1)), change: 8, trend: 'up' },
+    { label: t('dashboard.stat.revenue', lang), value: formatCurrency(kpi.totalRevenue / Math.max(kpi.activeStudents, 1)), change: 0, trend: 'neutral' },
     { label: t('dashboard.stat.retention', lang), value: kpi.attendanceRate != null ? `${kpi.attendanceRate}%` : '—', change: 0, trend: 'neutral' },
-    { label: t('dashboard.stat.new_students', lang), value: String(kpi.newStudentsMonth), change: kpi.newStudentsMonth > 0 ? 12 : 0, trend: kpi.newStudentsMonth > 0 ? 'up' : 'neutral' },
-    { label: t('dashboard.stat.courses', lang), value: String(revenueData.length > 0 ? Math.ceil(revenueData.length / 3) : '—'), change: 0, trend: 'neutral' },
+    { label: t('dashboard.stat.new_students', lang), value: String(kpi.newStudentsMonth), change: 0, trend: kpi.newStudentsMonth > 0 ? 'up' : 'neutral' },
+    { label: t('nav.invoices', lang), value: String(kpi.unpaidInvoices), change: 0, trend: kpi.unpaidInvoices > 0 ? 'down' : 'neutral' },
   ];
 
   return (
@@ -103,7 +103,6 @@ export default function AdminDashboardPage() {
           value={formatCurrency(kpi.totalRevenue)}
           subtitle="30 derniers jours"
           icon={DollarSign}
-          trend={{ up: true, pct: '+12%' }}
         />
         <KpiCard
           title={t('dashboard.stat.active_students', lang)}
@@ -117,7 +116,6 @@ export default function AdminDashboardPage() {
           value={kpi.attendanceRate != null ? `${kpi.attendanceRate}%` : '—'}
           subtitle={t('dashboard.stat.avg_grade', lang)}
           icon={CalendarCheck}
-          trend={kpi.attendanceRate != null && kpi.attendanceRate >= 90 ? { up: true, pct: '+3%' } : { up: false, pct: '-2%' }}
         />
         <KpiCard
           title={t('dashboard.stat.occupancy', lang)}

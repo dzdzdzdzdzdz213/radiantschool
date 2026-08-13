@@ -85,7 +85,8 @@ export function useAdminDashboard() {
   const attendanceSummaryQuery = useQuery({
     queryKey: ['attendance', 'summary-today'],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
       const { data } = await supabase
         .from('attendance')
         .select('status')

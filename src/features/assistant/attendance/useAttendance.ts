@@ -17,8 +17,13 @@ export interface AttendanceRecord {
   checkIn: string | null;
 }
 
+function localToday(): string {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+}
+
 export function useAttendance(date?: string, search: string = '') {
-  const today = date ?? new Date().toISOString().split('T')[0];
+  const today = date ?? localToday();
   return useQuery({
     queryKey: ['attendance', 'assistant', today, search],
     queryFn: async () => {

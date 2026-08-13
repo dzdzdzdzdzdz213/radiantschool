@@ -108,6 +108,7 @@ export default function CreateUserPage() {
               <SelectItem value="assistant">Assistant</SelectItem>
               <SelectItem value="teacher">Enseignant</SelectItem>
               <SelectItem value="student">Élève</SelectItem>
+              <SelectItem value="parent">Parent</SelectItem>
             </Select>
             {errors.role && <p className="text-xs text-red-500">{errors.role}</p>}
           </div>

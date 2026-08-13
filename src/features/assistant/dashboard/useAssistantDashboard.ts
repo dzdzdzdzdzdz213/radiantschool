@@ -278,12 +278,12 @@ export function useAssistantDashboard(lang: string = 'fr') {
 
   const quickActions: QuickAction[] = [
     { label: 'Créer une classe', icon: 'GraduationCap', path: '/assistant/groups', description: 'Ajouter un groupe' },
-    { label: 'Inscrire un élève', icon: 'UserPlus', path: '/assistant/students/new', description: 'Nouvelle inscription' },
-    { label: 'Créer une facture', icon: 'FileText', path: '/assistant/invoices/new', description: 'Générer une facture' },
+    { label: 'Inscrire un élève', icon: 'UserPlus', path: '/assistant/students', description: 'Nouvelle inscription' },
+    { label: 'Créer une facture', icon: 'FileText', path: '/assistant/invoices', description: 'Générer une facture' },
     { label: 'Prendre les présences', icon: 'ClipboardCheck', path: '/assistant/attendance', description: 'Relevé du jour' },
     { label: 'Scanner RFID', icon: 'ClipboardCheck', path: '/assistant/rfid', description: 'Scan par badge' },
     { label: 'Assigner un groupe', icon: 'Users', path: '/assistant/groups', description: 'Affecter un élève' },
-    { label: 'Planifier un cours', icon: 'Calendar', path: '/assistant/schedules', description: 'Ajouter au planning' },
+    { label: 'Planifier un cours', icon: 'Calendar', path: '/assistant/schedule', description: 'Ajouter au planning' },
     { label: 'Envoyer notification', icon: 'Bell', path: '/assistant/notifications', description: 'Alerter les parents' },
     { label: 'Générer rapport', icon: 'BarChart3', path: '/assistant/reports', description: 'Export des données' },
     { label: 'Uploader ressource', icon: 'FileText', path: '/assistant/resources', description: 'Partager un document' },

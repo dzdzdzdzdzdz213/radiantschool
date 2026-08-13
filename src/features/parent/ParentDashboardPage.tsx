@@ -267,7 +267,7 @@ export default function ParentDashboardPage() {
                 </div>
                 <span className="font-medium group-hover:text-foreground transition-colors">Voir les paiements</span>
               </Link>
-              <Link to="/parent/enroll" className="flex items-center gap-3.5 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-sm group">
+              <Link to="/courses" className="flex items-center gap-3.5 p-3.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-sm group">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
                   <UserPlus className="h-4 w-4 text-blue-500" />
                 </div>

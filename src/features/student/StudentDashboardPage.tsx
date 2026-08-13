@@ -61,7 +61,7 @@ export default function StudentDashboardPage() {
       const [enr, pay, att, inv] = await Promise.all([
         supabase.from('course_enrollments').select('id', { count: 'exact', head: true }).eq('student_id', profile.id),
         supabase.from('payments').select('amount').eq('student_id', profile.id).is('deleted_at', null),
-        supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('student_id', profile.id),
+        supabase.from('attendance').select('id', { count: 'exact', head: true }).eq('student_id', profile.id),
         supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('student_id', profile.id).in('status', ['unpaid', 'partially_paid']),
       ]);
       const totalPaid = (pay.data ?? []).reduce((s, p) => s + Number(p.amount), 0);

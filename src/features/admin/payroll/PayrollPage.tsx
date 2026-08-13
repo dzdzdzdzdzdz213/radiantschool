@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, CheckCircle, XCircle, Download } from 'lucide-react';
 import { downloadCSV } from '@/lib/csv';
 import { formatCurrency } from '@/lib/utils';
+import { useToast } from '@/hooks/useToast';
 
 interface PayrollEntry {
   id: number;
@@ -27,6 +28,7 @@ const monthNames = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', '
 
 export default function PayrollPage() {
   const { lang } = useLang();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string>('all');
 
@@ -58,6 +60,7 @@ export default function PayrollPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['teacher-payroll'] }),
+    onError: (err) => toast(err?.message ?? t('errors.update_error', lang, 'la paie'), 'error'),
   });
 
   const paidCount = data?.filter(e => e.status === 'paid').length ?? 0;
@@ -85,7 +88,7 @@ export default function PayrollPage() {
               net: e.net_pay,
               statut: e.status,
               payé_le: e.paid_at ? new Date(e.paid_at).toISOString().split('T')[0] : '',
-            })), `paie-${new Date().toISOString().split('T')[0]}`);
+            })), `paie-${(() => { const n = new Date(); return new Date(n.getTime() - n.getTimezoneOffset() * 60000).toISOString().split('T')[0]; })()}`);
           }}>
             <Download className="h-4 w-4 mr-2" />
             CSV
@@ -95,15 +98,15 @@ export default function PayrollPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card><CardContent className="p-5">
-          <p className="text-sm text-muted-foreground">Total lignes</p>
+          <p className="text-sm text-muted-foreground">Lignes affichées</p>
           <p className="text-2xl font-bold">{data?.length ?? 0}</p>
         </CardContent></Card>
         <Card><CardContent className="p-5">
-          <p className="text-sm text-muted-foreground">Payés</p>
+          <p className="text-sm text-muted-foreground">Payés (affichés)</p>
           <p className="text-2xl font-bold text-green-600">{paidCount}</p>
         </CardContent></Card>
         <Card><CardContent className="p-5">
-          <p className="text-sm text-muted-foreground">Total net</p>
+          <p className="text-sm text-muted-foreground">Net total (affiché)</p>
           <p className="text-2xl font-bold">{formatCurrency(totalNet)}</p>
         </CardContent></Card>
       </div>

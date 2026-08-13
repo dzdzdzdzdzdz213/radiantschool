@@ -127,7 +127,7 @@ export default function UsersPage() {
       </div>
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{total} utilisateurs — Page {page}/{totalPages}</span>
+          <span className="text-muted-foreground">{total} {t('nav.users', lang)} — Page {page}/{totalPages}</span>
           <div className="flex items-center gap-2">
             <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="btn-ghost h-8 w-8 p-0 disabled:opacity-30"><ChevronLeft className="h-4 w-4" /></button>
             {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {

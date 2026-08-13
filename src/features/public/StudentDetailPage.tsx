@@ -110,7 +110,7 @@ export default function StudentDetailPage() {
               {enrollments?.length > 0 ? enrollments.map((e) => (
                 <div key={e.id} className="rounded-lg bg-page p-3 text-sm">
                   <p className="font-medium">{e.course?.name}</p>
-                  <p className="text-muted-foreground">{e.course?.type} · {formatCurrency(e.course?.price)}</p>
+                  <p className="text-muted-foreground">{e.course?.type} · {e.course?.price != null ? formatCurrency(e.course.price) : '—'}</p>
                 </div>
               )) : <p className="text-sm text-muted-foreground">{t('common.no_data', lang)}</p>}
             </div>

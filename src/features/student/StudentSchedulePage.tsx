@@ -75,14 +75,13 @@ export default function StudentSchedulePage() {
     return map;
   }, [sessions]);
 
-  const upcoming = useMemo(
-    () =>
-      [...(sessions ?? [])]
-        .filter((s) => s.date >= toIso(today))
-        .sort((a, b) => a.date.localeCompare(b.date) || (a.schedule?.start_time ?? '').localeCompare(b.schedule?.start_time ?? ''))
-        .slice(0, 10),
-    [sessions, today]
-  );
+  const upcoming = useMemo(() => {
+    const todayIso = toIso(new Date());
+    return [...(sessions ?? [])]
+      .filter((s) => s.date >= todayIso)
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.schedule?.start_time ?? '').localeCompare(b.schedule?.start_time ?? ''))
+      .slice(0, 10);
+  }, [sessions]);
 
   const prevMonth = () => { if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); } else setCurrentMonth(m => m - 1); };
   const nextMonth = () => { if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); } else setCurrentMonth(m => m + 1); };

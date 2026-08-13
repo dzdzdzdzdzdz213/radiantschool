@@ -3,8 +3,9 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { BookOpen, CalendarDays, MapPin, User, Clock, CreditCard, GraduationCap, TrendingUp } from 'lucide-react';
+import { BookOpen, CalendarDays, MapPin, User, Clock, GraduationCap, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 const DAY_LABELS: Record<string, string> = {
@@ -233,7 +234,7 @@ export default function StudentCoursesPage() {
                       </div>
                       {c?.price != null && c.price > 0 && (
                         <span className="text-sm font-bold text-foreground">
-                          {c.price.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">DZD</span>
+                          {formatCurrency(c.price)}
                         </span>
                       )}
                     </div>

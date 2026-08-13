@@ -4,11 +4,20 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectItem } from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useToast } from '@/hooks/useToast';
+import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/lib/utils';
+
+function isoDaysAgo(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+}
 
 interface TeacherBrief {
   id: string;
@@ -76,9 +85,28 @@ function useCountdown(target: string | null): string {
 export default function AdminAttendanceOversightPage() {
   const { lang } = useLang();
   const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const [teacherFilter, setTeacherFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
+
+  const closeSession = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase
+        .from('attendance_sessions')
+        .update({ check_in_closed_at: new Date().toISOString() })
+        .eq('id', id)
+        .is('check_in_closed_at', null);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['attendance', 'admin-oversight-group'] });
+      qc.invalidateQueries({ queryKey: ['teacher-attendance-sessions'] });
+      toast('Pointage clôturé', 'success');
+    },
+    onError: (err) => toast(err?.message ?? 'Erreur lors de la clôture', 'error'),
+  });
 
   const { data: teachers, isError: teachersError } = useQuery({
     queryKey: ['teachers_list'],
@@ -95,6 +123,7 @@ export default function AdminAttendanceOversightPage() {
       let q = supabase
         .from('attendance_sessions')
         .select('id, date, title, check_in_opened_at, check_in_closed_at, price_calculated, course:courses!inner(id, name, type, teacher_id, teacher:users!teacher_id(first_name, last_name))')
+        .gte('date', isoDaysAgo(30))
         .order('date', { ascending: false })
         .limit(100);
       if (teacherFilter) q = q.eq('course.teacher_id' as never, teacherFilter);
@@ -110,6 +139,7 @@ export default function AdminAttendanceOversightPage() {
       let q = supabase
         .from('attendance')
         .select('id, date, status, check_in_time, check_in_closed_at, method, course_schedule:course_schedules!inner(id, course_id, course:courses!inner(id, name, type, teacher_id, teacher:users!teacher_id(first_name, last_name)))')
+        .gte('date', isoDaysAgo(30))
         .order('date', { ascending: false })
         .limit(100);
       if (teacherFilter) q = q.eq('course_schedule.course.teacher_id' as never, teacherFilter);
@@ -211,6 +241,7 @@ export default function AdminAttendanceOversightPage() {
                 <th className="text-center py-3 px-4 font-medium">Date</th>
                 <th className="text-center py-3 px-4 font-medium">Timer restant</th>
                 <th className="text-right py-3 px-4 font-medium">Prix</th>
+                <th className="text-center py-3 px-4 font-medium">Action</th>
               </tr></thead>
               <tbody>
                 {displayedOpen.map((s: OversightSession) => (
@@ -221,7 +252,12 @@ export default function AdminAttendanceOversightPage() {
                     <td className="py-3 px-4 text-center">
                       <span className="text-amber-600 font-mono font-bold"><TimerCountdown target={s.check_in_opened_at} /></span>
                     </td>
-                    <td className="py-3 px-4 text-right text-muted-foreground">{s.price_calculated ? `${s.price_calculated} DA` : '—'}</td>
+                    <td className="py-3 px-4 text-right text-muted-foreground">{s.price_calculated ? formatCurrency(s.price_calculated) : '—'}</td>
+                    <td className="py-3 px-4 text-center">
+                      <Button variant="outline" size="sm" className="h-7 text-xs gap-1" disabled={closeSession.isPending} onClick={() => closeSession.mutate(s.id)}>
+                        <Lock className="h-3 w-3" />Clôturer
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -230,7 +266,7 @@ export default function AdminAttendanceOversightPage() {
         </Card>
       )}
 
-      {(displayedClosed.length > 0 || typeFilter !== 'all') && (
+      {(displayedClosed.length > 0 || displayedPrivate.length > 0 || typeFilter !== 'all') && (
         <Card>
           <CardHeader className="pb-3"><h3 className="text-sm font-semibold flex items-center gap-2"><Lock className="h-4 w-4" />Historique des séances</h3></CardHeader>
           <CardContent className="p-0">
@@ -251,7 +287,7 @@ export default function AdminAttendanceOversightPage() {
                     <td className="py-3 px-4 text-center">{new Date(s.date).toLocaleDateString(localeMap[lang])}</td>
                     <td className="py-3 px-4 text-center"><Badge variant="outline">Groupe</Badge></td>
                     <td className="py-3 px-4 text-center"><Badge variant="success">Fermé</Badge></td>
-                    <td className="py-3 px-4 text-right font-mono">{s.price_calculated ? `${s.price_calculated} DA` : <span className="text-muted-foreground">—</span>}</td>
+                    <td className="py-3 px-4 text-right font-mono">{s.price_calculated ? formatCurrency(s.price_calculated) : <span className="text-muted-foreground">—</span>}</td>
                   </tr>
                 ))}
                 {displayedPrivate.slice(0, 50).map((r: OversightPrivateRecord) => (
@@ -277,7 +313,7 @@ export default function AdminAttendanceOversightPage() {
         </Card>
       )}
 
-      {!groupLoading && !privateLoading && displayedOpen.length === 0 && displayedClosed.length === 0 && (
+      {!groupLoading && !privateLoading && displayedOpen.length === 0 && displayedClosed.length === 0 && displayedPrivate.length === 0 && (
         <Card><CardContent className="p-12 text-center text-muted-foreground">Aucune séance trouvée. Les données apparaîtront quand les enseignants commenceront à pointer les présences.</CardContent></Card>
       )}
     </div>

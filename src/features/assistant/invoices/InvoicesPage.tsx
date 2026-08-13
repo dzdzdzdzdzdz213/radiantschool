@@ -63,14 +63,24 @@ export default function InvoicesPage() {
       toast(t('invoices.fill_fields', lang), 'error');
       return;
     }
+    const total = parseFloat(form.total_amount);
+    if (isNaN(total) || total <= 0) {
+      toast(t('invoices.fill_fields', lang), 'error');
+      return;
+    }
     if (!editingId && form.student_id && !UUID_REGEX.test(form.student_id)) {
       setStudentIdError(t('errors.invalid_uuid', lang));
+      return;
+    }
+    const editingItem = editingId ? data?.data?.find(i => i.id === editingId) : null;
+    if (editingItem && total < (editingItem.paidAmount ?? 0)) {
+      toast('Le montant ne peut pas être inférieur à la somme déjà payée', 'error');
       return;
     }
     setStudentIdError('');
     if (editingId) {
       updateInvoice.mutate(
-        { id: editingId, data: { total_amount: parseFloat(form.total_amount), due_date: form.due_date } },
+        { id: editingId, data: { total_amount: total, due_date: form.due_date } },
         {
           onSuccess: () => {
             toast(t('success.updated', lang, t('nav.invoices', lang)), 'success');
@@ -103,8 +113,10 @@ export default function InvoicesPage() {
 
   const openPayModal = (inv: InvoiceRecord) => {
     const remaining = inv.totalAmount - inv.paidAmount;
+    const now = new Date();
+    const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     setPayInvoice(inv);
-    setPayForm({ amount: remaining > 0 ? remaining.toString() : '', method: 'cash', date: new Date().toISOString().slice(0, 10), notes: '' });
+    setPayForm({ amount: remaining > 0 ? remaining.toString() : '', method: 'cash', date: localToday, notes: '' });
   };
 
   const handleRecordPayment = () => {

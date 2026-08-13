@@ -3,8 +3,16 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
+import { formatDate } from '@/lib/utils';
 import { ClipboardCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface AttendanceRow {
+  id: number;
+  status: string;
+  date: string;
+  course_schedule: { course: { name: string } } | null;
+}
 
 export default function StudentAttendancePage() {
   const { profile } = useAuth();
@@ -15,12 +23,12 @@ export default function StudentAttendancePage() {
     queryFn: async () => {
       if (!profile?.id) return [];
       const { data } = await supabase
-        .from('attendance_records')
-        .select('id, status, session:attendance_sessions!session_id(date, course:courses(name))')
+        .from('attendance')
+        .select('id, status, date, course_schedule:course_schedules!inner(course:courses(name))')
         .eq('student_id', profile.id)
-        .order('created_at', { ascending: false })
+        .order('date', { ascending: false })
         .limit(50);
-      return data ?? [];
+      return (data ?? []) as AttendanceRow[];
     },
     enabled: !!profile?.id,
   });
@@ -47,7 +55,7 @@ export default function StudentAttendancePage() {
           ) : (
             records.map((r) => (
               <div key={r.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 text-sm">
-                <span>{r.session?.course?.name} — {r.session?.date}</span>
+                <span>{r.course_schedule?.course?.name ?? 'Cours'} — {formatDate(r.date)}</span>
                 <span className={`font-semibold ${r.status === 'present' ? 'text-green-600' : r.status === 'late' ? 'text-amber-600' : 'text-red-600'}`}>{r.status}</span>
               </div>
             ))

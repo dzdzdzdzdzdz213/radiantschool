@@ -54,7 +54,7 @@ export function useLedger(accountId: number | null) {
   return useQuery({
     queryKey: ['ledger', accountId],
     queryFn: async () => {
-      let query = supabase.from('v_ledger').select('*').order('posting_date', { ascending: false }).limit(300);
+      let query = supabase.from('v_ledger').select('*').order('posting_date', { ascending: false });
       if (accountId) query = query.eq('account_id', accountId);
       const { data, error } = await query;
       if (error) throw error;

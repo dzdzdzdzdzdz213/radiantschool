@@ -45,7 +45,7 @@ export default function ChildProgressPage() {
   const { data: enrollments } = useQuery({
     queryKey: ['child-enrollments', childId],
     queryFn: async () => {
-      const { data } = await supabase.from('course_enrollments').select('course:courses(name, subject)').eq('student_id', childId!).eq('status', 'active');
+      const { data } = await supabase.from('course_enrollments').select('course:courses(name, subject:subjects(name))').eq('student_id', childId!).eq('status', 'active');
       return data ?? [];
     },
     enabled: !!childId,
@@ -55,7 +55,8 @@ export default function ChildProgressPage() {
   const totalCount = attendance?.length ?? 0;
   const attendanceRate = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : null;
   const gradedCount = grades?.length ?? 0;
-  const avgGrade = gradedCount > 0 ? Math.round(grades!.reduce((s, g) => s + Number(g.grade), 0) / gradedCount) : null;
+  const graded = (grades ?? []).filter((g) => Number(g.grade) > 0 && Number(g.assignment?.max_grade ?? 0) > 0);
+  const avgGrade = graded.length > 0 ? Math.round((graded.reduce((s, g) => s + (Number(g.grade) / Number(g.assignment?.max_grade)), 0) / graded.length) * 100) : null;
 
   return (
     <div className="space-y-6 p-6">
@@ -104,7 +105,7 @@ export default function ChildProgressPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide">Moyenne</p>
-              <p className="text-xl font-bold">{avgGrade ?? '—'}</p>
+              <p className="text-xl font-bold">{avgGrade != null ? `${avgGrade}%` : '—'}</p>
             </div>
           </CardContent>
         </Card>

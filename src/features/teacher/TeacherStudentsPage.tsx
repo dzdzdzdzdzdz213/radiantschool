@@ -23,6 +23,7 @@ export default function TeacherStudentsPage() {
           course:courses!course_id(name)
         `)
         .in('course_id', courseIds.map(c => c.id))
+        .eq('status', 'active')
         .order('enrollment_date', { ascending: false });
       return data ?? [];
     },

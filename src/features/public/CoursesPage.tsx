@@ -34,6 +34,7 @@ const STATUS_MAP: Record<string, { fr: string; en: string; ar: string; variant: 
   inactive: { fr: 'Inactif', en: 'Inactive', ar: 'غير نشط', variant: 'outline' },
   full: { fr: 'Complet', en: 'Full', ar: 'مكتمل', variant: 'warning' },
   cancelled: { fr: 'Annulé', en: 'Cancelled', ar: 'ملغي', variant: 'destructive' },
+  pending: { fr: 'En attente', en: 'Pending', ar: 'قيد الانتظار', variant: 'warning' },
 };
 
 export default function CoursesPage() {
@@ -153,6 +154,10 @@ export default function CoursesPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['courses'], refetchType: 'all' });
+      if (editingId) {
+        qc.invalidateQueries({ queryKey: ['course', editingId] });
+        qc.invalidateQueries({ queryKey: ['enrollments', editingId] });
+      }
       toast(t(editingId ? 'success.updated' : 'success.created', lang, t('nav.courses', lang)), 'success');
       setShowModal(false);
       setEditingId(null);
