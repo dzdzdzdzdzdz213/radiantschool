@@ -11,7 +11,26 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-const DAY_NAMES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const TINT = ['bg-violet-500/15 text-violet-700', 'bg-emerald-500/15 text-emerald-700', 'bg-blue-500/15 text-blue-700', 'bg-orange-500/15 text-orange-700', 'bg-pink-500/15 text-pink-700', 'bg-cyan-500/15 text-cyan-700', 'bg-red-500/15 text-red-700', 'bg-yellow-500/15 text-yellow-700'];
+
+interface CalendarSession {
+  id: number;
+  date: string;
+  check_in_opened_at: string | null;
+  check_in_closed_at: string | null;
+  course: { id: number; name: string } | null;
+}
+
+function hashTint(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+  return TINT[Math.abs(h) % TINT.length];
+}
+
+function toIso(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
 
 export default function CalendarPage() {
   const { lang } = useLang();
@@ -23,39 +42,41 @@ export default function CalendarPage() {
   const lastDay = new Date(currentYear, currentMonth + 1, 0);
   const startDay = (firstDay.getDay() + 6) % 7;
   const daysInMonth = lastDay.getDate();
+  const monthStart = toIso(new Date(currentYear, currentMonth, 1));
+  const monthEnd = toIso(lastDay);
 
-  const { data: events, isLoading, isError } = useQuery({
-    queryKey: ['assistant_calendar', currentMonth, currentYear],
+  const { data: sessions, isLoading, isError } = useQuery({
+    queryKey: ['assistant-calendar', currentMonth, currentYear],
     queryFn: async () => {
-      const dayNames = DAY_NAMES.map((_, i) => {
-        const d = new Date(currentYear, currentMonth, 1 + i);
-        return DAY_NAMES[(d.getDay() + 6) % 7];
-      });
-      const uniqueDays = [...new Set(dayNames)];
       const { data } = await supabase
-        .from('course_schedules')
-        .select('id, start_time, end_time, day_of_week, course:courses(name)')
-        .in('day_of_week', uniqueDays as never);
-      return data ?? [];
+        .from('attendance_sessions')
+        .select('id, date, check_in_opened_at, check_in_closed_at, course:courses!course_id(id, name)')
+        .gte('date', monthStart)
+        .lte('date', monthEnd)
+        .order('date');
+      return (data ?? []) as CalendarSession[];
     },
   });
 
   useErrorToast(isError, lang, t('calendar.load_error', lang));
 
+  const byDay = new Map<string, CalendarSession[]>();
+  for (const s of sessions ?? []) {
+    const list = byDay.get(s.date) ?? [];
+    list.push(s);
+    byDay.set(s.date, list);
+  }
+
   const prevMonth = () => { if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); } else setCurrentMonth(m => m - 1); };
   const nextMonth = () => { if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); } else setCurrentMonth(m => m + 1); };
-
-  const getDayEvents = (day: number) => {
-    const date = new Date(currentYear, currentMonth, day);
-    const dayName = DAY_NAMES[(date.getDay() + 6) % 7];
-    return (events ?? []).filter((e) => e.day_of_week === dayName);
-  };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Calendrier</h1>
-        <p className="text-sm text-muted-foreground mt-1">Vue d'ensemble des cours et événements</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          {sessions && sessions.length > 0 ? `${sessions.length} séances ce mois-ci` : 'Vue d\'ensemble des séances réelles'}
+        </p>
       </div>
 
       <Card>
@@ -79,16 +100,23 @@ export default function CalendarPage() {
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1;
                 const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
-                const dayEvents = getDayEvents(day);
+                const daySessions = byDay.get(toIso(new Date(currentYear, currentMonth, day))) ?? [];
+                const live = daySessions.filter(s => s.check_in_opened_at && !s.check_in_closed_at).length;
                 return (
                   <div key={day} className={`bg-card p-1.5 min-h-[80px] border-t border-accent ${isToday ? 'ring-2 ring-primary ring-inset' : ''}`}>
-                    <span className={`text-xs font-medium ${isToday ? 'text-primary' : ''}`}>{day}</span>
-                    {dayEvents.slice(0, 2).map((e) => (
-                      <div key={e.id} className="mt-1 rounded bg-primary/10 px-1 py-0.5 text-[9px] leading-tight text-primary truncate">
-                        {e.course?.name ?? ''}
+                    <span className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>{day}</span>
+                    {daySessions.slice(0, 2).map((s) => (
+                      <div
+                        key={s.id}
+                        className={`mt-1 rounded px-1 py-0.5 text-[9px] leading-tight truncate ${hashTint(s.course?.name ?? '')} ${s.check_in_closed_at ? 'opacity-50' : ''}`}
+                        title={s.course?.name ?? ''}
+                      >
+                        {s.course?.name ?? 'Séance'}
+                        {s.check_in_opened_at && !s.check_in_closed_at && <span className="ml-1 inline-block h-1 w-1 rounded-full bg-emerald-500 align-middle" />}
                       </div>
                     ))}
-                    {dayEvents.length > 2 && <div className="text-[8px] text-muted-foreground mt-0.5">+{dayEvents.length - 2}</div>}
+                    {daySessions.length > 2 && <div className="text-[8px] text-muted-foreground mt-0.5">+{daySessions.length - 2} autre{daySessions.length - 2 > 1 ? 's' : ''}</div>}
+                    {live > 0 && <div className="mt-0.5 flex items-center gap-1 text-[8px] font-medium text-emerald-600"><span className="h-1 w-1 animate-pulse rounded-full bg-emerald-500" />{live} en cours</div>}
                   </div>
                 );
               })}
