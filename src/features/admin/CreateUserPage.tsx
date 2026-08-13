@@ -42,12 +42,16 @@ export default function CreateUserPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!validate()) throw new Error('VALIDATION_FAILED');
+      const { data: { session: prevSession } } = await supabase.auth.getSession();
       const { data: signUpResponse, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { first_name: firstName, last_name: lastName, role } },
       });
       if (signUpError) throw signUpError;
+      if (signUpResponse?.session && prevSession) {
+        await supabase.auth.setSession({ access_token: prevSession.access_token, refresh_token: prevSession.refresh_token });
+      }
       if (signUpResponse?.user) {
         const { error: rpcError } = await supabase.rpc('register_user', {
           p_id: signUpResponse.user.id, p_email: email, p_first_name: firstName, p_last_name: lastName,

@@ -3,8 +3,9 @@ export function downloadCSV(data: Record<string, unknown>[], filename: string) {
 
   const headers = Object.keys(data[0]);
   const escape = (v: unknown) => {
-    const s = String(v ?? '');
-    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+    let s = String(v ?? '');
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r') ? `"${s.replace(/"/g, '""')}"` : s;
   };
 
   const csv = [

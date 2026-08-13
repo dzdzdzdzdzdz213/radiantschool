@@ -45,7 +45,13 @@ export function useInvoices(search: string = '', page: number = 1, statusFilter:
         .order('created_at', { ascending: false })
         .is('deleted_at', null)
         .range((page - 1) * 20, page * 20 - 1);
-      if (statusFilter) query = query.eq('status', statusFilter as never);
+      if (statusFilter) {
+        if (statusFilter === 'overdue') {
+          query = query.in('status', ['unpaid', 'partially_paid']).lt('due_date', new Date().toISOString().slice(0, 10));
+        } else {
+          query = query.eq('status', statusFilter as never);
+        }
+      }
       if (search) {
         const like = `%${search}%`;
         const { data: matchingUsers } = await supabase

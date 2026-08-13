@@ -35,18 +35,24 @@ const STATUS_COLORS = {
 };
 const STATUS_INACTIVE = 'bg-muted hover:bg-accent text-muted-foreground';
 
+function localToday(): string {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+}
+
 export default function BulkAttendancePage() {
   const { lang } = useLang();
   const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(localToday());
 
   const { data: courses } = useQuery({
-    queryKey: ['active-courses'],
+    queryKey: ['active-courses', date],
     queryFn: async () => {
-      const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()];
+      const parsed = new Date(`${date}T00:00:00`);
+      const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][isNaN(parsed.getTime()) ? new Date().getDay() : parsed.getDay()];
       const { data } = await supabase
         .from('courses')
         .select('id, name, subject:subjects(name), course_schedules(id, day_of_week)')
@@ -63,7 +69,7 @@ export default function BulkAttendancePage() {
   });
 
   const { data: students, isLoading: studentsLoading } = useQuery({
-    queryKey: ['course-students', selectedCourseId],
+    queryKey: ['course-students', selectedCourseId, date],
     queryFn: async () => {
       if (!selectedCourseId) return [];
       const { data: enr } = await supabase
@@ -80,11 +86,15 @@ export default function BulkAttendancePage() {
         enrollmentId: e.id,
       }));
 
-      const { data: todayAtt } = await supabase
+      const scheduleId = courses?.find(c => c.id === selectedCourseId)?.scheduleId;
+      let attQuery = supabase
         .from('attendance')
         .select('student_id, status')
         .in('student_id', rows.map(r => r.id))
         .eq('date', date);
+      if (scheduleId) attQuery = attQuery.eq('course_schedule_id', scheduleId);
+      else attQuery = attQuery.is('course_schedule_id', null);
+      const { data: todayAtt } = await attQuery;
 
       if (todayAtt) {
         for (const att of todayAtt) {
@@ -101,16 +111,17 @@ export default function BulkAttendancePage() {
 
   const upsertAttendance = useMutation({
     mutationFn: async ({ studentId, status }: { studentId: string; status: 'present' | 'absent' | 'late' }) => {
-      const existing = await supabase
-        .from('attendance')
-        .select('id')
-        .eq('student_id', studentId)
-        .eq('date', date)
-        .maybeSingle();
-
       const scheduleId = courses?.find(c => c.id === selectedCourseId)?.scheduleId;
       const payload: Partial<Database['public']['Tables']['attendance']['Insert']> = { status: status as Database['public']['Enums']['attendance_status'], recorded_by: profile?.id ?? null, method: 'manual' as const };
       if (scheduleId) payload.course_schedule_id = scheduleId;
+
+      let q = supabase
+        .from('attendance')
+        .select('id')
+        .eq('student_id', studentId)
+        .eq('date', date);
+      if (scheduleId) q = q.eq('course_schedule_id', scheduleId);
+      const existing = await q.maybeSingle();
       if (existing.data) {
         const { error } = await supabase
           .from('attendance')
@@ -124,7 +135,7 @@ export default function BulkAttendancePage() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['course-students', selectedCourseId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['course-students', selectedCourseId, date] }),
     onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
   });
 

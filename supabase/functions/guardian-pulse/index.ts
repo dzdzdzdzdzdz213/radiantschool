@@ -1,8 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Guardian Pulse: daily proactive guardian notifications.
 // Called by pg_cron via guardian_pulse_run() with the project anon key.
 // Uses the service role internally (same pattern as attendance-summary).
+// The anon key is public, so nothing here must ever mutate data: it is
+// strictly read + notify, with per-parent-per-day de-duplication.
 const PROJECT_REF = "kaoxcbqhuwhtadpgccjp";
 
 function isProjectKey(key: string): boolean {
@@ -21,6 +23,15 @@ function isProjectKey(key: string): boolean {
   } catch {
     return false;
   }
+}
+
+function errMsg(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+// Attendance dates are written in local (Africa/Algiers) time by the app.
+function localToday(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Algiers" }).format(new Date());
 }
 
 Deno.serve(async (req) => {
@@ -42,7 +53,7 @@ Deno.serve(async (req) => {
   );
 
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localToday();
     const results = { payments: 0, absences: 0, errors: [] as string[] };
 
     // 1) Payments overdue >= 30 days
@@ -62,10 +73,19 @@ Deno.serve(async (req) => {
       try {
         const { data: parent } = await supabase
           .from("users")
-          .select("notif_payments")
+          .select("notif_payments, email_notifications")
           .eq("id", parentId)
           .single();
         if (parent && parent.notif_payments === false) continue;
+
+        const { count } = await supabase
+          .from("notifications")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", parentId)
+          .eq("category", "payment")
+          .gte("created_at", `${today}T00:00:00Z`)
+          .lte("created_at", `${today}T23:59:59Z`);
+        if (count && count > 0) continue;
 
         const days = Math.max(30, Math.floor((Date.now() - new Date(inv.due_date).getTime()) / 86400000));
         const remaining = Number(inv.total_amount) - Number(inv.paid_amount ?? 0);
@@ -77,13 +97,13 @@ Deno.serve(async (req) => {
             message: `La facture de ${name} (${remaining.toLocaleString("fr-DZ")} DZD) est impayée depuis ${days} jours. Merci de régulariser votre situation.`,
             type: "warning",
             category: "payment",
-            send_email: true,
+            send_email: parent?.email_notifications !== false,
             from_name: "Radiant Academy",
           },
         });
         results.payments++;
       } catch (e) {
-        results.errors.push(`payment invoice ${inv.id}: ${e.message}`);
+        results.errors.push(`payment invoice ${inv.id}: ${errMsg(e)}`);
       }
     }
 
@@ -100,7 +120,7 @@ Deno.serve(async (req) => {
       try {
         const { data: parent } = await supabase
           .from("users")
-          .select("notif_absences")
+          .select("notif_absences, email_notifications")
           .eq("id", student.parent_id)
           .single();
         if (parent && parent.notif_absences === false) continue;
@@ -110,7 +130,8 @@ Deno.serve(async (req) => {
           .select("id", { count: "exact", head: true })
           .eq("user_id", student.parent_id)
           .eq("category", "attendance")
-          .gte("created_at", `${today}T00:00:00Z`);
+          .gte("created_at", `${today}T00:00:00Z`)
+          .lte("created_at", `${today}T23:59:59Z`);
         if (count && count > 0) continue;
 
         const name = `${student.first_name} ${student.last_name}`.trim();
@@ -121,13 +142,13 @@ Deno.serve(async (req) => {
             message: `Votre enfant ${name} est marqué(e) absent(e) aujourd'hui. Contactez l'administration pour toute question.`,
             type: "warning",
             category: "attendance",
-            send_email: true,
+            send_email: parent?.email_notifications !== false,
             from_name: "Radiant Academy",
           },
         });
         results.absences++;
       } catch (e) {
-        results.errors.push(`absence ${rec.student_id}: ${e.message}`);
+        results.errors.push(`absence ${rec.student_id}: ${errMsg(e)}`);
       }
     }
 
@@ -136,7 +157,7 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: errMsg(err) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

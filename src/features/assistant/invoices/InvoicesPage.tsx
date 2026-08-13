@@ -15,6 +15,7 @@ import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { useSearchParams } from 'react-router-dom';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -23,7 +24,8 @@ const PAYMENT_METHODS = ['cash', 'bank_transfer', 'card', 'check'] as const;
 export default function InvoicesPage() {
   const { lang } = useLang();
   const { toast } = useToast();
-  const [search, setSearch] = useState('');
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const debouncedSearch = useDebounce(search, 300);
@@ -253,6 +255,7 @@ export default function InvoicesPage() {
               ) : (
                 data?.data.map((inv) => {
                   const remaining = inv.totalAmount - inv.paidAmount;
+                  const isOverdue = remaining > 0 && inv.status !== 'cancelled' && !!inv.dueDate && inv.dueDate < new Date().toISOString().slice(0, 10);
                   return (
                     <TableRow key={inv.id}>
                       <TableCell><span className="text-sm font-mono">{inv.invoiceNumber}</span></TableCell>
@@ -261,8 +264,8 @@ export default function InvoicesPage() {
                       <TableCell className="hidden sm:table-cell text-sm">{formatCurrency(inv.paidAmount)}</TableCell>
                       <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{formatDate(inv.dueDate)}</TableCell>
                       <TableCell className="text-right">
-                        <Badge variant={inv.status === 'paid' ? 'success' : inv.status === 'partially_paid' ? 'warning' : inv.status === 'overdue' ? 'destructive' : 'outline'}>
-                          {remaining <= 0 ? t('status.paid', lang) : inv.status === 'overdue' ? t('status.late', lang) : `${formatCurrency(remaining)}`}
+                        <Badge variant={inv.status === 'paid' ? 'success' : isOverdue ? 'destructive' : inv.status === 'partially_paid' ? 'warning' : 'outline'}>
+                          {remaining <= 0 ? t('status.paid', lang) : isOverdue ? t('status.late', lang) : `${formatCurrency(remaining)}`}
                         </Badge>
                       </TableCell>
                       <TableCell>

@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { downloadCSV } from '@/lib/csv';
 
 const reportTypes = [
   { id: 'attendance', label: '', icon: BarChart3 },
@@ -86,8 +87,20 @@ export default function ReportsPage() {
 
   useErrorToast(isError, lang, t('reports.data', lang));
 
-  const exportPDF = (filename: string) => {
-    toast(t('reports.exporting', lang), 'info');
+  const exportCSV = () => {
+    let rows: Record<string, unknown>[] = [];
+    if (selected === 'revenue') rows = (revenue ?? []).map((r) => ({ date: r.date, amount: r.amount }));
+    else if (selected === 'attendance') rows = (attendance ?? []).map((r) => ({ date: r.date, present: r.present_count, total: r.total_count }));
+    else if (selected === 'registrations') rows = (registrations ?? []).map((r) => ({ student: r.student?.user ? `${r.student.user.first_name} ${r.student.user.last_name}` : '', course: r.course?.name ?? '', date: r.enrollment_date }));
+    else if (selected === 'payments') rows = (payments ?? []).map((p) => ({ student: p.student?.user ? `${p.student.user.first_name} ${p.student.user.last_name}` : '', method: p.payment_method, amount: p.amount, date: p.created_at }));
+    else if (selected === 'teacher_workload') rows = (teacherWorkload ?? []).map((r) => ({ teacher: r.teacher_name, hours: r.total_hours, courses: r.course_count }));
+
+    if (!rows.length) {
+      toast(t('common.no_data', lang), 'error');
+      return;
+    }
+    downloadCSV(rows, `rapport_${selected}_${new Date().toISOString().slice(0, 10)}`);
+    toast(t('reports.export_success', lang), 'success');
   };
 
   const renderContent = () => {
@@ -150,7 +163,7 @@ export default function ReportsPage() {
           <p className="text-sm text-muted-foreground mt-1">{t('reports.subtitle', lang)}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => exportPDF('rapport')}><FileIcon className="h-4 w-4" />{t('common.export', lang)}</Button>
+          <Button variant="outline" className="gap-2" onClick={exportCSV}><FileIcon className="h-4 w-4" />{t('common.export', lang)}</Button>
         </div>
       </div>
 
@@ -174,7 +187,7 @@ export default function ReportsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">{t('reports.preview', lang)}</CardTitle>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportPDF('rapport')}><Download className="h-4 w-4" />{t('common.export', lang)}</Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={exportCSV}><Download className="h-4 w-4" />{t('common.export', lang)}</Button>
             </div>
           </CardHeader>
           <CardContent>

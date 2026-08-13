@@ -52,7 +52,7 @@ export default function PublicContactPage() {
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
               <Phone className="h-5 w-5" style={{ color: 'var(--primary)' }} />
-              <div><p className="text-sm font-medium">Téléphone</p><p className="text-sm text-muted-foreground">+213 5XX XX XX XX</p></div>
+              <div><p className="text-sm font-medium">Téléphone</p><p className="text-sm text-muted-foreground">+213 779 89 34 02</p></div>
             </CardContent>
           </Card>
         </div>

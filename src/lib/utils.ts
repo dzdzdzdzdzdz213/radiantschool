@@ -20,15 +20,19 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-/** Formats a date as `dd MMMM yyyy` in French locale. */
-export function formatDate(date: string | Date): string {
+/** Formats a date as `dd MMMM yyyy` in French locale. Returns '' for invalid input. */
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return '';
   const d = typeof date === 'string' ? parseISO(date) : date;
+  if (isNaN(d.getTime())) return '';
   return format(d, 'dd MMMM yyyy', { locale: fr });
 }
 
-/** Formats a date-time as `dd MMMM yyyy HH:mm` in French locale. */
-export function formatDateTime(date: string | Date): string {
+/** Formats a date-time as `dd MMMM yyyy HH:mm` in French locale. Returns '' for invalid input. */
+export function formatDateTime(date: string | Date | null | undefined): string {
+  if (!date) return '';
   const d = typeof date === 'string' ? parseISO(date) : date;
+  if (isNaN(d.getTime())) return '';
   return format(d, 'dd MMMM yyyy HH:mm', { locale: fr });
 }
 

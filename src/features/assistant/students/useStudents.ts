@@ -59,10 +59,11 @@ export function useStudentDetail(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('users')
-        .select('*, students!inner(*, level:levels(name))')
+        .select('*, students(*, level:levels(name))')
         .eq('id', id)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Not found');
       return data;
     },
     enabled: !!id,
@@ -76,13 +77,34 @@ export interface StudentInput {
   phone?: string | null;
   status: string;
   role?: string;
+  password: string;
 }
 
 export function useCreateStudent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (data: StudentInput) => {
-      return api.create('users', data as unknown as Database['public']['Tables']['users']['Insert']);
+    mutationFn: async ({ first_name, last_name, email, phone, status, role = 'student', password }: StudentInput) => {
+      const { data: { session: prevSession } } = await supabase.auth.getSession();
+      const { data: signUpRes, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { first_name, last_name, role } },
+      });
+      if (signUpError) throw signUpError;
+      if (!signUpRes?.user) throw new Error('Aucun utilisateur créé');
+      if (signUpRes.session && prevSession) {
+        await supabase.auth.setSession({ access_token: prevSession.access_token, refresh_token: prevSession.refresh_token });
+      }
+      const { error: rpcError } = await supabase.rpc('register_user', {
+        p_id: signUpRes.user.id,
+        p_email: email,
+        p_first_name: first_name,
+        p_last_name: last_name,
+        p_role: role,
+        p_status: status,
+        p_phone: phone ?? undefined,
+      });
+      if (rpcError) throw new Error(rpcError.message || rpcError.hint || 'Erreur lors de la création du profil');
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_students'] }); },
   });

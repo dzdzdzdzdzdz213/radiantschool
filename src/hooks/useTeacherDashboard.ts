@@ -7,6 +7,14 @@ function getDayName(): (typeof DAYS)[number] {
   return DAYS[new Date().getDay()];
 }
 
+function localToday(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export function useTeacherDashboard(teacherId: string | undefined) {
   const todayDayName = getDayName();
 
@@ -27,7 +35,11 @@ export function useTeacherDashboard(teacherId: string | undefined) {
       const courseIdList = (coursesRes.data ?? []).map(c => c.id);
       let attendanceToday = 0;
       if (courseIdList.length > 0) {
-        const { data: sessions } = await supabase.from('attendance_sessions').select('id').in('course_id', courseIdList);
+        const { data: sessions } = await supabase
+          .from('attendance_sessions')
+          .select('id')
+          .in('course_id', courseIdList)
+          .eq('date', localToday());
         const sessionIds = (sessions ?? []).map(s => s.id);
         if (sessionIds.length > 0) {
           const { count } = await supabase.from('attendance_records').select('id', { count: 'exact', head: true })

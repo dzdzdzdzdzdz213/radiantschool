@@ -1,10 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Real-time attendance → parent notification bridge.
-// Called by DB triggers (notify_parent_on_attendance*) using the project anon key.
-// Resolves the student's parents, respects their notification preferences, and
-// forwards to send-notification using the service role (which the DB must never hold).
-// One attendance notification per parent per day (prevents spam + trigger re-fires).
+// Called by DB triggers (notify_parent_on_attendance*) that sign with the anon key,
+// which is public, so nothing in the body can be trusted. Instead of trusting the
+// posted status, the function re-reads the actual attendance row from the database
+// and notifies parents based on the recorded truth. Forging a notification would
+// require writing an attendance row, which RLS restricts to teachers/assistants.
 const PROJECT_REF = "kaoxcbqhuwhtadpgccjp";
 const VALID_STATUS = ["present", "absent", "late"];
 
@@ -22,6 +23,10 @@ function isProjectKey(key: string): boolean {
   } catch {
     return false;
   }
+}
+
+function errMsg(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
 }
 
 Deno.serve(async (req) => {
@@ -42,21 +47,77 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  let body: any;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400 });
   }
 
-  const studentId = body?.student_id;
-  const status = body?.status;
-  if (typeof studentId !== "string" || !VALID_STATUS.includes(status)) {
-    return new Response(JSON.stringify({ error: "student_id and status (present|absent|late) are required" }), { status: 400 });
+  const studentId = (body as Record<string, unknown>)?.student_id;
+  const sessionId = (body as Record<string, unknown>)?.session_id;
+  const scheduleId = (body as Record<string, unknown>)?.course_schedule_id;
+  const postedDate = (body as Record<string, unknown>)?.date;
+  if (typeof studentId !== "string") {
+    return new Response(JSON.stringify({ error: "student_id is required" }), { status: 400 });
   }
 
   try {
     const results = { sent: 0, skipped: 0, errors: [] as string[], email_sent: true, email_errors: [] as string[] };
+
+    // Resolve the recorded truth from the DB. A request whose attendance row
+    // does not exist is rejected: the triggers only fire after a real write.
+    let status: string | null = null;
+    let eventDate: string | null = null;
+    let courseName = "";
+
+    if (typeof sessionId === "string" && sessionId.length > 0) {
+      const { data: session } = await supabase
+        .from("attendance_sessions")
+        .select("id, date, course:courses(name)")
+        .eq("id", sessionId)
+        .single();
+      if (!session) {
+        return new Response(JSON.stringify({ error: "Session not found" }), { status: 404 });
+      }
+      const { data: record } = await supabase
+        .from("attendance_records")
+        .select("status")
+        .eq("session_id", sessionId)
+        .eq("student_id", studentId)
+        .single();
+      if (!record) {
+        return new Response(JSON.stringify({ error: "Attendance record not found" }), { status: 404 });
+      }
+      status = record.status;
+      eventDate = session.date ?? null;
+      courseName = (session as { course?: { name?: string } })?.course?.name ?? "";
+    } else if (typeof scheduleId === "string" && scheduleId.length > 0) {
+      const { data: sched } = await supabase
+        .from("course_schedules")
+        .select("course:courses(name)")
+        .eq("id", scheduleId)
+        .single();
+      const { data: record } = await supabase
+        .from("attendance")
+        .select("status")
+        .eq("course_schedule_id", scheduleId)
+        .eq("student_id", studentId)
+        .eq("date", postedDate ?? eventDate ?? "")
+        .maybeSingle();
+      if (!record) {
+        return new Response(JSON.stringify({ error: "Attendance record not found" }), { status: 404 });
+      }
+      status = record.status;
+      eventDate = typeof postedDate === "string" ? postedDate : null;
+      courseName = (sched as { course?: { name?: string } })?.course?.name ?? "";
+    }
+
+    if (!status || !VALID_STATUS.includes(status)) {
+      return new Response(JSON.stringify({ error: "Valid attendance status not found" }), { status: 400 });
+    }
+
+    const dayWindow = (eventDate ?? new Date().toISOString().slice(0, 10));
 
     const { data: student } = await supabase
       .from("users")
@@ -68,25 +129,8 @@ Deno.serve(async (req) => {
     }
     const studentName = `${student.first_name ?? ""} ${student.last_name ?? ""}`.trim();
 
-    let courseName = "";
-    if (body?.session_id) {
-      const { data: session } = await supabase
-        .from("attendance_sessions")
-        .select("course_id, courses(name)")
-        .eq("id", body.session_id)
-        .single();
-      courseName = (session as any)?.courses?.name ?? "";
-    } else if (body?.course_schedule_id) {
-      const { data: sched } = await supabase
-        .from("course_schedules")
-        .select("course:courses(name)")
-        .eq("id", body.course_schedule_id)
-        .single();
-      courseName = (sched as any)?.course?.name ?? "";
-    }
-
     const statusLabel = status === "present" ? "Présent" : status === "absent" ? "Absent" : "En retard";
-    const dateLabel = body?.date ?? new Date().toISOString().slice(0, 10);
+    const dateLabel = dayWindow;
 
     const { data: links } = await supabase
       .from("student_parent")
@@ -106,7 +150,7 @@ Deno.serve(async (req) => {
 
     for (const parent of parentRows ?? []) {
       try {
-        if (status === "absent" && parent.notif_absences === false) {
+        if ((status === "absent" || status === "late") && parent.notif_absences === false) {
           results.skipped++;
           continue;
         }
@@ -125,7 +169,8 @@ Deno.serve(async (req) => {
           .select("id", { count: "exact", head: true })
           .eq("user_id", parent.id)
           .eq("category", "attendance")
-          .gte("created_at", `${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
+          .gte("created_at", `${dayWindow}T00:00:00Z`)
+          .lte("created_at", `${dayWindow}T23:59:59Z`);
         if (count && count > 0) {
           results.skipped++;
           continue;
@@ -141,7 +186,7 @@ Deno.serve(async (req) => {
             user_id: parent.id,
             title: `Présence - ${studentName}`,
             message: `Votre enfant ${studentName} a été marqué(e) comme "${statusLabel}" pour le cours de ${courseName} le ${dateLabel}.`,
-            type: status === "absent" ? "warning" : "info",
+            type: status === "absent" || status === "late" ? "warning" : "info",
             category: "attendance",
             send_email: parent.email_notifications !== false,
             from_name: "Radiant Academy",
@@ -151,7 +196,7 @@ Deno.serve(async (req) => {
         if (!notifRes.ok) {
           throw new Error(`send-notification ${notifRes.status}: ${notifBody.slice(0, 300)}`);
         }
-        let parsed: any = {};
+        let parsed: Record<string, unknown> = {};
         try {
           parsed = JSON.parse(notifBody);
         } catch {
@@ -159,11 +204,11 @@ Deno.serve(async (req) => {
         }
         results.email_sent = (results.email_sent ?? true) && parsed?.email_sent === true;
         if (parsed?.email_error) {
-          results.email_errors.push(`parent ${parent.id}: ${parsed.email_error}`);
+          results.email_errors.push(`parent ${parent.id}: ${String(parsed.email_error)}`);
         }
         results.sent++;
       } catch (e) {
-        results.errors.push(`parent ${parent.id}: ${e.message}`);
+        results.errors.push(`parent ${parent.id}: ${errMsg(e)}`);
       }
     }
 
@@ -172,7 +217,7 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: errMsg(err) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

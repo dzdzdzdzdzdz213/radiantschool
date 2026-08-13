@@ -90,26 +90,33 @@ Deno.serve(async (req) => {
       // fall back: unclustered
     }
 
+    const CATEGORIES = new Set(["teaching", "fees", "facilities", "safety", "schedule", "communication", "food", "staff", "other"]);
     const byId = new Map((parsed.per_item ?? []).map((p: any) => [p.id, p]));
+    const failures: string[] = [];
     for (const row of rows) {
       const item = byId.get(row.id);
-      await supabase
+      const severityNum = Number(item?.severity);
+      const severity = Number.isInteger(severityNum) && severityNum >= 1 && severityNum <= 5 ? severityNum : null;
+      const category = typeof item?.category === "string" && CATEGORIES.has(item.category) ? item.category : null;
+      const note = typeof item?.note === "string" ? item.note.slice(0, 500) : null;
+      const { error: updateErr } = await supabase
         .from("honesty_box")
         .update({
-          category: item?.category ?? null,
-          severity: item?.severity ?? null,
-          ai_notes: item?.note ?? null,
+          category,
+          severity,
+          ai_notes: note,
           status: item ? "clustered" : "new",
         })
         .eq("id", row.id);
+      if (updateErr) failures.push(`honesty_box #${row.id}: ${updateErr.message}`);
     }
 
-    return new Response(JSON.stringify({ ok: true, clustered: rows.length, themes: parsed.themes ?? [] }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return new Response(
+      JSON.stringify({ ok: true, clustered: rows.length - failures.length, failures: failures.length, themes: parsed.themes ?? [] }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+    );
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });

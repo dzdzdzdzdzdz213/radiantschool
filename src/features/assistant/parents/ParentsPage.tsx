@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,9 +18,10 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 
 export default function ParentsPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { lang } = useLang();
   const { toast } = useToast();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
   const { data, isLoading, isError } = useParents(debouncedSearch, page);
@@ -30,11 +31,11 @@ export default function ParentsPage() {
   const createParent = useCreateParent();
 
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '', status: 'active' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const openCreateModal = () => {
-    setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+    setForm({ firstName: '', lastName: '', email: '', phone: '', password: '', status: 'active' });
     setErrors({});
     setShowModal(true);
   };
@@ -52,6 +53,8 @@ export default function ParentsPage() {
     if (!form.email.trim()) e.email = t('errors.required', lang);
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = t('errors.invalid_email', lang);
     if (form.phone && !/^(05|06|07|03)[0-9]{8}$/.test(form.phone.replace(/[\s-]/g, ''))) e.phone = t('errors.invalid_phone', lang);
+    if (!form.password) e.password = t('validation.password_required', lang);
+    else if (form.password.length < 8) e.password = t('validation.password_hint', lang);
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -64,6 +67,7 @@ export default function ParentsPage() {
         last_name: form.lastName,
         email: form.email,
         phone: form.phone || null,
+        password: form.password,
         status: form.status,
         role: 'parent',
       },
@@ -71,7 +75,7 @@ export default function ParentsPage() {
         onSuccess: () => {
           toast(t('success.created', lang, t('nav.parents', lang)), 'success');
           setShowModal(false);
-          setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active' });
+          setForm({ firstName: '', lastName: '', email: '', phone: '', password: '', status: 'active' });
         },
         onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
       },
@@ -110,6 +114,11 @@ export default function ParentsPage() {
                 <Label>{t('common.phone', lang)}</Label>
                 <Input type="tel" value={form.phone} onInput={e => { const v = (e.target as HTMLInputElement).value.replace(/[^0-9\s-]/g, '').slice(0, 14); (e.target as HTMLInputElement).value = v; setForm(f => ({ ...f, phone: v })); setErrors(e => ({ ...e, phone: '' })); }} maxLength={14} placeholder="05XX-XX-XX-XX" />
                 {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label>{t('auth.password', lang)} <span className="text-red-500">*</span></Label>
+                <Input type="password" value={form.password} onInput={e => { const v = (e.target as HTMLInputElement).value; (e.target as HTMLInputElement).value = v; setForm(f => ({ ...f, password: v })); setErrors(e => ({ ...e, password: '' })); }} maxLength={64} placeholder="Min. 8 caractères" />
+                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowModal(false)}>{t('common.cancel', lang)}</Button>

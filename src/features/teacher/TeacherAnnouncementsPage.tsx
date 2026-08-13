@@ -45,7 +45,7 @@ export default function TeacherAnnouncementsPage() {
       if (!profile?.id) return;
       const { error } = await supabase.from('announcements').insert({
         teacher_id: profile.id,
-        course_id: Number(form.course_id),
+        course_id: form.course_id ? Number(form.course_id) : null,
         title: form.title,
         content: form.content,
       });
@@ -62,9 +62,11 @@ export default function TeacherAnnouncementsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await supabase.from('announcements').delete().eq('id', id);
+      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['teacher-announcements'] }); toast('Supprimée', 'success'); },
+    onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
   return (

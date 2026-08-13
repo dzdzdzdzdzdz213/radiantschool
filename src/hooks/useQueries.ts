@@ -109,7 +109,7 @@ export function useSubjects() {
 export function useRooms() {
   return useQuery({
     queryKey: ['rooms'],
-    queryFn: () => api.list('rooms', { filters: [{ column: 'status', operator: 'eq', value: 'available' }], sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
+    queryFn: () => api.list('rooms', { filters: [{ column: 'status', operator: 'eq', value: 'active' }], sort: [{ column: 'name', direction: 'asc' }] }).then(r => r.data),
     staleTime: 300_000,
   });
 }

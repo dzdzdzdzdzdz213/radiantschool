@@ -65,7 +65,6 @@ export default function ResourcesPage() {
         title: isImage ? `${file.name.replace(/\.[^.]+$/, '')}.webp` : file.name,
         type: isImage ? 'image' : file.type.startsWith('video/') ? 'video' : file.type.startsWith('application/pdf') ? 'pdf' : file.type.startsWith('image/') ? 'image' : 'link',
         file_url: urlData.publicUrl,
-        course_id: 0,
         uploaded_by: profile?.id ?? '',
       });
       if (dbError) throw dbError;
@@ -75,22 +74,26 @@ export default function ResourcesPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const { error } = await supabase.from('resources').delete().eq('id', id);
+    mutationFn: async (r: { id: number; file_url: string | null }) => {
+      const { error } = await supabase.from('resources').delete().eq('id', r.id);
       if (error) throw error;
+      if (r.file_url?.includes('/resources/')) {
+        const path = decodeURIComponent(r.file_url.split('/resources/')[1] ?? '');
+        if (path) await supabase.storage.from('resources').remove([path]);
+      }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_resources'] }); toast(t('success.deleted', lang, t('resources.resource', lang)), 'success'); },
     onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
   });
 
-  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string; fileUrl: string | null } | null>(null);
 
   return (
     <div className="space-y-6">
       <ConfirmDialog
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
-        onConfirm={() => { if (confirmDelete) deleteMutation.mutate(confirmDelete.id, { onSettled: () => setConfirmDelete(null) }); }}
+        onConfirm={() => { if (confirmDelete) deleteMutation.mutate({ id: confirmDelete.id, file_url: confirmDelete.fileUrl }, { onSettled: () => setConfirmDelete(null) }); }}
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteMutation.isPending}
       />
@@ -138,7 +141,7 @@ export default function ResourcesPage() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button size="sm" variant="ghost" onClick={() => downloadFile.mutate({ fileUrl: r.file_url ?? '', filename: r.title })} disabled={downloadFile.isPending}><Download className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.title })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setConfirmDelete({ id: r.id, name: r.title, fileUrl: r.file_url })} disabled={deleteMutation.isPending}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -59,7 +59,7 @@ export default function StudentEnrollPage() {
   const remaining = Math.max(0, 8 - activeCount);
 
   const getEnrollmentStatus = (courseId: number) => {
-    const found = myEnrollments?.find(e => e.course_id === courseId);
+    const found = myEnrollments?.find(e => e.course_id === courseId && e.status !== 'cancelled' && e.status !== 'completed');
     return found?.status ?? null;
   };
 

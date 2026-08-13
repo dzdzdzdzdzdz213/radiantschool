@@ -17,6 +17,7 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import { useSubjects, useLevels, useRooms, useUsers } from '@/hooks/useQueries';
 import { getFullName } from '@/lib/utils';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { useSearchParams } from 'react-router-dom';
 
 const DAY_LABELS: Record<string, Record<string, string>> = {
   fr: { monday: 'Lun', tuesday: 'Mar', wednesday: 'Mer', thursday: 'Jeu', friday: 'Ven', saturday: 'Sam', sunday: 'Dim' },
@@ -89,7 +90,8 @@ export default function GroupsPage() {
   const { data: allUsers } = useUsers();
   const teachers = (allUsers ?? []).filter((u) => u.role === 'teacher');
 
-  const [search, setSearch] = useState('');
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [catFilter, setCatFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const [subjectFilter, setSubjectFilter] = useState('all');
@@ -153,6 +155,10 @@ export default function GroupsPage() {
       if (!form.start_date) throw new Error(t('groups.start_date_required', lang));
       if (!form.end_date) throw new Error(t('groups.end_date_required', lang));
       if (schedules.length === 0) throw new Error(t('groups.schedule_required', lang));
+      if (form.end_date < form.start_date) throw new Error(t('groups.date_range_invalid', lang));
+      for (const s of schedules) {
+        if (s.end_time <= s.start_time) throw new Error(t('groups.time_range_invalid', lang));
+      }
       const price = parseFloat(form.price);
       if (isNaN(price) || price <= 0) throw new Error(t('groups.price_invalid', lang));
       const capacity = parseInt(form.capacity, 10);
@@ -180,16 +186,16 @@ export default function GroupsPage() {
       if (editingId) {
         const { error } = await supabase.from('courses').update(payload).eq('id', editingId);
         if (error) throw error;
-        await supabase.from('course_schedules').delete().eq('course_id', editingId);
         courseId = editingId;
       } else {
         const { data, error } = await supabase.from('courses').insert(payload).select('id').single();
         if (error) throw error;
         courseId = data.id;
       }
-      const { error: schedError } = await supabase.from('course_schedules').insert(
-        scheduleRows.map((s) => ({ ...s, course_id: courseId, teacher_id: form.teacher_id, room_id: form.room_id ? parseInt(form.room_id, 10) : null }))
-      );
+      const { error: schedError } = await supabase.rpc('replace_course_schedules', {
+        p_course_id: courseId,
+        p_schedules: scheduleRows.map((s) => ({ ...s, teacher_id: form.teacher_id, room_id: form.room_id ? parseInt(form.room_id, 10) : null })),
+      });
       if (schedError) throw schedError;
     },
     onSuccess: () => {
@@ -491,7 +497,7 @@ export default function GroupsPage() {
               {g.start_date && g.end_date && (
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
-                  <span>{new Date(g.start_date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' })} – {new Date(g.end_date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', year: 'numeric' })}</span>
+                  <span>{new Date(`${g.start_date}T00:00:00`).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' })} – {new Date(`${g.end_date}T00:00:00`).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', year: 'numeric' })}</span>
                 </div>
               )}
 
@@ -509,6 +515,7 @@ export default function GroupsPage() {
                   <SelectItem value="inactive">{t('status.inactive', lang)}</SelectItem>
                   <SelectItem value="full">{t('status.full', lang)}</SelectItem>
                   <SelectItem value="cancelled">{t('status.cancelled', lang)}</SelectItem>
+                  <SelectItem value="pending">{t('status.pending', lang)}</SelectItem>
                 </Select>
               </div>
             </CardContent>

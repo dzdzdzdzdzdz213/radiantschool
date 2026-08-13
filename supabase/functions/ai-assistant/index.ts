@@ -126,6 +126,78 @@ const TOOLS: ToolDef[] = [
     },
     description: "Send an in-app message and notification to a student (or to their parent if a parent is linked). Use it after a student_search to identify the student (pass its id, registration, or email). Only call it when the user explicitly asks to send, notify, or message a student.",
   },
+  {
+    name: "course_catalog",
+    rpc: "ai_tool_course_catalog",
+    allowedRoles: ["admin", "assistant"],
+    parameters: { type: "object", properties: {} },
+    description: "Reference data needed to create or update a course: all levels, subjects, teachers, rooms, and existing courses with their ids. Call this BEFORE create_course/update_course to pick valid ids.",
+  },
+  {
+    name: "create_course",
+    rpc: "ai_tool_create_course",
+    allowedRoles: ["admin", "assistant"],
+    parameters: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Course name, e.g. 'Mathématiques 2AM'" },
+        type: { type: "string", description: "normal | vip | private (default normal)" },
+        capacity: { type: "integer", description: "Max number of students" },
+        price: { type: "number", description: "Course price in DZD" },
+        level_id: { type: "integer", description: "Level id from course_catalog (e.g. 6 = 1AM)" },
+        subject_id: { type: "integer", description: "Subject id from course_catalog" },
+        teacher_id: { type: "string", description: "Teacher user id (uuid) from course_catalog" },
+        room_id: { type: "integer", description: "Room id from course_catalog, or omit" },
+        start_date: { type: "string", description: "Start date YYYY-MM-DD" },
+        end_date: { type: "string", description: "End date YYYY-MM-DD" },
+        description: { type: "string", description: "Optional course description" },
+        status: { type: "string", description: "active | inactive | full | cancelled | pending (default active)" },
+        schedules: {
+          type: "array",
+          description: "Optional schedules: [{day_of_week: 'monday|tuesday|wednesday|thursday|friday|saturday|sunday', start_time: '14:00', end_time: '16:00', teacher_id?, room_id?}]",
+          items: {
+            type: "object",
+            properties: {
+              day_of_week: { type: "string", description: "monday, tuesday, wednesday, thursday, friday, saturday, or sunday" },
+              start_time: { type: "string", description: "Start time HH:MM" },
+              end_time: { type: "string", description: "End time HH:MM" },
+              teacher_id: { type: "string", description: "Optional teacher uuid for this session" },
+              room_id: { type: "integer", description: "Optional room id for this session" },
+            },
+          },
+        },
+      },
+      required: ["name", "capacity", "price", "level_id", "subject_id", "teacher_id", "start_date", "end_date"],
+    },
+    description:
+      "CREATE a new course in the school. Always call course_catalog first to get valid level_id, subject_id, teacher_id, room_id. Recommend sensible name/schedule if the user did not specify them, but ask the user before creating if any critical field (price, capacity, dates) is missing. Confirm to the user with the created course id after success. Only call when the user explicitly asks to create/add/open a course.",
+  },
+  {
+    name: "update_course",
+    rpc: "ai_tool_update_course",
+    allowedRoles: ["admin", "assistant"],
+    parameters: {
+      type: "object",
+      properties: {
+        course_id: { type: "integer", description: "Id of the course to update (from course_catalog/existing_courses or course_search)" },
+        name: { type: "string", description: "New course name" },
+        type: { type: "string", description: "normal | vip | private" },
+        capacity: { type: "integer", description: "New capacity" },
+        price: { type: "number", description: "New price in DZD" },
+        status: { type: "string", description: "active | inactive | full | cancelled | pending" },
+        start_date: { type: "string", description: "Start date YYYY-MM-DD" },
+        end_date: { type: "string", description: "End date YYYY-MM-DD" },
+        description: { type: "string", description: "New description" },
+        subject_id: { type: "integer", description: "New subject id" },
+        level_id: { type: "integer", description: "New level id" },
+        teacher_id: { type: "string", description: "New teacher user id (uuid)" },
+        room_id: { type: "integer", description: "New room id" },
+      },
+      required: ["course_id"],
+    },
+    description:
+      "UPDATE an existing course (name, type, capacity, price, status, dates, description, subject, level, teacher, room). Call course_catalog or course_search first to get the correct course_id. Only call when the user explicitly asks to modify/update/close/archive a course.",
+  },
 ];
 
 function roleSystemPrompt(role: string, lang: string): string {
@@ -135,7 +207,8 @@ function roleSystemPrompt(role: string, lang: string): string {
     `You MUST always reply in ${langName}, regardless of the language the user writes in. ` +
     "You answer from real data by calling the available tools. Be concise, structured, and friendly. " +
     "Never invent data: if a tool is unavailable or returns nothing, say so. " +
-    "For admins and assistants: when the user asks to SEND a message or reminder to a student, call student_search to find the student, then call send_message with that student's id, a subject, and the body. When the message has been sent, confirm it to the user with who received it. SMS/email delivery does not exist; the send_message tool sends an in-app message + notification.";
+    "For admins and assistants: when the user asks to SEND a message or reminder to a student, call student_search to find the student, then call send_message with that student's id, a subject, and the body. When the message has been sent, confirm it to the user with who received it. SMS/email delivery does not exist; the send_message tool sends an in-app message + notification. " +
+    "For admins and assistants: you can CREATE, UPDATE, and manage courses. When the user asks to create a course, first call course_catalog to get valid level/subject/teacher/room ids, then call create_course. When the user asks to update, close, or change a course, call course_catalog or course_search to find its id, then call update_course. Always confirm what you created or changed (course id, name, level, subject, teacher, price, status). If the user asks to do something you cannot do with your tools, say clearly that you cannot do it.";
   switch (role) {
     case "admin":
       return base + " The user is the school ADMIN: give global stats, revenue insights, alerts, and strategic recommendations.";
@@ -163,12 +236,16 @@ function toolsForRole(role: string): Tool[] {
 async function callGemini(
   apiKey: string,
   contents: Array<Record<string, unknown>>,
-  tools: Tool[]
+  tools: Tool[],
+  systemInstruction?: string
 ): Promise<{ data: any }> {
   const body: Record<string, unknown> = {
     contents,
     generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
   };
+  if (systemInstruction) {
+    body.systemInstruction = { parts: [{ text: systemInstruction }] };
+  }
   if (tools.length > 0) {
     body.tools = [{ functionDeclarations: tools }];
     body.toolConfig = { functionCallingConfig: { mode: "AUTO" } };
@@ -317,7 +394,7 @@ Deno.serve(async (req: Request) => {
     const tools = toolsForRole(role);
     const systemPrompt = roleSystemPrompt(role, lang);
 
-    const contents: Array<Record<string, unknown>> = [{ role: "user", parts: [{ text: systemPrompt + "\n\nUser: " + message }] }];
+    const contents: Array<Record<string, unknown>> = [{ role: "user", parts: [{ text: message }] }];
 
     let finalText = "";
     let tokenIn = 0;
@@ -328,7 +405,7 @@ Deno.serve(async (req: Request) => {
     const MAX_TOOL_ROUNDS = 4;
     let round = 0;
     while (round < MAX_TOOL_ROUNDS) {
-      const { data: geminiRes } = await callGemini(apiKey, contents, tools);
+      const { data: geminiRes } = await callGemini(apiKey, contents, tools, systemPrompt);
       tokenIn += geminiRes?.usageMetadata?.promptTokenCount ?? 0;
       tokenOut += geminiRes?.usageMetadata?.candidatesTokenCount ?? 0;
 
@@ -345,23 +422,23 @@ Deno.serve(async (req: Request) => {
         const toolDef = TOOLS.find((t) => t.name === call.name);
         if (!toolDef) {
           contents.push({
-            role: "model",
-            parts: [{ functionResponse: { name: call.name, response: { error: `Unknown tool ${call.name}` } } }],
+            role: "user",
+            parts: [{ functionResponse: { id: call.id, name: call.name, response: { error: `Unknown tool ${call.name}` } } }],
           });
           continue;
         }
         if (!toolDef.allowedRoles.includes(role)) {
           contents.push({
-            role: "model",
-            parts: [{ functionResponse: { name: call.name, response: { error: "Not allowed for your role" } } }],
+            role: "user",
+            parts: [{ functionResponse: { id: call.id, name: call.name, response: { error: "Not allowed for your role" } } }],
           });
           continue;
         }
         const toolResult = await runTool(userClient, serviceClient, userId, toolDef, call.args, ip);
         toolCallsLog.push({ tool: call.name, args: call.args, status: toolResult.status });
         contents.push({
-          role: "model",
-          parts: [{ functionResponse: { name: call.name, response: toolResult } }],
+          role: "user",
+          parts: [{ functionResponse: { id: call.id, name: call.name, response: toolResult } }],
         });
       }
       round++;
@@ -369,7 +446,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!finalText) {
-      const { data: lastRes } = await callGemini(apiKey, contents, []);
+      const { data: lastRes } = await callGemini(apiKey, contents, [], systemPrompt);
       finalText = extractText(lastRes) || "No answer.";
       tokenIn += lastRes?.usageMetadata?.promptTokenCount ?? 0;
       tokenOut += lastRes?.usageMetadata?.candidatesTokenCount ?? 0;

@@ -2915,7 +2915,7 @@ export type Database = {
       }
       resources: {
         Row: {
-          course_id: number
+          course_id: number | null
           created_at: string
           description: string | null
           external_url: string | null
@@ -2930,7 +2930,7 @@ export type Database = {
           uploaded_by: string
         }
         Insert: {
-          course_id: number
+          course_id?: number | null
           created_at?: string
           description?: string | null
           external_url?: string | null
@@ -2945,7 +2945,7 @@ export type Database = {
           uploaded_by: string
         }
         Update: {
-          course_id?: number
+          course_id?: number | null
           created_at?: string
           description?: string | null
           external_url?: string | null
@@ -4204,10 +4204,31 @@ export type Database = {
       }
     }
     Functions: {
+      _full_flow_probe: { Args: never; Returns: Json }
+      _id_probe: { Args: never; Returns: Json }
       ai_get_gemini_key: { Args: never; Returns: string }
       ai_tool_attendance_alerts: { Args: never; Returns: Json }
+      ai_tool_course_catalog: { Args: never; Returns: Json }
       ai_tool_course_performance: { Args: never; Returns: Json }
       ai_tool_course_search: { Args: { query: string }; Returns: Json }
+      ai_tool_create_course: {
+        Args: {
+          p_capacity: number
+          p_description?: string
+          p_end_date: string
+          p_level_id: number
+          p_name: string
+          p_price: number
+          p_room_id?: number
+          p_schedules?: Json
+          p_start_date: string
+          p_status?: string
+          p_subject_id: number
+          p_teacher_id: string
+          p_type?: string
+        }
+        Returns: Json
+      }
       ai_tool_my_student_progress: { Args: never; Returns: Json }
       ai_tool_revenue: { Args: never; Returns: Json }
       ai_tool_school_overview: { Args: never; Returns: Json }
@@ -4224,6 +4245,24 @@ export type Database = {
       ai_tool_student_search: { Args: { query: string }; Returns: Json }
       ai_tool_teacher_students: { Args: never; Returns: Json }
       ai_tool_unpaid_invoices: { Args: never; Returns: Json }
+      ai_tool_update_course: {
+        Args: {
+          p_capacity?: number
+          p_course_id: number
+          p_description?: string
+          p_end_date?: string
+          p_level_id?: number
+          p_name?: string
+          p_price?: number
+          p_room_id?: number
+          p_start_date?: string
+          p_status?: string
+          p_subject_id?: number
+          p_teacher_id?: string
+          p_type?: string
+        }
+        Returns: Json
+      }
       auto_close_expired_sessions: {
         Args: never
         Returns: {
@@ -4405,8 +4444,8 @@ export type Database = {
           p_invoice_id: number
           p_notes?: string
           p_payment_date?: string
-          p_payment_method: string
-          p_payment_type?: string
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_payment_type?: Database["public"]["Enums"]["payment_type"]
         }
         Returns: Json
       }
@@ -4430,6 +4469,10 @@ export type Database = {
           p_status?: string
           p_student_type?: string
         }
+        Returns: undefined
+      }
+      replace_course_schedules: {
+        Args: { p_course_id: number; p_schedules: Json }
         Returns: undefined
       }
       run_attendance_summary: { Args: never; Returns: string }

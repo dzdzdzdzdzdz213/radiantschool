@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { api, type QueryParams } from '@/lib/api';
 
 export interface ParentListItem {
@@ -42,13 +43,34 @@ export interface ParentInput {
   phone?: string | null;
   status?: string;
   role: string;
+  password: string;
 }
 
 export function useCreateParent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (data: ParentInput) => {
-      return api.create('users', data);
+    mutationFn: async ({ first_name, last_name, email, phone, status = 'active', role, password }: ParentInput) => {
+      const { data: { session: prevSession } } = await supabase.auth.getSession();
+      const { data: signUpRes, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { first_name, last_name, role } },
+      });
+      if (signUpError) throw signUpError;
+      if (!signUpRes?.user) throw new Error('Aucun utilisateur créé');
+      if (signUpRes.session && prevSession) {
+        await supabase.auth.setSession({ access_token: prevSession.access_token, refresh_token: prevSession.refresh_token });
+      }
+      const { error: rpcError } = await supabase.rpc('register_user', {
+        p_id: signUpRes.user.id,
+        p_email: email,
+        p_first_name: first_name,
+        p_last_name: last_name,
+        p_role: role,
+        p_status: status,
+        p_phone: phone ?? undefined,
+      });
+      if (rpcError) throw new Error(rpcError.message || rpcError.hint || 'Erreur lors de la création du profil');
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_parents'] }); },
   });

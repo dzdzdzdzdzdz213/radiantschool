@@ -73,9 +73,9 @@ export const scheduleSchema = z.object({
 /** Validates a single attendance record. */
 export const attendanceSchema = z.object({
   studentId: z.string().min(1),
-  courseScheduleId: z.number().int().positive(),
+  courseScheduleId: z.number().int().positive().nullable().optional(),
   date: z.string().min(1),
-  status: z.enum(['present', 'absent', 'late', 'excused']),
+  status: z.enum(['present', 'absent', 'late']),
 });
 
 /** Validates a batch of attendance records (at least one). */
@@ -102,8 +102,8 @@ export const submissionGradeSchema = z.object({
 export const paymentSchema = z.object({
   studentId: z.string().min(1),
   amount: z.number().positive({ message: 'validation.required' }),
-  paymentMethod: z.enum(['cash', 'card', 'check', 'transfer']),
-  paymentType: z.enum(['tuition', 'registration', 'material', 'other']),
+  paymentMethod: z.enum(['cash', 'bank_transfer', 'card', 'check']),
+  paymentType: z.enum(['monthly', 'per_session', 'vip', 'private']),
   reference: z.string().optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
   courseId: z.number().int().positive().nullable().optional(),

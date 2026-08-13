@@ -30,11 +30,11 @@ export default function PublicFaqPage() {
             </div>
             <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <div><p className="font-medium">Téléphone</p><p>+213 5XX XX XX XX</p></div>
+              <div><p className="font-medium">Téléphone</p><p>+213 779 89 34 02</p></div>
             </div>
             <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
               <MessageCircle className="h-4 w-4 text-muted-foreground" />
-              <div><p className="font-medium">WhatsApp</p><p>+213 5XX XX XX XX</p></div>
+              <div><p className="font-medium">WhatsApp</p><p>+213 779 89 34 02</p></div>
             </div>
           </CardContent>
         </Card>

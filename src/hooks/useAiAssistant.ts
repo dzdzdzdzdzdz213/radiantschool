@@ -94,27 +94,30 @@ export const AI_SUGGESTIONS: Record<string, Record<string, string[]>> = {
   admin: {
     fr: [
       'Aperçu de l\u2019école : élèves, revenus, impayés',
+      'Créer un cours de Mathématiques pour 1AM, 25 places, 4000 DZD',
       'Analyse des revenus par mois et par cours',
       'Quels cours sont presque pleins ?',
       'Élèves absents plus de 3 fois ce mois',
     ],
     en: [
       'School overview: students, revenue, unpaid',
+      'Create a Math course for 1AM, 25 seats, 4000 DZD',
       'Revenue analysis by month and course',
       'Which courses are nearly full?',
       'Students absent more than 3 times this month',
     ],
     ar: [
       'نظرة عامة على المدرسة: الطلاب، الإيرادات، غير المدفوع',
+      'إنشاء دورة رياضيات لـ 1AM، 25 مقعداً، 4000 دج',
       'تحليل الإيرادات حسب الشهر والدورة',
       'ما هي الدورات الممتلئة تقريباً؟',
       'الطلاب الغائبين أكثر من 3 مرات هذا الشهر',
     ],
   },
   assistant: {
-    fr: ['Aperçu de l\u2019école aujourd\u2019hui', 'Factures en retard à relancer', 'Chercher un élève'],
-    en: ['School overview today', 'Overdue invoices to follow up', 'Search for a student'],
-    ar: ['نظرة عامة على المدرسة اليوم', 'فواتير متأخرة للمتابعة', 'البحث عن طالب'],
+    fr: ['Aperçu de l\u2019école aujourd\u2019hui', 'Créer un nouveau cours', 'Factures en retard à relancer', 'Chercher un élève'],
+    en: ['School overview today', 'Create a new course', 'Overdue invoices to follow up', 'Search for a student'],
+    ar: ['نظرة عامة على المدرسة اليوم', 'إنشاء دورة جديدة', 'فواتير متأخرة للمتابعة', 'البحث عن طالب'],
   },
   teacher: {
     fr: ['Mes élèves et leur assiduité', 'Performance de mes cours'],
