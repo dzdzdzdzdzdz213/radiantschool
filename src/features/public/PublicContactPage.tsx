@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Send, Loader, Mail, Phone } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,11 +8,19 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/lib/supabase';
+import { fetchSiteIdentity, DEFAULT_IDENTITY } from '@/lib/site-content';
 
 export default function PublicContactPage() {
   const { toast } = useToast();
+  const [identity, setIdentity] = useState(DEFAULT_IDENTITY);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchSiteIdentity().then((data) => { if (active) setIdentity(data); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +54,13 @@ export default function PublicContactPage() {
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
               <Mail className="h-5 w-5" style={{ color: 'var(--primary)' }} />
-              <div><p className="text-sm font-medium">Email</p><p className="text-sm text-muted-foreground">support@radiantlearning.dz</p></div>
+              <div><p className="text-sm font-medium">Email</p><p className="text-sm text-muted-foreground">{identity.email}</p></div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 pt-6">
               <Phone className="h-5 w-5" style={{ color: 'var(--primary)' }} />
-              <div><p className="text-sm font-medium">Téléphone</p><p className="text-sm text-muted-foreground">+213 779 89 34 02</p></div>
+              <div><p className="text-sm font-medium">Téléphone</p><p className="text-sm text-muted-foreground">{identity.phone}</p></div>
             </CardContent>
           </Card>
         </div>

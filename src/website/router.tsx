@@ -103,6 +103,7 @@ const CrmLeadDetailPage = lazy(() => loadPage(() => import('@/features/assistant
 const CrmFollowupsPage = lazy(() => loadPage(() => import('@/features/assistant/crm/CrmFollowupsPage')));
 const ChildProgressPage = lazy(() => loadPage(() => import('@/features/parent/ChildProgressPage')));
 const HonestyBoxPage = lazy(() => loadPage(() => import('@/features/admin/honesty/HonestyBoxPage')));
+const CmsPage = lazy(() => loadPage(() => import('@/features/admin/cms/CmsPage')));
 const ComingSoonPage = lazy(() => loadPage(() => import('@/components/ui/ComingSoonPage')));
 
 const websiteRoutes: RouteObject[] = [
@@ -299,6 +300,7 @@ export const router = createBrowserRouter([
       { path: 'payroll', Component: PayrollPage },
       { path: 'accounting', Component: AccountingPage },
       { path: 'honesty', Component: HonestyBoxPage },
+      { path: 'cms', Component: CmsPage },
     ],
   },
   {

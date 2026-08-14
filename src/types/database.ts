@@ -363,6 +363,72 @@ export type Database = {
           },
         ]
       }
+      faqs: {
+        Row: {
+          answer: string
+          created_at: string
+          id: number
+          is_active: boolean
+          question: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          question: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          question?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          created_at: string
+          id: number
+          is_active: boolean
+          name: string
+          photo_url: string | null
+          role: string
+          sort_order: number
+          updated_at: string
+          years: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          name: string
+          photo_url?: string | null
+          role: string
+          sort_order?: number
+          updated_at?: string
+          years?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          name?: string
+          photo_url?: string | null
+          role?: string
+          sort_order?: number
+          updated_at?: string
+          years?: string
+        }
+        Relationships: []
+      }
       approvals: {
         Row: {
           approved_by: string

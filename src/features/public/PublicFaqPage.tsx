@@ -1,17 +1,32 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, MessageCircle, BookOpen, UserPlus, Clock, CreditCard, FileText, Shield } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MessageCircle, BookOpen, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { fetchPublicFaqs, fetchSiteIdentity, DEFAULT_IDENTITY, type FaqItem } from '@/lib/site-content';
 
-
-const faqs = [
-  { icon: UserPlus, question: 'Comment inscrire un élève ?', answer: 'Rendez-vous dans la section Inscriptions depuis le menu. Cliquez sur "Nouvelle inscription" et remplissez les informations de l\'élève.' },
-  { icon: Clock, question: 'Comment fonctionnent les cours ?', answer: 'Les cours sont organisés par niveau (Primaire, CEM, Lycée). Vous pouvez consulter l\'offre sur la page Formations.' },
-  { icon: CreditCard, question: 'Quels sont les moyens de paiement ?', answer: 'Les paiements s\'effectuent en DZD par espèce ou virement bancaire. Un reçu vous est remis à chaque règlement.' },
-  { icon: FileText, question: 'Comment obtenir une facture ?', answer: 'Les factures sont disponibles dans votre espace personnel, rubrique Factures.' },
-  { icon: Shield, question: 'La plateforme est-elle sécurisée ?', answer: 'Oui, toutes vos données sont hébergées de manière sécurisée et ne sont jamais partagées avec des tiers.' },
+const FALLBACK_FAQS: Omit<FaqItem, 'id' | 'sort_order' | 'is_active'>[] = [
+  { question: 'Comment inscrire un élève ?', answer: 'Rendez-vous dans la section Inscriptions depuis le menu. Cliquez sur "Nouvelle inscription" et remplissez les informations de l\'élève.' },
+  { question: 'Comment fonctionnent les cours ?', answer: 'Les cours sont organisés par niveau (Primaire, CEM, Lycée). Vous pouvez consulter l\'offre sur la page Formations.' },
+  { question: 'Quels sont les moyens de paiement ?', answer: 'Les paiements s\'effectuent en DZD par espèce ou virement bancaire. Un reçu vous est remis à chaque règlement.' },
+  { question: 'Comment obtenir une facture ?', answer: 'Les factures sont disponibles dans votre espace personnel, rubrique Factures.' },
+  { question: 'La plateforme est-elle sécurisée ?', answer: 'Oui, toutes vos données sont hébergées de manière sécurisée et ne sont jamais partagées avec des tiers.' },
 ];
 
 export default function PublicFaqPage() {
+  const [faqs, setFaqs] = useState<FaqItem[]>([]);
+  const [identity, setIdentity] = useState(DEFAULT_IDENTITY);
+
+  useEffect(() => {
+    let active = true;
+    fetchPublicFaqs().then((data) => {
+      if (!active) return;
+      setFaqs(data.length > 0 ? data : FALLBACK_FAQS.map((f, i) => ({ ...f, id: i, sort_order: i, is_active: true })));
+    }).catch(() => {
+      if (active) setFaqs(FALLBACK_FAQS.map((f, i) => ({ ...f, id: i, sort_order: i, is_active: true })));
+    });
+    fetchSiteIdentity().then((data) => { if (active) setIdentity(data); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -26,15 +41,15 @@ export default function PublicFaqPage() {
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <div><p className="font-medium">Email</p><p>support@radiantlearning.dz</p></div>
+              <div><p className="font-medium">Email</p><p>{identity.email}</p></div>
             </div>
             <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <div><p className="font-medium">Téléphone</p><p>+213 779 89 34 02</p></div>
+              <div><p className="font-medium">Téléphone</p><p>{identity.phone}</p></div>
             </div>
             <div className="flex items-center gap-3 rounded-lg bg-accent/50 p-3">
               <MessageCircle className="h-4 w-4 text-muted-foreground" />
-              <div><p className="font-medium">WhatsApp</p><p>+213 779 89 34 02</p></div>
+              <div><p className="font-medium">WhatsApp</p><p>{identity.whatsapp}</p></div>
             </div>
           </CardContent>
         </Card>
@@ -42,10 +57,12 @@ export default function PublicFaqPage() {
         <Card>
           <CardHeader><CardTitle className="text-sm flex items-center gap-2"><BookOpen className="h-4 w-4" /> Questions fréquentes</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {faqs.map((faq, i) => (
-              <details key={i} className="group rounded-lg border border-border">
+            {faqs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Chargement...</p>
+            ) : faqs.map((faq) => (
+              <details key={faq.id} className="group rounded-lg border border-border">
                 <summary className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-accent/50">
-                  <faq.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span>{faq.question}</span>
                 </summary>
                 <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground">
