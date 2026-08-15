@@ -12,7 +12,6 @@ import { asset } from '@/lib/assets';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard, Users, BookOpen, ClipboardCheck, DollarSign,
@@ -115,7 +114,7 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
         animate={collapsed ? 'collapsed' : 'open'}
         initial={false}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col border-r border-sidebar-border bg-sidebar-bg lg:static',
+          'fixed inset-y-0 left-0 z-50 flex flex-col border-r border-sidebar-border bg-sidebar-bg lg:static lg:h-full',
           'lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
@@ -151,7 +150,7 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
           </div>
         </div>
 
-        <ScrollArea className="flex-1 px-3 py-3">
+        <div className="flex-1 overflow-y-auto px-3 py-3 sidebar-nav-scroll">
           <nav className="flex flex-col gap-1">
             {items.map((item) => (
               <NavLink
@@ -163,7 +162,7 @@ export default function AdminSidebar({ items, open, collapsed, onClose, onToggle
               />
             ))}
           </nav>
-        </ScrollArea>
+        </div>
 
         <div className="border-t border-sidebar-border p-3">
           {collapsed ? (
