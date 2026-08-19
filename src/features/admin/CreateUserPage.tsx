@@ -51,7 +51,7 @@ export default function CreateUserPage() {
         options: { data: { first_name: firstName, last_name: lastName, role } },
       });
       if (signUpError) throw signUpError;
-      if (signUpResponse?.session && prevSession) {
+      if (prevSession) {
         await supabase.auth.setSession({ access_token: prevSession.access_token, refresh_token: prevSession.refresh_token });
       }
       if (signUpResponse?.user) {

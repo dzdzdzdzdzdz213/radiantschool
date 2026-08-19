@@ -5,35 +5,54 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Called by an authenticated admin after creating the user (signUp + register_user RPC).
 const PROJECT_REF = "kaoxcbqhuwhtadpgccjp";
 
+function decodeJwt(key: string): { role?: string; ref?: string; sub?: string } | null {
+  try {
+    const parts = key.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return { role: payload?.role, ref: payload?.ref, sub: payload?.sub };
+  } catch {
+    return null;
+  }
+}
+
 function isProjectKey(key: string): boolean {
   const envKeys = [
     Deno.env.get("SUPABASE_ANON_KEY"),
     Deno.env.get("SUPABASE_PUBLISHABLE_KEY"),
   ].filter(Boolean);
   if (envKeys.includes(key)) return true;
-  try {
-    const parts = key.split(".");
-    if (parts.length !== 3) return false;
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
-    return payload?.role === "anon" && payload?.ref === PROJECT_REF;
-  } catch {
-    return false;
-  }
+  const claims = decodeJwt(key);
+  if (!claims) return false;
+  if (claims.ref && claims.ref !== PROJECT_REF) return false;
+  return claims.role === "anon" || claims.role === "authenticated";
 }
 
 function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, x-supabase-api-version, content-type",
+  "Access-Control-Max-Age": "86400",
+};
+
+function jsonResponse(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+}
+
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204 });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
   const authHeader = req.headers.get("Authorization") ?? "";
-  if (!isProjectKey(authHeader.replace("Bearer ", ""))) {
-    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+  const bearerKey = authHeader.replace("Bearer ", "");
+  if (!isProjectKey(bearerKey)) {
+    return jsonResponse({ error: "Forbidden" }, 403);
   }
 
   const supabase = createClient(
@@ -41,16 +60,42 @@ Deno.serve(async (req) => {
     Deno.env.get("SERVICE_ROLE_JWT") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
+  const claims = decodeJwt(bearerKey);
+  if (claims?.role === "authenticated") {
+    const userRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/auth/v1/user`, {
+      headers: {
+        Authorization: `Bearer ${bearerKey}`,
+        apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "",
+      },
+    });
+    if (!userRes.ok) {
+      return jsonResponse({ error: "Forbidden" }, 403);
+    }
+    const authedUser = await userRes.json();
+    const callerId = authedUser?.id ?? authedUser?.sub;
+    if (!callerId) {
+      return jsonResponse({ error: "Forbidden" }, 403);
+    }
+    const { data: caller, error: callerError } = await supabase
+      .from("users")
+      .select("id, role")
+      .eq("id", callerId)
+      .maybeSingle();
+    if (callerError || !caller || !["admin", "assistant"].includes(caller.role)) {
+      return jsonResponse({ error: "Forbidden" }, 403);
+    }
+  }
+
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400 });
+    return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
 
   const userId = (body as Record<string, unknown>)?.user_id as string | undefined;
   if (!userId || typeof userId !== "string") {
-    return new Response(JSON.stringify({ error: "user_id is required" }), { status: 400 });
+    return jsonResponse({ error: "user_id is required" }, 400);
   }
 
   const { data: user, error: userError } = await supabase
@@ -59,13 +104,13 @@ Deno.serve(async (req) => {
     .eq("id", userId)
     .maybeSingle();
   if (userError) {
-    return new Response(JSON.stringify({ error: userError.message }), { status: 500 });
+    return jsonResponse({ error: userError.message }, 500);
   }
   if (!user) {
-    return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+    return jsonResponse({ error: "User not found" }, 404);
   }
   if (user.status !== "pending") {
-    return new Response(JSON.stringify({ error: "User is not pending" }), { status: 400 });
+    return jsonResponse({ error: "User is not pending" }, 400);
   }
 
   const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
@@ -76,7 +121,7 @@ Deno.serve(async (req) => {
     .update({ invite_token: token, invite_expires_at: expiresAt })
     .eq("id", userId);
   if (updateError) {
-    return new Response(JSON.stringify({ error: updateError.message }), { status: 500 });
+    return jsonResponse({ error: updateError.message }, 500);
   }
 
   const baseUrl = Deno.env.get("INVITE_BASE_URL") ?? "https://erp-platform-seven.vercel.app";
@@ -119,8 +164,5 @@ Deno.serve(async (req) => {
     console.error("[EMAIL_ERROR]", emailError);
   }
 
-  return new Response(
-    JSON.stringify({ success: true, email_sent: emailSent, email_error: emailError, expires_at: expiresAt }),
-    { headers: { "Content-Type": "application/json" } },
-  );
+  return jsonResponse({ success: true, email_sent: emailSent, email_error: emailError, expires_at: expiresAt }, 200);
 });

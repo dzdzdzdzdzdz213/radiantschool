@@ -24,15 +24,26 @@ function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, x-supabase-api-version, content-type",
+  "Access-Control-Max-Age": "86400",
+};
+
+function jsonResponse(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+}
+
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204 });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
   const authHeader = req.headers.get("Authorization") ?? "";
   if (!isProjectKey(authHeader.replace("Bearer ", ""))) {
-    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    return jsonResponse({ error: "Forbidden" }, 403);
   }
 
   const supabase = createClient(
@@ -44,16 +55,16 @@ Deno.serve(async (req) => {
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400 });
+    return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
 
   const token = (body as Record<string, unknown>)?.token as string | undefined;
   const password = (body as Record<string, unknown>)?.password as string | undefined;
   if (!token || typeof token !== "string") {
-    return new Response(JSON.stringify({ error: "token is required" }), { status: 400 });
+    return jsonResponse({ error: "token is required" }, 400);
   }
   if (!password || typeof password !== "string" || password.length < 8) {
-    return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), { status: 400 });
+    return jsonResponse({ error: "Password must be at least 8 characters" }, 400);
   }
 
   const { data: user, error: userError } = await supabase
@@ -62,21 +73,21 @@ Deno.serve(async (req) => {
     .eq("invite_token", token)
     .maybeSingle();
   if (userError) {
-    return new Response(JSON.stringify({ error: userError.message }), { status: 500 });
+    return jsonResponse({ error: userError.message }, 500);
   }
   if (!user) {
-    return new Response(JSON.stringify({ error: "Invalid or expired invitation link" }), { status: 404 });
+    return jsonResponse({ error: "Invalid or expired invitation link" }, 404);
   }
   if (user.status !== "pending") {
-    return new Response(JSON.stringify({ error: "Account is already active" }), { status: 400 });
+    return jsonResponse({ error: "Account is already active" }, 400);
   }
   if (!user.invite_expires_at || new Date(user.invite_expires_at) < new Date()) {
-    return new Response(JSON.stringify({ error: "Invitation link has expired" }), { status: 400 });
+    return jsonResponse({ error: "Invitation link has expired" }, 400);
   }
 
   const { error: passwordError } = await supabase.auth.admin.updateUserById(user.id, { password, email_confirm: true });
   if (passwordError) {
-    return new Response(JSON.stringify({ error: passwordError.message }), { status: 500 });
+    return jsonResponse({ error: passwordError.message }, 500);
   }
 
   const { error: updateError } = await supabase
@@ -90,11 +101,8 @@ Deno.serve(async (req) => {
     })
     .eq("id", user.id);
   if (updateError) {
-    return new Response(JSON.stringify({ error: updateError.message }), { status: 500 });
+    return jsonResponse({ error: updateError.message }, 500);
   }
 
-  return new Response(
-    JSON.stringify({ success: true, first_name: user.first_name, last_name: user.last_name }),
-    { headers: { "Content-Type": "application/json" } },
-  );
+  return jsonResponse({ success: true, first_name: user.first_name, last_name: user.last_name }, 200);
 });

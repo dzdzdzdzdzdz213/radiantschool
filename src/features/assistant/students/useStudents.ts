@@ -92,7 +92,7 @@ export function useCreateStudent() {
       });
       if (signUpError) throw signUpError;
       if (!signUpRes?.user) throw new Error('Aucun utilisateur créé');
-      if (signUpRes.session && prevSession) {
+      if (prevSession) {
         await supabase.auth.setSession({ access_token: prevSession.access_token, refresh_token: prevSession.refresh_token });
       }
       const { error: rpcError } = await supabase.rpc('register_user', {
