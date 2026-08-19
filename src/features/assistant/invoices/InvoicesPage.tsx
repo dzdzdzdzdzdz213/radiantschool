@@ -68,9 +68,10 @@ export default function InvoicesPage() {
     setStudentSearch('');
     setStudentOpen(false);
     setSelectedStudent(null);
-    if (item.student_id) {
-      supabase.from('users').select('first_name, last_name').eq('id', item.student_id).maybeSingle().then(({ data: s }) => {
-        if (s) setSelectedStudent({ id: item.student_id, name: `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() });
+    const studentId = item.student_id;
+    if (studentId) {
+      supabase.from('users').select('first_name, last_name').eq('id', studentId).maybeSingle().then(({ data: s }) => {
+        if (s) setSelectedStudent({ id: studentId, name: `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() });
       });
     }
     setShowModal(true);
