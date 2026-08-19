@@ -114,6 +114,9 @@ export default function CoursesPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (form.start_date && form.end_date && form.end_date < form.start_date) {
+        throw new Error(t('groups.date_range_invalid', lang));
+      }
       let image_url = form.image_url || null;
       if (imageFile) {
         const tempId = editingId ?? -Date.now();
