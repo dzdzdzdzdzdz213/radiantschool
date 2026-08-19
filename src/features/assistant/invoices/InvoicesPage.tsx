@@ -16,6 +16,8 @@ import { t } from '@/i18n';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useSearchParams } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
+import { useStudents } from '@/features/assistant/students/useStudents';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -41,10 +43,18 @@ export default function InvoicesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [studentIdError, setStudentIdError] = useState('');
   const [form, setForm] = useState({ student_id: '', total_amount: '', due_date: '' });
+  const [studentSearch, setStudentSearch] = useState('');
+  const [studentOpen, setStudentOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<{ id: string; name: string } | null>(null);
+  const debouncedStudentSearch = useDebounce(studentSearch, 300);
+  const { data: studentResults } = useStudents(debouncedStudentSearch, 1, 10);
 
   const openCreateModal = () => {
     setEditingId(null);
     setForm({ student_id: '', total_amount: '', due_date: '' });
+    setStudentSearch('');
+    setStudentOpen(false);
+    setSelectedStudent(null);
     setShowModal(true);
   };
 
@@ -55,6 +65,14 @@ export default function InvoicesPage() {
       total_amount: item.totalAmount?.toString() ?? '',
       due_date: item.dueDate ?? '',
     });
+    setStudentSearch('');
+    setStudentOpen(false);
+    setSelectedStudent(null);
+    if (item.student_id) {
+      supabase.from('users').select('first_name, last_name').eq('id', item.student_id).maybeSingle().then(({ data: s }) => {
+        if (s) setSelectedStudent({ id: item.student_id, name: `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() });
+      });
+    }
     setShowModal(true);
   };
 
@@ -166,7 +184,49 @@ export default function InvoicesPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('nav.students', lang)}</Label>
-                <Input placeholder={t('invoices.student_placeholder', lang)} value={form.student_id} onChange={e => { setForm(f => ({ ...f, student_id: e.target.value })); setStudentIdError(''); }} />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    className="pl-9 pr-8"
+                    placeholder={t('invoices.student_placeholder', lang)}
+                    value={studentSearch}
+                    onChange={e => { setStudentSearch(e.target.value); setStudentOpen(true); }}
+                    onFocus={() => setStudentOpen(true)}
+                    onBlur={() => setTimeout(() => setStudentOpen(false), 150)}
+                  />
+                  {selectedStudent && (
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => { setSelectedStudent(null); setForm(f => ({ ...f, student_id: '' })); setStudentSearch(''); }}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                  {studentOpen && (
+                    <div className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border bg-background shadow-lg">
+                      {studentResults?.data.length ? studentResults.data.map(s => (
+                        <button
+                          type="button"
+                          key={s.id}
+                          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
+                          onMouseDown={() => {
+                            setSelectedStudent({ id: s.id, name: `${s.firstName} ${s.lastName}`.trim() });
+                            setForm(f => ({ ...f, student_id: s.id }));
+                            setStudentSearch('');
+                            setStudentOpen(false);
+                          }}
+                        >
+                          <span className="font-medium truncate">{`${s.firstName} ${s.lastName}`.trim()}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[40%]">{s.email}</span>
+                        </button>
+                      )) : (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">{t('common.no_results', lang)}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {selectedStudent && <p className="text-xs text-muted-foreground">{selectedStudent.name}</p>}
                 {studentIdError && <p className="text-xs text-destructive mt-1">{studentIdError}</p>}
               </div>
               <div className="space-y-2">
