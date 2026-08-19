@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -32,18 +32,20 @@ export default function EditUserPage() {
   const [form, setForm] = useState<EditableUser | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { isLoading, isError } = useQuery({
+  const { data: loadedUser, isLoading, isError } = useQuery({
     queryKey: ['user-edit', id],
     queryFn: async () => {
       const { data, error } = await supabase.from('users').select('*').eq('id', id!).maybeSingle();
       if (error) throw error;
       if (!data) throw new Error('User not found');
       const u = data as unknown as EditableUser;
-      setForm({ first_name: u.first_name ?? '', last_name: u.last_name ?? '', email: u.email ?? '', phone: u.phone ?? '', role: u.role ?? '', status: u.status ?? '' });
-      return data;
+      return { first_name: u.first_name ?? '', last_name: u.last_name ?? '', email: u.email ?? '', phone: u.phone ?? '', role: u.role ?? '', status: u.status ?? '' };
     },
     enabled: !!id,
   });
+  useEffect(() => {
+    if (loadedUser) setForm(loadedUser);
+  }, [loadedUser]);
   useErrorToast(isError, lang, t('nav.users', lang));
 
   const validate = () => {
