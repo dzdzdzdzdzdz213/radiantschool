@@ -109,7 +109,7 @@ export default function UsersPage() {
                           <button className="w-full text-left px-4 py-2 text-sm hover:bg-accent" onClick={(e) => { e.stopPropagation(); toggleStatusMutation.mutate({ id: u.id, status: u.status }); }}>
                             {u.status === 'active' ? t('common.deactivate', lang) : t('common.activate', lang)}
                           </button>
-<button className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-accent" onClick={(e) => { e.stopPropagation(); toast(t('common.edit_feature_coming', lang), 'info'); }}>
+<button className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-accent" onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/edit/${u.id}`); }}>
                              {t('common.edit', lang)}
                            </button>
                         </div>

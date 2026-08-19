@@ -83,6 +83,7 @@ const TeacherAttendancePage = lazy(() => loadPage(() => import('@/features/teach
 
 const UsersPage = lazy(() => loadPage(() => import('@/features/admin/UsersPage')));
 const CreateUserPage = lazy(() => loadPage(() => import('@/features/admin/CreateUserPage')));
+const EditUserPage = lazy(() => loadPage(() => import('@/features/admin/EditUserPage')));
 const StudentDetailPage = lazy(() => loadPage(() => import('@/features/public/StudentDetailPage')));
 const CoursesPage = lazy(() => loadPage(() => import('@/features/public/CoursesPage')));
 const CourseDetailPage = lazy(() => loadPage(() => import('@/features/public/CourseDetailPage')));
@@ -289,6 +290,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard', Component: AdminDashboardPage },
       { path: 'users', Component: UsersPage },
       { path: 'users/new', Component: CreateUserPage },
+      { path: 'users/edit/:id', Component: EditUserPage },
       { path: 'users/:id', Component: StudentDetailPage },
       { path: 'courses', Component: CoursesPage },
       { path: 'courses/:id', Component: CourseDetailPage },
