@@ -101,6 +101,21 @@ export default function BulkAttendancePage() {
     staleTime: 10_000,
   });
 
+  const { data: pendingStudents } = useQuery({
+    queryKey: ['pending-students'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .eq('role', 'student')
+        .eq('status', 'pending')
+        .is('deleted_at', null)
+        .order('created_at');
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
   const upsertAttendance = useMutation({
     mutationFn: async ({ studentId, status }: { studentId: string; status: 'present' | 'absent' | 'late' }) => {
       const scheduleId = courses?.find(c => c.id === selectedCourseId)?.scheduleId;
@@ -169,6 +184,30 @@ export default function BulkAttendancePage() {
           </select>
         </div>
       </div>
+
+      {pendingStudents && pendingStudents.length > 0 && (
+        <Card className="border-dashed">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700">
+                {pendingStudents.length} ticket{pendingStudents.length > 1 ? 's' : ''} en attente
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                Ces élèves ont reçu une invitation par email. Ils apparaîtront ici jusqu'à l'activation de leur compte.
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {pendingStudents.map(p => (
+                <span key={p.id} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-dashed border-border bg-muted/50 text-sm">
+                  <Clock className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-muted-foreground">Pending:</span>
+                  <span className="font-medium">{p.first_name} {p.last_name}</span>
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {selectedCourseId && (
         <div className="grid grid-cols-1 gap-3">

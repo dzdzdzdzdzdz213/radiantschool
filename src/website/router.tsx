@@ -21,6 +21,7 @@ const LoginPage = lazy(() => loadPage(() => import('@/features/auth/LoginPage'))
 const StaffLoginPage = lazy(() => loadPage(() => import('@/features/auth/StaffLoginPage')));
 const PublicEnrollPage = lazy(() => loadPage(() => import('@/features/auth/PublicEnrollPage')));
 const AuthCallbackPage = lazy(() => loadPage(() => import('@/features/auth/AuthCallbackPage')));
+const InvitePage = lazy(() => loadPage(() => import('@/features/public/InvitePage')));
 const CompleteProfilePage = lazy(() => loadPage(() => import('@/features/auth/CompleteProfilePage')));
 const ForgotPasswordPage = lazy(() => loadPage(() => import('@/features/auth/ForgotPasswordPage')));
 const ResetPasswordPage = lazy(() => loadPage(() => import('@/features/auth/ResetPasswordPage')));
@@ -122,6 +123,10 @@ const websiteRoutes: RouteObject[] = [
   {
     path: '/auth/callback',
     Component: AuthCallbackPage,
+  },
+  {
+    path: '/invite',
+    Component: InvitePage,
   },
   {
     path: '/complete-profile',
