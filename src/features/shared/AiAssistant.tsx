@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Bot, Send, X, Sparkles, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAiAssistant, AI_SUGGESTIONS, AI_ROLE_LABEL } from '@/hooks/useAiAssistant';
@@ -23,6 +24,8 @@ function TypingDots() {
 
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  const isMessagesPage = pathname.endsWith('/messages');
   const [input, setInput] = useState('');
   const [shown, setShown] = useState(0);
   const { messages, send, reset, loading } = useAiAssistant();
@@ -73,7 +76,7 @@ export default function AiAssistant() {
 
   return (
     <>
-      {!open && (
+      {!isMessagesPage && !open && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
           <div className="relative">
             <span className="absolute inset-0 -m-1 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 opacity-40 blur-md animate-pulse" />
@@ -88,7 +91,7 @@ export default function AiAssistant() {
         </div>
       )}
 
-      {open && (
+      {!isMessagesPage && open && (
         <div
           className="fixed bottom-5 right-5 z-50 flex h-[min(660px,calc(100dvh-2.5rem))] w-[min(400px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl shadow-black/20 animate-in slide-in-from-bottom-6 fade-in duration-300"
         >
