@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Check, X } from 'lucide-react';
+import { Search, Check, X, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { formatDate, formatTime } from '@/lib/utils';
 import { useToast } from '@/hooks/useToast';
 import { useLang } from '@/contexts/LangContext';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function AssistantPrivateLessonsPage() {
   const { toast } = useToast();
@@ -61,8 +62,26 @@ export default function AssistantPrivateLessonsPage() {
     onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
   });
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('private_lessons').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast('Demande supprimée', 'success'); qc.invalidateQueries({ queryKey: ['assistant_private_lessons'] }); },
+    onError: (e) => toast(e?.message ?? 'Erreur', 'error'),
+  });
+
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={() => { if (confirmDeleteId !== null) deleteMutation.mutate(confirmDeleteId, { onSettled: () => setConfirmDeleteId(null) }); }}
+        message="Supprimer cette demande de cours particulier ?"
+        loading={deleteMutation.isPending}
+      />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Cours particuliers</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--fg-muted)' }}>Gérer les demandes de cours particuliers</p>
@@ -122,6 +141,12 @@ export default function AssistantPrivateLessonsPage() {
                           className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors bg-red-600 hover:bg-red-500 disabled:opacity-50"
                         ><X className="h-3 w-3" />Refuser</button>
                       </div>
+                    )}
+                    {l.status !== 'pending' && (
+                      <button onClick={() => setConfirmDeleteId(l.id)} disabled={deleteMutation.isPending}
+                        className="flex items-center justify-center rounded-lg p-1.5 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                        title="Supprimer"
+                      ><Trash2 className="h-4 w-4" /></button>
                     )}
                   </TableCell>
                 </TableRow>

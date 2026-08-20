@@ -237,6 +237,7 @@ export default function GroupsPage() {
 
   // Student roster state
   const [rosterGroupId, setRosterGroupId] = useState<number | null>(null);
+  const [confirmRemoveEnrollment, setConfirmRemoveEnrollment] = useState<{ id: number; name: string } | null>(null);
   const { data: rosterStudents, isLoading: rosterLoading } = useQuery({
     queryKey: ['group_roster', rosterGroupId],
     queryFn: async () => {
@@ -251,6 +252,20 @@ export default function GroupsPage() {
     enabled: !!rosterGroupId,
   });
 
+  const removeEnrollmentMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('course_enrollments').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['group_roster', rosterGroupId] });
+      qc.invalidateQueries({ queryKey: ['assistant_groups'] });
+      qc.invalidateQueries({ queryKey: ['student-courses'] });
+      toast(t('success.deleted', lang, t('groups.students', lang)), 'success');
+    },
+    onError: (err) => toast(err?.message ?? t('common.error', lang), 'error'),
+  });
+
   return (
     <div className="space-y-6">
       <ConfirmDialog
@@ -259,6 +274,14 @@ export default function GroupsPage() {
         onConfirm={() => { if (confirmDelete) deleteMutation.mutate(confirmDelete.id, { onSettled: () => setConfirmDelete(null) }); }}
         message={`${t('common.confirm_delete', lang)} "${confirmDelete?.name ?? ''}" ?`}
         loading={deleteMutation.isPending}
+      />
+
+      <ConfirmDialog
+        open={!!confirmRemoveEnrollment}
+        onClose={() => setConfirmRemoveEnrollment(null)}
+        onConfirm={() => { if (confirmRemoveEnrollment) removeEnrollmentMutation.mutate(confirmRemoveEnrollment.id, { onSettled: () => setConfirmRemoveEnrollment(null) }); }}
+        message={`${t('common.confirm_delete', lang)} "${confirmRemoveEnrollment?.name ?? ''}" ?`}
+        loading={removeEnrollmentMutation.isPending}
       />
 
       {/* Student Roster Modal */}
@@ -289,6 +312,14 @@ export default function GroupsPage() {
                       <div className="flex items-center gap-2">
                         <Badge variant={e.status === 'active' ? 'success' : 'outline'} className="text-[10px]">{e.status}</Badge>
                         <span className="text-[10px] text-muted-foreground">{e.enrollment_date ? new Date(e.enrollment_date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : lang === 'fr' ? 'fr-FR' : 'en-US') : ''}</span>
+                        <Button
+                          variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive"
+                          onClick={() => setConfirmRemoveEnrollment({ id: e.id, name: e.student?.user ? getFullName(e.student.user.first_name, e.student.user.last_name) : 'élève' })}
+                          disabled={removeEnrollmentMutation.isPending}
+                          title={t('common.remove', lang)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))}
