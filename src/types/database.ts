@@ -4323,6 +4323,7 @@ export type Database = {
         Returns: Json
       }
       get_or_create_conversation: { Args: { p_other: string }; Returns: number }
+      request_account_deletion: { Args: never; Returns: string }
       get_dashboard_stats: { Args: { stat?: string }; Returns: Json }
       get_invoices: {
         Args: { p_search?: string }

@@ -4,13 +4,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { getFullName, getRoleLabel } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock, UserPlus, Camera } from 'lucide-react';
+import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock, UserPlus, Camera, Trash2 } from 'lucide-react';
 import AvatarUpload from '@/components/AvatarUpload';
 import { useToast } from '@/hooks/useToast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { profileSchema } from '@/lib/validation';
@@ -55,6 +56,8 @@ export default function ProfilePage() {
 
   const updateSettings = useUpdateUserSettings();
   const updatePasswordMutation = useUpdatePassword();
+  const { signOut } = useAuth();
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const { data: userSettings, isError } = useQuery({
     queryKey: ['profile_settings', profile?.id],
@@ -117,6 +120,28 @@ export default function ProfilePage() {
     },
     onSuccess: () => { toast(t('success.updated', lang, 'Profil'), 'success'); setEditing(false); refreshProfile(); },
     onError: (err) => { toast(err?.message ?? t('errors.unknown', lang), 'error'); },
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('request_account_deletion');
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (result) => {
+      setConfirmDeleteOpen(false);
+      if (result === 'deleted') {
+        toast(t('common.delete_account_success', lang), 'success');
+        setTimeout(() => signOut(), 1200);
+      }
+    },
+    onError: (err) => {
+      setConfirmDeleteOpen(false);
+      const msg = err?.message ?? '';
+      if (msg.includes('DELETION_REFUSED_ENROLLED')) toast(t('common.delete_account_refused_enrolled', lang), 'error');
+      else if (msg.includes('DELETION_REFUSED_DEBT')) toast(t('common.delete_account_refused_debt', lang), 'error');
+      else toast(err?.message ?? t('errors.unknown', lang), 'error');
+    },
   });
 
   if (!profile) return <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang)}</div>;
@@ -324,6 +349,46 @@ export default function ProfilePage() {
           </Button>
         </div>
       </motion.div>
+
+      {/* Danger zone */}
+      {profile.role !== 'admin' && profile.role !== 'assistant' && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6"
+        >
+          <h2 className="text-sm font-semibold text-destructive uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Trash2 className="h-4 w-4" />
+            {t('common.danger', lang)}
+          </h2>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">{t('common.delete_account', lang)}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('common.delete_account_confirm', lang)}</p>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-9 shrink-0"
+              onClick={() => setConfirmDeleteOpen(true)}
+            >
+              {t('common.delete_account', lang)}
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={() => deleteAccountMutation.mutate()}
+        loading={deleteAccountMutation.isPending}
+        title={t('common.delete_account_title', lang)}
+        message={t('common.delete_account_confirm', lang)}
+        confirmLabel={t('common.delete_account', lang)}
+        variant="destructive"
+      />
     </div>
   );
 }
