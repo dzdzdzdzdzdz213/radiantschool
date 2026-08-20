@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Star, Users, Award, BookOpen, Calendar, Clock, Mail, Phone, MapPin, GraduationCap } from 'lucide-react';
 import { useTeacherProfile } from '@/hooks/useTeachers';
+import SocialLinks from '@/components/SocialLinks';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 export default function TeacherProfilePage() {
@@ -231,6 +232,7 @@ export default function TeacherProfilePage() {
                   <span>Membre depuis {teacher.created_at ? formatDate(teacher.created_at) : '—'}</span>
                 </div>
               </div>
+              <SocialLinks urls={teacher} className="mt-5" />
             </motion.div>
 
             {teacher.schedules && teacher.schedules.length > 0 && (

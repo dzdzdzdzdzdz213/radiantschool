@@ -93,6 +93,7 @@ export default function TeachersPage() {
                 rating={teacher.avgRating}
                 studentsCount={teacher.studentCount}
                 biography={teacher.biography ?? undefined}
+                socials={teacher}
                 index={i}
                 onClick={() => navigate(`/teachers/${teacher.id}`)}
               />

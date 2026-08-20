@@ -3526,29 +3526,50 @@ export type Database = {
         Row: {
           biography: string | null
           created_at: string
+          facebook_url: string | null
           id: string
+          instagram_url: string | null
+          linkedin_url: string | null
           rating: number | null
           rating_count: number | null
           specialties: Json | null
           teaching_mode: Database["public"]["Enums"]["teaching_mode"]
+          tiktok_url: string | null
+          twitter_url: string | null
+          website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           biography?: string | null
           created_at?: string
+          facebook_url?: string | null
           id: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
           rating?: number | null
           rating_count?: number | null
           specialties?: Json | null
           teaching_mode?: Database["public"]["Enums"]["teaching_mode"]
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           biography?: string | null
           created_at?: string
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
           rating?: number | null
           rating_count?: number | null
           specialties?: Json | null
           teaching_mode?: Database["public"]["Enums"]["teaching_mode"]
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: [
           {

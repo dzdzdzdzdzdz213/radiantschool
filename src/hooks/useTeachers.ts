@@ -31,9 +31,9 @@ export function useTeachersBySubject(subjectName: string | null) {
       const teachers = Array.from(teacherMap.values());
       const { data: teacherBios } = await supabase
         .from('teachers')
-        .select('id, biography')
+        .select('id, biography, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, website_url')
         .in('id', teachers.map((t) => t.id));
-      const bioMap = new Map((teacherBios ?? []).map((b) => [b.id, b.biography]));
+      const bioMap = new Map((teacherBios ?? []).map((b) => [b.id, b]));
       const enriched = await Promise.all(
         teachers.map(async (t) => {
           const { count: courseCount } = await supabase
@@ -64,7 +64,21 @@ export function useTeachersBySubject(subjectName: string | null) {
           const yearsActive = t.created_at
             ? Math.max(1, Math.floor((Date.now() - new Date(t.created_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000)))
             : 1;
-          return { ...t, biography: bioMap.get(t.id) ?? null, courseCount, studentCount, avgRating, yearsActive };
+          return {
+            ...t,
+            biography: bioMap.get(t.id)?.biography ?? null,
+            facebook_url: bioMap.get(t.id)?.facebook_url ?? null,
+            instagram_url: bioMap.get(t.id)?.instagram_url ?? null,
+            linkedin_url: bioMap.get(t.id)?.linkedin_url ?? null,
+            twitter_url: bioMap.get(t.id)?.twitter_url ?? null,
+            youtube_url: bioMap.get(t.id)?.youtube_url ?? null,
+            tiktok_url: bioMap.get(t.id)?.tiktok_url ?? null,
+            website_url: bioMap.get(t.id)?.website_url ?? null,
+            courseCount,
+            studentCount,
+            avgRating,
+            yearsActive,
+          };
         }),
       );
       return enriched;
@@ -87,7 +101,7 @@ export function useTeacherProfile(teacherId: string | undefined) {
       if (!teacher) return null;
       const { data: teacherProfile } = await supabase
         .from('teachers')
-        .select('biography')
+        .select('biography, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, website_url')
         .eq('id', teacherId)
         .maybeSingle();
       const biography = teacherProfile?.biography ?? null;
@@ -127,6 +141,13 @@ export function useTeacherProfile(teacherId: string | undefined) {
       return {
         ...teacher,
         biography,
+        facebook_url: teacherProfile?.facebook_url ?? null,
+        instagram_url: teacherProfile?.instagram_url ?? null,
+        linkedin_url: teacherProfile?.linkedin_url ?? null,
+        twitter_url: teacherProfile?.twitter_url ?? null,
+        youtube_url: teacherProfile?.youtube_url ?? null,
+        tiktok_url: teacherProfile?.tiktok_url ?? null,
+        website_url: teacherProfile?.website_url ?? null,
         courseCount,
         studentCount,
         avgRating,

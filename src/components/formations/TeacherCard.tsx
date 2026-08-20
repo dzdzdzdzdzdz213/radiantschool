@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Star, Users, Award, ArrowRight } from 'lucide-react';
+import SocialLinks, { type SocialUrls } from '@/components/SocialLinks';
 
 interface TeacherCardProps {
   id: string;
@@ -11,6 +12,7 @@ interface TeacherCardProps {
   rating: number;
   studentsCount: number;
   biography?: string;
+  socials?: SocialUrls | null;
   onClick?: () => void;
   index?: number;
 }
@@ -24,6 +26,7 @@ export default function TeacherCard({
   rating,
   studentsCount,
   biography,
+  socials,
   onClick,
   index = 0,
 }: TeacherCardProps) {
@@ -88,6 +91,8 @@ export default function TeacherCard({
             {biography}
           </p>
         )}
+
+        <SocialLinks urls={socials} size="sm" />
 
         <button
           onClick={onClick}

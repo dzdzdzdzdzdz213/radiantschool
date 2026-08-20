@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getFullName, getRoleLabel } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock, UserPlus, Camera, Trash2 } from 'lucide-react';
+import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock, UserPlus, Camera, Trash2, Share2 } from 'lucide-react';
 import AvatarUpload from '@/components/AvatarUpload';
 import { useToast } from '@/hooks/useToast';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+import SocialLinks, { socialFieldList, normalizeSocialUrl, type SocialUrls } from '@/components/SocialLinks';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { profileSchema } from '@/lib/validation';
@@ -54,6 +55,9 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const [socials, setSocials] = useState<SocialUrls>({});
+  const [socialsDirty, setSocialsDirty] = useState(false);
+
   const updateSettings = useUpdateUserSettings();
   const updatePasswordMutation = useUpdatePassword();
   const { signOut } = useAuth();
@@ -69,6 +73,57 @@ export default function ProfilePage() {
     enabled: !!profile?.id,
   });
   useErrorToast(isError, lang, t('nav.profile', lang));
+
+  const { data: teacherSocials } = useQuery({
+    queryKey: ['profile_socials', profile?.id],
+    queryFn: async (): Promise<SocialUrls | null> => {
+      if (!profile?.id) return null;
+      const { data } = await supabase
+        .from('teachers')
+        .select('facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, website_url')
+        .eq('id', profile.id)
+        .maybeSingle();
+      return data ?? null;
+    },
+    enabled: !!profile?.id && profile?.role === 'teacher',
+  });
+
+  useEffect(() => {
+    if (!teacherSocials) return;
+    setSocials({
+      facebook_url: teacherSocials.facebook_url ?? '',
+      instagram_url: teacherSocials.instagram_url ?? '',
+      linkedin_url: teacherSocials.linkedin_url ?? '',
+      twitter_url: teacherSocials.twitter_url ?? '',
+      youtube_url: teacherSocials.youtube_url ?? '',
+      tiktok_url: teacherSocials.tiktok_url ?? '',
+      website_url: teacherSocials.website_url ?? '',
+    });
+    setSocialsDirty(false);
+  }, [teacherSocials]);
+
+  const saveSocialsMutation = useMutation({
+    mutationFn: async (urls: SocialUrls) => {
+      const cleaned: Database['public']['Tables']['teachers']['Update'] = {};
+      for (const f of socialFieldList) {
+        const raw = urls[f.key]?.trim() ?? '';
+        cleaned[f.key] = raw ? normalizeSocialUrl(f.key, raw) : null;
+      }
+      const { error } = await supabase
+        .from('teachers')
+        .update(cleaned)
+        .eq('id', profile!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast(t('success.updated', lang, 'Profil'), 'success');
+      setSocialsDirty(false);
+      queryClient.invalidateQueries({ queryKey: ['profile_socials', profile?.id] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-public-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['teachers-by-subject'] });
+    },
+    onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
+  });
 
   useEffect(() => {
     if (!userSettings) return;
@@ -302,6 +357,48 @@ export default function ProfilePage() {
                 { onSuccess: () => queryClient.invalidateQueries({ queryKey: ['public-courses'] }) }
               );
             }} />
+          </div>
+        </motion.div>
+      )}
+
+      {/* Teacher social links */}
+      {profile.role === 'teacher' && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          className="rounded-2xl border border-border bg-card p-6"
+        >
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Share2 className="h-4 w-4" />
+            {t('common.social_links', lang)}
+          </h2>
+          <div className="space-y-3">
+            {socialFieldList.map(f => (
+              <div key={f.key} className="rounded-xl bg-muted/30 p-3.5">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">{f.label}</label>
+                <Input
+                  value={socials[f.key] ?? ''}
+                  onChange={e => {
+                    setSocials(s => ({ ...s, [f.key]: e.target.value }));
+                    setSocialsDirty(true);
+                  }}
+                  placeholder={`https://${f.key.replace('_url', '.com/...')}`}
+                  className="h-8 bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 text-sm"
+                />
+              </div>
+            ))}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <SocialLinks urls={socials as SocialUrls} size="sm" />
+              <Button
+                size="sm"
+                className="h-9"
+                onClick={() => saveSocialsMutation.mutate(socials)}
+                disabled={saveSocialsMutation.isPending || !socialsDirty}
+              >
+                {t('common.save', lang)}
+              </Button>
+            </div>
           </div>
         </motion.div>
       )}
