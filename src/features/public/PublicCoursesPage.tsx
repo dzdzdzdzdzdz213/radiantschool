@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { usePublicCourses } from '@/hooks/usePublicData';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus } from 'lucide-react';
+import { BookOpen, BookText, Building2, GraduationCap, ArrowLeft, Search, Star, UserPlus, Users } from 'lucide-react';
 import { getCourseImageUrl } from '@/lib/storage';
 import { asset } from '@/lib/assets';
 
@@ -146,6 +146,7 @@ export default function PublicCoursesPage() {
             const catInfo = categories.find(x => x.key === (c.level?.category ?? 'all')) ?? categories[0];
             const CIcon = catInfo.icon;
             const isVip = c.type === 'vip';
+            const isFull = c.capacity > 0 && (c.current_enrollments ?? 0) >= c.capacity;
             return (
             <motion.div
               key={c.id}
@@ -186,16 +187,26 @@ export default function PublicCoursesPage() {
                 </div>
                 <div className="flex items-center justify-between mb-4">
                   {c.price && <span className="text-lg font-bold">{Number(c.price).toLocaleString()} DA</span>}
-                  {c.capacity && <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{isVip ? '6' : c.capacity} places</span>}
+                  {isFull ? (
+                    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white" style={{ background: '#ef4444' }}>
+                      <Users className="h-3 w-3" />Complet
+                    </span>
+                  ) : c.capacity ? (
+                    <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>{c.current_enrollments ?? 0}/{isVip ? '6' : c.capacity} places</span>
+                  ) : null}
                 </div>
                 <div className="flex gap-2">
-                  {!isVip && (
+                  {isFull ? (
+                    <span
+                      className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-gray-400 cursor-not-allowed"
+                      style={{ background: `color-mix(in srgb, var(--border) 60%, transparent)` }}
+                    >Complet</span>
+                  ) : !isVip ? (
                     <Link to="/enroll"
                       className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-[#191008] transition-all duration-200 active:scale-[0.97]"
                       style={{ background: '#D4AF37' }}
                     >S'inscrire</Link>
-                  )}
-                  {isVip && (
+                  ) : (
                     <Link to="/enroll"
                       className="flex-1 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold text-[#191008] transition-all duration-200 active:scale-[0.97]"
                       style={{ background: '#D4AF37' }}
