@@ -1,10 +1,10 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, CalendarCheck, BookOpen, GraduationCap, FileText, TrendingUp } from 'lucide-react';
+import { CalendarCheck, BookOpen, GraduationCap, FileText, TrendingUp } from 'lucide-react';
 import { getFullName } from '@/lib/utils';
 
 export default function ChildProgressPage() {
@@ -60,11 +60,6 @@ export default function ChildProgressPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <Link to="/parent/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="h-4 w-4" />
-        Retour au tableau de bord
-      </Link>
-
       <div className="flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
           {child?.first_name?.charAt(0)}{child?.last_name?.charAt(0)}

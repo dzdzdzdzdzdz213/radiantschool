@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectItem } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Loader } from 'lucide-react';
+import { Loader } from 'lucide-react';
 
 export default function CreateUserPage() {
   const { lang } = useLang();
@@ -84,9 +84,6 @@ export default function CreateUserPage() {
 
   return (
     <div className="space-y-6 max-w-lg">
-      <button onClick={() => navigate('/admin/users')} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Retour
-      </button>
       <h1 className="text-2xl font-bold">Nouvel utilisateur</h1>
       <Card>
         <CardContent className="p-6 space-y-4">
