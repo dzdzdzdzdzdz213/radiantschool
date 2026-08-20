@@ -64,7 +64,7 @@ export default function InvitePage() {
               <GraduationCap className="h-7 w-7 text-primary" />
             </div>
             <h1 className="text-xl font-bold">Activer mon compte</h1>
-            <p className="text-sm text-muted-foreground">Radiant Academy vous a invité. Choisissez votre mot de passe pour activer votre compte d'élève.</p>
+            <p className="text-sm text-muted-foreground">Radiant Academy vous a invité. Choisissez votre mot de passe pour activer votre compte.</p>
           </div>
 
           <div className="space-y-4">

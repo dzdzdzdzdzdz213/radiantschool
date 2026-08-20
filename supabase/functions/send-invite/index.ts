@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#f8fafc;border-radius:12px">
             <h2 style="color:#1e293b">Bonjour ${user.first_name} ${user.last_name},</h2>
             <p style="color:#475569;font-size:15px;line-height:1.6">
-              Radiant Academy vous a créé un compte d'élève. Pour l'activer, cliquez sur le bouton ci-dessous
+              Radiant Academy vous a créé un compte. Pour l'activer, cliquez sur le bouton ci-dessous
               et choisissez votre mot de passe.
             </p>
             <p style="text-align:center;margin:28px 0">

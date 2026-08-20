@@ -19,7 +19,6 @@ export default function CreateUserPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -32,7 +31,6 @@ export default function CreateUserPage() {
     if (/[0-9]/.test(lastName)) errs.lastName = 'Le nom ne peut pas contenir de chiffres';
     if (!email.trim()) errs.email = "L'email est requis";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = "Email invalide";
-    if (role !== 'student' && (!password || password.length < 8)) errs.password = 'Le mot de passe doit contenir au moins 8 caractères';
     if (!role) errs.role = 'Le rôle est requis';
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -42,9 +40,8 @@ export default function CreateUserPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!validate()) throw new Error('VALIDATION_FAILED');
-      const isStudent = role === 'student';
       const { data: { session: prevSession } } = await supabase.auth.getSession();
-      const effectivePassword = isStudent ? crypto.randomUUID().replace(/-/g, '').slice(0, 16) + '!Aa1' : password;
+      const effectivePassword = crypto.randomUUID().replace(/-/g, '').slice(0, 16) + '!Aa1';
       const { data: signUpResponse, error: signUpError } = await supabase.auth.signUp({
         email,
         password: effectivePassword,
@@ -63,19 +60,17 @@ export default function CreateUserPage() {
           const msg = rpcError.hint || rpcError.message || 'Erreur lors de la création du profil';
           throw new Error(msg);
         }
-        if (isStudent) {
-          const { data: inviteData, error: inviteError } = await supabase.functions.invoke('send-invite', {
-            body: { user_id: signUpResponse.user.id },
-          });
-          if (inviteError || !inviteData?.success) {
-            console.error('[INVITE_ERROR]', inviteError?.message ?? inviteData?.error);
-            throw new Error('Compte créé mais l\'email d\'invitation n\'a pas pu être envoyé. Réessayez depuis la liste des utilisateurs.');
-          }
+        const { data: inviteData, error: inviteError } = await supabase.functions.invoke('send-invite', {
+          body: { user_id: signUpResponse.user.id },
+        });
+        if (inviteError || !inviteData?.success) {
+          console.error('[INVITE_ERROR]', inviteError?.message ?? inviteData?.error);
+          throw new Error('Compte créé mais l\'email d\'invitation n\'a pas pu être envoyé. Réessayez depuis la liste des utilisateurs.');
         }
       }
     },
     onSuccess: () => {
-      toast(role === 'student' ? 'Élève créé — invitation envoyée par email' : 'Compte créé avec succès', 'success');
+      toast('Compte créé — invitation envoyée par email', 'success');
       qc.invalidateQueries({ queryKey: ['users'] });
       navigate('/admin/users');
     },
@@ -104,18 +99,10 @@ export default function CreateUserPage() {
             <Input type="email" value={email} onChange={e => { setEmail(e.target.value); setErrors(e => ({ ...e, email: '' })); }} className="h-9" />
             {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
           </div>
-          {role === 'student' ? (
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground">
-              Un email d'invitation sera envoyé à l'élève : il choisira lui-même son mot de passe et activera son compte.
-              Il apparaîtra dans la liste de présence comme <span className="font-medium text-foreground">« Pending: Prénom Nom »</span> jusqu'à son activation.
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Mot de passe *</Label>
-              <Input type="password" value={password} onChange={e => { setPassword(e.target.value); setErrors(e => ({ ...e, password: '' })); }} className="h-9" placeholder="Min. 8 caractères" />
-              {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-            </div>
-          )}
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground">
+            Un email d'invitation sera envoyé à l'utilisateur : il choisira lui-même son mot de passe et activera son compte.
+            Il apparaîtra dans la liste comme <span className="font-medium text-foreground">« Pending: Prénom Nom »</span> jusqu'à son activation.
+          </div>
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Rôle *</Label>
             <Select value={role} onValueChange={v => { setRole(v); setErrors(e => ({ ...e, role: '' })); }} placeholder="Sélectionner un rôle">
@@ -131,7 +118,7 @@ export default function CreateUserPage() {
             <Button variant="outline" size="sm" className="h-9" onClick={() => navigate('/admin/users')}>Annuler</Button>
             <Button size="sm" className="h-9" disabled={createMutation.isPending} onClick={() => createMutation.mutate()}>
               {createMutation.isPending ? <Loader className="h-4 w-4 animate-spin" /> : null}
-              {role === 'student' ? 'Créer + envoyer invitation' : 'Créer'}
+              {'Créer + envoyer invitation'}
             </Button>
           </div>
         </CardContent>
