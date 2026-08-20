@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { UserPlus, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { UserPlus, Clock, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { formatDate, formatTime } from '@/lib/utils';
 
 export default function StudentPrivateLessonsPage() {
   const { profile } = useAuth();
+  const navigate = useNavigate();
 
   const { data: lessons, isLoading } = useQuery({
     queryKey: ['student_private_lessons', profile?.id],
@@ -15,7 +18,7 @@ export default function StudentPrivateLessonsPage() {
 
       const { data } = await supabase
         .from('private_lessons')
-        .select('*, teacher:users!teacher_id(first_name, last_name)')
+        .select('*, teacher:users!teacher_id(id, first_name, last_name)')
         .eq('student_id', profile.id)
         .order('created_at', { ascending: false });
       return data ?? [];
@@ -57,7 +60,17 @@ export default function StudentPrivateLessonsPage() {
                     <p className="text-xs text-muted-foreground mt-0.5">{Number(l.price).toLocaleString()} DA</p>
                   )}
                 </div>
-                <div className="shrink-0">
+                <div className="shrink-0 flex flex-col items-end gap-2">
+                  {l.teacher?.id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs"
+                      onClick={() => navigate(`/student/messages?to=${l.teacher?.id}&subject=Cours particulier`)}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />Message
+                    </Button>
+                  )}
                   {l.status === 'accepted' && <span className="flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded-full"><CheckCircle className="h-3 w-3" />Accepté</span>}
                   {l.status === 'rejected' && <span className="flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-100 px-2.5 py-1 rounded-full"><XCircle className="h-3 w-3" />Refusé</span>}
                   {l.status === 'pending' && <span className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full"><Clock className="h-3 w-3" />En attente</span>}

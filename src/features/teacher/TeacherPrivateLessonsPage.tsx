@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { UserPlus } from 'lucide-react';
+import { MessageSquare, UserPlus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useMutationWithFeedback } from '@/hooks/useMutationFeedback';
 
 export default function TeacherPrivateLessonsPage() {
   const { profile } = useAuth();
+  const navigate = useNavigate();
 
   const { data: inquiries, isLoading } = useQuery({
     queryKey: ['teacher-inquiries'],
@@ -30,7 +33,7 @@ export default function TeacherPrivateLessonsPage() {
       if (!profile?.id) return [];
       const { data } = await supabase
         .from('private_lessons')
-        .select('*, student:students!student_id(user:users!students_id_fkey(first_name, last_name, email, phone))')
+        .select('*, student:students!student_id(user:users!students_id_fkey(id, first_name, last_name, email, phone))')
         .eq('teacher_id', profile.id)
         .order('created_at', { ascending: false });
       return data ?? [];
@@ -87,7 +90,17 @@ export default function TeacherPrivateLessonsPage() {
                     </p>
                   )}
                 </div>
-                <div className="text-right shrink-0">
+                <div className="text-right shrink-0 flex flex-col items-end gap-2">
+                  {item.type === 'lesson' && item.student?.user?.id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs"
+                      onClick={() => navigate(`/teacher/messages?to=${item.student?.user?.id}&subject=Demande de cours particulier`)}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />Message
+                    </Button>
+                  )}
                   {item.type === 'lesson' ? (
                     item.status === 'pending' ? (
                       <div className="flex gap-1">
