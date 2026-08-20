@@ -1218,231 +1218,39 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          last_message: string | null
           last_message_at: string | null
-          parent_id: string | null
-          participant_id: string
-          student_id: string | null
-          teacher_id: string | null
-          unread: boolean
+          user1_id: string
+          user2_id: string
         }
         Insert: {
           created_at?: string
           id?: number
-          last_message?: string | null
           last_message_at?: string | null
-          parent_id?: string | null
-          participant_id: string
-          student_id?: string | null
-          teacher_id?: string | null
-          unread?: boolean
+          user1_id: string
+          user2_id: string
         }
         Update: {
           created_at?: string
           id?: number
-          last_message?: string | null
           last_message_at?: string | null
-          parent_id?: string | null
-          participant_id?: string
-          student_id?: string | null
-          teacher_id?: string | null
-          unread?: boolean
+          user1_id?: string
+          user2_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "conversations_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "parents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_participant_id_fkey"
-            columns: ["participant_id"]
+            foreignKeyName: "conversations_user1_id_fkey"
+            columns: ["user1_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "conversations_participant_id_fkey"
-            columns: ["participant_id"]
-            isOneToOne: false
-            referencedRelation: "v_teacher_workload"
-            referencedColumns: ["teacher_id"]
-          },
-          {
-            foreignKeyName: "conversations_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "v_student_performance"
-            referencedColumns: ["student_id"]
-          },
-          {
-            foreignKeyName: "conversations_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "v_teacher_payroll"
-            referencedColumns: ["teacher_id"]
-          },
-        ]
-      }
-      course_enrollments: {
-        Row: {
-          campaign_id: number | null
-          course_id: number
-          created_at: string
-          enrollment_date: string
-          id: number
-          status: Database["public"]["Enums"]["enrollment_status"]
-          student_id: string
-        }
-        Insert: {
-          campaign_id?: number | null
-          course_id: number
-          created_at?: string
-          enrollment_date?: string
-          id?: number
-          status?: Database["public"]["Enums"]["enrollment_status"]
-          student_id: string
-        }
-        Update: {
-          campaign_id?: number | null
-          course_id?: number
-          created_at?: string
-          enrollment_date?: string
-          id?: number
-          status?: Database["public"]["Enums"]["enrollment_status"]
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "course_enrollments_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "course_enrollments_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "v_course_occupancy"
-            referencedColumns: ["course_id"]
-          },
-          {
-            foreignKeyName: "course_enrollments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "course_enrollments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "v_student_performance"
-            referencedColumns: ["student_id"]
-          },
-        ]
-      }
-      course_schedules: {
-        Row: {
-          course_id: number
-          created_at: string
-          day_of_week: Database["public"]["Enums"]["day_of_week"]
-          end_time: string
-          id: number
-          room_id: number | null
-          start_time: string
-          teacher_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          course_id: number
-          created_at?: string
-          day_of_week: Database["public"]["Enums"]["day_of_week"]
-          end_time: string
-          id?: number
-          room_id?: number | null
-          start_time: string
-          teacher_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          course_id?: number
-          created_at?: string
-          day_of_week?: Database["public"]["Enums"]["day_of_week"]
-          end_time?: string
-          id?: number
-          room_id?: number | null
-          start_time?: string
-          teacher_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "course_schedules_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "course_schedules_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "v_course_occupancy"
-            referencedColumns: ["course_id"]
-          },
-          {
-            foreignKeyName: "course_schedules_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "rooms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "course_schedules_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "course_schedules_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "v_teacher_payroll"
-            referencedColumns: ["teacher_id"]
-          },
-          {
-            foreignKeyName: "fk_course_schedules_teacher"
-            columns: ["teacher_id"]
+            foreignKeyName: "conversations_user2_id_fkey"
+            columns: ["user2_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_course_schedules_teacher"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "v_teacher_workload"
-            referencedColumns: ["teacher_id"]
-          },
+          }
         ]
       }
       courses: {
@@ -2429,6 +2237,7 @@ export type Database = {
       messages: {
         Row: {
           body: string
+          conversation_id: number | null
           created_at: string
           deleted_at: string | null
           id: number
@@ -2441,6 +2250,7 @@ export type Database = {
         }
         Insert: {
           body: string
+          conversation_id?: number | null
           created_at?: string
           deleted_at?: string | null
           id?: number
@@ -2453,6 +2263,7 @@ export type Database = {
         }
         Update: {
           body?: string
+          conversation_id?: number | null
           created_at?: string
           deleted_at?: string | null
           id?: number
@@ -2464,6 +2275,13 @@ export type Database = {
           subject?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_parent_message_id_fkey"
             columns: ["parent_message_id"]
@@ -4359,6 +4177,7 @@ export type Database = {
         Args: { date_from: string; date_to: string }
         Returns: Json
       }
+      get_or_create_conversation: { Args: { p_other: string }; Returns: number }
       get_dashboard_stats: { Args: { stat?: string }; Returns: Json }
       get_invoices: {
         Args: { p_search?: string }

@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useMessages } from '@/hooks/useQueries';
 import { useAuth } from '@/hooks/useAuth';
-import { formatDateTime, getFullName } from '@/lib/utils';
+import { formatDateTime, getFullName, getInitials } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { MessageSquare, Plus, Send, X } from 'lucide-react';
@@ -13,13 +12,29 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useDebounce } from '@/hooks/useDebounce';
 
-interface Recipient { id: string; first_name: string; last_name: string; email: string; }
+interface UserBrief { id: string; first_name: string; last_name: string; email: string; }
+interface ChatMessage {
+  id: number;
+  conversation_id: number | null;
+  sender_id: string;
+  receiver_id: string;
+  body: string;
+  is_read: boolean;
+  created_at: string;
+}
+interface Conversation {
+  id: number;
+  user1_id: string;
+  user2_id: string;
+  last_message_at: string | null;
+}
 
-type Role = NonNullable<NonNullable<ReturnType<typeof useAuth>['profile']>['role']>;
+const otherOf = (c: Conversation, me: string | undefined) => (c.user1_id === me ? c.user2_id : c.user1_id);
 
-function roleOf(profile: { role?: Role } | null): 'student' | 'teacher' | null {
+function roleOf(profile: { role?: string } | null): 'student' | 'teacher' | null {
   if (!profile) return null;
   if (profile.role === 'teacher') return 'student';
   if (profile.role === 'student') return 'teacher';
@@ -32,21 +47,169 @@ export default function MessagesPage() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [searchParams] = useSearchParams();
-  const { data: messages, isLoading } = useMessages();
-  const [selectedMsg, setSelectedMsg] = useState<NonNullable<typeof messages>[number] | null>(null);
-  const [reply, setReply] = useState('');
+  const me = profile?.id;
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const [activeConvId, setActiveConvId] = useState<number | null>(null);
+  const [draftText, setDraftText] = useState('');
 
   const [composeOpen, setComposeOpen] = useState(false);
-  const [recipient, setRecipient] = useState<Recipient | null>(null);
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+  const [recipient, setRecipient] = useState<UserBrief | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const debouncedSearch = useDebounce(userSearch, 300);
-
   const targetRole = roleOf(profile);
 
-  const { data: userResults } = useQuery({
-    queryKey: ['message_recipients', targetRole, debouncedSearch],
+  const { data: conversations = [], isLoading: convLoading } = useQuery({
+    queryKey: ['chats', me],
+    queryFn: async () => {
+      if (!me) return [];
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .or(`user1_id.eq.${me},user2_id.eq.${me}`)
+        .order('last_message_at', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Conversation[];
+    },
+    enabled: !!me,
+    staleTime: 5_000,
+  });
+
+  const otherIds = conversations.map((c) => otherOf(c, me)).filter(Boolean);
+
+  const { data: usersById = {} as Record<string, UserBrief> } = useQuery({
+    queryKey: ['chat_users', otherIds.join(',')],
+    queryFn: async () => {
+      if (otherIds.length === 0) return {} as Record<string, UserBrief>;
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email')
+        .in('id', otherIds);
+      if (error) throw error;
+      return Object.fromEntries(((data ?? []) as UserBrief[]).map((u) => [u.id, u]));
+    },
+    enabled: otherIds.length > 0,
+    staleTime: 60_000,
+  });
+
+  const convIds = conversations.map((c) => c.id);
+
+  const { data: allMessages = [] as ChatMessage[] } = useQuery({
+    queryKey: ['chat_messages', convIds.join(',')],
+    queryFn: async () => {
+      if (convIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id, conversation_id, sender_id, receiver_id, body, is_read, created_at')
+        .in('conversation_id', convIds)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as ChatMessage[];
+    },
+    enabled: convIds.length > 0,
+    staleTime: 5_000,
+  });
+
+  const byConv = (id: number | null) => (id === null ? [] : allMessages.filter((m) => m.conversation_id === id));
+  const thread = activeConvId === null ? [] : byConv(activeConvId);
+  const unreadOf = (c: Conversation) => allMessages.filter((m) => m.conversation_id === c.id && m.receiver_id === me && !m.is_read).length;
+  const lastOf = (c: Conversation) => [...byConv(c.id)].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).pop();
+
+  const { data: toUser } = useQuery({
+    queryKey: ['chat_to_user', searchParams.get('to')],
+    queryFn: async () => {
+      const to = searchParams.get('to');
+      if (!to) return null;
+      const { data, error } = await supabase.from('users').select('id, first_name, last_name, email').eq('id', to).maybeSingle();
+      if (error) throw error;
+      return (data ?? null) as UserBrief | null;
+    },
+    enabled: !!searchParams.get('to'),
+  });
+
+  const openConversation = useMutation({
+    mutationFn: async (otherId: string) => {
+      if (!me) throw new Error('auth required');
+      const { data, error } = await supabase.rpc('get_or_create_conversation', { p_other: otherId });
+      if (error) throw error;
+      return Number(data);
+    },
+    onSuccess: (cid) => {
+      setActiveConvId(cid);
+      qc.invalidateQueries({ queryKey: ['chats'] });
+      setComposeOpen(false);
+      setRecipient(null);
+      setUserSearch('');
+    },
+    onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: async () => {
+      if (!me || activeConvId === null) return;
+      const conv = conversations.find((c) => c.id === activeConvId);
+      if (!conv) return;
+      const other = otherOf(conv, me);
+      if (!draftText.trim()) return;
+      const { error } = await supabase.from('messages').insert({
+        sender_id: me,
+        receiver_id: other,
+        conversation_id: activeConvId,
+        subject: null,
+        body: draftText.trim(),
+      });
+      if (error) throw error;
+      await supabase.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', activeConvId);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chat_messages'] });
+      qc.invalidateQueries({ queryKey: ['chats'] });
+      setDraftText('');
+    },
+    onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: async (convId: number) => {
+      if (!me) return;
+      const { error } = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .eq('conversation_id', convId)
+        .eq('receiver_id', me)
+        .eq('is_read', false);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chat_messages'] });
+      qc.invalidateQueries({ queryKey: ['chats'] });
+    },
+  });
+
+  useEffect(() => {
+    const to = searchParams.get('to');
+    if (to && me && toUser && activeConvId === null) {
+      const existing = conversations.find((c) => otherOf(c, me) === to);
+      if (existing) {
+        setActiveConvId(existing.id);
+      } else {
+        openConversation.mutate(to);
+      }
+    }
+  }, [toUser, me, activeConvId, conversations]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (activeConvId !== null && me) {
+      markReadMutation.mutate(activeConvId);
+    }
+  }, [activeConvId, allMessages.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [thread.length, activeConvId]);
+
+  const { data: userResults = [] as UserBrief[] } = useQuery({
+    queryKey: ['chat_recipients', targetRole, debouncedSearch],
     queryFn: async () => {
       if (!targetRole) return [];
       let q = supabase
@@ -60,103 +223,16 @@ export default function MessagesPage() {
       }
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as Recipient[];
+      return (data ?? []) as UserBrief[];
     },
     enabled: !!targetRole && composeOpen,
     staleTime: 10_000,
   });
 
-  const toId = searchParams.get('to');
-  const toSubject = searchParams.get('subject') ?? '';
-
-  const { data: toUser } = useQuery({
-    queryKey: ['message_to_user', toId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('users').select('id, first_name, last_name, email').eq('id', toId!).maybeSingle();
-      if (error) throw error;
-      return (data ?? null) as Recipient | null;
-    },
-    enabled: !!toId,
-  });
-
-  const draft: Recipient | null = toUser ?? null;
-
-  const sendNewMutation = useMutation({
-    mutationFn: async () => {
-      if (!recipient || !profile?.id) return;
-      if (!subject.trim()) throw new Error(t('messages.subject_required', lang));
-      if (!body.trim()) throw new Error(t('messages.body_required', lang));
-      const { error } = await supabase.from('messages').insert({
-        sender_id: profile.id,
-        receiver_id: recipient.id,
-        subject: subject.trim(),
-        body: body.trim(),
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['messages'] });
-      toast(t('success.sent', lang, 'Message'), 'success');
-      setComposeOpen(false);
-      setRecipient(null);
-      setSubject('');
-      setBody('');
-      setUserSearch('');
-    },
-    onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
-  });
-
-  const sendDraftMutation = useMutation({
-    mutationFn: async () => {
-      if (!draft || !profile?.id) return;
-      if (!body.trim()) throw new Error(t('messages.body_required', lang));
-      const { error } = await supabase.from('messages').insert({
-        sender_id: profile.id,
-        receiver_id: draft.id,
-        subject: toSubject || draft.email,
-        body: body.trim(),
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['messages'] });
-      toast(t('success.sent', lang, 'Message'), 'success');
-      setReply('');
-    },
-    onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
-  });
-
-  const sendMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedMsg || !profile?.id) return;
-      const receiverId = selectedMsg.sender_id === profile?.id ? selectedMsg.receiver_id : selectedMsg.sender_id;
-      const { error } = await supabase.from('messages').insert({
-        sender_id: profile.id,
-        receiver_id: receiverId,
-        subject: selectedMsg.subject,
-        body: reply,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['messages'] });
-      toast(t('success.sent', lang, 'Message'), 'success');
-      setReply('');
-    },
-    onError: (err) => toast(err?.message ?? t('errors.unknown', lang), 'error'),
-  });
-
-  const markReadMutation = useMutation({
-    mutationFn: async (id: number) => {
-      if (!profile?.id) return;
-      const { error } = await supabase.from('messages').update({ is_read: true }).eq('id', id).neq('sender_id', profile.id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['messages'] }),
-  });
-
-  const filtered = (messages ?? []).filter((m) => m.sender_id === profile?.id || m.receiver_id === profile?.id);
-  const activeDraft = !selectedMsg && draft;
+  const activeConv = conversations.find((c) => c.id === activeConvId) ?? null;
+  const activeOtherId = activeConv ? otherOf(activeConv, me) : null;
+  const activeOther = activeOtherId ? usersById[activeOtherId] : null;
+  const activeThread = activeConvId === null ? [] : byConv(activeConvId);
 
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
@@ -170,26 +246,42 @@ export default function MessagesPage() {
           )}
         </div>
         <div className="overflow-y-auto" style={{ height: 'calc(100% - 57px)' }}>
-          {isLoading ? (
+          {convLoading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">{t('common.loading', lang)}</div>
-          ) : filtered.length === 0 ? (
+          ) : conversations.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               <MessageSquare className="mx-auto mb-2 h-8 w-8" />
               <p className="text-sm">{t('common.no_data', lang)}</p>
             </div>
           ) : (
-            filtered.map((m) => {
-              const isSent = m.sender_id === profile?.id;
-              const other = isSent ? m.receiver : m.sender;
+            conversations.map((c) => {
+              const oid = otherOf(c, me);
+              const other = usersById[oid];
+              const unread = unreadOf(c);
+              const last = lastOf(c);
               return (
                 <div
-                  key={m.id}
-                  className={`cursor-pointer border-b p-4 text-sm hover:bg-page ${!m.is_read && !isSent ? 'bg-notification' : ''}`}
-                  onClick={() => { setSelectedMsg(m); setReply(''); if (!m.is_read && !isSent) markReadMutation.mutate(m.id); }}
+                  key={c.id}
+                  className={`flex cursor-pointer items-center gap-3 border-b p-3 hover:bg-page ${activeConvId === c.id ? 'bg-muted/60' : ''}`}
+                  onClick={() => setActiveConvId(c.id)}
                 >
-                  <p className="font-medium">{other ? getFullName(other.first_name, other.last_name) : t('common.not_found', lang)}</p>
-                  <p className="truncate text-muted-foreground">{m.subject || t('common.no_data', lang)}</p>
-                  <p className="text-xs text-muted-foreground">{formatDateTime(m.created_at)}</p>
+                  <Avatar className="h-10 w-10 rounded-full bg-primary/10">
+                    <AvatarFallback className="text-xs font-bold text-primary">
+                      {other ? getInitials(other.first_name, other.last_name) : '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-medium">{other ? getFullName(other.first_name, other.last_name) : t('common.not_found', lang)}</p>
+                      {last && <span className="shrink-0 text-[10px] text-muted-foreground">{formatDateTime(last.created_at)}</span>}
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-xs text-muted-foreground">{last ? (last.sender_id === me ? 'Vous : ' : '') + last.body : '—'}</p>
+                      {unread > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">{unread}</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               );
             })
@@ -197,53 +289,51 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      <div className="flex-1 rounded-xl border bg-card shadow-sm">
-        {activeDraft ? (
-          <div className="flex h-full flex-col">
-            <div className="border-b p-4">
-              <h3 className="font-semibold">{t('messages.new', lang)} — {getFullName(draft.first_name, draft.last_name)}</h3>
-              <p className="text-sm text-muted-foreground">{draft.email}</p>
-            </div>
-            <div className="space-y-4 p-4">
-              <div className="space-y-2">
-                <Label>{t('messages.subject', lang)}</Label>
-                <Input value={toSubject} readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('messages.body', lang)}</Label>
-                <textarea
-                  rows={5}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                />
+      <div className="flex flex-1 flex-col rounded-xl border bg-card shadow-sm">
+        {activeConv && activeOther ? (
+          <>
+            <div className="flex items-center gap-3 border-b p-4">
+              <Avatar className="h-9 w-9 rounded-full bg-primary/10">
+                <AvatarFallback className="text-xs font-bold text-primary">{getInitials(activeOther.first_name, activeOther.last_name)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-semibold">{getFullName(activeOther.first_name, activeOther.last_name)}</h3>
+                <p className="text-xs text-muted-foreground">{activeOther.email}</p>
               </div>
             </div>
-            <div className="border-t p-4">
-              <Button onClick={() => sendDraftMutation.mutate()} disabled={sendDraftMutation.isPending || !body.trim()} className="gap-2">
-                <Send className="h-4 w-4" />{t('messages.send', lang)}
-              </Button>
-            </div>
-          </div>
-        ) : selectedMsg ? (
-          <div className="flex h-full flex-col">
-            <div className="border-b p-4">
-              <h3 className="font-semibold">{selectedMsg.subject || t('common.no_data', lang)}</h3>
-              <p className="text-sm text-muted-foreground">
-                {selectedMsg.sender_id === profile?.id ? t('messages.you', lang) : getFullName(selectedMsg.sender?.first_name || '', selectedMsg.sender?.last_name || '')}
-                {' · '}{formatDateTime(selectedMsg.created_at)}
-              </p>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              <p className="text-sm">{selectedMsg.body}</p>
+            <div className="flex-1 space-y-2 overflow-y-auto p-4">
+              {activeThread.length === 0 ? (
+                <p className="py-10 text-center text-sm text-muted-foreground">{t('messages.start_chat', lang)}</p>
+              ) : (
+                activeThread.map((m) => {
+                  const mine = m.sender_id === me;
+                  return (
+                    <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[70%] rounded-2xl px-3.5 py-2 text-sm ${mine ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md bg-muted'}`}>
+                        <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                        <p className={`mt-0.5 text-[10px] ${mine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                          {formatDateTime(m.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={bottomRef} />
             </div>
             <div className="border-t p-4">
               <div className="flex gap-2">
-                <Input value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t('messages.write_placeholder', lang)} className="flex-1" />
-                <Button variant="default" onClick={() => sendMutation.mutate()} disabled={sendMutation.isPending || !reply.trim()}><Send className="h-4 w-4" /></Button>
+                <Input
+                  value={draftText}
+                  onChange={(e) => setDraftText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMutation.mutate(); } }}
+                  placeholder={t('messages.write_placeholder', lang)}
+                  className="flex-1"
+                />
+                <Button variant="default" onClick={() => sendMutation.mutate()} disabled={sendMutation.isPending || !draftText.trim()}><Send className="h-4 w-4" /></Button>
               </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             <div className="text-center">
@@ -273,9 +363,9 @@ export default function MessagesPage() {
                 ) : (
                   <div className="relative">
                     <Input value={userSearch} onChange={(e) => setUserSearch(e.target.value)} placeholder={t('common.search', lang)} autoFocus />
-                    {(userResults ?? []).length > 0 && (
+                    {userResults.length > 0 && (
                       <div className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border bg-background shadow-lg">
-                        {userResults!.map((u) => (
+                        {userResults.map((u) => (
                           <button
                             key={u.id}
                             type="button"
@@ -291,23 +381,13 @@ export default function MessagesPage() {
                   </div>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label>{t('messages.subject', lang)}</Label>
-                <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('messages.body', lang)}</Label>
-                <textarea
-                  rows={4}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setComposeOpen(false)}>{t('common.cancel', lang)}</Button>
-                <Button onClick={() => sendNewMutation.mutate()} disabled={sendNewMutation.isPending || !recipient}>
-                  {sendNewMutation.isPending ? t('common.loading', lang) : t('messages.send', lang)}
+                <Button
+                  onClick={() => recipient && openConversation.mutate(recipient.id)}
+                  disabled={!recipient || openConversation.isPending}
+                >
+                  {openConversation.isPending ? t('common.loading', lang) : t('messages.open_chat', lang)}
                 </Button>
               </div>
             </CardContent>
