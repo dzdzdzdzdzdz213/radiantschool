@@ -66,6 +66,7 @@ const AdminDashboardPage = lazy(() => loadPage(() => import('@/features/admin/da
 const AssistantDashboardPage = lazy(() => loadPage(() => import('@/features/assistant/dashboard/AssistantDashboardPage')));
 const AssistantStudentsPage = lazy(() => loadPage(() => import('@/features/assistant/students/StudentsPage')));
 const AssistantParentsPage = lazy(() => loadPage(() => import('@/features/assistant/parents/ParentsPage')));
+const ParentDetailPage = lazy(() => loadPage(() => import('@/features/assistant/parents/ParentDetailPage')));
 const AssistantRegistrationsPage = lazy(() => loadPage(() => import('@/features/assistant/registrations/RegistrationsPage')));
 const AssistantRfidPage = lazy(() => loadPage(() => import('@/features/assistant/rfid/RfidPage')));
 const AssistantGroupsPage = lazy(() => loadPage(() => import('@/features/assistant/groups/GroupsPage')));
@@ -319,6 +320,7 @@ export const router = createBrowserRouter([
       { path: 'students', Component: AssistantStudentsPage },
       { path: 'students/:id', Component: StudentDetailPage },
       { path: 'parents', Component: AssistantParentsPage },
+      { path: 'parents/:id', Component: ParentDetailPage },
       { path: 'registrations', Component: AssistantRegistrationsPage },
       { path: 'rfid', Component: AssistantRfidPage },
       { path: 'groups', Component: AssistantGroupsPage },
