@@ -29,19 +29,33 @@ export default function HonestyBoxWidget() {
           .eq('parent_id', profile.id);
         const childIds = (links ?? []).map((l) => l.student_id);
         if (!childIds.length) return false;
-        const { count } = await supabase
+        const [{ count: ceCount }, { count: plCount }] = await Promise.all([
+          supabase
+            .from('course_enrollments')
+            .select('id', { count: 'exact', head: true })
+            .in('student_id', childIds)
+            .eq('status', 'active'),
+          supabase
+            .from('private_lessons')
+            .select('id', { count: 'exact', head: true })
+            .in('student_id', childIds)
+            .eq('status', 'accepted'),
+        ]);
+        return (ceCount ?? 0) + (plCount ?? 0) > 0;
+      }
+      const [{ count: ceCount }, { count: plCount }] = await Promise.all([
+        supabase
           .from('course_enrollments')
           .select('id', { count: 'exact', head: true })
-          .in('student_id', childIds)
-          .eq('status', 'active');
-        return (count ?? 0) > 0;
-      }
-      const { count } = await supabase
-        .from('course_enrollments')
-        .select('id', { count: 'exact', head: true })
-        .eq('student_id', profile.id)
-        .eq('status', 'active');
-      return (count ?? 0) > 0;
+          .eq('student_id', profile.id)
+          .eq('status', 'active'),
+        supabase
+          .from('private_lessons')
+          .select('id', { count: 'exact', head: true })
+          .eq('student_id', profile.id)
+          .eq('status', 'accepted'),
+      ]);
+      return (ceCount ?? 0) + (plCount ?? 0) > 0;
     },
     enabled: !!profile?.id && (profile?.role === 'parent' || profile?.role === 'student'),
   });
