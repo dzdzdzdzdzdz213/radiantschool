@@ -79,6 +79,7 @@ const AssistantCampaignsPage = lazy(() => loadPage(() => import('@/features/assi
 const AssistantCalendarPage = lazy(() => loadPage(() => import('@/features/assistant/calendar/CalendarPage')));
 const AssistantSearchPage = lazy(() => loadPage(() => import('@/features/assistant/search/SearchPage')));
 const AssistantSettingsPage = lazy(() => loadPage(() => import('@/features/assistant/settings/SettingsPage')));
+const AssistantSubjectsPage = lazy(() => loadPage(() => import('@/features/assistant/subjects/AssistantSubjectsPage')));
 const AssistantAttendancePage = lazy(() => loadPage(() => import('@/features/assistant/attendance/BulkAttendancePage')));
 const TeacherAttendancePage = lazy(() => loadPage(() => import('@/features/teacher/TeacherAttendancePage')));
 
@@ -337,6 +338,7 @@ export const router = createBrowserRouter([
       { path: 'calendar', Component: AssistantCalendarPage },
       { path: 'search', Component: AssistantSearchPage },
       { path: 'settings', Component: AssistantSettingsPage },
+      { path: 'subjects', Component: AssistantSubjectsPage },
       { path: 'attendance', Component: AssistantAttendancePage },
       { path: 'invoices', Component: InvoicesPage },
       { path: 'messages', Component: MessagesPage },

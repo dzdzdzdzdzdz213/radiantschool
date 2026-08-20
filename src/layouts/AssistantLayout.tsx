@@ -60,6 +60,7 @@ export default function AssistantLayout() {
     { label: t('nav.attendance', lang), path: '/assistant/attendance', icon: 'ClipboardCheck' },
     { label: t('nav.rfid', lang), path: '/assistant/rfid', icon: 'ClipboardCheck' },
     { label: t('nav.groups', lang), path: '/assistant/groups', icon: 'BookOpen' },
+    { label: t('nav.subjects', lang), path: '/assistant/subjects', icon: 'BookOpen' },
     { label: t('nav.private_lessons', lang), path: '/assistant/private-lessons', icon: 'UserPlus' },
     { label: t('nav.schedule', lang), path: '/assistant/schedule', icon: 'Calendar' },
     { label: t('nav.rooms', lang), path: '/assistant/rooms', icon: 'MapPin' },
