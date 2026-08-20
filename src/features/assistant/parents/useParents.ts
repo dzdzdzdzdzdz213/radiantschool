@@ -43,17 +43,18 @@ export interface ParentInput {
   phone?: string | null;
   status?: string;
   role: string;
-  password: string;
+  password?: string;
 }
 
 export function useCreateParent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ first_name, last_name, email, phone, status = 'active', role, password }: ParentInput) => {
+    mutationFn: async ({ first_name, last_name, email, phone, status = 'pending', role, password }: ParentInput) => {
       const { data: { session: prevSession } } = await supabase.auth.getSession();
+      const effectivePassword = password ?? crypto.randomUUID().replace(/-/g, '').slice(0, 16) + '!Aa1';
       const { data: signUpRes, error: signUpError } = await supabase.auth.signUp({
         email,
-        password,
+        password: effectivePassword,
         options: { data: { first_name, last_name, role } },
       });
       if (signUpError) throw signUpError;
@@ -71,6 +72,10 @@ export function useCreateParent() {
         p_phone: phone ?? undefined,
       });
       if (rpcError) throw new Error(rpcError.message || rpcError.hint || 'Erreur lors de la création du profil');
+      const { error: inviteError } = await supabase.functions.invoke('send-invite', {
+        body: { user_id: signUpRes.user.id },
+      });
+      if (inviteError) throw new Error(inviteError.message || 'Erreur lors de l\'envoi de l\'invitation');
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['assistant_parents'] }); },
   });
