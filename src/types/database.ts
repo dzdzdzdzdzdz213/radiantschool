@@ -1253,6 +1253,151 @@ export type Database = {
           }
         ]
       }
+      course_enrollments: {
+        Row: {
+          campaign_id: number | null
+          course_id: number
+          created_at: string
+          enrollment_date: string
+          id: number
+          status: Database["public"]["Enums"]["enrollment_status"]
+          student_id: string
+        }
+        Insert: {
+          campaign_id?: number | null
+          course_id: number
+          created_at?: string
+          enrollment_date?: string
+          id?: number
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          student_id: string
+        }
+        Update: {
+          campaign_id?: number | null
+          course_id?: number
+          created_at?: string
+          enrollment_date?: string
+          id?: number
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "v_course_occupancy"
+            referencedColumns: ["course_id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "v_student_performance"
+            referencedColumns: ["student_id"]
+          },
+        ]
+      }
+      course_schedules: {
+        Row: {
+          course_id: number
+          created_at: string
+          day_of_week: Database["public"]["Enums"]["day_of_week"]
+          end_time: string
+          id: number
+          room_id: number | null
+          start_time: string
+          teacher_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          course_id: number
+          created_at?: string
+          day_of_week: Database["public"]["Enums"]["day_of_week"]
+          end_time: string
+          id?: number
+          room_id?: number | null
+          start_time: string
+          teacher_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          course_id?: number
+          created_at?: string
+          day_of_week?: Database["public"]["Enums"]["day_of_week"]
+          end_time?: string
+          id?: number
+          room_id?: number | null
+          start_time?: string
+          teacher_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_schedules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_schedules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "v_course_occupancy"
+            referencedColumns: ["course_id"]
+          },
+          {
+            foreignKeyName: "course_schedules_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_schedules_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_schedules_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_payroll"
+            referencedColumns: ["teacher_id"]
+          },
+          {
+            foreignKeyName: "fk_course_schedules_teacher"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_course_schedules_teacher"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "v_teacher_workload"
+            referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           capacity: number
