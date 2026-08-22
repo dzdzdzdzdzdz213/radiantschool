@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: { "api-key": apiKey, "Content-Type": "application/json" },
       body: JSON.stringify({
-        sender: { name: "Radiant Academy", email: "noreply@radiantlearning.dz" },
+        sender: { name: "Radiant Academy", email: Deno.env.get("INVITE_SENDER_EMAIL") ?? "aimenmamache21@gmail.com" },
         to: [{ email: user.email }],
         subject: "Votre invitation à Radiant Academy",
         htmlContent: `
@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
               </a>
             </p>
             <p style="color:#94a3b8;font-size:13px">Ce lien expire dans 7 jours. Si vous n'attendiez pas ce message, ignorez-le.</p>
-            <p style="color:#94a3b8;font-size:12px">Radiant Academy · noreply@radiantlearning.dz</p>
+            <p style="color:#94a3b8;font-size:12px">Radiant Academy</p>
           </div>`,
       }),
     });
