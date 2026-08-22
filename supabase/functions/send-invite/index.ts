@@ -129,6 +129,7 @@ Deno.serve(async (req) => {
 
   let emailSent = false;
   let emailError = null;
+  let emailMessageId: string | null = null;
   try {
     const apiKey = Deno.env.get("BREVO_API_KEY");
     if (!apiKey) throw new Error("BREVO_API_KEY not set");
@@ -159,10 +160,11 @@ Deno.serve(async (req) => {
     const result = await res.json();
     if (!res.ok) throw new Error(result.message || JSON.stringify(result));
     emailSent = true;
+    emailMessageId = result.messageId ?? null;
   } catch (e) {
     emailError = errMsg(e);
     console.error("[EMAIL_ERROR]", emailError);
   }
 
-  return jsonResponse({ success: true, email_sent: emailSent, email_error: emailError, expires_at: expiresAt }, 200);
+  return jsonResponse({ success: true, email_sent: emailSent, email_error: emailError, email_message_id: emailMessageId, expires_at: expiresAt }, 200);
 });

@@ -71,9 +71,13 @@ export default function CreateUserPage() {
         const { data: inviteData, error: inviteError } = await supabase.functions.invoke('send-invite', {
           body: { user_id: signUpResponse.user.id },
         });
-        if (inviteError || !inviteData?.success) {
-          console.error('[INVITE_ERROR]', inviteError?.message ?? inviteData?.error);
+        if (inviteError) {
+          console.error('[INVITE_ERROR]', inviteError.message);
           throw new Error('Compte créé mais l\'email d\'invitation n\'a pas pu être envoyé. Réessayez depuis la liste des utilisateurs.');
+        }
+        if (inviteData && inviteData.email_sent === false) {
+          console.error('[EMAIL_ERROR]', inviteData.email_error);
+          throw new Error(`Compte créé mais l'email n'a pas pu partir : ${inviteData.email_error ?? 'erreur inconnue'}. Vérifiez la configuration Brevo.`);
         }
       }
     },
