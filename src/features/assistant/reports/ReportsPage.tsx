@@ -21,7 +21,6 @@ const reportTypes = [
 
 export default function ReportsPage() {
   const { lang } = useLang();
-  const localeMap: Record<string, string> = { fr: 'fr-FR', en: 'en-US', ar: 'ar-DZ' };
   const { toast } = useToast();
   const reportLabels: Record<string, string> = {
     attendance: t('reports.attendance', lang),

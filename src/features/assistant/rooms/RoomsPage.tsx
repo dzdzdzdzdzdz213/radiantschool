@@ -133,9 +133,6 @@ export default function RoomsPage() {
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
-  const statusVariant = (s: string) => s === 'active' ? 'success' : s === 'maintenance' ? 'warning' : 'destructive';
-  const statusLabel = (s: string) => s === 'active' ? t('rooms.available', lang) : s === 'maintenance' ? t('rooms.reserved', lang) : t('rooms.occupied', lang);
-
   return (
     <div className="space-y-6">
       <ConfirmDialog

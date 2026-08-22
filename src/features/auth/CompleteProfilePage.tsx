@@ -29,7 +29,7 @@ export default function CompleteProfilePage() {
       last_name: user.user_metadata?.last_name || parts.slice(1).join(' ') || '',
       phone: '',
     });
-  }, [user, isLoading, navigate]);
+  }, [user, profile, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

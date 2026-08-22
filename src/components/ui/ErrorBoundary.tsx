@@ -8,7 +8,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(error: Error) { return { error }; }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  componentDidCatch(error: Error, _info: ErrorInfo) {
     if (error.message?.includes('dynamically imported') || error.message?.includes('Loading chunk')) {
       window.location.reload();
     }

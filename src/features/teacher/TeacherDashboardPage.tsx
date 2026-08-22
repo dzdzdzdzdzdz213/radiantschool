@@ -2,7 +2,6 @@ import { Sparkles, BookOpen, Calendar, Users, Clock, MapPin, GraduationCap, type
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Card, CardContent } from '@/components/ui/card';
 import { useTeacherDashboard } from '@/hooks/useTeacherDashboard';
 import { motion } from 'framer-motion';
 

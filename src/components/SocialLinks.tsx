@@ -1,4 +1,4 @@
-import { Globe, Link2 } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 export interface SocialUrls {
   facebook_url?: string | null;

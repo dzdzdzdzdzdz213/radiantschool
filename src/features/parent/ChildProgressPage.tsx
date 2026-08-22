@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarCheck, BookOpen, GraduationCap, FileText, TrendingUp } from 'lucide-react';
+import { CalendarCheck, BookOpen, GraduationCap, TrendingUp } from 'lucide-react';
 import { getFullName } from '@/lib/utils';
 
 export default function ChildProgressPage() {

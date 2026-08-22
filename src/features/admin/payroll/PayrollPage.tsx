@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, CheckCircle, XCircle, Download } from 'lucide-react';
@@ -37,7 +37,7 @@ export default function PayrollPage() {
     queryFn: async () => {
       let q = supabase
         .from('teacher_payroll')
-        .select('*, teacher:users!teacher_id(first_name, last_name)')
+        .select('*, teacher:teachers!teacher_id(user:users(first_name, last_name))')
         .order('year', { ascending: false })
         .order('month', { ascending: false })
         .order('created_at', { ascending: false });
@@ -46,7 +46,8 @@ export default function PayrollPage() {
       else if (filter === 'paid') q = q.eq('status', 'paid');
 
       const { data } = await q;
-      return (data ?? []) as unknown as PayrollEntry[];
+      return ((data ?? []) as Array<Record<string, unknown> & { teacher?: { user?: { first_name: string; last_name: string } } | null }>)
+        .map((r) => ({ ...r, teacher: r.teacher?.user ?? null })) as unknown as PayrollEntry[];
     },
     staleTime: 15_000,
   });

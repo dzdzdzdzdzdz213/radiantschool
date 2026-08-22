@@ -312,7 +312,7 @@ export default function LandingPage() {
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {team.map((member, i) => (                <div
-                  key={member.name}
+                  key={`${member.name}-${i}`}
                   className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-3 hover:shadow-xl"
                   style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', animationDelay: `${i * 0.1}s` }}
                   data-reveal

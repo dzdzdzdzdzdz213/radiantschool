@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { formatCurrency, formatDate, getFullName } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Search, Plus, BookOpen, X, Pencil, Trash2, Camera, Loader, ImageOff, Trash, Users, Clock, ArrowUpDown } from 'lucide-react';
+import { Search, Plus, BookOpen, X, Pencil, Trash2, Camera, Loader, ImageOff, Trash, Users } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCourseImageUrl, uploadCourseImage } from '@/lib/storage';

@@ -1,16 +1,26 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
 import { useToast } from '@/hooks/useToast';
-import { BookOpen, Check, Clock, Loader2 } from 'lucide-react';
+import { BookOpen, Check, Clock, Loader2, UserRound } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectItem } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/utils';
+import { getFullName } from '@/lib/utils';
+
+interface ChildRow {
+  student_id: string;
+  students: { user: { id: string; first_name: string | null; last_name: string | null } | null } | null;
+}
 
 export default function StudentEnrollPage() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const isParent = profile?.role === 'parent';
+  const [selectedChildId, setSelectedChildId] = useState<string>('');
 
   const { data: courses, isLoading } = useQuery({
     queryKey: ['available-courses'],
@@ -24,24 +34,42 @@ export default function StudentEnrollPage() {
     },
   });
 
-  const { data: myEnrollments } = useQuery({
-    queryKey: ['my-enrollments-ids', profile?.id],
-    queryFn: async () => {
+  // Parents enroll one of their children, not themselves.
+  const { data: children } = useQuery({
+    queryKey: ['parent-children', profile?.id],
+    queryFn: async (): Promise<ChildRow[]> => {
       if (!profile?.id) return [];
+      const { data, error } = await supabase
+        .from('student_parent')
+        .select('student_id, students(user:users(id, first_name, last_name))')
+        .eq('parent_id', profile.id);
+      if (error) throw error;
+      return (data ?? []) as unknown as ChildRow[];
+    },
+    enabled: isParent && !!profile?.id,
+  });
+
+  const effectiveStudentId = isParent ? selectedChildId : (profile?.id ?? '');
+
+  const { data: myEnrollments } = useQuery({
+    queryKey: ['my-enrollments-ids', effectiveStudentId],
+    queryFn: async () => {
+      if (!effectiveStudentId) return [];
       const { data } = await supabase
         .from('course_enrollments')
         .select('course_id, status')
-        .eq('student_id', profile.id);
+        .eq('student_id', effectiveStudentId);
       return data ?? [];
     },
-    enabled: !!profile?.id,
+    enabled: !!effectiveStudentId,
   });
 
   const enrollMut = useMutation({
     mutationFn: async (courseId: number) => {
       if (!profile?.id) throw new Error('Not logged in');
+      if (!effectiveStudentId) throw new Error("Veuillez d'abord sélectionner un enfant.");
       const { error } = await supabase.from('course_enrollments').insert({
-        student_id: profile.id,
+        student_id: effectiveStudentId,
         course_id: courseId,
         status: 'pending_approval',
       });
@@ -51,7 +79,8 @@ export default function StudentEnrollPage() {
       qc.invalidateQueries({ queryKey: ['my-enrollments-ids'] });
       qc.invalidateQueries({ queryKey: ['student-courses'] });
       qc.invalidateQueries({ queryKey: ['student-dashboard'] });
-      toast('Demande d\'inscription envoyée ! En attente de validation.', 'success');
+      qc.invalidateQueries({ queryKey: ['registrations'] });
+      toast(isParent ? "Demande d'inscription envoyée pour votre enfant ! En attente de validation." : 'Demande d\'inscription envoyée ! En attente de validation.', 'success');
     },
     onError: (err) => toast(err?.message || 'Erreur lors de l\'inscription', 'error'),
   });
@@ -64,13 +93,45 @@ export default function StudentEnrollPage() {
     return found?.status ?? null;
   };
 
+  const needsChildPick = isParent && !selectedChildId;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="h-6 w-6" /> Inscription aux formations</h1>
-        <p className="text-sm text-muted-foreground">{activeCount}/8 inscriptions · {remaining} restante{remaining !== 1 ? 's' : ''}</p>
+        {!needsChildPick && (
+          <p className="text-sm text-muted-foreground">{activeCount}/8 inscriptions · {remaining} restante{remaining !== 1 ? 's' : ''}</p>
+        )}
       </div>
-      {isLoading ? (
+
+      {isParent && (
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+          <UserRound className="h-5 w-5 text-primary shrink-0" />
+          <span className="text-sm text-muted-foreground shrink-0">Enfant à inscrire :</span>
+          {children === undefined ? (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : children.length === 0 ? (
+            <span className="text-sm font-medium text-destructive">Aucun enfant lié à votre compte. Contactez l'administration.</span>
+          ) : (
+            <Select value={selectedChildId} onValueChange={setSelectedChildId} placeholder="Choisir un enfant…" className="max-w-xs">
+              {children.map((c) => {
+                const u = c.students?.user;
+                return (
+                  <SelectItem key={c.student_id} value={c.student_id}>
+                    {getFullName(u?.first_name ?? '', u?.last_name ?? '')}
+                  </SelectItem>
+                );
+              })}
+            </Select>
+          )}
+        </div>
+      )}
+
+      {needsChildPick ? (
+        <div className="rounded-xl border border-dashed border-border p-10 text-center text-muted-foreground">
+          Sélectionnez un enfant ci-dessus pour voir les formations disponibles.
+        </div>
+      ) : isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-40 rounded-xl bg-muted/30 animate-pulse" />)}</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

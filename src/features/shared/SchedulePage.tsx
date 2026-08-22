@@ -231,7 +231,7 @@ export default function SchedulePage() {
                       />
                     ))}
 
-                    {daySessions.map((s, i) => {
+                    {daySessions.map((s) => {
                       const color = hashColor(s.course?.name ?? '');
                       const start = s.schedule?.start_time ?? FALLBACK_TIME.start;
                       const end = s.schedule?.end_time ?? FALLBACK_TIME.end;

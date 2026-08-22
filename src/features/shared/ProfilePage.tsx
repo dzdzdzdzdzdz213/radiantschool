@@ -4,11 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { getFullName, getRoleLabel } from '@/lib/utils';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock, UserPlus, Camera, Trash2, Share2 } from 'lucide-react';
+import { Mail, Phone, Shield, UserCircle, Pencil, Check, Bell, Lock, UserPlus, Trash2, Share2 } from 'lucide-react';
 import AvatarUpload from '@/components/AvatarUpload';
 import { useToast } from '@/hooks/useToast';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -159,11 +158,6 @@ export default function ProfilePage() {
     return false;
   }, [firstName, lastName, email, phone, lang]);
 
-  const handleSave = useCallback(() => {
-    if (!validate()) return;
-    updateMutation.mutate();
-  }, [validate]);
-
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (email !== profile?.email) {
@@ -176,6 +170,11 @@ export default function ProfilePage() {
     onSuccess: () => { toast(t('success.updated', lang, 'Profil'), 'success'); setEditing(false); refreshProfile(); },
     onError: (err) => { toast(err?.message ?? t('errors.unknown', lang), 'error'); },
   });
+
+  const handleSave = useCallback(() => {
+    if (!validate()) return;
+    updateMutation.mutate();
+  }, [validate, updateMutation]);
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {

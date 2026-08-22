@@ -61,7 +61,6 @@ function StatCard({ icon: Icon, label, value, color, delay }: { icon: LucideIcon
 }
 
 function ChildCard({ child, delay }: { child: ChildSummary; delay: number }) {
-  const { lang } = useLang();
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}>
       <div className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-pink-500/5 transition-all duration-300">

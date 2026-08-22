@@ -38,7 +38,7 @@ export default function QuickActions({ actions }: QuickActionsProps) {
           const Icon = iconMap[action.icon];
           return (
             <motion.button
-              key={action.path}
+              key={`${action.path}-${idx}`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.2, delay: idx * 0.02 }}

@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/useToast';
-import { formatDate, formatTime } from '@/lib/utils';
 
 export default function TeacherOnlineClassesPage() {
   const { profile } = useAuth();
