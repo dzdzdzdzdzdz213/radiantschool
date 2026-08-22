@@ -53,6 +53,12 @@ const DASHBOARD_AGGREGATE_KEYS = [
   ['child-profile'],
 ] as const;
 
+// Query keys that don't match their table name — invalidated alongside it.
+const EXTRA_KEYS_BY_TABLE: Record<string, string[][]> = {
+  messages: [['chats'], ['chat_messages'], ['chat_users']],
+  course_enrollments: [['enrollments']],
+};
+
 export function useRealtime() {
   const queryClient = useQueryClient();
   const channels = useRef<ReturnType<typeof supabase.channel>[]>([]);
@@ -60,6 +66,9 @@ export function useRealtime() {
   useEffect(() => {
     const handleChange = (table: string) => {
       queryClient.invalidateQueries({ queryKey: [table] });
+      for (const extra of EXTRA_KEYS_BY_TABLE[table] ?? []) {
+        queryClient.invalidateQueries({ queryKey: extra });
+      }
       for (const key of DASHBOARD_AGGREGATE_KEYS) {
         queryClient.invalidateQueries({ queryKey: [key[0]] });
       }

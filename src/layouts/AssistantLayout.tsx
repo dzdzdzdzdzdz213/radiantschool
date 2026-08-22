@@ -58,7 +58,8 @@ export default function AssistantLayout() {
     { label: t('nav.parents', lang), path: '/assistant/parents', icon: 'Users' },
     { label: t('nav.registrations', lang), path: '/assistant/registrations', icon: 'ClipboardCheck' },
     { label: t('nav.attendance', lang), path: '/assistant/attendance', icon: 'ClipboardCheck' },
-    { label: t('nav.rfid', lang), path: '/assistant/rfid', icon: 'ClipboardCheck' },
+    // RFID hidden until hardware flow is validated — route & page kept intact (see /assistant/rfid).
+    // { label: t('nav.rfid', lang), path: '/assistant/rfid', icon: 'ClipboardCheck' },
     { label: t('nav.groups', lang), path: '/assistant/groups', icon: 'BookOpen' },
     { label: t('nav.subjects', lang), path: '/assistant/subjects', icon: 'BookOpen' },
     { label: t('nav.private_lessons', lang), path: '/assistant/private-lessons', icon: 'UserPlus' },

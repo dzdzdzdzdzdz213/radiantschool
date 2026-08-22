@@ -58,8 +58,10 @@ export default function AdminLayout() {
     { label: t('nav.courses', lang), path: '/admin/courses', icon: 'BookOpen' },
     { label: t('nav.attendance', lang), path: '/admin/attendance', icon: 'ClipboardCheck' },
     { label: t('nav.invoices', lang), path: '/admin/invoices', icon: 'FileText' },
-    { label: t('nav.payroll', lang), path: '/admin/payroll', icon: 'DollarSign' },
-    { label: t('nav.accounting', lang), path: '/admin/accounting', icon: 'BookOpen' },
+    // Payments/accounting hidden until the flow is validated — routes & pages kept intact
+    // (/admin/payroll, /admin/accounting).
+    // { label: t('nav.payroll', lang), path: '/admin/payroll', icon: 'DollarSign' },
+    // { label: t('nav.accounting', lang), path: '/admin/accounting', icon: 'BookOpen' },
     { label: t('nav.schedule', lang), path: '/admin/schedule', icon: 'Calendar' },
     { label: t('nav.reports', lang), path: '/admin/reports', icon: 'BarChart3' },
     { label: t('nav.messages', lang), path: '/admin/messages', icon: 'MessageSquare' },
