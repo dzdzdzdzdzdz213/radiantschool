@@ -40,6 +40,14 @@ export default function CreateUserPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!validate()) throw new Error('VALIDATION_FAILED');
+      // Guard: an existing auth account makes signUp return an obfuscated id,
+      // which would create a ghost profile. Refuse clearly instead.
+      const { data: existing } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email.trim())
+        .maybeSingle();
+      if (existing) throw new Error('Un compte existe déjà avec cet email.');
       const { data: { session: prevSession } } = await supabase.auth.getSession();
       const effectivePassword = crypto.randomUUID().replace(/-/g, '').slice(0, 16) + '!Aa1';
       const { data: signUpResponse, error: signUpError } = await supabase.auth.signUp({
