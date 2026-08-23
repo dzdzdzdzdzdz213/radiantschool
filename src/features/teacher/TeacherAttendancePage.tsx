@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatDate, getFullName } from '@/lib/utils';
-import { Check, Clock, Lock, Unlock, Users, X } from 'lucide-react';
+import { Check, ChevronDown, Clock, Lock, Unlock, Users } from 'lucide-react';
 
 function localToday(): string {
   const now = new Date();
@@ -28,6 +28,7 @@ interface SessionRow {
 type AttendanceStatus = 'present' | 'late' | 'absent';
 
 const STATUS_CYCLE: AttendanceStatus[] = ['present', 'late', 'absent'];
+const STATUS_LABEL: Record<AttendanceStatus, string> = { present: 'Présent', late: 'Retard', absent: 'Absent' };
 const STATUS_CHIP: Record<AttendanceStatus, string> = {
   present: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
   late: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
@@ -36,7 +37,9 @@ const STATUS_CHIP: Record<AttendanceStatus, string> = {
 
 interface StudentBrief {
   id: string;
-  user: { id: string; first_name: string | null; last_name: string | null } | null;
+  registration_number: string | null;
+  level: { name: string } | null;
+  user: { id: string; first_name: string | null; last_name: string | null; phone: string | null } | null;
 }
 
 function SessionRoster({ session, date, teacherId }: { session: SessionRow; date: string; teacherId?: string }) {
@@ -51,7 +54,7 @@ function SessionRoster({ session, date, teacherId }: { session: SessionRow; date
       if (!session.course?.id) return [];
       const { data, error } = await supabase
         .from('course_enrollments')
-        .select('student:students!student_id(id, user:users(id, first_name, last_name))')
+        .select('student:students!student_id(id, registration_number, level:levels(name), user:users(id, first_name, last_name, phone))')
         .eq('course_id', session.course.id);
       if (error) throw error;
       return ((data ?? []) as unknown as Array<{ student: StudentBrief | null }>)
@@ -140,24 +143,36 @@ function SessionRoster({ session, date, teacherId }: { session: SessionRow; date
           </Button>
         )}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      <div className="space-y-2">
         {students.map((s) => {
           const status = marks?.[s.id];
+          const details = [
+            s.level?.name,
+            s.registration_number ? `N° ${s.registration_number}` : null,
+            s.user?.phone,
+          ].filter(Boolean).join(' · ');
           return (
-            <button
+            <div
               key={s.id}
-              disabled={!open || upsert.isPending}
-              onClick={() => upsert.mutate({ studentId: s.id, status: cycle(status) })}
-              className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm text-left transition-colors ${
-                status ? STATUS_CHIP[status] : 'border-border bg-background hover:bg-accent'
-              } ${!open ? 'opacity-60 cursor-not-allowed' : ''}`}
-              title={open ? 'Cliquer pour changer le statut' : 'Pointage clôturé'}
+              className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 ${
+                status ? STATUS_CHIP[status] : 'border-border bg-background'
+              }`}
             >
-              <span className="truncate font-medium">{getFullName(s.user?.first_name ?? '', s.user?.last_name ?? '')}</span>
-              {status === 'present' && <Check className="h-4 w-4 shrink-0" />}
-              {status === 'late' && <Clock className="h-4 w-4 shrink-0" />}
-              {status === 'absent' && <X className="h-4 w-4 shrink-0" />}
-            </button>
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{getFullName(s.user?.first_name ?? '', s.user?.last_name ?? '')}</p>
+                {details && <p className="text-[11px] text-muted-foreground truncate">{details}</p>}
+              </div>
+              <button
+                disabled={!open || upsert.isPending}
+                onClick={() => upsert.mutate({ studentId: s.id, status: cycle(status) })}
+                className={`shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+                  status ? 'bg-white/60 dark:bg-black/30' : 'border-border bg-background hover:bg-accent'
+                }`}
+                title={open ? 'Cliquer pour changer le statut' : 'Pointage clôturé'}
+              >
+                {status ? STATUS_LABEL[status] : 'Marquer'}
+              </button>
+            </div>
           );
         })}
       </div>
@@ -174,6 +189,7 @@ export default function TeacherAttendancePage() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [date, setDate] = useState(localToday());
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
   const { data: sessions, isLoading } = useQuery({
     queryKey: ['teacher-attendance-sessions', profile?.id, date],
@@ -273,11 +289,19 @@ export default function TeacherAttendancePage() {
           {sessions?.map((s) => {
             const open = !!s.check_in_opened_at && !s.check_in_closed_at;
             const closed = !!s.check_in_closed_at;
+            const expanded = expandedIds.has(s.id) || open;
             return (
               <div key={s.id} className="rounded-xl border bg-card p-4">
-                <div className="flex items-center gap-4">
+                <div
+                  className="flex items-center gap-4 cursor-pointer select-none"
+                  onClick={() => setExpandedIds(prev => { const next = new Set(prev); if (next.has(s.id)) next.delete(s.id); else next.add(s.id); return next; })}
+                >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium">{s.course?.name}</p>
+                    <p className="font-medium flex items-center gap-2">
+                      {s.course?.name}
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                      {!expanded && <span className="text-xs text-muted-foreground font-normal">— cliquer pour voir les élèves</span>}
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       {s.schedule?.start_time?.slice(0, 5) ?? '--:--'} - {s.schedule?.end_time?.slice(0, 5) ?? ''}
                       {s.schedule?.room?.name ? ` · ${s.schedule.room.name}` : ''} · {formatDate(date)}
@@ -289,13 +313,13 @@ export default function TeacherAttendancePage() {
                     size="sm"
                     variant={open ? 'outline' : closed ? 'ghost' : 'default'}
                     disabled={closed || toggleCheckIn.isPending}
-                    onClick={() => toggleCheckIn.mutate(s)}
+                    onClick={(e) => { e.stopPropagation(); toggleCheckIn.mutate(s); }}
                   >
                     {open ? <Lock className="h-4 w-4 mr-1.5" /> : <Unlock className="h-4 w-4 mr-1.5" />}
                     {open ? 'Clôturer le pointage' : closed ? 'Clôturé' : 'Ouvrir le pointage'}
                   </Button>
                 </div>
-                <SessionRoster session={s} date={date} teacherId={profile?.id} />
+                {expanded && <SessionRoster session={s} date={date} teacherId={profile?.id} />}
               </div>
             );
           })}
