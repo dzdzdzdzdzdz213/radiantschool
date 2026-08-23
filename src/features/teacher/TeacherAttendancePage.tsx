@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Lang } from '@/i18n';
 import { supabase } from '@/lib/supabase';
@@ -6,35 +6,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
 import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { formatDate, getFullName } from '@/lib/utils';
-import { Check, ChevronDown, Clock, Lock, Unlock, Users } from 'lucide-react';
-
-function localToday(): string {
-  const now = new Date();
-  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-}
-
-interface SessionRow {
-  id: number;
-  date: string;
-  check_in_opened_at: string | null;
-  check_in_closed_at: string | null;
-  course: { id: number; name: string } | null;
-  schedule: { id?: number; start_time: string; end_time: string; room: { name: string } | null } | null;
-}
+import { Select, SelectItem } from '@/components/ui/select';
+import { getFullName } from '@/lib/utils';
+import { Check, Clock, X } from 'lucide-react';
 
 type AttendanceStatus = 'present' | 'late' | 'absent';
-
-const STATUS_CYCLE: AttendanceStatus[] = ['present', 'late', 'absent'];
-const STATUS_LABEL: Record<AttendanceStatus, string> = { present: 'Présent', late: 'Retard', absent: 'Absent' };
-const STATUS_CHIP: Record<AttendanceStatus, string> = {
-  present: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
-  late: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
-  absent: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-950 dark:text-red-300 dark:border-red-800',
+const CYCLE: AttendanceStatus[] = ['present', 'late', 'absent'];
+const CELL_STYLE: Record<AttendanceStatus, string> = {
+  present: 'bg-emerald-500/90 text-white',
+  late: 'bg-amber-500/90 text-white',
+  absent: 'bg-red-500/90 text-white',
 };
+const CELL_ICON: Record<AttendanceStatus, typeof Check> = { present: Check, late: Clock, absent: X };
+const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const DAY_LETTER = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+const WEEKDAY_INDEX: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
 
+interface CourseBrief { id: number; name: string }
 interface StudentBrief {
   id: string;
   registration_number: string | null;
@@ -42,288 +30,229 @@ interface StudentBrief {
   user: { id: string; first_name: string | null; last_name: string | null; phone: string | null } | null;
 }
 
-function SessionRoster({ session, date, teacherId }: { session: SessionRow; date: string; teacherId?: string }) {
+export default function TeacherAttendancePage() {
+  const { profile } = useAuth();
+  const { lang } = useLang();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const scheduleId = session.schedule?.id ?? null;
-  const open = !!session.check_in_opened_at && !session.check_in_closed_at;
+
+  const now = new Date();
+  const [month, setMonth] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+  const [courseId, setCourseId] = useState<string>('');
+
+  const { data: courses } = useQuery({
+    queryKey: ['teacher-courses-brief', profile?.id],
+    queryFn: async (): Promise<CourseBrief[]> => {
+      if (!profile?.id) return [];
+      const { data, error } = await supabase
+        .from('courses')
+        .select('id, name')
+        .eq('teacher_id', profile.id)
+        .in('status', ['active', 'full'])
+        .order('name');
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const effectiveCourseId = courseId || courses?.[0]?.id?.toString() || '';
 
   const { data: students } = useQuery({
-    queryKey: ['teacher-roster', session.course?.id],
+    queryKey: ['register-students', effectiveCourseId],
     queryFn: async (): Promise<StudentBrief[]> => {
-      if (!session.course?.id) return [];
+      if (!effectiveCourseId) return [];
       const { data, error } = await supabase
         .from('course_enrollments')
         .select('student:students!student_id(id, registration_number, level:levels(name), user:users(id, first_name, last_name, phone))')
-        .eq('course_id', session.course.id);
+        .eq('course_id', Number(effectiveCourseId));
       if (error) throw error;
-      return ((data ?? []) as unknown as Array<{ student: StudentBrief | null }>)
-        .map((r) => r.student)
-        .filter((s): s is StudentBrief => !!s);
+      return ((data ?? []) as unknown as Array<{ student: StudentBrief | null }>).map((r) => r.student).filter((s): s is StudentBrief => !!s);
     },
-    enabled: !!session.course?.id,
+    enabled: !!effectiveCourseId,
     staleTime: 30_000,
   });
 
-  const { data: marks } = useQuery({
-    queryKey: ['teacher-session-marks', session.id, date],
-    queryFn: async () => {
-      if (!scheduleId) return {} as Record<string, AttendanceStatus>;
+  // weekday -> schedule_id for this course (needed for RLS-compliant inserts)
+  const { data: schedules } = useQuery({
+    queryKey: ['register-schedules', effectiveCourseId],
+    queryFn: async (): Promise<Record<number, number>> => {
+      if (!effectiveCourseId) return {};
       const { data, error } = await supabase
-        .from('attendance')
-        .select('student_id, status')
-        .eq('course_schedule_id', scheduleId)
-        .eq('date', date);
+        .from('course_schedules')
+        .select('id, day_of_week')
+        .eq('course_id', Number(effectiveCourseId));
       if (error) throw error;
-      const map: Record<string, AttendanceStatus> = {};
-      for (const r of data ?? []) map[r.student_id] = r.status as AttendanceStatus;
+      const map: Record<number, number> = {};
+      for (const s of data ?? []) {
+        const idx = WEEKDAY_INDEX[s.day_of_week as unknown as string];
+        if (idx !== undefined) map[idx] = s.id;
+      }
       return map;
     },
-    enabled: !!scheduleId,
+    enabled: !!effectiveCourseId,
+    staleTime: 60_000,
+  });
+
+  const [year, monthNum] = month.split('-').map(Number);
+  const daysInMonth = new Date(year, monthNum, 0).getDate();
+  const monthDates = useMemo(() => {
+    const dates: { day: number; weekday: number; iso: string }[] = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dt = new Date(year, monthNum - 1, d);
+      dates.push({ day: d, weekday: dt.getDay(), iso: `${year}-${String(monthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}` });
+    }
+    return dates;
+  }, [year, monthNum, daysInMonth]);
+
+  const scheduleIds = useMemo(() => Object.values(schedules ?? {}), [schedules]);
+
+  const { data: monthMarks, isLoading } = useQuery({
+    queryKey: ['register-marks', effectiveCourseId, month],
+    queryFn: async (): Promise<Record<string, AttendanceStatus>> => {
+      if (!effectiveCourseId || !scheduleIds.length) return {};
+      const from = `${month}-01`;
+      const to = `${month}-${String(daysInMonth).padStart(2, '0')}`;
+      const { data, error } = await supabase
+        .from('attendance')
+        .select('student_id, date, status')
+        .in('course_schedule_id', scheduleIds)
+        .gte('date', from)
+        .lte('date', to);
+      if (error) throw error;
+      const map: Record<string, AttendanceStatus> = {};
+      for (const r of data ?? []) map[`${r.student_id}|${r.date}`] = r.status as AttendanceStatus;
+      return map;
+    },
+    enabled: !!effectiveCourseId && scheduleIds.length > 0,
   });
 
   const upsert = useMutation({
-    mutationFn: async ({ studentId, status }: { studentId: string; status: AttendanceStatus }) => {
-      if (!teacherId) throw new Error('Not authenticated');
-      const payload = { status, recorded_by: teacherId, method: 'manual' as const };
-      let existingId: number | null = null;
-      if (scheduleId) {
-        const { data: existing } = await supabase
-          .from('attendance')
-          .select('id')
-          .eq('student_id', studentId)
-          .eq('course_schedule_id', scheduleId)
-          .eq('date', date)
-          .maybeSingle();
-        existingId = existing?.id ?? null;
+    mutationFn: async ({ studentId, iso, status }: { studentId: string; iso: string; status: AttendanceStatus | null }) => {
+      if (!profile?.id) throw new Error('Not authenticated');
+      const weekday = new Date(iso + 'T12:00:00').getDay();
+      const scheduleId = schedules?.[weekday];
+      const existing = await supabase
+        .from('attendance')
+        .select('id')
+        .eq('student_id', studentId)
+        .eq('date', iso)
+        .in('course_schedule_id', scheduleIds.length ? scheduleIds : [0])
+        .maybeSingle();
+      if (status === null) {
+        if (existing.data) {
+          const { error } = await supabase.from('attendance').delete().eq('id', existing.data.id);
+          if (error) throw error;
+        }
+        return;
       }
-      if (existingId) {
-        const { error } = await supabase.from('attendance').update(payload).eq('id', existingId);
+      const payload = { status, recorded_by: profile.id, method: 'manual' as const, ...(scheduleId ? { course_schedule_id: scheduleId } : {}) };
+      if (existing.data) {
+        const { error } = await supabase.from('attendance').update(payload).eq('id', existing.data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('attendance').insert({
-          student_id: studentId,
-          date,
-          status,
-          recorded_by: teacherId,
-          method: 'manual' as const,
-          ...(scheduleId ? { course_schedule_id: scheduleId } : {}),
-        });
+        const { error } = await supabase.from('attendance').insert({ student_id: studentId, date: iso, ...payload });
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['teacher-session-marks', session.id, date] });
+      qc.invalidateQueries({ queryKey: ['register-marks'] });
       qc.invalidateQueries({ queryKey: ['teacher-attendance-counts'] });
       qc.invalidateQueries({ queryKey: ['attendance'] });
     },
     onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
   });
 
-  const cycle = (current: AttendanceStatus | undefined): AttendanceStatus =>
-    STATUS_CYCLE[(STATUS_CYCLE.indexOf(current ?? 'absent') + 1) % STATUS_CYCLE.length];
-
-  const markAll = async () => {
-    if (!students?.length) return;
-    for (const s of students) await upsert.mutateAsync({ studentId: s.id, status: 'present' });
-    toast(`${students.length} élèves marqués présents`, 'success');
+  const cellClick = (studentId: string, iso: string, weekday: number) => {
+    if (!schedules?.[weekday]) { toast('Aucun créneau ce jour pour ce cours', 'error'); return; }
+    const current = monthMarks?.[`${studentId}|${iso}`];
+    const idx = current ? CYCLE.indexOf(current) : -1;
+    const next = idx === CYCLE.length - 1 ? null : CYCLE[idx + 1];
+    upsert.mutate({ studentId, iso, status: next });
   };
 
-  if (!students?.length) {
-    return <p className="mt-3 text-xs text-muted-foreground">Aucun élève inscrit à ce cours.</p>;
-  }
-
   return (
-    <div className="mt-3 border-t pt-3">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Users className="h-3.5 w-3.5" /> Élèves ({students.length})</p>
-        {open && (
-          <Button size="sm" variant="outline" className="h-7 text-xs" disabled={upsert.isPending} onClick={markAll}>
-            <Check className="h-3.5 w-3.5 mr-1" /> Tous présents
-          </Button>
-        )}
-      </div>
-      <div className="space-y-2">
-        {students.map((s) => {
-          const status = marks?.[s.id];
-          const details = [
-            s.level?.name,
-            s.registration_number ? `N° ${s.registration_number}` : null,
-            s.user?.phone,
-          ].filter(Boolean).join(' · ');
-          return (
-            <div
-              key={s.id}
-              className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 ${
-                status ? STATUS_CHIP[status] : 'border-border bg-background'
-              }`}
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{getFullName(s.user?.first_name ?? '', s.user?.last_name ?? '')}</p>
-                {details && <p className="text-[11px] text-muted-foreground truncate">{details}</p>}
-              </div>
-              <button
-                disabled={!open || upsert.isPending}
-                onClick={() => upsert.mutate({ studentId: s.id, status: cycle(status) })}
-                className={`shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
-                  status ? 'bg-white/60 dark:bg-black/30' : 'border-border bg-background hover:bg-accent'
-                }`}
-                title={open ? 'Cliquer pour changer le statut' : 'Pointage clôturé'}
-              >
-                {status ? STATUS_LABEL[status] : 'Marquer'}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-      {!open && !session.check_in_closed_at && (
-        <p className="text-[11px] text-muted-foreground mt-2">Ouvrez le pointage pour marquer les élèves.</p>
-      )}
-    </div>
-  );
-}
-
-export default function TeacherAttendancePage() {
-  const { profile } = useAuth();
-  const { lang } = useLang();
-  const { toast } = useToast();
-  const qc = useQueryClient();
-  const [date, setDate] = useState(localToday());
-  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
-
-  const { data: sessions, isLoading } = useQuery({
-    queryKey: ['teacher-attendance-sessions', profile?.id, date],
-    queryFn: async () => {
-      if (!date || !profile?.id) return [];
-      const courseIds = await supabase.from('courses').select('id').eq('teacher_id', profile.id).in('status', ['active']).then(r => r.data?.map(c => c.id) ?? []);
-      if (!courseIds.length) return [];
-      const { data } = await supabase
-        .from('attendance_sessions')
-        .select(`
-          id, date, check_in_opened_at, check_in_closed_at,
-          course:courses!course_id(id, name),
-          schedule:course_schedules!schedule_id(id, start_time, end_time, room:rooms(name))
-        `)
-        .in('course_id', courseIds)
-        .eq('date', date)
-        .order('id');
-      const rows = (data ?? []) as SessionRow[];
-      const expiredIds = rows
-        .filter((s) => s.check_in_opened_at && !s.check_in_closed_at && Date.now() > new Date(s.check_in_opened_at).getTime() + 3600000)
-        .map((s) => s.id);
-      if (expiredIds.length > 0) {
-        await supabase.from('attendance_sessions').update({ check_in_closed_at: new Date().toISOString() }).in('id', expiredIds);
-        return rows.map((s) => (expiredIds.includes(s.id) ? { ...s, check_in_closed_at: new Date().toISOString() } : s));
-      }
-      return rows;
-    },
-    enabled: !!date,
-    staleTime: 10_000,
-  });
-
-  const { data: todayCounts } = useQuery({
-    queryKey: ['teacher-attendance-counts', profile?.id, date],
-    queryFn: async () => {
-      if (!date || !profile?.id) return { present: 0, late: 0, absent: 0 };
-      const { data: schedules } = await supabase
-        .from('course_schedules')
-        .select('id')
-        .eq('teacher_id', profile.id);
-      const ids = (schedules ?? []).map(s => s.id);
-      if (!ids.length) return { present: 0, late: 0, absent: 0 };
-      const { data } = await supabase
-        .from('attendance')
-        .select('status')
-        .in('course_schedule_id', ids)
-        .eq('date', date);
-      const rows = data ?? [];
-      return {
-        present: rows.filter(r => r.status === 'present').length,
-        late: rows.filter(r => r.status === 'late').length,
-        absent: rows.filter(r => r.status === 'absent').length,
-      };
-    },
-    enabled: !!date,
-    staleTime: 10_000,
-  });
-
-  const toggleCheckIn = useMutation({
-    mutationFn: async (session: SessionRow) => {
-      const opening = !session.check_in_opened_at;
-      const { error } = await supabase
-        .from('attendance_sessions')
-        .update(opening
-          ? { check_in_opened_at: new Date().toISOString(), check_in_closed_at: null }
-          : { check_in_closed_at: new Date().toISOString() })
-        .eq('id', session.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['teacher-attendance-sessions'] });
-      qc.invalidateQueries({ queryKey: ['schedule-sessions'] });
-      qc.invalidateQueries({ queryKey: ['attendance', 'admin-oversight-group'] });
-      toast('Pointage mis à jour', 'success');
-    },
-    onError: (err) => toast(err?.message ?? 'Erreur lors du pointage', 'error'),
-  });
-
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('nav.attendance', lang as Lang)}</h1>
-      <div className="flex gap-4 items-center">
-        <input type="date" value={date} onChange={e => setDate(e.target.value)} className="h-10 rounded-xl px-3 text-sm border bg-background" />
-      </div>
-
-      {todayCounts && (todayCounts.present > 0 || todayCounts.late > 0 || todayCounts.absent > 0) && (
-        <div className="flex flex-wrap gap-3">
-          <Badge variant="success" className="gap-1"><Users className="h-3 w-3" /> {todayCounts.present} présent{todayCounts.present > 1 ? 's' : ''}</Badge>
-          <Badge variant="warning" className="gap-1"><Clock className="h-3 w-3" /> {todayCounts.late} retard{todayCounts.late > 1 ? 's' : ''}</Badge>
-          <Badge variant="destructive" className="gap-1">{todayCounts.absent} absent{todayCounts.absent > 1 ? 's' : ''}</Badge>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-2xl font-bold">Feuille de présence</h1>
+        <div className="flex items-center gap-3">
+          <Select value={effectiveCourseId} onValueChange={setCourseId} placeholder="Choisir un cours…" className="min-w-[200px]">
+            {(courses ?? []).map((c) => (
+              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+            ))}
+          </Select>
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="h-9 rounded-xl px-3 text-sm border bg-background" />
         </div>
-      )}
+      </div>
+
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-emerald-500" /> Présent</span>
+        <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-amber-500" /> Retard</span>
+        <span className="flex items-center gap-1"><span className="inline-block h-3 w-3 rounded bg-red-500" /> Absent</span>
+        <span>· cliquer une case pour changer (P → R → A → vide)</span>
+      </div>
 
       {isLoading ? (
         <div className="p-8 text-center text-muted-foreground">{t('common.loading', lang as Lang)}</div>
+      ) : !students?.length ? (
+        <div className="p-8 text-center text-muted-foreground">Aucun élève inscrit à ce cours.</div>
       ) : (
-        <div className="space-y-4">
-          {sessions?.map((s) => {
-            const open = !!s.check_in_opened_at && !s.check_in_closed_at;
-            const closed = !!s.check_in_closed_at;
-            const expanded = expandedIds.has(s.id) || open;
-            return (
-              <div key={s.id} className="rounded-xl border bg-card p-4">
-                <div
-                  className="flex items-center gap-4 cursor-pointer select-none"
-                  onClick={() => setExpandedIds(prev => { const next = new Set(prev); if (next.has(s.id)) next.delete(s.id); else next.add(s.id); return next; })}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium flex items-center gap-2">
-                      {s.course?.name}
-                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`} />
-                      {!expanded && <span className="text-xs text-muted-foreground font-normal">— cliquer pour voir les élèves</span>}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {s.schedule?.start_time?.slice(0, 5) ?? '--:--'} - {s.schedule?.end_time?.slice(0, 5) ?? ''}
-                      {s.schedule?.room?.name ? ` · ${s.schedule.room.name}` : ''} · {formatDate(date)}
-                    </p>
-                    {open && <p className="text-xs font-medium text-emerald-600 mt-1 flex items-center gap-1"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />Pointage ouvert</p>}
-                    {closed && <p className="text-xs text-muted-foreground mt-1">Pointage clôturé</p>}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant={open ? 'outline' : closed ? 'ghost' : 'default'}
-                    disabled={closed || toggleCheckIn.isPending}
-                    onClick={(e) => { e.stopPropagation(); toggleCheckIn.mutate(s); }}
-                  >
-                    {open ? <Lock className="h-4 w-4 mr-1.5" /> : <Unlock className="h-4 w-4 mr-1.5" />}
-                    {open ? 'Clôturer le pointage' : closed ? 'Clôturé' : 'Ouvrir le pointage'}
-                  </Button>
-                </div>
-                {expanded && <SessionRoster session={s} date={date} teacherId={profile?.id} />}
-              </div>
-            );
-          })}
-          {!sessions?.length && <p className="text-muted-foreground text-center py-8">{t('common.no_data', lang as Lang)}</p>}
+        <div className="overflow-x-auto rounded-xl border bg-card">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="sticky left-0 z-10 bg-card px-3 py-2 text-left font-semibold min-w-[180px]">Élève</th>
+                {monthDates.map((d) => (
+                  <th key={d.day} className={`px-1 py-2 text-center text-[11px] font-medium ${schedules?.[d.weekday] ? 'text-foreground' : 'text-muted-foreground/30'}`}>
+                    <div>{DAY_LETTER[d.weekday]}</div>
+                    <div>{d.day}</div>
+                  </th>
+                ))}
+                <th className="px-2 py-2 text-center text-[11px] font-semibold">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((s) => {
+                const counts = { present: 0, late: 0, absent: 0 };
+                return (
+                  <tr key={s.id} className="border-b last:border-0 hover:bg-accent/30">
+                    <td className="sticky left-0 z-10 bg-card px-3 py-1.5">
+                      <p className="font-medium text-[13px] leading-tight">{getFullName(s.user?.first_name ?? '', s.user?.last_name ?? '')}</p>
+                      {s.level?.name && <p className="text-[10px] text-muted-foreground leading-tight">{s.level.name}</p>}
+                    </td>
+                    {monthDates.map((d) => {
+                      const status = monthMarks?.[`${s.id}|${d.iso}`];
+                      const marked = status ? counts[status]++ : null;
+                      const clickable = !!schedules?.[d.weekday];
+                      const Icon = status ? CELL_ICON[status] : null;
+                      void marked;
+                      return (
+                        <td key={d.day} className="px-0.5 py-1 text-center">
+                          <button
+                            disabled={!clickable || upsert.isPending}
+                            onClick={() => cellClick(s.id, d.iso, d.weekday)}
+                            className={`mx-auto flex h-6 w-6 items-center justify-center rounded text-[10px] font-bold transition-transform active:scale-90 ${
+                              status ? CELL_STYLE[status] : clickable ? 'hover:bg-accent text-muted-foreground/40' : 'text-muted-foreground/15 cursor-not-allowed'
+                            }`}
+                            title={clickable ? `${d.day} — cliquer pour marquer` : 'Pas de cours ce jour'}
+                          >
+                            {Icon ? <Icon className="h-3.5 w-3.5" /> : clickable ? '·' : ''}
+                          </button>
+                        </td>
+                      );
+                    })}
+                    <td className="px-2 py-1 text-center text-[11px] whitespace-nowrap">
+                      <span className="text-emerald-600 font-semibold">{counts.present}</span>
+                      <span className="text-muted-foreground">/</span>
+                      <span className="text-amber-600">{counts.late}</span>
+                      <span className="text-muted-foreground">/</span>
+                      <span className="text-red-600">{counts.absent}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
