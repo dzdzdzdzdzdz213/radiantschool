@@ -392,9 +392,11 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {[
-                { value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' },
+                (stats?.totalEvaluations ?? 0) > 0
+                  ? { value: (stats?.avgRating ?? 0).toFixed(1), label: 'Avis', sub: `${stats?.totalEvaluations ?? 0} évaluations`, color: '#f59e0b' }
+                  : { value: `${stats?.levelCount ?? 0}`, label: 'Niveaux', sub: 'Du primaire au lycée', color: '#f59e0b' },
                 { value: `${stats?.studentCount ?? 0}`, suffix: '+', label: 'Étudiants', sub: 'Inscrits', color: '#a855f7' },
-                { value: `${stats?.successRate ?? 0}`, suffix: '%', label: 'Réussite', sub: 'Aux examens', color: '#10b981' },
+                { value: `${stats?.totalCourses ?? 0}`, label: 'Formations', sub: 'Cours actifs', color: '#10b981' },
                 { value: `${stats?.yearsActive ?? 0}`, suffix: '+', label: "Années", sub: "D'expérience", color: '#3b82f6' },
               ].map((s, i) => (
                 <div key={i} className="text-center">

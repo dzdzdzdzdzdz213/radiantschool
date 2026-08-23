@@ -53,6 +53,7 @@ export interface PublicStats {
   maxCapacity: number;
   typeCount: number;
   levelCount: number;
+  totalCourses: number;
 }
 
 export function usePublicStats() {
@@ -70,6 +71,7 @@ export function usePublicStats() {
       const avgRating = stats.avg_rating ?? 0;
       const successRate = stats.success_rate ?? 0;
       const totalEvaluations = stats.total_evaluations ?? 0;
+      const totalCourses = stats.total_courses ?? 0;
       const { data: levelCategories } = await supabase.from('levels').select('category').not('category', 'is', null);
       const levelCount = new Set((levelCategories ?? []).map(r => r.category)).size;
       const firstCourse = await supabase.from('courses').select('start_date').eq('status', 'active').order('start_date', { ascending: true }).limit(1).maybeSingle();
@@ -80,7 +82,7 @@ export function usePublicStats() {
       const maxCapacity = capacities.length > 0 ? Math.max(...capacities) : 0;
       const types = new Set((typeRes.data ?? []).map(r => r.type).filter(Boolean));
       const typeCount = types.size;
-      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations, teacherCount, maxCapacity, typeCount, levelCount };
+      return { studentCount, avgRating, successRate, yearsActive, totalEvaluations, teacherCount, maxCapacity, typeCount, levelCount, totalCourses };
     },
     staleTime: 1000 * 60 * 5,
   });
