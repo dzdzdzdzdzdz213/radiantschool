@@ -8,8 +8,8 @@ import { t } from '@/i18n';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { formatDate } from '@/lib/utils';
-import { Clock, Lock, Unlock, Users } from 'lucide-react';
+import { formatDate, getFullName } from '@/lib/utils';
+import { Check, Clock, Lock, Unlock, Users, X } from 'lucide-react';
 
 function localToday(): string {
   const now = new Date();
@@ -22,7 +22,150 @@ interface SessionRow {
   check_in_opened_at: string | null;
   check_in_closed_at: string | null;
   course: { id: number; name: string } | null;
-  schedule: { start_time: string; end_time: string; room: { name: string } | null } | null;
+  schedule: { id?: number; start_time: string; end_time: string; room: { name: string } | null } | null;
+}
+
+type AttendanceStatus = 'present' | 'late' | 'absent';
+
+const STATUS_CYCLE: AttendanceStatus[] = ['present', 'late', 'absent'];
+const STATUS_CHIP: Record<AttendanceStatus, string> = {
+  present: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
+  late: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
+  absent: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-950 dark:text-red-300 dark:border-red-800',
+};
+
+interface StudentBrief {
+  id: string;
+  user: { id: string; first_name: string | null; last_name: string | null } | null;
+}
+
+function SessionRoster({ session, date, teacherId }: { session: SessionRow; date: string; teacherId?: string }) {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const scheduleId = session.schedule?.id ?? null;
+  const open = !!session.check_in_opened_at && !session.check_in_closed_at;
+
+  const { data: students } = useQuery({
+    queryKey: ['teacher-roster', session.course?.id],
+    queryFn: async (): Promise<StudentBrief[]> => {
+      if (!session.course?.id) return [];
+      const { data, error } = await supabase
+        .from('course_enrollments')
+        .select('student:students!student_id(id, user:users(id, first_name, last_name))')
+        .eq('course_id', session.course.id);
+      if (error) throw error;
+      return ((data ?? []) as unknown as Array<{ student: StudentBrief | null }>)
+        .map((r) => r.student)
+        .filter((s): s is StudentBrief => !!s);
+    },
+    enabled: !!session.course?.id,
+    staleTime: 30_000,
+  });
+
+  const { data: marks } = useQuery({
+    queryKey: ['teacher-session-marks', session.id, date],
+    queryFn: async () => {
+      if (!scheduleId) return {} as Record<string, AttendanceStatus>;
+      const { data, error } = await supabase
+        .from('attendance')
+        .select('student_id, status')
+        .eq('course_schedule_id', scheduleId)
+        .eq('date', date);
+      if (error) throw error;
+      const map: Record<string, AttendanceStatus> = {};
+      for (const r of data ?? []) map[r.student_id] = r.status as AttendanceStatus;
+      return map;
+    },
+    enabled: !!scheduleId,
+  });
+
+  const upsert = useMutation({
+    mutationFn: async ({ studentId, status }: { studentId: string; status: AttendanceStatus }) => {
+      if (!teacherId) throw new Error('Not authenticated');
+      const payload = { status, recorded_by: teacherId, method: 'manual' as const };
+      let existingId: number | null = null;
+      if (scheduleId) {
+        const { data: existing } = await supabase
+          .from('attendance')
+          .select('id')
+          .eq('student_id', studentId)
+          .eq('course_schedule_id', scheduleId)
+          .eq('date', date)
+          .maybeSingle();
+        existingId = existing?.id ?? null;
+      }
+      if (existingId) {
+        const { error } = await supabase.from('attendance').update(payload).eq('id', existingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('attendance').insert({
+          student_id: studentId,
+          date,
+          status,
+          recorded_by: teacherId,
+          method: 'manual' as const,
+          ...(scheduleId ? { course_schedule_id: scheduleId } : {}),
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teacher-session-marks', session.id, date] });
+      qc.invalidateQueries({ queryKey: ['teacher-attendance-counts'] });
+      qc.invalidateQueries({ queryKey: ['attendance'] });
+    },
+    onError: (err) => toast(err?.message ?? 'Erreur', 'error'),
+  });
+
+  const cycle = (current: AttendanceStatus | undefined): AttendanceStatus =>
+    STATUS_CYCLE[(STATUS_CYCLE.indexOf(current ?? 'absent') + 1) % STATUS_CYCLE.length];
+
+  const markAll = async () => {
+    if (!students?.length) return;
+    for (const s of students) await upsert.mutateAsync({ studentId: s.id, status: 'present' });
+    toast(`${students.length} élèves marqués présents`, 'success');
+  };
+
+  if (!students?.length) {
+    return <p className="mt-3 text-xs text-muted-foreground">Aucun élève inscrit à ce cours.</p>;
+  }
+
+  return (
+    <div className="mt-3 border-t pt-3">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Users className="h-3.5 w-3.5" /> Élèves ({students.length})</p>
+        {open && (
+          <Button size="sm" variant="outline" className="h-7 text-xs" disabled={upsert.isPending} onClick={markAll}>
+            <Check className="h-3.5 w-3.5 mr-1" /> Tous présents
+          </Button>
+        )}
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        {students.map((s) => {
+          const status = marks?.[s.id];
+          return (
+            <button
+              key={s.id}
+              disabled={!open || upsert.isPending}
+              onClick={() => upsert.mutate({ studentId: s.id, status: cycle(status) })}
+              className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm text-left transition-colors ${
+                status ? STATUS_CHIP[status] : 'border-border bg-background hover:bg-accent'
+              } ${!open ? 'opacity-60 cursor-not-allowed' : ''}`}
+              title={open ? 'Cliquer pour changer le statut' : 'Pointage clôturé'}
+            >
+              <span className="truncate font-medium">{getFullName(s.user?.first_name ?? '', s.user?.last_name ?? '')}</span>
+              {status === 'present' && <Check className="h-4 w-4 shrink-0" />}
+              {status === 'late' && <Clock className="h-4 w-4 shrink-0" />}
+              {status === 'absent' && <X className="h-4 w-4 shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
+      {!open && !session.check_in_closed_at && (
+        <p className="text-[11px] text-muted-foreground mt-2">Ouvrez le pointage pour marquer les élèves.</p>
+      )}
+    </div>
+  );
 }
 
 export default function TeacherAttendancePage() {
@@ -43,7 +186,7 @@ export default function TeacherAttendancePage() {
         .select(`
           id, date, check_in_opened_at, check_in_closed_at,
           course:courses!course_id(id, name),
-          schedule:course_schedules!schedule_id(start_time, end_time, room:rooms(name))
+          schedule:course_schedules!schedule_id(id, start_time, end_time, room:rooms(name))
         `)
         .in('course_id', courseIds)
         .eq('date', date)
@@ -131,25 +274,28 @@ export default function TeacherAttendancePage() {
             const open = !!s.check_in_opened_at && !s.check_in_closed_at;
             const closed = !!s.check_in_closed_at;
             return (
-              <div key={s.id} className="rounded-xl border bg-card p-4 flex items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">{s.course?.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {s.schedule?.start_time?.slice(0, 5) ?? '--:--'} - {s.schedule?.end_time?.slice(0, 5) ?? ''}
-                    {s.schedule?.room?.name ? ` · ${s.schedule.room.name}` : ''} · {formatDate(date)}
-                  </p>
-                  {open && <p className="text-xs font-medium text-emerald-600 mt-1 flex items-center gap-1"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />Pointage ouvert</p>}
-                  {closed && <p className="text-xs text-muted-foreground mt-1">Pointage clôturé</p>}
+              <div key={s.id} className="rounded-xl border bg-card p-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium">{s.course?.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {s.schedule?.start_time?.slice(0, 5) ?? '--:--'} - {s.schedule?.end_time?.slice(0, 5) ?? ''}
+                      {s.schedule?.room?.name ? ` · ${s.schedule.room.name}` : ''} · {formatDate(date)}
+                    </p>
+                    {open && <p className="text-xs font-medium text-emerald-600 mt-1 flex items-center gap-1"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />Pointage ouvert</p>}
+                    {closed && <p className="text-xs text-muted-foreground mt-1">Pointage clôturé</p>}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={open ? 'outline' : closed ? 'ghost' : 'default'}
+                    disabled={closed || toggleCheckIn.isPending}
+                    onClick={() => toggleCheckIn.mutate(s)}
+                  >
+                    {open ? <Lock className="h-4 w-4 mr-1.5" /> : <Unlock className="h-4 w-4 mr-1.5" />}
+                    {open ? 'Clôturer le pointage' : closed ? 'Clôturé' : 'Ouvrir le pointage'}
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  variant={open ? 'outline' : closed ? 'ghost' : 'default'}
-                  disabled={closed || toggleCheckIn.isPending}
-                  onClick={() => toggleCheckIn.mutate(s)}
-                >
-                  {open ? <Lock className="h-4 w-4 mr-1.5" /> : <Unlock className="h-4 w-4 mr-1.5" />}
-                  {open ? 'Clôturer le pointage' : closed ? 'Clôturé' : 'Ouvrir le pointage'}
-                </Button>
+                <SessionRoster session={s} date={date} teacherId={profile?.id} />
               </div>
             );
           })}
