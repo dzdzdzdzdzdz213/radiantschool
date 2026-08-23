@@ -57,6 +57,16 @@ const DASHBOARD_AGGREGATE_KEYS = [
 const EXTRA_KEYS_BY_TABLE: Record<string, string[][]> = {
   messages: [['chats'], ['chat_messages'], ['chat_users']],
   course_enrollments: [['enrollments']],
+  attendance: [
+    ['teacher-attendance-counts'],
+    ['course-students'],
+    ['pending-students'],
+    ['teachers_list'],
+    ['admin_oversight_private'],
+    ['schedule-sessions'],
+  ],
+  attendance_sessions: [['teacher-attendance-sessions'], ['schedule-sessions']],
+  rfid_scans: [['course-students'], ['pending-students']],
 };
 
 export function useRealtime() {
@@ -64,30 +74,54 @@ export function useRealtime() {
   const channels = useRef<ReturnType<typeof supabase.channel>[]>([]);
 
   useEffect(() => {
-    const handleChange = (table: string) => {
-      queryClient.invalidateQueries({ queryKey: [table] });
-      for (const extra of EXTRA_KEYS_BY_TABLE[table] ?? []) {
-        queryClient.invalidateQueries({ queryKey: extra });
-      }
-      for (const key of DASHBOARD_AGGREGATE_KEYS) {
-        queryClient.invalidateQueries({ queryKey: [key[0]] });
-      }
-    };
+    let cancelled = false;
 
-    for (const table of WATCHED_TABLES) {
-      const channel = supabase
-        .channel(table)
-        .on(
+    // Realtime authorizes postgres_changes at SUBSCRIBE time: channels opened
+    // before sign-in never receive RLS-protected events. Wait for a session,
+    // then subscribe.
+    async function waitForSession(): Promise<boolean> {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) return true;
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = (v: boolean) => { if (!done) { done = true; resolve(v); } };
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+          if (s) finish(true);
+        });
+        setTimeout(() => { try { subscription.unsubscribe(); } catch {} finish(false); }, 30000);
+      });
+    }
+
+    (async () => {
+      const authed = await waitForSession();
+      if (cancelled || !authed) return;
+
+      const handleChange = (table: string) => {
+        queryClient.invalidateQueries({ queryKey: [table] });
+        for (const extra of EXTRA_KEYS_BY_TABLE[table] ?? []) {
+          queryClient.invalidateQueries({ queryKey: extra });
+        }
+        for (const key of DASHBOARD_AGGREGATE_KEYS) {
+          queryClient.invalidateQueries({ queryKey: [key[0]] });
+        }
+      };
+
+      // ONE channel with all bindings — duplicate topics (StrictMode double
+      // mount) break callback dispatch, a single joined channel does not.
+      let channel = supabase.channel('db-changes');
+      for (const table of WATCHED_TABLES) {
+        channel = channel.on(
           'postgres_changes',
           { event: '*', schema: 'public', table },
           () => handleChange(table),
-        )
-        .subscribe();
-
+        );
+      }
+      channel.subscribe();
       channels.current.push(channel);
-    }
+    })();
 
     return () => {
+      cancelled = true;
       for (const ch of channels.current) {
         supabase.removeChannel(ch);
       }
