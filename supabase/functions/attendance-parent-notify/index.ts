@@ -54,11 +54,16 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400 });
   }
 
-  const studentId = (body as Record<string, unknown>)?.student_id;
-  const sessionId = (body as Record<string, unknown>)?.session_id;
-  const scheduleId = (body as Record<string, unknown>)?.course_schedule_id;
+  const asId = (v: unknown): string | undefined => {
+    if (typeof v === "string" && v.length > 0) return v;
+    if (typeof v === "number" && Number.isFinite(v)) return String(v);
+    return undefined;
+  };
+  const studentId = asId((body as Record<string, unknown>)?.student_id);
+  const sessionId = asId((body as Record<string, unknown>)?.session_id);
+  const scheduleId = asId((body as Record<string, unknown>)?.course_schedule_id);
   const postedDate = (body as Record<string, unknown>)?.date;
-  if (typeof studentId !== "string") {
+  if (!studentId) {
     return new Response(JSON.stringify({ error: "student_id is required" }), { status: 400 });
   }
 
