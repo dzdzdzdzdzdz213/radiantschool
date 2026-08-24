@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/i18n';
-import { BookOpen, CalendarDays, MapPin, User, Clock, GraduationCap, TrendingUp } from 'lucide-react';
+import { BookOpen, CalendarDays, MapPin, User, Clock, GraduationCap, TrendingUp , Star} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import RateTeacherDialog from '@/components/RateTeacherDialog';
 import { formatCurrency } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -41,6 +43,7 @@ function getSubjectColor(name?: string) {
 
 export default function StudentCoursesPage() {
   const { profile } = useAuth();
+  const [rateTarget, setRateTarget] = useState<{ teacherId: string; teacherName: string; courseName: string } | null>(null);
   const { lang } = useLang();
 
   const { data: enrollments, isLoading } = useQuery({
@@ -55,7 +58,7 @@ export default function StudentCoursesPage() {
             id, name, type, price, status, start_date, end_date, image_url,
             subject:subjects(name),
             level:levels(name, category, stream, year),
-            teacher:users!teacher_id(first_name, last_name),
+            teacher_id, teacher:users!teacher_id(first_name, last_name),
             room:rooms(name),
             schedules:course_schedules(day_of_week, start_time, end_time)
           )`
@@ -190,13 +193,27 @@ export default function StudentCoursesPage() {
                       </span>
                     </div>
 
-                    {/* Teacher */}
+                    {/* Teacher + rate */}
                     {c?.teacher && (
-                      <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
-                          <User className="h-3 w-3 text-primary" />
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 text-xs text-muted-foreground min-w-0">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                            <User className="h-3 w-3 text-primary" />
+                          </div>
+                          <span className="font-medium truncate">{c.teacher.first_name} {c.teacher.last_name}</span>
                         </div>
-                        <span className="font-medium">{c.teacher.first_name} {c.teacher.last_name}</span>
+                        {c.teacher_id && e.status === 'active' && (
+                          <button
+                            onClick={() => setRateTarget({
+                              teacherId: c.teacher_id,
+                              teacherName: `${c.teacher.first_name} ${c.teacher.last_name}`,
+                              courseName: c.name ?? '',
+                            })}
+                            className="shrink-0 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-colors"
+                          >
+                            <Star className="h-3 w-3" /> Noter
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -244,6 +261,16 @@ export default function StudentCoursesPage() {
             );
           })}
         </div>
+      )}
+
+      {rateTarget && (
+        <RateTeacherDialog
+          open={!!rateTarget}
+          onClose={() => setRateTarget(null)}
+          teacherId={rateTarget.teacherId}
+          teacherName={rateTarget.teacherName}
+          courseName={rateTarget.courseName}
+        />
       )}
     </div>
   );
